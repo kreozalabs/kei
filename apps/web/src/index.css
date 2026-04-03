@@ -1,0 +1,6 @@
+@import "@kreozalabs/styles/base.css";
+
+/* Local overrides */
+body {
+  @apply bg-background text-text antialiased;
+}
