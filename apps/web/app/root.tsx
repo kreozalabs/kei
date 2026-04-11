@@ -8,6 +8,7 @@ import {
 
 import "./index.css";
 import { QueryProvider } from "./providers/QueryProvider";
+import { ThemeProvider } from "./providers/ThemeProvider";
 
 export function Layout({ children }: { children: React.ReactNode }) {
   return (
@@ -22,7 +23,9 @@ export function Layout({ children }: { children: React.ReactNode }) {
         <Links />
       </head>
       <body>
-        {children}
+        <ThemeProvider defaultTheme="system" storageKey="kei-ui-theme">
+          {children}
+        </ThemeProvider>
         <ScrollRestoration />
         <Scripts />
       </body>

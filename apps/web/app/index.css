@@ -2,5 +2,5 @@
 
 /* Local overrides */
 body {
-  @apply bg-background text-text antialiased;
+  @apply bg-background text-foreground antialiased;
 }
