@@ -144,3 +144,6 @@ vite.config.ts.timestamp-*
 .vite/
 
 .turbo
+
+# Development files
+.dev/
