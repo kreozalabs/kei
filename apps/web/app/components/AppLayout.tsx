@@ -7,9 +7,9 @@ import {
   PlusIcon,
   SearchIcon,
   MoreVerticalIcon,
-  LayoutGridIcon,
 } from "lucide-react";
 import { Button, cn } from "@kreozalabs/ui";
+import { Logo as KreozaLogo } from "@kreozalabs/icons";
 
 interface AppLayoutProps {
   children: React.ReactNode;
@@ -22,8 +22,8 @@ export function AppLayout({ children, title, subtitle, onFabClick }: AppLayoutPr
   const [activeTab, setActiveTab] = useState("today");
 
   const navItems = [
-    { id: "inbox", label: "Inbox", icon: InboxIcon },
-    { id: "today", label: "Today", icon: CalendarDaysIcon },
+    { id: "inbox", label: "Inbox", icon: InboxIcon, count: 5 },
+    { id: "today", label: "Today", icon: CalendarDaysIcon, count: 6 },
     { id: "upcoming", label: "Upcoming", icon: CalendarIcon },
     { id: "browse", label: "Browse", icon: MenuIcon },
   ];
@@ -32,27 +32,45 @@ export function AppLayout({ children, title, subtitle, onFabClick }: AppLayoutPr
     <div className="min-h-screen bg-background text-foreground flex flex-col md:flex-row">
       {/* Desktop Sidebar (Placeholder) */}
       <aside className="hidden md:flex w-64 border-r flex-col p-4 space-y-2 shrink-0">
-        <div className="flex items-center gap-2 px-2 py-4 mb-4">
-          <div className="size-8 rounded-lg bg-primary/10 flex items-center justify-center">
-            <LayoutGridIcon className="size-5 text-primary" />
+        <div className="flex items-center gap-3 px-2 py-4 mb-4">
+          <div className="flex items-center justify-center bg-primary/5 p-2 rounded-xl">
+            <KreozaLogo className="size-6" />
           </div>
-          <span className="font-bold text-xl tracking-tight">Kei</span>
+          <div className="flex flex-col">
+            <span className="font-bold text-lg tracking-tight leading-none">Kei</span>
+            <span className="text-[9px] font-mono text-muted-foreground/60 uppercase tracking-[0.2em] leading-tight mt-0.5">
+              &nbsp; by Kreoza
+            </span>
+          </div>
         </div>
 
         {navItems.map((item) => (
           <Button
             key={item.id}
             variant={activeTab === item.id ? "secondary" : "ghost"}
+            rounded="md"
             className={cn(
-              "w-full justify-start gap-3 px-3 py-2 h-10 font-medium transition-all rounded-xl",
+              "w-full flex flex-row items-center justify-between px-3 py-2 h-11 font-medium transition-all border-none",
               activeTab === item.id
-                ? "bg-primary/5 text-primary"
+                ? "bg-primary/10 text-primary shadow-none"
                 : "text-muted-foreground hover:bg-muted"
             )}
             onClick={() => setActiveTab(item.id)}
           >
-            <item.icon className="size-5" />
-            {item.label}
+            <div className="flex items-center gap-3">
+              <item.icon className="size-5" />
+              <span className="tracking-tight">{item.label}</span>
+            </div>
+            {item.count !== undefined && (
+              <span
+                className={cn(
+                  "text-[11px] font-bold tabular-nums",
+                  activeTab === item.id ? "text-primary/70" : "text-muted-foreground/40"
+                )}
+              >
+                {item.count}
+              </span>
+            )}
           </Button>
         ))}
       </aside>
@@ -72,10 +90,10 @@ export function AppLayout({ children, title, subtitle, onFabClick }: AppLayoutPr
             </div>
 
             <div className="flex items-center gap-1 md:gap-4">
-              <Button variant="ghost" size="icon" className="border-none">
+              <Button variant="ghost" size="icon" rounded="xl" className="border-none">
                 <SearchIcon className="size-5 text-muted-foreground" />
               </Button>
-              <Button variant="ghost" size="icon" className="border-none">
+              <Button variant="ghost" size="icon" rounded="xl" className="border-none">
                 <MoreVerticalIcon className="size-5 text-muted-foreground" />
               </Button>
             </div>
@@ -101,12 +119,14 @@ export function AppLayout({ children, title, subtitle, onFabClick }: AppLayoutPr
           {navItems.map((item) => {
             const isActive = activeTab === item.id;
             return (
-              <button
+              <Button
                 key={item.id}
+                variant="ghost"
+                rounded="xl"
                 onClick={() => setActiveTab(item.id)}
                 className={cn(
-                  "flex flex-col items-center justify-center gap-1 min-w-16 transition-all",
-                  isActive ? "text-primary" : "text-muted-foreground/60"
+                  "flex flex-col items-center justify-center gap-1 min-w-16 h-16 transition-all",
+                  isActive ? "text-primary bg-primary/5" : "text-muted-foreground/60"
                 )}
               >
                 <div
@@ -115,7 +135,7 @@ export function AppLayout({ children, title, subtitle, onFabClick }: AppLayoutPr
                   <item.icon className={cn("size-6", isActive && "fill-primary/20")} />
                 </div>
                 <span className="text-[10px] font-bold tracking-tight uppercase">{item.label}</span>
-              </button>
+              </Button>
             );
           })}
         </nav>
