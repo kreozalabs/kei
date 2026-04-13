@@ -1,16 +1,19 @@
 import { useEffect, useState } from "react";
-import { initDb } from "../db";
-import { Alert, AlertTitle, Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@kreozalabs/ui";
+import { initDb } from "@/db";
 import {
-  AlertCircleIcon,
-  CheckCircle2Icon,
-  HistoryIcon,
-  DatabaseIcon,
-} from "lucide-react";
-import { useCurrentDay } from "../hooks/useCurrentDay";
-import { ActionInput } from "../components/ActionInput";
-import { ActionList } from "../components/ActionList";
-import { AppLayout } from "../components/AppLayout";
+  Alert,
+  AlertTitle,
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@kreozalabs/ui";
+import { AlertCircleIcon, CheckCircle2Icon, HistoryIcon, DatabaseIcon } from "lucide-react";
+import { useCurrentDay } from "@/hooks/useCurrentDay";
+import { ActionInput } from "@/components/ActionInput";
+import { ActionList } from "@/components/ActionList";
+import { AppLayout } from "@/components/AppLayout";
 
 export default function Dashboard() {
   const [isDbReady, setIsDbReady] = useState(false);
@@ -22,9 +25,9 @@ export default function Dashboard() {
   }, []);
 
   return (
-    <AppLayout 
-      title="Today" 
-      subtitle={`${activeActions.length} ${activeActions.length === 1 ? 'task' : 'tasks'}`}
+    <AppLayout
+      title="Today"
+      subtitle={`${activeActions.length} ${activeActions.length === 1 ? "task" : "tasks"}`}
       onFabClick={() => setIsInputOpen(true)}
     >
       {/* Red Zone Warning */}

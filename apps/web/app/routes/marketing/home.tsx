@@ -3,14 +3,14 @@ import { Button } from "@kreozalabs/ui";
 import { ArrowRightIcon, ZapIcon, RefreshCcwIcon, CompassIcon } from "lucide-react";
 import { Logo as KreozaLogo } from "@kreozalabs/icons";
 
-import "../landing.css";
-import heroImg from "../assets/hero.png";
+import "../../landing.css";
+import heroImg from "../../assets/hero.png";
 
 export default function Home() {
   const navigate = useNavigate();
 
   const onLaunch = () => {
-    navigate("/dashboard");
+    navigate("/app");
   };
 
   return (
