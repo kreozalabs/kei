@@ -13,7 +13,7 @@ export default function Me() {
     setSubtitle("Personal Reflection");
     setOnFabClick(() => openActionInput);
 
-    setHeaderActions(<HeaderMore />);
+    setHeaderActions({ right: <HeaderMore /> });
 
     return () => setHeaderActions(undefined);
   }, [setTitle, setSubtitle, setOnFabClick, setHeaderActions, openActionInput]);

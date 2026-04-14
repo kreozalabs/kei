@@ -1,30 +1,33 @@
 import { PlusIcon, SearchIcon, MoreVerticalIcon } from "lucide-react";
 import { Button } from "@kreozalabs/ui";
-import { FullscreenToggle } from "../FullscreenToggle";
 
 export interface AppHeaderProps {
   title: string;
   subtitle?: string;
-  onPrimaryAction?: () => void;
-  headerActions?: React.ReactNode;
+  center?: React.ReactNode;
+  right?: React.ReactNode;
 }
 
-export function AppHeader({ title, subtitle, headerActions, onPrimaryAction }: AppHeaderProps) {
+export function AppHeader({ title, subtitle, center, right }: AppHeaderProps) {
   return (
-    <header className="shrink-0 z-40 w-full h-14 md:h-12 flex items-center justify-between px-4 md:py-10 py-8 sm:px-8 md:px-6 sticky top-0 bg-background/95 backdrop-blur-xl border-b md:border-none">
-      {/* Title */}
-      <div className="flex flex-col md:m-10">
-        <h1 className="text-xl font-bold tracking-tight">{title}</h1>
-        {subtitle && <span className="text-xs text-muted-foreground font-medium">{subtitle}</span>}
+    <header className="shrink-0 z-40 w-full h-14 md:h-16 flex items-center px-6 md:px-8 sticky top-0 bg-background/95 backdrop-blur-xl border-b md:border-none transition-all">
+      {/* 1. Title Area (Adjusted width) */}
+      <div className="flex flex-col w-[70%] md:w-[75%] min-w-0">
+        <h1 className="text-xl font-bold tracking-tight truncate">{title}</h1>
+        {subtitle && (
+          <span className="text-xs text-muted-foreground font-medium truncate">{subtitle}</span>
+        )}
       </div>
-      <div className="flex items-center gap-1 md:gap-3 text-muted-foreground">
-        {/* Actions Slot (Decentralized) */}
-        <div className="flex items-center gap-2">
-          {onPrimaryAction && <HeaderNewAction onClick={onPrimaryAction} />}
-          {headerActions}
-          <div className="hidden md:flex">
-            <HeaderFullscreen />
-          </div>
+
+      {/* 2. Actions Area (Right-aligned grouping) */}
+      <div className="flex-1 flex items-center justify-end gap-6 md:gap-10 min-w-0">
+        {/* Search stays grouped with the other actions */}
+        <div className="hidden lg:flex items-center">{center}</div>
+
+        {/* Secondary Actions */}
+        <div className="flex items-center gap-2 md:gap-6 font-medium">
+          <div className="lg:hidden text-muted-foreground/40">{center}</div>
+          {right}
         </div>
       </div>
     </header>
@@ -75,8 +78,4 @@ export function HeaderMore({ onClick }: { onClick?: () => void }) {
       <MoreVerticalIcon className="size-4" />
     </Button>
   );
-}
-
-export function HeaderFullscreen() {
-  return <FullscreenToggle />;
 }

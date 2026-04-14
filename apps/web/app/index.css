@@ -3,6 +3,10 @@
 /* Local overrides */
 body {
   @apply bg-background text-foreground antialiased;
+  /* Prevent scrolling the whole document to enhance the "app" feel */
+  overscroll-behavior: none;
+  /* Eliminate the 300ms double-tap delay and accidental zooming */
+  touch-action: manipulation;
 }
 
 /* Responsive Typography Variables */

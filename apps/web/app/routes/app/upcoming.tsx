@@ -1,7 +1,7 @@
 import { useEffect } from "react";
 import { useOutletContext } from "react-router";
 import type { AppLayoutContext } from "@/components/layout/AppLayout";
-import { HeaderSearch, HeaderMore } from "@/components/layout/AppHeader";
+import { HeaderSearch, HeaderMore, HeaderNewAction } from "@/components/layout/AppHeader";
 import { CalendarIcon } from "lucide-react";
 
 export default function Upcoming() {
@@ -13,12 +13,15 @@ export default function Upcoming() {
     setSubtitle(undefined);
     setOnFabClick(() => openActionInput);
 
-    setHeaderActions(
-      <>
-        <HeaderSearch />
-        <HeaderMore />
-      </>
-    );
+    setHeaderActions({
+      center: <HeaderSearch />,
+      right: (
+        <>
+          <HeaderNewAction onClick={openActionInput} />
+          <HeaderMore />
+        </>
+      ),
+    });
 
     return () => setHeaderActions(undefined);
   }, [setTitle, setSubtitle, setOnFabClick, setHeaderActions, openActionInput]);

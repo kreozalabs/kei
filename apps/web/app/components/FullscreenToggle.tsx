@@ -1,8 +1,13 @@
 import { Maximize, Minimize } from "lucide-react";
-import { Button } from "@kreozalabs/ui";
+import { Button, cn } from "@kreozalabs/ui";
 import { useEffect, useState } from "react";
 
-export function FullscreenToggle() {
+export interface FullscreenToggleProps {
+  className?: string;
+  size?: "icon" | "icon-lg";
+}
+
+export function FullscreenToggle({ className, size = "icon-lg" }: FullscreenToggleProps) {
   const [isFullscreen, setIsFullscreen] = useState(false);
 
   useEffect(() => {
@@ -27,8 +32,8 @@ export function FullscreenToggle() {
   return (
     <Button
       variant="ghost"
-      size="icon-lg"
-      className="transition-colors hover:bg-muted"
+      size={size}
+      className={cn("transition-colors hover:bg-muted", className)}
       onClick={toggleFullscreen}
       title={isFullscreen ? "Exit Fullscreen" : "Enter Fullscreen"}
     >

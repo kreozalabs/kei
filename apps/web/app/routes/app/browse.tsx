@@ -15,27 +15,29 @@ export default function Browse() {
     setSubtitle("Navigate your entire setup and archives.");
     setOnFabClick(undefined);
 
-    setHeaderActions(
-      <>
-        <Button
-          variant="ghost"
-          size="icon"
-          className="size-8 border-none relative"
-          onClick={() => navigate("/app/notifications")}
-        >
-          <BellIcon className="size-4 text-muted-foreground/60" />
-          <div className="absolute top-1.5 right-1.5 size-1.5 bg-primary rounded-full animate-pulse" />
-        </Button>
-        <Button
-          variant="ghost"
-          size="icon"
-          className="size-8 border-none text-muted-foreground"
-          onClick={() => navigate("/app/settings")}
-        >
-          <SettingsIcon className="size-5" />
-        </Button>
-      </>
-    );
+    setHeaderActions({
+      right: (
+        <>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="size-8 border-none relative"
+            onClick={() => navigate("/app/notifications")}
+          >
+            <BellIcon className="size-4 text-muted-foreground/60" />
+            <div className="absolute top-1.5 right-1.5 size-1.5 bg-primary rounded-full animate-pulse" />
+          </Button>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="size-8 border-none text-muted-foreground"
+            onClick={() => navigate("/app/settings")}
+          >
+            <SettingsIcon className="size-5" />
+          </Button>
+        </>
+      ),
+    });
 
     return () => setHeaderActions(undefined);
   }, [setTitle, setSubtitle, setOnFabClick, setHeaderActions, navigate]);

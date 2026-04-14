@@ -3,6 +3,7 @@ import { BellIcon, PanelLeftIcon, PlusIcon } from "lucide-react";
 import { Button, cn } from "@kreozalabs/ui";
 import { Logo as KreozaLogo } from "@kreozalabs/icons";
 import { navGroups } from "@/config/navigation";
+import { FullscreenToggle } from "../FullscreenToggle";
 
 export interface AppSidebarProps {
   onAddAction?: () => void;
@@ -11,6 +12,22 @@ export interface AppSidebarProps {
 export function AppSidebar({ onAddAction }: AppSidebarProps) {
   return (
     <aside className="hidden md:flex w-72 flex-col p-4 space-y-2 shrink-0 overflow-y-auto gap-2">
+      <div className="flex items-center justify-between pb-4 border-b border-border/10 mb-4 px-0.5 animate-in fade-in slide-in-from-top-2 duration-700">
+        <div className="flex items-center gap-1.5">
+          <FullscreenToggle
+            size="icon"
+            className="size-8 rounded-lg hover:bg-muted/80 border-none text-muted-foreground/40 hover:text-foreground transition-all active:scale-90"
+          />
+        </div>
+        <Button
+          variant="ghost"
+          size="icon"
+          className="size-8 rounded-lg hover:bg-muted/80 border-none text-muted-foreground/40 hover:text-foreground transition-all active:scale-90"
+        >
+          <PanelLeftIcon className="size-5" />
+        </Button>
+      </div>
+
       {/* App & Profile Header */}
       <div className="flex items-center justify-between mb-6 px-0">
         <Button
@@ -36,13 +53,6 @@ export function AppSidebar({ onAddAction }: AppSidebarProps) {
             className="hidden md:flex items-center gap-1.5 h-8 rounded-md hover:bg-muted/50 border-none font-medium size-8 hover:text-foreground text-muted-foreground/60"
           >
             <BellIcon className="size-5" />
-          </Button>
-          <Button
-            variant="ghost"
-            size="icon"
-            className="hidden md:flex items-center gap-1.5 h-8 rounded-md hover:bg-muted/50 border-none font-medium size-8 hover:text-foreground text-muted-foreground/60"
-          >
-            <PanelLeftIcon className="size-5" />
           </Button>
         </div>
       </div>
@@ -77,10 +87,7 @@ export function AppSidebar({ onAddAction }: AppSidebarProps) {
                     cn(
                       "w-full flex items-center justify-between px-3 py-2 font-medium transition-none border-none rounded-lg group",
                       isActive
-                        ? cn(
-                            "bg-primary/10 text-primary shadow-none",
-                            isToday && "bg-primary/15"
-                          )
+                        ? cn("bg-primary/10 text-primary shadow-none", isToday && "bg-primary/15")
                         : cn(
                             "text-muted-foreground hover:bg-muted/60",
                             isToday && "text-foreground/80 font-bold"

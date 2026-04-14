@@ -13,7 +13,7 @@ export default function Promises() {
     setSubtitle("Commitments to others");
     setOnFabClick(() => openActionInput);
 
-    setHeaderActions(<HeaderMore />);
+    setHeaderActions({ right: <HeaderMore /> });
 
     return () => setHeaderActions(undefined);
   }, [setTitle, setSubtitle, setOnFabClick, setHeaderActions, openActionInput]);

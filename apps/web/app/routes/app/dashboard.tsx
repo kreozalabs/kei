@@ -1,12 +1,9 @@
 import { useEffect, useState } from "react";
 import { useOutletContext } from "react-router";
 import type { AppLayoutContext } from "@/components/layout/AppLayout";
-import { HeaderSearch, HeaderMore } from "@/components/layout/AppHeader";
+import { HeaderSearch, HeaderMore, HeaderNewAction } from "@/components/layout/AppHeader";
 import { initDb } from "@/db";
-import {
-  Alert,
-  AlertTitle,
-} from "@kreozalabs/ui";
+import { Alert, AlertTitle } from "@kreozalabs/ui";
 import { AlertCircleIcon, CheckCircle2Icon, HistoryIcon, DatabaseIcon } from "lucide-react";
 import { useCurrentDay } from "@/hooks/useCurrentDay";
 import { ActionInput } from "@/components/ActionInput";
@@ -27,15 +24,25 @@ export default function Dashboard() {
     setSubtitle(`${activeActions.length} ${activeActions.length === 1 ? "task" : "tasks"}`);
     setOnFabClick(() => openActionInput);
 
-    setHeaderActions(
-      <>
-        <HeaderSearch />
-        <HeaderMore />
-      </>
-    );
+    setHeaderActions({
+      center: <HeaderSearch />,
+      right: (
+        <>
+          <HeaderNewAction onClick={openActionInput} />
+          <HeaderMore />
+        </>
+      ),
+    });
 
     return () => setHeaderActions(undefined);
-  }, [activeActions.length, setTitle, setSubtitle, setOnFabClick, setHeaderActions, openActionInput]);
+  }, [
+    activeActions.length,
+    setTitle,
+    setSubtitle,
+    setOnFabClick,
+    setHeaderActions,
+    openActionInput,
+  ]);
 
   return (
     <>

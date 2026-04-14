@@ -10,7 +10,7 @@ import {
   DialogTitle,
 } from "@kreozalabs/ui";
 import { AppSidebar } from "./AppSidebar";
-import { AppHeader } from "./AppHeader";
+import { AppHeader, HeaderSearch, HeaderNewAction, HeaderMore } from "./AppHeader";
 import { MobileNav } from "./MobileNav";
 import { ErrorPage } from "../ErrorPage";
 import { ActionInput } from "../ActionInput";
@@ -19,7 +19,7 @@ export interface AppLayoutContext {
   setTitle: (title: string) => void;
   setSubtitle: (subtitle: string | undefined) => void;
   setOnFabClick: (fn: (() => void) | undefined) => void;
-  setHeaderActions: (actions: React.ReactNode | undefined) => void;
+  setHeaderActions: (actions: { center?: React.ReactNode; right?: React.ReactNode } | undefined) => void;
   openActionInput: () => void;
 }
 
@@ -30,7 +30,9 @@ export function AppLayout({ error }: { error?: unknown }) {
   const [onFabClick, setOnFabClick] = useState<(() => void) | undefined>(
     () => () => setIsActionInputOpen(true)
   );
-  const [headerActions, setHeaderActions] = useState<React.ReactNode | undefined>();
+  const [headerActions, setHeaderActions] = useState<
+    { center?: React.ReactNode; right?: React.ReactNode } | undefined
+  >();
 
   const openActionInput = useCallback(() => setIsActionInputOpen(true), []);
 
@@ -56,8 +58,23 @@ export function AppLayout({ error }: { error?: unknown }) {
         <AppHeader
           title={title}
           subtitle={subtitle}
-          onPrimaryAction={onFabClick}
-          headerActions={headerActions}
+          center={
+            headerActions?.center ?? (
+              <div className="hidden md:block">
+                <HeaderSearch />
+              </div>
+            )
+          }
+          right={
+            headerActions?.right ?? (
+              <div className="hidden md:flex items-center gap-8">
+                <HeaderNewAction onClick={openActionInput} />
+                <div className="hidden md:block">
+                  <HeaderMore />
+                </div>
+              </div>
+            )
+          }
         />
 
         {/* Scrollable Content */}
