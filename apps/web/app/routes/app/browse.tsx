@@ -76,7 +76,7 @@ export default function Browse() {
                             isActive ? "text-primary fill-primary/20" : "text-muted-foreground/60"
                           )}
                         />
-                        <span className="text-[16px]">{item.label}</span>
+                        <span className="text-base">{item.label}</span>
                         {item.count !== undefined && (
                           <span
                             className={cn(

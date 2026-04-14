@@ -4,3 +4,25 @@
 body {
   @apply bg-background text-foreground antialiased;
 }
+
+@media (max-width: 768px) {
+  :root {
+    --font-size-h1: 1.75rem;
+    --font-size-h2: 1.5rem;
+    --font-size-h3: 1.25rem;
+    --font-size-h4: 1.0625rem;
+    --font-size-h5: 0.9375rem;
+    --font-size-base: 0.8125rem; /* 13px */
+    --font-size-small: 0.6875rem; /* 11px */
+  }
+
+  @theme {
+    --text-3xl: 1.25rem;
+    --text-2xl: 1.125rem;
+    --text-xl: 1rem;
+    --text-lg: 0.875rem;
+    --text-base: var(--font-size-base);
+    --text-sm: 0.6875rem;
+    --text-xs: 0.625rem; /* 10px */
+  }
+}
