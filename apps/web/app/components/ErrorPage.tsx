@@ -1,4 +1,4 @@
-import { Link } from "react-router";
+import { Link, useNavigate } from "react-router";
 import { Button } from "@kreozalabs/ui";
 import { ChevronLeft, Home, AlertCircle } from "lucide-react";
 
@@ -18,6 +18,7 @@ export function ErrorPage({
   homeLabel = "Return Home",
 }: ErrorPageProps) {
   const is404 = status === 404;
+  const navigate = useNavigate();
 
   return (
     <div className="flex flex-col items-center justify-center min-h-[50vh] px-4 text-center animate-in fade-in slide-in-from-bottom-4 duration-700">
@@ -53,14 +54,12 @@ export function ErrorPage({
         </Button>
         <Button
           variant="ghost"
-          asChild
           size="lg"
           className="flex flex-row items-center gap-2 rounded-xl px-6 h-11 text-muted-foreground hover:text-foreground"
+          onClick={() => navigate(-1)}
         >
-          <Link to=".." relative="path">
-            <ChevronLeft className="size-4" />
-            <span>Go Back</span>
-          </Link>
+          <ChevronLeft className="size-4" />
+          <span>Go Back</span>
         </Button>
       </div>
     </div>
