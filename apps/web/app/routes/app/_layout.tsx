@@ -1,5 +1,5 @@
-import { Outlet } from "react-router";
+import { AppLayout } from "@/components/layout/AppLayout";
 
 export default function AppDashboardLayout() {
-  return <Outlet />;
+  return <AppLayout />;
 }

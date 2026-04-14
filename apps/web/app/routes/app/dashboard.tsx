@@ -1,4 +1,6 @@
 import { useEffect, useState } from "react";
+import { useOutletContext } from "react-router";
+import type { AppLayoutContext } from "@/components/layout/AppLayout";
 import { initDb } from "@/db";
 import {
   Alert,
@@ -13,23 +15,25 @@ import { AlertCircleIcon, CheckCircle2Icon, HistoryIcon, DatabaseIcon } from "lu
 import { useCurrentDay } from "@/hooks/useCurrentDay";
 import { ActionInput } from "@/components/ActionInput";
 import { ActionList } from "@/components/ActionList";
-import { AppLayout } from "@/components/AppLayout";
 
 export default function Dashboard() {
   const [isDbReady, setIsDbReady] = useState(false);
   const [isInputOpen, setIsInputOpen] = useState(false);
   const { activeActions, completedActions, isInRedZone, maxActions, isLoading } = useCurrentDay();
+  const { setTitle, setSubtitle, setOnFabClick } = useOutletContext<AppLayoutContext>();
 
   useEffect(() => {
     initDb().then(() => setIsDbReady(true));
   }, []);
 
+  useEffect(() => {
+    setTitle("Today");
+    setSubtitle(`${activeActions.length} ${activeActions.length === 1 ? "task" : "tasks"}`);
+    setOnFabClick(() => () => setIsInputOpen(true));
+  }, [activeActions.length, setTitle, setSubtitle, setOnFabClick]);
+
   return (
-    <AppLayout
-      title="Today"
-      subtitle={`${activeActions.length} ${activeActions.length === 1 ? "task" : "tasks"}`}
-      onFabClick={() => setIsInputOpen(true)}
-    >
+    <>
       {/* Red Zone Warning */}
       {isInRedZone && (
         <Alert
@@ -126,6 +130,6 @@ export default function Dashboard() {
           </Alert>
         </div>
       )}
-    </AppLayout>
+    </>
   );
 }
