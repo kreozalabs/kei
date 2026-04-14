@@ -5,6 +5,32 @@ body {
   @apply bg-background text-foreground antialiased;
 }
 
+/* Responsive Typography Variables */
+:root {
+  --text-3xl-val: 2.75rem;
+  --text-2xl-val: 2.25rem;
+  --text-xl-val: 1.75rem;
+  --text-lg-val: 1.5rem;
+  --text-sm-val: 1rem;
+  --text-xs-val: 0.875rem;
+  --font-size-base: 1.125rem; /* 18px for desktop body */
+  --font-size-small: 1rem; /* 16px for desktop small */
+  --font-size-h1: 4.5rem;
+  --font-size-h2: 3.5rem;
+  --font-size-h3: 2.5rem;
+  --font-size-h4: 2rem;
+  --font-size-h5: 1.75rem;
+}
+
+@theme {
+  --text-3xl: var(--text-3xl-val);
+  --text-2xl: var(--text-2xl-val);
+  --text-xl: var(--text-xl-val);
+  --text-lg: var(--text-lg-val);
+  --text-sm: var(--text-sm-val);
+  --text-xs: var(--text-xs-val);
+}
+
 @media (max-width: 768px) {
   :root {
     --font-size-h1: 1.75rem;
@@ -14,15 +40,13 @@ body {
     --font-size-h5: 0.9375rem;
     --font-size-base: 0.8125rem; /* 13px */
     --font-size-small: 0.6875rem; /* 11px */
-  }
 
-  @theme {
-    --text-3xl: 1.25rem;
-    --text-2xl: 1.125rem;
-    --text-xl: 1rem;
-    --text-lg: 0.875rem;
-    --text-base: var(--font-size-base);
-    --text-sm: 0.6875rem;
-    --text-xs: 0.625rem; /* 10px */
+    /* Map Tailwind sizes to smaller values on mobile */
+    --text-3xl-val: 1.25rem;
+    --text-2xl-val: 1.125rem;
+    --text-xl-val: 1rem;
+    --text-lg-val: 0.875rem;
+    --text-sm-val: 0.6875rem;
+    --text-xs-val: 0.625rem;
   }
 }
