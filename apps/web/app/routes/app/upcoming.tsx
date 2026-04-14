@@ -5,13 +5,13 @@ import { HeaderSearch, HeaderMore } from "@/components/layout/AppHeader";
 import { CalendarIcon } from "lucide-react";
 
 export default function Upcoming() {
-  const { setTitle, setSubtitle, setOnFabClick, setHeaderActions } =
+  const { setTitle, setSubtitle, setOnFabClick, setHeaderActions, openActionInput } =
     useOutletContext<AppLayoutContext>();
 
   useEffect(() => {
     setTitle("Upcoming");
     setSubtitle(undefined);
-    setOnFabClick(undefined);
+    setOnFabClick(() => openActionInput);
 
     setHeaderActions(
       <>
@@ -21,7 +21,7 @@ export default function Upcoming() {
     );
 
     return () => setHeaderActions(undefined);
-  }, [setTitle, setSubtitle, setOnFabClick, setHeaderActions]);
+  }, [setTitle, setSubtitle, setOnFabClick, setHeaderActions, openActionInput]);
 
   return (
     <div className="flex flex-col items-center justify-center p-20 border border-dashed rounded-4xl gap-4">

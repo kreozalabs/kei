@@ -4,7 +4,11 @@ import { Button, cn } from "@kreozalabs/ui";
 import { Logo as KreozaLogo } from "@kreozalabs/icons";
 import { navGroups } from "@/config/navigation";
 
-export function AppSidebar() {
+export interface AppSidebarProps {
+  onAddAction?: () => void;
+}
+
+export function AppSidebar({ onAddAction }: AppSidebarProps) {
   return (
     <aside className="hidden md:flex w-72 flex-col p-4 space-y-2 shrink-0 overflow-y-auto gap-2">
       {/* App & Profile Header */}
@@ -47,6 +51,7 @@ export function AppSidebar() {
       <div className="mb-4">
         <Button
           variant="ghost"
+          onClick={onAddAction}
           className="flex flex-row items-center transition-all hover:scale-[1.02] active:scale-[0.98] w-full justify-start text-primary hover:text-primary hover:bg-primary/5 gap-2.5 h-9 rounded-lg px-2"
         >
           <PlusIcon className="size-5 sm:size-6" />

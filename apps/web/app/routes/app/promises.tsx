@@ -5,18 +5,18 @@ import { HeaderMore } from "@/components/layout/AppHeader";
 import { HandshakeIcon } from "lucide-react";
 
 export default function Promises() {
-  const { setTitle, setSubtitle, setOnFabClick, setHeaderActions } =
+  const { setTitle, setSubtitle, setOnFabClick, setHeaderActions, openActionInput } =
     useOutletContext<AppLayoutContext>();
 
   useEffect(() => {
     setTitle("Promises");
     setSubtitle("Commitments to others");
-    setOnFabClick(undefined);
+    setOnFabClick(() => openActionInput);
 
     setHeaderActions(<HeaderMore />);
 
     return () => setHeaderActions(undefined);
-  }, [setTitle, setSubtitle, setOnFabClick, setHeaderActions]);
+  }, [setTitle, setSubtitle, setOnFabClick, setHeaderActions, openActionInput]);
 
   return (
     <div className="flex flex-col items-center justify-center p-20 border border-dashed rounded-4xl gap-4">

@@ -1,16 +1,11 @@
 import { useEffect, useState } from "react";
 import { useOutletContext } from "react-router";
 import type { AppLayoutContext } from "@/components/layout/AppLayout";
-import { HeaderSearch, HeaderNewAction, HeaderMore } from "@/components/layout/AppHeader";
+import { HeaderSearch, HeaderMore } from "@/components/layout/AppHeader";
 import { initDb } from "@/db";
 import {
   Alert,
   AlertTitle,
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
 } from "@kreozalabs/ui";
 import { AlertCircleIcon, CheckCircle2Icon, HistoryIcon, DatabaseIcon } from "lucide-react";
 import { useCurrentDay } from "@/hooks/useCurrentDay";
@@ -19,9 +14,8 @@ import { ActionList } from "@/components/ActionList";
 
 export default function Dashboard() {
   const [isDbReady, setIsDbReady] = useState(false);
-  const [isInputOpen, setIsInputOpen] = useState(false);
   const { activeActions, completedActions, isInRedZone, maxActions, isLoading } = useCurrentDay();
-  const { setTitle, setSubtitle, setOnFabClick, setHeaderActions } =
+  const { setTitle, setSubtitle, setOnFabClick, setHeaderActions, openActionInput } =
     useOutletContext<AppLayoutContext>();
 
   useEffect(() => {
@@ -31,18 +25,17 @@ export default function Dashboard() {
   useEffect(() => {
     setTitle("Today");
     setSubtitle(`${activeActions.length} ${activeActions.length === 1 ? "task" : "tasks"}`);
-    setOnFabClick(() => () => setIsInputOpen(true));
+    setOnFabClick(() => openActionInput);
 
     setHeaderActions(
       <>
         <HeaderSearch />
-        <HeaderNewAction onClick={() => setIsInputOpen(true)} />
         <HeaderMore />
       </>
     );
 
     return () => setHeaderActions(undefined);
-  }, [activeActions.length, setTitle, setSubtitle, setOnFabClick, setHeaderActions]);
+  }, [activeActions.length, setTitle, setSubtitle, setOnFabClick, setHeaderActions, openActionInput]);
 
   return (
     <>
@@ -62,23 +55,8 @@ export default function Dashboard() {
 
       {/* Desktop Input Section (Hidden on Mobile) */}
       <div className="hidden md:block mb-12">
-        <ActionInput />
+        <ActionInput onSuccess={() => {}} />
       </div>
-
-      {/* Mobile Input Dialog */}
-      <Dialog open={isInputOpen} onOpenChange={setIsInputOpen}>
-        <DialogContent className="sm:max-w-lg p-0 bg-background border-none shadow-2xl">
-          <DialogHeader className="px-6 pt-6">
-            <DialogTitle className="text-xl font-extrabold tracking-tight">New Action</DialogTitle>
-            <DialogDescription className="sr-only">
-              Capture your next high-impact move in the system.
-            </DialogDescription>
-          </DialogHeader>
-          <div className="p-6">
-            <ActionInput onSuccess={() => setIsInputOpen(false)} />
-          </div>
-        </DialogContent>
-      </Dialog>
 
       {/* Dashboard Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 sm:gap-16">

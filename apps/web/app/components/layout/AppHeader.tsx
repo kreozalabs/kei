@@ -4,11 +4,11 @@ import { Button } from "@kreozalabs/ui";
 export interface AppHeaderProps {
   title: string;
   subtitle?: string;
-  onFabClick?: () => void;
+  onPrimaryAction?: () => void;
   headerActions?: React.ReactNode;
 }
 
-export function AppHeader({ title, subtitle, headerActions }: AppHeaderProps) {
+export function AppHeader({ title, subtitle, headerActions, onPrimaryAction }: AppHeaderProps) {
   return (
     <header className="shrink-0 z-40 w-full h-14 md:h-12 flex items-center justify-between px-4 md:py-10 py-8 sm:px-8 md:px-6 sticky top-0 bg-background/95 backdrop-blur-xl border-b md:border-none">
       {/* Title */}
@@ -18,7 +18,10 @@ export function AppHeader({ title, subtitle, headerActions }: AppHeaderProps) {
       </div>
       <div className="flex items-center gap-1 md:gap-3 text-muted-foreground">
         {/* Actions Slot (Decentralized) */}
-        <div className="flex items-center gap-2">{headerActions}</div>
+        <div className="flex items-center gap-2">
+          {onPrimaryAction && <HeaderNewAction onClick={onPrimaryAction} />}
+          {headerActions}
+        </div>
       </div>
     </header>
   );

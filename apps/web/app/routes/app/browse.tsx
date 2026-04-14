@@ -7,13 +7,13 @@ import { cn, Button } from "@kreozalabs/ui";
 
 export default function Browse() {
   const navigate = useNavigate();
-  const { setTitle, setSubtitle, setOnFabClick, setHeaderActions } =
+  const { setTitle, setSubtitle, setOnFabClick, setHeaderActions, openActionInput } =
     useOutletContext<AppLayoutContext>();
 
   useEffect(() => {
     setTitle("Browse");
     setSubtitle("Navigate your entire setup and archives.");
-    setOnFabClick(undefined);
+    setOnFabClick(() => openActionInput);
 
     setHeaderActions(
       <>
@@ -38,7 +38,7 @@ export default function Browse() {
     );
 
     return () => setHeaderActions(undefined);
-  }, [setTitle, setSubtitle, setOnFabClick, setHeaderActions, navigate]);
+  }, [setTitle, setSubtitle, setOnFabClick, setHeaderActions, navigate, openActionInput]);
 
   return (
     <div className="flex flex-col space-y-8 pb-12 mt-4 w-full max-w-md mx-auto md:max-w-none">

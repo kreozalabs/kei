@@ -5,13 +5,13 @@ import { HeaderSearch, HeaderMore } from "@/components/layout/AppHeader";
 import { InboxIcon } from "lucide-react";
 
 export default function Inbox() {
-  const { setTitle, setSubtitle, setOnFabClick, setHeaderActions } =
+  const { setTitle, setSubtitle, setOnFabClick, setHeaderActions, openActionInput } =
     useOutletContext<AppLayoutContext>();
 
   useEffect(() => {
     setTitle("Inbox");
     setSubtitle("Capture everything");
-    setOnFabClick(undefined);
+    setOnFabClick(() => openActionInput);
 
     setHeaderActions(
       <>
@@ -21,7 +21,7 @@ export default function Inbox() {
     );
 
     return () => setHeaderActions(undefined);
-  }, [setTitle, setSubtitle, setOnFabClick, setHeaderActions]);
+  }, [setTitle, setSubtitle, setOnFabClick, setHeaderActions, openActionInput]);
 
   return (
     <div className="flex flex-col items-center justify-center p-20 border border-dashed rounded-4xl gap-4">
