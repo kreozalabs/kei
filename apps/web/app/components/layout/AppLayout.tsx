@@ -38,31 +38,30 @@ export function AppLayout({ error }: { error?: unknown }) {
 
         {/* Scrollable Content */}
         <div className="flex-1 overflow-y-auto pb-24 md:pb-12">
-          <div className="container mx-auto max-w-3xl px-4 sm:px-8 md:px-12 pt-4 md:pt-10">
-            {/* Desktop Full Title (Todoist Style) */}
-            <div className="hidden md:flex md:flex-col mb-8">
-              <h1 className="text-3xl font-bold tracking-tight">{title}</h1>
-            </div>
+          <div className="w-full px-4 sm:px-8 md:px-12 pt-4 md:pt-10">
 
-            {error ? (
-              <ErrorPage
-                status={isRouteErrorResponse(error) ? error.status : 500}
-                title={isRouteErrorResponse(error) ? error.statusText : "App Error"}
-                message={
-                  isRouteErrorResponse(error)
-                    ? error.status === 404
-                      ? "The requested page was not found."
-                      : "Something went wrong in the app."
-                    : error instanceof Error
-                      ? error.message
-                      : "An unexpected error occurred."
-                }
-                homeLink="/app"
-                homeLabel="Return to Dashboard"
-              />
-            ) : (
-              <Outlet context={contextValue} />
-            )}
+
+            <div className="max-w-3xl mx-auto">
+              {error ? (
+                <ErrorPage
+                  status={isRouteErrorResponse(error) ? error.status : 500}
+                  title={isRouteErrorResponse(error) ? error.statusText : "App Error"}
+                  message={
+                    isRouteErrorResponse(error)
+                      ? error.status === 404
+                        ? "The requested page was not found."
+                        : "Something went wrong in the app."
+                      : error instanceof Error
+                        ? error.message
+                        : "An unexpected error occurred."
+                  }
+                  homeLink="/app"
+                  homeLabel="Return to Dashboard"
+                />
+              ) : (
+                <Outlet context={contextValue} />
+              )}
+            </div>
           </div>
         </div>
 

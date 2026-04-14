@@ -1,9 +1,9 @@
-import { 
-  PlusIcon, 
-  SearchIcon, 
-  PanelLeftIcon, 
-  MessageSquareIcon, 
-  MoreVerticalIcon 
+import {
+  PlusIcon,
+  SearchIcon,
+  PanelLeftIcon,
+  MessageSquareIcon,
+  MoreVerticalIcon,
 } from "lucide-react";
 import { Button } from "@kreozalabs/ui";
 
@@ -16,25 +16,20 @@ interface AppHeaderProps {
 export function AppHeader({ title, subtitle, onFabClick }: AppHeaderProps) {
   return (
     <header className="shrink-0 z-40 w-full h-14 md:h-12 flex items-center justify-between px-4 md:py-10 py-8 sm:px-8 md:px-6 sticky top-0 bg-background/95 backdrop-blur-xl border-b md:border-none">
-      {/* Mobile Title */}
-      <div className="flex flex-col md:hidden">
+      {/* Title */}
+      <div className="flex flex-col md:m-10">
         <h1 className="text-xl font-bold tracking-tight">{title}</h1>
-        {subtitle && (
-          <span className="text-xs text-muted-foreground font-medium">{subtitle}</span>
-        )}
+        {subtitle && <span className="text-xs text-muted-foreground font-medium">{subtitle}</span>}
       </div>
-      <div className="hidden md:block" /> {/* Spacer for flex-between */}
       <div className="flex items-center gap-1 md:gap-3 text-muted-foreground">
         {/* Top Right Actions */}
-        <div className="px-20">
-          <Button
-            variant="ghost"
-            size="sm"
-            className="hidden md:flex items-center gap-2 h-8 rounded-md hover:bg-muted/50 border-none font-medium"
-          >
-            <SearchIcon className="size-4" /> Ctrl+K
-          </Button>
-        </div>
+        <Button
+          variant="ghost"
+          size="sm"
+          className="hidden md:flex items-center gap-2 h-8 rounded-md hover:bg-muted/50 border-none font-medium"
+        >
+          <SearchIcon className="size-4" /> Ctrl+K
+        </Button>
 
         <Button
           variant="default"
