@@ -2,18 +2,18 @@ import { useEffect } from "react";
 import { useOutletContext, NavLink, useNavigate } from "react-router";
 import type { AppLayoutContext } from "@/components/layout/AppLayout";
 import { navGroups } from "@/config/navigation";
-import { SettingsIcon, LogOutIcon, SearchIcon, BellIcon } from "lucide-react";
+import { SettingsIcon, SearchIcon, BellIcon } from "lucide-react";
 import { cn, Button } from "@kreozalabs/ui";
 
 export default function Browse() {
   const navigate = useNavigate();
-  const { setTitle, setSubtitle, setOnFabClick, setHeaderActions, openActionInput } =
+  const { setTitle, setSubtitle, setOnFabClick, setHeaderActions } =
     useOutletContext<AppLayoutContext>();
 
   useEffect(() => {
     setTitle("Browse");
     setSubtitle("Navigate your entire setup and archives.");
-    setOnFabClick(() => openActionInput);
+    setOnFabClick(undefined);
 
     setHeaderActions(
       <>
@@ -38,7 +38,7 @@ export default function Browse() {
     );
 
     return () => setHeaderActions(undefined);
-  }, [setTitle, setSubtitle, setOnFabClick, setHeaderActions, navigate, openActionInput]);
+  }, [setTitle, setSubtitle, setOnFabClick, setHeaderActions, navigate]);
 
   return (
     <div className="flex flex-col space-y-8 pb-12 mt-4 w-full max-w-md mx-auto md:max-w-none">
@@ -95,38 +95,6 @@ export default function Browse() {
             </div>
           );
         })}
-
-        {/* System & Account Group */}
-        <div className="flex flex-col space-y-3 mt-4 pt-8 border-t">
-          <h4 className="text-xs font-bold uppercase tracking-wider text-muted-foreground/60 px-4">
-            System
-          </h4>
-          <div className="flex flex-col space-y-2">
-            <NavLink
-              to="/app/settings"
-              className={({ isActive }) =>
-                cn(
-                  "flex items-center gap-4 px-4 py-3.5 rounded-2xl transition-all duration-200 font-medium",
-                  isActive
-                    ? "bg-primary/10 text-primary"
-                    : "text-foreground/80 hover:bg-muted/80 active:bg-muted"
-                )
-              }
-            >
-              <SettingsIcon className="size-5 text-muted-foreground/60" />
-              <span className="text-[16px]">Settings</span>
-            </NavLink>
-
-            <Button
-              variant="ghost"
-              onClick={() => console.log("Log out")}
-              className="flex w-full justify-start items-center gap-4 px-4 py-6 rounded-2xl transition-all duration-200 font-medium text-destructive/80 hover:text-destructive hover:bg-destructive/10 active:bg-destructive/20 h-auto"
-            >
-              <LogOutIcon className="size-5" />
-              <span className="text-[16px]">Log out</span>
-            </Button>
-          </div>
-        </div>
       </div>
 
       {/* Desktop Message Placeholder */}
