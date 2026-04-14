@@ -44,22 +44,22 @@ export function ErrorPage({
         <Button
           asChild
           size="lg"
-          className="rounded-xl px-8 h-11 bg-primary text-primary-foreground shadow-sm hover:shadow-md transition-all active:scale-[0.98]"
+          className="flex flex-row items-center gap-2 rounded-xl px-8 h-11 bg-primary text-primary-foreground shadow-sm hover:shadow-md transition-all active:scale-[0.98]"
         >
           <Link to={homeLink}>
-            <Home className="mr-2 size-4" />
-            {homeLabel}
+            <Home className="size-4" />
+            <span>{homeLabel}</span>
           </Link>
         </Button>
         <Button
           variant="ghost"
           asChild
           size="lg"
-          className="rounded-xl px-6 h-11 text-muted-foreground hover:text-foreground"
+          className="flex flex-row items-center gap-2 rounded-xl px-6 h-11 text-muted-foreground hover:text-foreground"
         >
           <Link to=".." relative="path">
-            <ChevronLeft className="mr-2 size-4" />
-            Go Back
+            <ChevronLeft className="size-4" />
+            <span>Go Back</span>
           </Link>
         </Button>
       </div>
