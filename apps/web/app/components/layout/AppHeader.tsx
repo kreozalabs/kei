@@ -1,10 +1,4 @@
-import {
-  PlusIcon,
-  SearchIcon,
-  PanelLeftIcon,
-  MessageSquareIcon,
-  MoreVerticalIcon,
-} from "lucide-react";
+import { PlusIcon, SearchIcon, MoreVerticalIcon } from "lucide-react";
 import { Button } from "@kreozalabs/ui";
 
 export interface AppHeaderProps {
@@ -24,9 +18,7 @@ export function AppHeader({ title, subtitle, headerActions }: AppHeaderProps) {
       </div>
       <div className="flex items-center gap-1 md:gap-3 text-muted-foreground">
         {/* Actions Slot (Decentralized) */}
-        <div className="flex items-center gap-2">
-          {headerActions}
-        </div>
+        <div className="flex items-center gap-2">{headerActions}</div>
       </div>
     </header>
   );
@@ -77,4 +69,3 @@ export function HeaderMore({ onClick }: { onClick?: () => void }) {
     </Button>
   );
 }
-

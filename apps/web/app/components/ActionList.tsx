@@ -14,6 +14,7 @@ export function ActionList({ actions, type }: ActionListProps) {
   const queryClient = useQueryClient();
 
   const handleComplete = async (action: Action) => {
+    // eslint-disable-next-line react-hooks/purity
     const now = Date.now();
     try {
       const event = {
@@ -33,6 +34,7 @@ export function ActionList({ actions, type }: ActionListProps) {
   };
 
   const handleAbandon = async (action: Action) => {
+    // eslint-disable-next-line react-hooks/purity
     const now = Date.now();
     try {
       const event = {
@@ -79,13 +81,15 @@ export function ActionList({ actions, type }: ActionListProps) {
 
           <div className="flex items-center gap-5 flex-1 z-10">
             {type === "active" ? (
-              <button 
+              <Button 
+                variant="ghost"
+                size="icon"
                 onClick={() => handleComplete(action)}
                 className="text-muted-foreground/40 hover:text-primary transition-all hover:scale-110 active:scale-90"
                 title="Mark as completed"
               >
                 <CircleIcon className="size-7 stroke-[1.5]" />
-              </button>
+              </Button>
             ) : (
               <div className="bg-primary/10 p-1.5 rounded-full">
                 <CheckCircle2Icon className="size-5 text-primary" />
