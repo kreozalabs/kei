@@ -1,5 +1,6 @@
 import { PlusIcon, SearchIcon, MoreVerticalIcon } from "lucide-react";
 import { Button } from "@kreozalabs/ui";
+import { FullscreenToggle } from "../FullscreenToggle";
 
 export interface AppHeaderProps {
   title: string;
@@ -21,6 +22,9 @@ export function AppHeader({ title, subtitle, headerActions, onPrimaryAction }: A
         <div className="flex items-center gap-2">
           {onPrimaryAction && <HeaderNewAction onClick={onPrimaryAction} />}
           {headerActions}
+          <div className="hidden md:flex">
+            <HeaderFullscreen />
+          </div>
         </div>
       </div>
     </header>
@@ -71,4 +75,8 @@ export function HeaderMore({ onClick }: { onClick?: () => void }) {
       <MoreVerticalIcon className="size-4" />
     </Button>
   );
+}
+
+export function HeaderFullscreen() {
+  return <FullscreenToggle />;
 }
