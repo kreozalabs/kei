@@ -41,6 +41,7 @@ export function MobileDrawer({ open, onOpenChange }: MobileDrawerProps) {
                   <NavLink
                     key={item.id}
                     to={item.href}
+                    end={item.href === "/app"}
                     onClick={() => onOpenChange(false)}
                     className={({ isActive }) =>
                       cn(

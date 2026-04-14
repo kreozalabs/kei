@@ -27,6 +27,14 @@ export const navGroups: NavGroup[] = [
     label: "Core",
     items: [
       {
+        id: "inbox",
+        label: "Inbox",
+        icon: InboxIcon,
+        href: "/app/inbox",
+        count: 5,
+        mobileVisible: false,
+      },
+      {
         id: "today",
         label: "Today",
         icon: CalendarDaysIcon,
@@ -41,15 +49,7 @@ export const navGroups: NavGroup[] = [
         href: "/app/upcoming",
         mobileVisible: true,
       },
-      {
-        id: "inbox",
-        label: "Inbox",
-        icon: InboxIcon,
-        href: "/app/inbox",
-        count: 5,
-        mobileVisible: false,
-      },
-    ]
+    ],
   },
   {
     label: "Reflection",
@@ -68,12 +68,12 @@ export const navGroups: NavGroup[] = [
         href: "/app/promises",
         mobileVisible: false,
       },
-    ]
+    ],
   },
 ];
 
 export const navItems: NavItem[] = [
-  ...navGroups.flatMap(group => group.items),
+  ...navGroups.flatMap((group) => group.items),
   {
     id: "browse",
     label: "Browse",
@@ -82,4 +82,3 @@ export const navItems: NavItem[] = [
     mobileVisible: true,
   },
 ];
-

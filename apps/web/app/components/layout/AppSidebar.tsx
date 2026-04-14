@@ -6,7 +6,7 @@ import { navGroups } from "@/config/navigation";
 
 export function AppSidebar() {
   return (
-    <aside className="hidden md:flex w-72 flex-col p-4 space-y-2 shrink-0 overflow-y-auto">
+    <aside className="hidden md:flex w-72 flex-col p-4 space-y-2 shrink-0 overflow-y-auto gap-2">
       {/* App & Profile Header */}
       <div className="flex items-center justify-between mb-6 px-0">
         <Button
@@ -54,16 +54,17 @@ export function AppSidebar() {
         </Button>
       </div>
 
-      <div className="flex flex-col space-y-6 flex-1">
+      <div className="flex flex-col space-y-6 flex-1 gap-2.5">
         {navGroups.map((group) => (
           <div key={group.label} className="flex flex-col space-y-1">
-            <h4 className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground/50 px-3 mb-1">
+            <h4 className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground/50 px-3 mb-3">
               {group.label}
             </h4>
             {group.items.map((item) => (
               <NavLink
                 key={item.id}
                 to={item.href}
+                end={item.href === "/app"}
                 draggable={false}
                 className={({ isActive }) =>
                   cn(

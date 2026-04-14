@@ -37,6 +37,7 @@ export function MobileNav({ onBrowseClick, isDrawerOpen }: MobileNavProps) {
           <NavLink
             key={item.id}
             to={item.href}
+            end={item.href === "/app"}
             draggable={false}
             className={({ isActive }) =>
               cn(
