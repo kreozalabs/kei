@@ -14,6 +14,7 @@ export default [
     route("inbox", "routes/app/inbox.tsx"),
     route("me", "routes/app/me.tsx"),
     route("promises", "routes/app/promises.tsx"),
+    route("browse", "routes/app/browse.tsx"),
     route("*", "routes/app/not-found.tsx"),
   ]),
 

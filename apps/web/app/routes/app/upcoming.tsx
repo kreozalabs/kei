@@ -1,16 +1,27 @@
 import { useEffect } from "react";
 import { useOutletContext } from "react-router";
 import type { AppLayoutContext } from "@/components/layout/AppLayout";
+import { HeaderSearch, HeaderMore } from "@/components/layout/AppHeader";
 import { CalendarIcon } from "lucide-react";
 
 export default function Upcoming() {
-  const { setTitle, setSubtitle, setOnFabClick } = useOutletContext<AppLayoutContext>();
+  const { setTitle, setSubtitle, setOnFabClick, setHeaderActions } =
+    useOutletContext<AppLayoutContext>();
 
   useEffect(() => {
     setTitle("Upcoming");
     setSubtitle(undefined);
     setOnFabClick(undefined);
-  }, [setTitle, setSubtitle, setOnFabClick]);
+
+    setHeaderActions(
+      <>
+        <HeaderSearch />
+        <HeaderMore />
+      </>
+    );
+
+    return () => setHeaderActions(undefined);
+  }, [setTitle, setSubtitle, setOnFabClick, setHeaderActions]);
 
   return (
     <div className="flex flex-col items-center justify-center p-20 border border-dashed rounded-4xl gap-4">

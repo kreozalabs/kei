@@ -5,25 +5,26 @@ import { Button } from "@kreozalabs/ui";
 import { AppSidebar } from "./AppSidebar";
 import { AppHeader } from "./AppHeader";
 import { MobileNav } from "./MobileNav";
-import { MobileDrawer } from "./MobileDrawer";
 import { ErrorPage } from "../ErrorPage";
 
 export interface AppLayoutContext {
   setTitle: (title: string) => void;
   setSubtitle: (subtitle: string | undefined) => void;
   setOnFabClick: (fn: (() => void) | undefined) => void;
+  setHeaderActions: (actions: React.ReactNode | undefined) => void;
 }
 
 export function AppLayout({ error }: { error?: unknown }) {
   const [title, setTitle] = useState("Dashboard");
   const [subtitle, setSubtitle] = useState<string | undefined>();
   const [onFabClick, setOnFabClick] = useState<(() => void) | undefined>();
-  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+  const [headerActions, setHeaderActions] = useState<React.ReactNode | undefined>();
 
   const contextValue: AppLayoutContext = {
     setTitle,
     setSubtitle,
     setOnFabClick,
+    setHeaderActions,
   };
 
   return (
@@ -34,7 +35,12 @@ export function AppLayout({ error }: { error?: unknown }) {
       {/* Main Content Area */}
       <main className="flex-1 flex flex-col min-w-0 relative overflow-hidden bg-background">
         {/* Header */}
-        <AppHeader title={title} subtitle={subtitle} onFabClick={onFabClick} />
+        <AppHeader
+          title={title}
+          subtitle={subtitle}
+          onFabClick={onFabClick}
+          headerActions={headerActions}
+        />
 
         {/* Scrollable Content */}
         <div className="flex-1 overflow-y-auto pb-24 md:pb-12">
@@ -75,9 +81,7 @@ export function AppLayout({ error }: { error?: unknown }) {
         </Button>
 
         {/* Mobile Bottom Navigation */}
-        <MobileNav isDrawerOpen={isDrawerOpen} onBrowseClick={() => setIsDrawerOpen(true)} />
-
-        <MobileDrawer open={isDrawerOpen} onOpenChange={setIsDrawerOpen} />
+        <MobileNav />
       </main>
     </div>
   );

@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useOutletContext } from "react-router";
 import type { AppLayoutContext } from "@/components/layout/AppLayout";
+import { HeaderSearch, HeaderNewAction, HeaderMore } from "@/components/layout/AppHeader";
 import { initDb } from "@/db";
 import {
   Alert,
@@ -20,7 +21,8 @@ export default function Dashboard() {
   const [isDbReady, setIsDbReady] = useState(false);
   const [isInputOpen, setIsInputOpen] = useState(false);
   const { activeActions, completedActions, isInRedZone, maxActions, isLoading } = useCurrentDay();
-  const { setTitle, setSubtitle, setOnFabClick } = useOutletContext<AppLayoutContext>();
+  const { setTitle, setSubtitle, setOnFabClick, setHeaderActions } =
+    useOutletContext<AppLayoutContext>();
 
   useEffect(() => {
     initDb().then(() => setIsDbReady(true));
@@ -30,7 +32,17 @@ export default function Dashboard() {
     setTitle("Today");
     setSubtitle(`${activeActions.length} ${activeActions.length === 1 ? "task" : "tasks"}`);
     setOnFabClick(() => () => setIsInputOpen(true));
-  }, [activeActions.length, setTitle, setSubtitle, setOnFabClick]);
+
+    setHeaderActions(
+      <>
+        <HeaderSearch />
+        <HeaderNewAction onClick={() => setIsInputOpen(true)} />
+        <HeaderMore />
+      </>
+    );
+
+    return () => setHeaderActions(undefined);
+  }, [activeActions.length, setTitle, setSubtitle, setOnFabClick, setHeaderActions]);
 
   return (
     <>
