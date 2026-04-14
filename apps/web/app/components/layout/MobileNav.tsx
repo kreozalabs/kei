@@ -33,6 +33,7 @@ export function MobileNav({ onBrowseClick, isDrawerOpen }: MobileNavProps) {
           );
         }
 
+        const isToday = item.id === "today";
         return (
           <NavLink
             key={item.id}
@@ -42,18 +43,38 @@ export function MobileNav({ onBrowseClick, isDrawerOpen }: MobileNavProps) {
             className={({ isActive }) =>
               cn(
                 "flex flex-col items-center justify-center gap-1 min-w-16 h-16 transition-all border-none rounded-xl",
-                isActive ? "text-primary bg-primary/2" : "text-muted-foreground/80"
+                isActive
+                  ? "text-primary bg-primary/2"
+                  : isToday
+                    ? "text-foreground/80 bg-primary/2"
+                    : "text-muted-foreground/80"
               )
             }
           >
             {({ isActive }) => (
               <>
                 <div
-                  className={cn("p-1.5 rounded-full transition-all", isActive && "bg-primary/10")}
+                  className={cn(
+                    "p-1.5 rounded-full transition-all",
+                    isActive ? "bg-primary/10" : isToday ? "bg-primary/5" : ""
+                  )}
                 >
-                  <item.icon className={cn("size-6", isActive && "fill-primary/20")} />
+                  <item.icon
+                    className={cn(
+                      "size-6",
+                      isActive || isToday ? "text-primary" : "",
+                      isActive ? "fill-primary/20" : isToday ? "opacity-60" : ""
+                    )}
+                  />
                 </div>
-                <span className="text-[10px] font-bold tracking-tight uppercase">{item.label}</span>
+                <span
+                  className={cn(
+                    "text-[10px] font-bold tracking-tight uppercase",
+                    isToday && !isActive && "text-primary/60"
+                  )}
+                >
+                  {item.label}
+                </span>
               </>
             )}
           </NavLink>

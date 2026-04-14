@@ -60,41 +60,57 @@ export function AppSidebar() {
             <h4 className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground/50 px-3 mb-3">
               {group.label}
             </h4>
-            {group.items.map((item) => (
-              <NavLink
-                key={item.id}
-                to={item.href}
-                end={item.href === "/app"}
-                draggable={false}
-                className={({ isActive }) =>
-                  cn(
-                    "w-full flex items-center justify-between px-3 py-2 font-medium transition-none border-none rounded-lg",
-                    isActive
-                      ? "bg-primary/10 text-primary shadow-none"
-                      : "text-muted-foreground hover:bg-muted/60"
-                  )
-                }
-              >
-                {({ isActive }) => (
-                  <>
-                    <div className="flex items-center gap-2.5">
-                      <item.icon className={cn("size-4.5", isActive && "text-primary")} />
-                      <span className="tracking-tight text-sm">{item.label}</span>
-                    </div>
-                    {item.count !== undefined && (
-                      <span
-                        className={cn(
-                          "text-[11px] font-bold tabular-nums",
-                          isActive ? "text-primary/70" : "text-muted-foreground/50"
-                        )}
-                      >
-                        {item.count}
-                      </span>
-                    )}
-                  </>
-                )}
-              </NavLink>
-            ))}
+            {group.items.map((item) => {
+              const isToday = item.id === "today";
+              return (
+                <NavLink
+                  key={item.id}
+                  to={item.href}
+                  end={item.href === "/app"}
+                  draggable={false}
+                  className={({ isActive }) =>
+                    cn(
+                      "w-full flex items-center justify-between px-3 py-2 font-medium transition-none border-none rounded-lg group",
+                      isActive
+                        ? cn(
+                            "bg-primary/10 text-primary shadow-none",
+                            isToday && "bg-primary/15"
+                          )
+                        : cn(
+                            "text-muted-foreground hover:bg-muted/60",
+                            isToday && "text-foreground/80 font-bold"
+                          )
+                    )
+                  }
+                >
+                  {({ isActive }) => (
+                    <>
+                      <div className="flex items-center gap-2.5">
+                        <item.icon
+                          className={cn(
+                            "size-4.5",
+                            isActive || isToday ? "text-primary" : "text-muted-foreground/70",
+                            isToday && !isActive && "opacity-60"
+                          )}
+                        />
+                        <span className="tracking-tight text-sm">{item.label}</span>
+                      </div>
+                      {item.count !== undefined && (
+                        <span
+                          className={cn(
+                            "text-[11px] font-bold tabular-nums",
+                            isActive ? "text-primary/70" : "text-muted-foreground/50",
+                            isToday && !isActive && "text-primary/40"
+                          )}
+                        >
+                          {item.count}
+                        </span>
+                      )}
+                    </>
+                  )}
+                </NavLink>
+              );
+            })}
           </div>
         ))}
       </div>

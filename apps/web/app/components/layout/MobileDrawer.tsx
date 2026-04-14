@@ -37,41 +37,50 @@ export function MobileDrawer({ open, onOpenChange }: MobileDrawerProps) {
                 {group.label}
               </h4>
               <div className="flex flex-col space-y-1">
-                {group.items.map((item) => (
-                  <NavLink
-                    key={item.id}
-                    to={item.href}
-                    end={item.href === "/app"}
-                    onClick={() => onOpenChange(false)}
-                    className={({ isActive }) =>
-                      cn(
-                        "flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-200 font-medium",
-                        isActive
-                          ? "bg-primary/10 text-primary"
-                          : "text-foreground/80 hover:bg-muted/80 active:bg-muted"
-                      )
-                    }
-                  >
-                    {({ isActive }) => (
-                      <>
-                        <item.icon
-                          className={cn("size-5", isActive && "text-primary fill-primary/20")}
-                        />
-                        <span className="text-[15px]">{item.label}</span>
-                        {item.count !== undefined && (
-                          <span
+                {group.items.map((item) => {
+                  const isToday = item.id === "today";
+                  return (
+                    <NavLink
+                      key={item.id}
+                      to={item.href}
+                      end={item.href === "/app"}
+                      onClick={() => onOpenChange(false)}
+                      className={({ isActive }) =>
+                        cn(
+                          "flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-200 font-medium",
+                          isActive
+                            ? "bg-primary/10 text-primary"
+                            : isToday
+                              ? "text-foreground font-bold bg-primary/5"
+                              : "text-foreground/80 hover:bg-muted/80 active:bg-muted"
+                        )
+                      }
+                    >
+                      {({ isActive }) => (
+                        <>
+                          <item.icon
                             className={cn(
-                              "ml-auto text-xs font-bold tabular-nums bg-background/50 px-2 rounded-full",
-                              isActive ? "text-primary/70" : "text-muted-foreground/60"
+                              "size-5",
+                              isActive || isToday ? "text-primary" : "text-muted-foreground/60",
+                              isActive ? "fill-primary/20" : isToday ? "opacity-60" : ""
                             )}
-                          >
-                            {item.count}
-                          </span>
-                        )}
-                      </>
-                    )}
-                  </NavLink>
-                ))}
+                          />
+                          <span className="text-[15px]">{item.label}</span>
+                          {item.count !== undefined && (
+                            <span
+                              className={cn(
+                                "ml-auto text-xs font-bold tabular-nums bg-background/50 px-2 rounded-full",
+                                isActive ? "text-primary/70" : "text-muted-foreground/60"
+                              )}
+                            >
+                              {item.count}
+                            </span>
+                          )}
+                        </>
+                      )}
+                    </NavLink>
+                  );
+                })}
               </div>
             </div>
           ))}
