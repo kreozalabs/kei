@@ -17,44 +17,63 @@ export interface NavItem {
   mobileVisible?: boolean;
 }
 
+export interface NavGroup {
+  label: string;
+  items: NavItem[];
+}
+
+export const navGroups: NavGroup[] = [
+  {
+    label: "Core",
+    items: [
+      {
+        id: "today",
+        label: "Today",
+        icon: CalendarDaysIcon,
+        href: "/app",
+        count: 6,
+        mobileVisible: true,
+      },
+      {
+        id: "upcoming",
+        label: "Upcoming",
+        icon: CalendarIcon,
+        href: "/app/upcoming",
+        mobileVisible: true,
+      },
+      {
+        id: "inbox",
+        label: "Inbox",
+        icon: InboxIcon,
+        href: "/app/inbox",
+        count: 5,
+        mobileVisible: false,
+      },
+    ]
+  },
+  {
+    label: "Reflection",
+    items: [
+      {
+        id: "me",
+        label: "Me",
+        icon: PersonStandingIcon,
+        href: "/app/me",
+        mobileVisible: true,
+      },
+      {
+        id: "promises",
+        label: "Promises",
+        icon: HandshakeIcon,
+        href: "/app/promises",
+        mobileVisible: false,
+      },
+    ]
+  },
+];
+
 export const navItems: NavItem[] = [
-  {
-    id: "inbox",
-    label: "Inbox",
-    icon: InboxIcon,
-    href: "/app/inbox",
-    count: 5,
-    mobileVisible: true,
-  },
-  {
-    id: "today",
-    label: "Today",
-    icon: CalendarDaysIcon,
-    href: "/app",
-    count: 6,
-    mobileVisible: true,
-  },
-  {
-    id: "upcoming",
-    label: "Upcoming",
-    icon: CalendarIcon,
-    href: "/app/upcoming",
-    mobileVisible: true,
-  },
-  {
-    id: "me",
-    label: "Me",
-    icon: PersonStandingIcon,
-    href: "/app/me",
-    mobileVisible: false,
-  },
-  {
-    id: "promises",
-    label: "Promises",
-    icon: HandshakeIcon,
-    href: "/app/promises",
-    mobileVisible: false,
-  },
+  ...navGroups.flatMap(group => group.items),
   {
     id: "browse",
     label: "Browse",
@@ -63,3 +82,4 @@ export const navItems: NavItem[] = [
     mobileVisible: true,
   },
 ];
+

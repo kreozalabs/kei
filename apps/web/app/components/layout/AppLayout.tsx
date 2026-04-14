@@ -1,10 +1,11 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { Outlet } from "react-router";
 import { PlusIcon } from "lucide-react";
 import { Button } from "@kreozalabs/ui";
 import { AppSidebar } from "./AppSidebar";
 import { AppHeader } from "./AppHeader";
 import { MobileNav } from "./MobileNav";
+import { MobileDrawer } from "./MobileDrawer";
 
 export interface AppLayoutContext {
   setTitle: (title: string) => void;
@@ -16,6 +17,7 @@ export function AppLayout() {
   const [title, setTitle] = useState("Dashboard");
   const [subtitle, setSubtitle] = useState<string | undefined>();
   const [onFabClick, setOnFabClick] = useState<(() => void) | undefined>();
+  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
 
   const contextValue: AppLayoutContext = {
     setTitle,
@@ -31,15 +33,11 @@ export function AppLayout() {
       {/* Main Content Area */}
       <main className="flex-1 flex flex-col min-w-0 relative overflow-hidden bg-background">
         {/* Header */}
-        <AppHeader 
-          title={title} 
-          subtitle={subtitle} 
-          onFabClick={onFabClick} 
-        />
+        <AppHeader title={title} subtitle={subtitle} onFabClick={onFabClick} />
 
         {/* Scrollable Content */}
         <div className="flex-1 overflow-y-auto pb-24 md:pb-12">
-          <div className="container mx-auto max-w-200 px-4 sm:px-8 md:px-12 pt-4 md:pt-10">
+          <div className="container mx-auto max-w-3xl px-4 sm:px-8 md:px-12 pt-4 md:pt-10">
             {/* Desktop Full Title (Todoist Style) */}
             <div className="hidden md:flex md:flex-col mb-8">
               <h1 className="text-3xl font-bold tracking-tight">{title}</h1>
@@ -59,7 +57,9 @@ export function AppLayout() {
         </Button>
 
         {/* Mobile Bottom Navigation */}
-        <MobileNav />
+        <MobileNav isDrawerOpen={isDrawerOpen} onBrowseClick={() => setIsDrawerOpen(true)} />
+
+        <MobileDrawer open={isDrawerOpen} onOpenChange={setIsDrawerOpen} />
       </main>
     </div>
   );
