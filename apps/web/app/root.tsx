@@ -4,11 +4,14 @@ import {
   Outlet,
   Scripts,
   ScrollRestoration,
+  isRouteErrorResponse,
+  useRouteError,
 } from "react-router";
 
 import "./index.css";
 import { QueryProvider } from "./providers/QueryProvider";
 import { ThemeProvider } from "./providers/ThemeProvider";
+import { ErrorPage } from "./components/ErrorPage";
 
 export function Layout({ children }: { children: React.ReactNode }) {
   return (
@@ -39,4 +42,21 @@ export default function App() {
       <Outlet />
     </QueryProvider>
   );
+}
+
+export function ErrorBoundary() {
+  const error = useRouteError();
+
+  if (isRouteErrorResponse(error)) {
+    return (
+      <ErrorPage
+        status={error.status}
+        title={error.statusText}
+        message={error.status === 404 ? "The page you are looking for doesn't exist or has been moved." : undefined}
+      />
+    );
+  }
+
+  const errorMessage = error instanceof Error ? error.message : "An unexpected error occurred.";
+  return <ErrorPage status={500} title="Application Error" message={errorMessage} />;
 }

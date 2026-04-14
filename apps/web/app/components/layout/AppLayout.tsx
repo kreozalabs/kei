@@ -1,11 +1,12 @@
 import { useState } from "react";
-import { Outlet } from "react-router";
+import { Outlet, isRouteErrorResponse } from "react-router";
 import { PlusIcon } from "lucide-react";
 import { Button } from "@kreozalabs/ui";
 import { AppSidebar } from "./AppSidebar";
 import { AppHeader } from "./AppHeader";
 import { MobileNav } from "./MobileNav";
 import { MobileDrawer } from "./MobileDrawer";
+import { ErrorPage } from "../ErrorPage";
 
 export interface AppLayoutContext {
   setTitle: (title: string) => void;
@@ -13,7 +14,7 @@ export interface AppLayoutContext {
   setOnFabClick: (fn: (() => void) | undefined) => void;
 }
 
-export function AppLayout() {
+export function AppLayout({ error }: { error?: unknown }) {
   const [title, setTitle] = useState("Dashboard");
   const [subtitle, setSubtitle] = useState<string | undefined>();
   const [onFabClick, setOnFabClick] = useState<(() => void) | undefined>();
@@ -43,7 +44,25 @@ export function AppLayout() {
               <h1 className="text-3xl font-bold tracking-tight">{title}</h1>
             </div>
 
-            <Outlet context={contextValue} />
+            {error ? (
+              <ErrorPage
+                status={isRouteErrorResponse(error) ? error.status : 500}
+                title={isRouteErrorResponse(error) ? error.statusText : "App Error"}
+                message={
+                  isRouteErrorResponse(error)
+                    ? error.status === 404
+                      ? "The requested page was not found."
+                      : "Something went wrong in the app."
+                    : error instanceof Error
+                      ? error.message
+                      : "An unexpected error occurred."
+                }
+                homeLink="/app"
+                homeLabel="Return to Dashboard"
+              />
+            ) : (
+              <Outlet context={contextValue} />
+            )}
           </div>
         </div>
 
