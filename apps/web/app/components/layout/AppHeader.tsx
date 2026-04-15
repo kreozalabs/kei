@@ -1,5 +1,6 @@
+import { useState, useEffect, useRef } from "react";
 import { PlusIcon, SearchIcon, MoreVerticalIcon } from "lucide-react";
-import { Button } from "@kreozalabs/ui";
+import { Button, cn } from "@kreozalabs/ui";
 
 export interface AppHeaderProps {
   title: string;
@@ -10,13 +11,46 @@ export interface AppHeaderProps {
 }
 
 export function AppHeader({ title, subtitle, left, center, right }: AppHeaderProps) {
+  const [isSubtle, setIsSubtle] = useState(false);
+  const timeoutRef = useRef<ReturnType<typeof setTimeout>>(null);
+
+  const show = () => {
+    if (window.matchMedia("(max-width: 767px)").matches) return;
+    if (timeoutRef.current) clearTimeout(timeoutRef.current);
+    setIsSubtle(false);
+  };
+
+  const hide = () => {
+    if (window.matchMedia("(max-width: 767px)").matches) return;
+    if (timeoutRef.current) clearTimeout(timeoutRef.current);
+    timeoutRef.current = setTimeout(() => setIsSubtle(true), 2000);
+  };
+
+  useEffect(() => {
+    if (window.matchMedia("(max-width: 767px)").matches) return;
+
+    // Initial reveal then fade
+    timeoutRef.current = setTimeout(() => setIsSubtle(true), 3000);
+
+    return () => {
+      if (timeoutRef.current) clearTimeout(timeoutRef.current);
+    };
+  }, []);
+
   return (
-    <header className="shrink-0 z-40 w-full pt-3 md:pt-4 pb-2 md:pb-6 px-6 md:px-8 sticky top-0 bg-background/95 backdrop-blur-xl border-b border-border/40 md:border-none transition-all flex gap-4">
+    <header className="shrink-0 z-40 w-full pt-2 md:pt-4 pb-1 md:pb-6 px-6 md:px-8 sticky top-0 bg-background/95 backdrop-blur-xl border-b border-border/40 md:border-none transition-all flex gap-4">
       {/* 1. Left Area (e.g. Sidebar toggle) */}
       {left && <div className="flex items-center shrink-0">{left}</div>}
 
       {/* 2. Title Area (Reserved space for stability) */}
-      <div className="md:ml-12 flex flex-col flex-1 min-w-0 h-10 md:h-16 justify-end gap-1">
+      <div
+        onMouseEnter={show}
+        onMouseLeave={hide}
+        className={cn(
+          "md:ml-12 flex flex-col flex-1 min-w-0 h-10 md:h-16 justify-end gap-1 transition-all duration-1000 ease-in-out",
+          isSubtle ? "opacity-20 translate-y-0.5" : "opacity-100"
+        )}
+      >
         <h1 className="text-lg md:text-xl font-bold tracking-tight leading-none mb-2">{title}</h1>
         <div className="h-4 flex items-center overflow-hidden">
           {subtitle ? (
