@@ -12,7 +12,7 @@ export interface AppSidebarProps {
 export function AppSidebar({ onAddAction }: AppSidebarProps) {
   return (
     <aside className="hidden md:flex w-72 flex-col p-4 space-y-2 shrink-0 overflow-y-auto gap-2">
-      <div className="flex items-center justify-between pb-4 border-b border-border/10 mb-4 px-0.5 animate-in fade-in slide-in-from-top-2 duration-700">
+      <div className="-mx-4 flex items-center justify-between pb-4 border-b border-border/80 mb-4 px-4.5 animate-in fade-in slide-in-from-top-2 duration-700">
         <div className="flex items-center gap-1.5">
           <FullscreenToggle
             size="icon"
@@ -23,6 +23,9 @@ export function AppSidebar({ onAddAction }: AppSidebarProps) {
           variant="ghost"
           size="icon"
           className="size-8 rounded-lg hover:bg-muted/80 border-none text-muted-foreground/40 hover:text-foreground transition-all active:scale-90"
+          onClick={() => {
+            console.log("PanelLeftIcon clicked");
+          }}
         >
           <PanelLeftIcon className="size-5" />
         </Button>
