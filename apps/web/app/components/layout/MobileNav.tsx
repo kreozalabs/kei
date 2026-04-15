@@ -6,7 +6,7 @@ export function MobileNav() {
   const visibleItems = navItems.filter((item) => item.mobileVisible);
 
   return (
-    <nav className="md:hidden fixed bottom-0 left-0 right-0 h-20 bg-card/80 backdrop-blur-2xl border-t z-50 flex items-center justify-around px-2 pb-safe">
+    <nav className="md:hidden fixed bottom-0 left-0 right-0 h-16 bg-card/80 backdrop-blur-2xl border-t z-50 flex items-center justify-around px-2 pb-safe">
       {visibleItems.map((item) => {
         const isToday = item.id === "today";
         return (
