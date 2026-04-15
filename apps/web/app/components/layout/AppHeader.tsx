@@ -1,6 +1,6 @@
-import { useState, useEffect, useRef } from "react";
 import { PlusIcon, SearchIcon, MoreVerticalIcon } from "lucide-react";
 import { Button, cn } from "@kreozalabs/ui";
+import { useSubtleOnIdle } from "@/hooks/useSubtleOnIdle";
 
 export interface AppHeaderProps {
   title: string;
@@ -11,67 +11,51 @@ export interface AppHeaderProps {
 }
 
 export function AppHeader({ title, subtitle, left, center, right }: AppHeaderProps) {
-  const [isSubtle, setIsSubtle] = useState(false);
-  const timeoutRef = useRef<ReturnType<typeof setTimeout>>(null);
-
-  const show = () => {
-    if (window.matchMedia("(max-width: 767px)").matches) return;
-    if (timeoutRef.current) clearTimeout(timeoutRef.current);
-    setIsSubtle(false);
-  };
-
-  const hide = () => {
-    if (window.matchMedia("(max-width: 767px)").matches) return;
-    if (timeoutRef.current) clearTimeout(timeoutRef.current);
-    timeoutRef.current = setTimeout(() => setIsSubtle(true), 2000);
-  };
-
-  useEffect(() => {
-    if (window.matchMedia("(max-width: 767px)").matches) return;
-
-    // Initial reveal then fade
-    timeoutRef.current = setTimeout(() => setIsSubtle(true), 3000);
-
-    return () => {
-      if (timeoutRef.current) clearTimeout(timeoutRef.current);
-    };
-  }, []);
+  const { isSubtle, show, hide } = useSubtleOnIdle({
+    initialDelay: 3000,
+    idleDelay: 2000,
+    disableOnMobile: true,
+  });
 
   return (
-    <header className="shrink-0 z-40 w-full pt-2 md:pt-4 pb-1 md:pb-6 px-6 md:px-8 sticky top-0 bg-background/95 backdrop-blur-xl border-b border-border/40 md:border-none transition-all flex gap-4">
-      {/* 1. Left Area (e.g. Sidebar toggle) */}
-      {left && <div className="flex items-center shrink-0">{left}</div>}
-
-      {/* 2. Title Area (Reserved space for stability) */}
+    <header
+      className="shrink-0 z-40 w-full pt-2 md:pt-4 pb-1 md:pb-6 px-6 md:px-8 sticky top-0 bg-background/95 backdrop-blur-xl border-b border-border/40 md:border-none transition-all"
+      onMouseEnter={show}
+      onMouseLeave={hide}
+    >
       <div
-        onMouseEnter={show}
-        onMouseLeave={hide}
         className={cn(
-          "md:ml-12 flex flex-col flex-1 min-w-0 h-10 md:h-16 justify-end gap-1 transition-all duration-1000 ease-in-out",
+          "flex w-full gap-4 transition-all duration-1000 ease-in-out cursor-default",
           isSubtle ? "opacity-20 translate-y-0.5" : "opacity-100"
         )}
       >
-        <h1 className="text-lg md:text-xl font-bold tracking-tight leading-none mb-2">{title}</h1>
-        <div className="h-4 flex items-center overflow-hidden">
-          {subtitle ? (
-            <span className="text-[11px] md:text-xs text-muted-foreground font-semibold truncate tracking-wider opacity-70">
-              {subtitle}
-            </span>
-          ) : (
-            <span className="invisible text-[11px] uppercase">placeholder</span>
-          )}
+        {/* 1. Left Area (e.g. Sidebar toggle) */}
+        {left && <div className="flex items-center shrink-0">{left}</div>}
+
+        {/* 2. Title Area (Reserved space for stability) */}
+        <div className="md:ml-12 flex flex-col flex-1 min-w-0 h-10 md:h-16 justify-end gap-1">
+          <h1 className="text-lg md:text-xl font-bold tracking-tight leading-none mb-2">{title}</h1>
+          <div className="h-4 flex items-center overflow-hidden">
+            {subtitle ? (
+              <span className="text-[11px] md:text-xs text-muted-foreground font-semibold truncate tracking-wider opacity-70">
+                {subtitle}
+              </span>
+            ) : (
+              <span className="invisible text-[11px] uppercase">placeholder</span>
+            )}
+          </div>
         </div>
-      </div>
 
-      {/* 3. Actions Area (Right-aligned grouping) */}
-      <div className="flex-1 flex items-center justify-end gap-6 md:gap-10 min-w-0 h-12">
-        {/* Search stays grouped with the other actions */}
-        <div className="hidden lg:flex items-center">{center}</div>
+        {/* 3. Actions Area (Right-aligned grouping) */}
+        <div className="flex-1 flex items-center justify-end gap-6 md:gap-10 min-w-0 h-12">
+          {/* Search stays grouped with the other actions */}
+          <div className="hidden lg:flex items-center">{center}</div>
 
-        {/* Secondary Actions */}
-        <div className="flex items-center gap-2 md:gap-6 font-medium">
-          <div className="lg:hidden text-muted-foreground/40">{center}</div>
-          {right}
+          {/* Secondary Actions */}
+          <div className="flex items-center gap-2 md:gap-6 font-medium">
+            <div className="lg:hidden text-muted-foreground/40">{center}</div>
+            {right}
+          </div>
         </div>
       </div>
     </header>
