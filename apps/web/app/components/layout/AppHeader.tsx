@@ -4,15 +4,23 @@ import { Button } from "@kreozalabs/ui";
 export interface AppHeaderProps {
   title: string;
   subtitle?: string;
+  left?: React.ReactNode;
   center?: React.ReactNode;
   right?: React.ReactNode;
 }
 
-export function AppHeader({ title, subtitle, center, right }: AppHeaderProps) {
+export function AppHeader({ title, subtitle, left, center, right }: AppHeaderProps) {
   return (
-    <header className="shrink-0 z-40 w-full h-14 md:h-16 flex items-center px-6 md:px-8 sticky top-0 bg-background/95 backdrop-blur-xl border-b md:border-none transition-all">
-      {/* 1. Title Area (Adjusted width) */}
-      <div className="flex flex-col w-[70%] md:w-[75%] min-w-0">
+    <header className="shrink-0 z-40 w-full h-14 md:h-16 flex items-center px-6 md:px-8 sticky top-0 bg-background/95 backdrop-blur-xl border-b md:border-none transition-all gap-4">
+      {/* 1. Left Area (e.g. Sidebar toggle) */}
+      {left && (
+        <div className="flex items-center shrink-0">
+          {left}
+        </div>
+      )}
+
+      {/* 2. Title Area (Adjusted width) */}
+      <div className="flex flex-col flex-1 min-w-0">
         <h1 className="text-xl font-bold tracking-tight truncate">{title}</h1>
         {subtitle && (
           <span className="text-xs text-muted-foreground font-medium truncate">{subtitle}</span>

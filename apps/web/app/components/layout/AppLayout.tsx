@@ -1,6 +1,7 @@
 import { useState, useCallback, useMemo } from "react";
 import { Outlet, isRouteErrorResponse } from "react-router";
 import { PlusIcon } from "lucide-react";
+import { SidebarToggle } from "./SidebarToggle";
 import {
   Button,
   Dialog,
@@ -8,6 +9,7 @@ import {
   DialogDescription,
   DialogHeader,
   DialogTitle,
+  cn
 } from "@kreozalabs/ui";
 import { AppSidebar } from "./AppSidebar";
 import { AppHeader, HeaderSearch, HeaderNewAction, HeaderMore } from "./AppHeader";
@@ -26,6 +28,7 @@ export interface AppLayoutContext {
 export function AppLayout({ error }: { error?: unknown }) {
   const [title, setTitle] = useState("Dashboard");
   const [subtitle, setSubtitle] = useState<string | undefined>();
+  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [isActionInputOpen, setIsActionInputOpen] = useState(false);
   const [onFabClick, setOnFabClick] = useState<(() => void) | undefined>(
     () => () => setIsActionInputOpen(true)
@@ -35,6 +38,7 @@ export function AppLayout({ error }: { error?: unknown }) {
   >();
 
   const openActionInput = useCallback(() => setIsActionInputOpen(true), []);
+  const toggleSidebar = useCallback(() => setIsSidebarOpen((prev) => !prev), []);
 
   const contextValue: AppLayoutContext = useMemo(
     () => ({
@@ -50,7 +54,11 @@ export function AppLayout({ error }: { error?: unknown }) {
   return (
     <div className="flex flex-col md:flex-row h-dvh w-full overflow-hidden bg-background md:bg-muted/10 text-foreground">
       {/* Desktop Sidebar */}
-      <AppSidebar onAddAction={openActionInput} />
+      <AppSidebar
+        isOpen={isSidebarOpen}
+        onToggle={toggleSidebar}
+        onAddAction={openActionInput}
+      />
 
       {/* Main Content Area */}
       <main className="flex-1 flex flex-col min-w-0 relative overflow-hidden bg-background">
@@ -58,6 +66,14 @@ export function AppLayout({ error }: { error?: unknown }) {
         <AppHeader
           title={title}
           subtitle={subtitle}
+          left={
+            <div className={cn(
+              "transition-all duration-500 ease-[cubic-bezier(0.32,0.72,0,1)] flex items-center overflow-hidden",
+              isSidebarOpen ? "w-0 opacity-0 invisible" : "w-10 opacity-100 visible mr-2"
+            )}>
+              <SidebarToggle onClick={toggleSidebar} />
+            </div>
+          }
           center={
             headerActions?.center ?? (
               <div className="hidden md:block">
