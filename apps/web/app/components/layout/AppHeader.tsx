@@ -11,7 +11,7 @@ export interface AppHeaderProps {
 
 export function AppHeader({ title, subtitle, left, center, right }: AppHeaderProps) {
   return (
-    <header className="shrink-0 z-40 w-full h-14 md:h-16 flex items-center px-6 md:px-8 sticky top-0 bg-background/95 backdrop-blur-xl border-b md:border-none transition-all gap-4">
+    <header className="shrink-0 z-40 w-full pt-3 md:pt-4 pb-2 md:pb-6 px-6 md:px-8 sticky top-0 bg-background/95 backdrop-blur-xl border-b border-border/40 md:border-none transition-all flex gap-4">
       {/* 1. Left Area (e.g. Sidebar toggle) */}
       {left && (
         <div className="flex items-center shrink-0">
@@ -19,16 +19,22 @@ export function AppHeader({ title, subtitle, left, center, right }: AppHeaderPro
         </div>
       )}
 
-      {/* 2. Title Area (Adjusted width) */}
-      <div className="flex flex-col flex-1 min-w-0">
-        <h1 className="text-xl font-bold tracking-tight truncate">{title}</h1>
-        {subtitle && (
-          <span className="text-xs text-muted-foreground font-medium truncate">{subtitle}</span>
-        )}
+      {/* 2. Title Area (Reserved space for stability) */}
+      <div className="md:ml-12 flex flex-col flex-1 min-w-0 h-10 md:h-16 justify-end gap-1">
+        <h1 className="text-lg md:text-xl font-bold tracking-tight leading-none mb-2">{title}</h1>
+        <div className="h-4 flex items-center overflow-hidden">
+          {subtitle ? (
+            <span className="text-[11px] md:text-xs text-muted-foreground font-semibold truncate tracking-wider opacity-70">
+              {subtitle}
+            </span>
+          ) : (
+            <span className="invisible text-[11px] uppercase">placeholder</span>
+          )}
+        </div>
       </div>
 
-      {/* 2. Actions Area (Right-aligned grouping) */}
-      <div className="flex-1 flex items-center justify-end gap-6 md:gap-10 min-w-0">
+      {/* 3. Actions Area (Right-aligned grouping) */}
+      <div className="flex-1 flex items-center justify-end gap-6 md:gap-10 min-w-0 h-12 self-end">
         {/* Search stays grouped with the other actions */}
         <div className="hidden lg:flex items-center">{center}</div>
 
