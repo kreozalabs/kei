@@ -147,7 +147,3 @@ vite.config.ts.timestamp-*
 
 # Development files
 .dev/
-
-# TODO: Remove these
-temp
-packages
