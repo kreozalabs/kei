@@ -1,3 +1,4 @@
+import { forwardRef } from "react";
 import { PlusIcon, SearchIcon, MoreVerticalIcon } from "lucide-react";
 import { Button, cn } from "@kreozalabs/ui";
 import { useSubtleOnIdle } from "@/hooks/useSubtleOnIdle";
@@ -81,19 +82,24 @@ export function HeaderSearch() {
   );
 }
 
-export function HeaderNewAction({ onClick }: { onClick?: () => void }) {
-  return (
-    <Button
-      variant="default"
-      size="sm"
-      onClick={onClick}
-      className="hidden md:flex items-center gap-1.5 h-8 rounded-lg bg-primary hover:bg-primary/90 text-primary-foreground font-semibold px-3 shadow-sm border-none transition-all active:scale-95"
-    >
-      <PlusIcon className="size-4" />
-      <span className="text-xs">New Action</span>
-    </Button>
-  );
-}
+export const HeaderNewAction = forwardRef<HTMLButtonElement, { onClick?: () => void }>(
+  ({ onClick, ...props }, ref) => {
+    return (
+      <Button
+        ref={ref}
+        variant="default"
+        size="sm"
+        onClick={onClick}
+        className="hidden md:flex items-center gap-1.5 h-9 rounded-full bg-primary hover:bg-primary/90 text-primary-foreground font-bold px-4 shadow-lg shadow-primary/20 border-none transition-all active:scale-95 hover:shadow-primary/30"
+        {...props}
+      >
+        <PlusIcon className="size-4" />
+        <span className="text-sm">New Action</span>
+      </Button>
+    );
+  }
+);
+HeaderNewAction.displayName = "HeaderNewAction";
 
 export function HeaderMore({ onClick }: { onClick?: () => void }) {
   return (

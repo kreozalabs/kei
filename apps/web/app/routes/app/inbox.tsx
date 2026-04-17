@@ -11,20 +11,13 @@ export default function Inbox() {
   useEffect(() => {
     setTitle("Inbox");
     setSubtitle("Capture everything");
-    setOnFabClick(() => openActionInput);
 
     setHeaderActions({
       center: <HeaderSearch />,
-      right: (
-        <>
-          <HeaderNewAction onClick={openActionInput} />
-          <HeaderMore />
-        </>
-      ),
     });
 
     return () => setHeaderActions(undefined);
-  }, [setTitle, setSubtitle, setOnFabClick, setHeaderActions, openActionInput]);
+  }, [setTitle, setSubtitle, setHeaderActions]);
 
   return (
     <div className="flex flex-col items-center justify-center p-20 border border-dashed rounded-4xl gap-4">

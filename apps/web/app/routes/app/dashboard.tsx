@@ -22,16 +22,9 @@ export default function Dashboard() {
   useEffect(() => {
     setTitle("Today");
     setSubtitle(`${activeActions.length} ${activeActions.length === 1 ? "task" : "tasks"}`);
-    setOnFabClick(() => openActionInput);
 
     setHeaderActions({
       center: <HeaderSearch />,
-      right: (
-        <>
-          <HeaderNewAction onClick={openActionInput} />
-          <HeaderMore />
-        </>
-      ),
     });
 
     return () => setHeaderActions(undefined);
@@ -39,9 +32,7 @@ export default function Dashboard() {
     activeActions.length,
     setTitle,
     setSubtitle,
-    setOnFabClick,
     setHeaderActions,
-    openActionInput,
   ]);
 
   return (

@@ -9,6 +9,10 @@ import {
   DialogDescription,
   DialogHeader,
   DialogTitle,
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuItem,
   cn
 } from "@kreozalabs/ui";
 import { AppSidebar } from "./AppSidebar";
@@ -30,14 +34,23 @@ export function AppLayout({ error }: { error?: unknown }) {
   const [subtitle, setSubtitle] = useState<string | undefined>();
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [isActionInputOpen, setIsActionInputOpen] = useState(false);
+  const [isDesktopAddMenuOpen, setIsDesktopAddMenuOpen] = useState(false);
+  const [isMobileAddMenuOpen, setIsMobileAddMenuOpen] = useState(false);
+  
+  const defaultFabClick = useCallback(() => setIsMobileAddMenuOpen(true), []);
   const [onFabClick, setOnFabClick] = useState<(() => void) | undefined>(
-    () => () => setIsActionInputOpen(true)
+    () => defaultFabClick
   );
+  
   const [headerActions, setHeaderActions] = useState<
     { center?: React.ReactNode; right?: React.ReactNode } | undefined
   >();
 
-  const openActionInput = useCallback(() => setIsActionInputOpen(true), []);
+  const openActionInput = useCallback(() => {
+    setIsDesktopAddMenuOpen(false);
+    setIsMobileAddMenuOpen(false);
+    setIsActionInputOpen(true);
+  }, []);
   const toggleSidebar = useCallback(() => setIsSidebarOpen((prev) => !prev), []);
 
   const contextValue: AppLayoutContext = useMemo(
@@ -62,6 +75,17 @@ export function AppLayout({ error }: { error?: unknown }) {
 
       {/* Main Content Area */}
       <main className="flex-1 flex flex-col min-w-0 relative overflow-hidden bg-background">
+        {/* Dimmed Overlay for Add Menu */}
+        {(isDesktopAddMenuOpen || isMobileAddMenuOpen) && (
+          <div 
+            className="fixed inset-0 z-40 bg-background/40 backdrop-blur-sm transition-all duration-500 animate-in fade-in"
+            aria-hidden="true" 
+            onClick={() => {
+              setIsDesktopAddMenuOpen(false);
+              setIsMobileAddMenuOpen(false);
+            }}
+          />
+        )}
         {/* Header */}
         <AppHeader
           title={title}
@@ -84,7 +108,49 @@ export function AppLayout({ error }: { error?: unknown }) {
           right={
             headerActions?.right ?? (
               <div className="hidden md:flex items-center gap-8">
-                <HeaderNewAction onClick={openActionInput} />
+                {onFabClick === defaultFabClick ? (
+                  <DropdownMenu open={isDesktopAddMenuOpen} onOpenChange={setIsDesktopAddMenuOpen}>
+                    <DropdownMenuTrigger asChild>
+                      <HeaderNewAction />
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent 
+                      align="end" 
+                      side="bottom" 
+                      sideOffset={12} 
+                      className="w-64 z-50 rounded-[24px] p-2 border-border/10 bg-background/95 backdrop-blur-3xl shadow-2xl animate-in fade-in zoom-in-95 duration-200"
+                    >
+                      <DropdownMenuItem onClick={openActionInput} className="gap-3 py-3 px-3 rounded-[16px] cursor-pointer transition-all hover:bg-muted/50 active:scale-[0.98]">
+                        <div className="flex items-center justify-center size-9 rounded-full bg-primary/10 text-primary shrink-0 transition-transform group-hover:scale-110">
+                          <PlusIcon className="size-5" />
+                        </div>
+                        <div className="flex flex-col">
+                          <span className="font-semibold text-sm">New Task</span>
+                          <span className="text-xs text-muted-foreground/60 leading-tight">Log a new task</span>
+                        </div>
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={openActionInput} className="gap-3 py-3 px-3 rounded-[16px] cursor-pointer transition-all hover:bg-muted/50 active:scale-[0.98]">
+                        <div className="flex items-center justify-center size-9 rounded-full bg-blue-500/10 text-blue-500 shrink-0 transition-transform group-hover:scale-110">
+                          <span className="text-lg">📝</span>
+                        </div>
+                        <div className="flex flex-col">
+                          <span className="font-semibold text-sm">New Note</span>
+                          <span className="text-xs text-muted-foreground/60 leading-tight">Capture a thought</span>
+                        </div>
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={openActionInput} className="gap-3 py-3 px-3 rounded-[16px] cursor-pointer transition-all hover:bg-muted/50 active:scale-[0.98]">
+                        <div className="flex items-center justify-center size-9 rounded-full bg-green-500/10 text-green-500 shrink-0 transition-transform group-hover:scale-110">
+                          <span className="text-lg">🎯</span>
+                        </div>
+                        <div className="flex flex-col">
+                          <span className="font-semibold text-sm">New Goal</span>
+                          <span className="text-xs text-muted-foreground/60 leading-tight">Set a new objective</span>
+                        </div>
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                ) : onFabClick ? (
+                  <HeaderNewAction onClick={onFabClick} />
+                ) : null}
                 <div className="hidden md:block">
                   <HeaderMore />
                 </div>
@@ -123,7 +189,55 @@ export function AppLayout({ error }: { error?: unknown }) {
         </div>
 
         {/* Floating Action Button (Mobile only) */}
-        {onFabClick && (
+        {onFabClick === defaultFabClick ? (
+          <DropdownMenu open={isMobileAddMenuOpen} onOpenChange={setIsMobileAddMenuOpen}>
+            <DropdownMenuTrigger asChild>
+              <Button
+                className={cn(
+                  "md:hidden fixed bottom-24 right-6 size-14 rounded-2xl bg-primary hover:bg-primary/90 text-primary-foreground shadow-2xl flex items-center justify-center transition-all duration-300 active:scale-95 z-50 group border-none",
+                  isMobileAddMenuOpen ? "shadow-none bg-primary" : "shadow-primary/30"
+                )}
+                aria-label="Add Action"
+              >
+                <PlusIcon className={cn("size-8 transition-transform duration-300", isMobileAddMenuOpen ? "rotate-45" : "group-hover:rotate-90")} />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent 
+              align="end" 
+              side="top" 
+              sideOffset={20} 
+              className="z-50 bg-transparent border-none shadow-none p-0 flex flex-col items-end gap-3 min-w-0"
+            >
+              <DropdownMenuItem 
+                onClick={openActionInput} 
+                className="flex items-center gap-3 py-2 px-4 rounded-full bg-background/95 backdrop-blur-xl border border-border/40 shadow-xl cursor-pointer transition-all active:scale-95 focus:bg-background/95 ring-0 outline-none group"
+              >
+                <div className="flex items-center justify-center size-9 rounded-full bg-green-500/10 text-green-500 shrink-0 transition-transform group-hover:scale-110">
+                  <span className="text-lg">🎯</span>
+                </div>
+                <span className="font-semibold text-sm pr-1">New Goal</span>
+              </DropdownMenuItem>
+              <DropdownMenuItem 
+                onClick={openActionInput} 
+                className="flex items-center gap-3 py-2 px-4 rounded-full bg-background/95 backdrop-blur-xl border border-border/40 shadow-xl cursor-pointer transition-all active:scale-95 focus:bg-background/95 ring-0 outline-none group"
+              >
+                <div className="flex items-center justify-center size-9 rounded-full bg-blue-500/10 text-blue-500 shrink-0 transition-transform group-hover:scale-110">
+                  <span className="text-lg">📝</span>
+                </div>
+                <span className="font-semibold text-sm pr-1">New Note</span>
+              </DropdownMenuItem>
+              <DropdownMenuItem 
+                onClick={openActionInput} 
+                className="flex items-center gap-3 py-2 px-4 rounded-full bg-background/95 backdrop-blur-xl border border-border/40 shadow-xl cursor-pointer transition-all active:scale-95 focus:bg-background/95 ring-0 outline-none group"
+              >
+                <div className="flex items-center justify-center size-9 rounded-full bg-primary/10 text-primary shrink-0 transition-transform group-hover:scale-110">
+                  <PlusIcon className="size-5" />
+                </div>
+                <span className="font-semibold text-sm pr-1">New Task</span>
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        ) : onFabClick ? (
           <Button
             onClick={onFabClick}
             className="md:hidden fixed bottom-24 right-6 size-14 rounded-2xl bg-primary hover:bg-primary/90 text-primary-foreground shadow-2xl shadow-primary/30 flex items-center justify-center transition-all active:scale-95 z-50 group border-none"
@@ -131,7 +245,7 @@ export function AppLayout({ error }: { error?: unknown }) {
           >
             <PlusIcon className="size-8 group-hover:rotate-90 transition-transform duration-300" />
           </Button>
-        )}
+        ) : null}
 
         {/* Mobile Bottom Navigation */}
         <MobileNav />

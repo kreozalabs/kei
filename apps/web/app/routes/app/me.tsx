@@ -11,12 +11,11 @@ export default function Me() {
   useEffect(() => {
     setTitle("Me");
     setSubtitle("Personal Reflection");
-    setOnFabClick(() => openActionInput);
 
     setHeaderActions({ right: <HeaderMore /> });
 
     return () => setHeaderActions(undefined);
-  }, [setTitle, setSubtitle, setOnFabClick, setHeaderActions, openActionInput]);
+  }, [setTitle, setSubtitle, setHeaderActions]);
 
   return (
     <div className="flex flex-col items-center justify-center p-20 border border-dashed rounded-4xl gap-4">
