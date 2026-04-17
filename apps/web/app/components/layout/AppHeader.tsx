@@ -22,6 +22,7 @@ export function AppHeader({ title, subtitle, left, center, right }: AppHeaderPro
     <header
       className="shrink-0 z-40 w-full pt-2 md:pt-4 pb-1 md:pb-6 px-6 md:px-8 sticky top-0 bg-background/95 backdrop-blur-xl border-b border-border/40 md:border-none transition-all"
       onMouseEnter={show}
+      onMouseMove={show}
       onMouseLeave={hide}
     >
       <div

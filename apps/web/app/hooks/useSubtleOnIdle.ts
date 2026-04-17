@@ -17,24 +17,40 @@ export function useSubtleOnIdle({
 }: SubtleOptions = {}) {
   const [isSubtle, setIsSubtle] = useState(false);
   const timeoutRef = useRef<ReturnType<typeof setTimeout>>(null);
+  const isHoveringRef = useRef(false);
 
   const show = () => {
+    isHoveringRef.current = true;
     if (disableOnMobile && window.matchMedia("(max-width: 767px)").matches) return;
-    if (timeoutRef.current) clearTimeout(timeoutRef.current);
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
+      timeoutRef.current = null;
+    }
     setIsSubtle(false);
   };
 
   const hide = () => {
+    isHoveringRef.current = false;
     if (disableOnMobile && window.matchMedia("(max-width: 767px)").matches) return;
     if (timeoutRef.current) clearTimeout(timeoutRef.current);
-    timeoutRef.current = setTimeout(() => setIsSubtle(true), idleDelay);
+    timeoutRef.current = setTimeout(() => {
+      if (!isHoveringRef.current) {
+        setIsSubtle(true);
+      }
+      timeoutRef.current = null;
+    }, idleDelay);
   };
 
   useEffect(() => {
     if (disableOnMobile && window.matchMedia("(max-width: 767px)").matches) return;
 
     // Initial reveal then fade
-    timeoutRef.current = setTimeout(() => setIsSubtle(true), initialDelay);
+    timeoutRef.current = setTimeout(() => {
+      if (!isHoveringRef.current) {
+        setIsSubtle(true);
+      }
+      timeoutRef.current = null;
+    }, initialDelay);
 
     return () => {
       if (timeoutRef.current) clearTimeout(timeoutRef.current);
@@ -43,3 +59,4 @@ export function useSubtleOnIdle({
 
   return { isSubtle, show, hide };
 }
+
