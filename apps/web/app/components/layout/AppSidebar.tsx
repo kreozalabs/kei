@@ -1,5 +1,5 @@
 import { NavLink } from "react-router";
-import { BellIcon, PlusIcon } from "lucide-react";
+import { BellIcon } from "lucide-react";
 import { Button, cn } from "@kreozalabs/ui";
 import { SidebarToggle } from "./SidebarToggle";
 import { Logo as KreozaLogo } from "@kreozalabs/icons";
@@ -9,10 +9,9 @@ import { FullscreenToggle } from "../FullscreenToggle";
 export interface AppSidebarProps {
   isOpen?: boolean;
   onToggle?: () => void;
-  onAddAction?: () => void;
 }
 
-export function AppSidebar({ isOpen = true, onToggle, onAddAction }: AppSidebarProps) {
+export function AppSidebar({ isOpen = true, onToggle }: AppSidebarProps) {
   return (
     <aside
       className={cn(
@@ -69,18 +68,6 @@ export function AppSidebar({ isOpen = true, onToggle, onAddAction }: AppSidebarP
               <BellIcon className="size-5" />
             </Button>
           </div>
-        </div>
-
-        {/* Add Action Button */}
-        <div className="mb-4">
-          <Button
-            variant="ghost"
-            onClick={onAddAction}
-            className="flex flex-row items-center transition-all hover:scale-[1.02] active:scale-[0.98] w-full justify-start text-primary hover:text-primary hover:bg-primary/5 gap-2.5 h-9 rounded-lg px-2"
-          >
-            <PlusIcon className="size-5 sm:size-6" />
-            <span className="font-semibold text-sm sm:inline">Add Action</span>
-          </Button>
         </div>
 
         <div className="flex flex-col space-y-6 flex-1 gap-2.5">

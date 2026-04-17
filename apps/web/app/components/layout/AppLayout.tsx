@@ -70,7 +70,6 @@ export function AppLayout({ error }: { error?: unknown }) {
       <AppSidebar
         isOpen={isSidebarOpen}
         onToggle={toggleSidebar}
-        onAddAction={openActionInput}
       />
 
       {/* Main Content Area */}
@@ -117,9 +116,9 @@ export function AppLayout({ error }: { error?: unknown }) {
                       align="end" 
                       side="bottom" 
                       sideOffset={12} 
-                      className="w-64 z-50 rounded-[24px] p-2 border-border/10 bg-background/95 backdrop-blur-3xl shadow-2xl animate-in fade-in zoom-in-95 duration-200"
+                      className="w-64 z-50 rounded-3xl p-2 border-border/10 bg-background/95 backdrop-blur-3xl shadow-2xl animate-in fade-in zoom-in-95 duration-200"
                     >
-                      <DropdownMenuItem onClick={openActionInput} className="gap-3 py-3 px-3 rounded-[16px] cursor-pointer transition-all hover:bg-muted/50 active:scale-[0.98]">
+                      <DropdownMenuItem onClick={openActionInput} className="gap-3 py-3 px-3 rounded-2xl cursor-pointer transition-all hover:bg-muted/50 active:scale-[0.98]">
                         <div className="flex items-center justify-center size-9 rounded-full bg-primary/10 text-primary shrink-0 transition-transform group-hover:scale-110">
                           <PlusIcon className="size-5" />
                         </div>
@@ -128,7 +127,7 @@ export function AppLayout({ error }: { error?: unknown }) {
                           <span className="text-xs text-muted-foreground/60 leading-tight">Log a new task</span>
                         </div>
                       </DropdownMenuItem>
-                      <DropdownMenuItem onClick={openActionInput} className="gap-3 py-3 px-3 rounded-[16px] cursor-pointer transition-all hover:bg-muted/50 active:scale-[0.98]">
+                      <DropdownMenuItem onClick={openActionInput} className="gap-3 py-3 px-3 rounded-2xl cursor-pointer transition-all hover:bg-muted/50 active:scale-[0.98]">
                         <div className="flex items-center justify-center size-9 rounded-full bg-blue-500/10 text-blue-500 shrink-0 transition-transform group-hover:scale-110">
                           <span className="text-lg">📝</span>
                         </div>
@@ -137,7 +136,7 @@ export function AppLayout({ error }: { error?: unknown }) {
                           <span className="text-xs text-muted-foreground/60 leading-tight">Capture a thought</span>
                         </div>
                       </DropdownMenuItem>
-                      <DropdownMenuItem onClick={openActionInput} className="gap-3 py-3 px-3 rounded-[16px] cursor-pointer transition-all hover:bg-muted/50 active:scale-[0.98]">
+                      <DropdownMenuItem onClick={openActionInput} className="gap-3 py-3 px-3 rounded-2xl cursor-pointer transition-all hover:bg-muted/50 active:scale-[0.98]">
                         <div className="flex items-center justify-center size-9 rounded-full bg-green-500/10 text-green-500 shrink-0 transition-transform group-hover:scale-110">
                           <span className="text-lg">🎯</span>
                         </div>
