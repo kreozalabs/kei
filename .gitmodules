@@ -4,3 +4,6 @@
 [submodule "packages/styles"]
 	path = packages/styles
 	url = git@github.com:kreozalabs/styles.git
+[submodule "packages/icons"]
+	path = packages/icons
+	url = git@github.com:kreozalabs/icons.git
