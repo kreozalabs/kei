@@ -13,6 +13,8 @@ export interface Event<T = unknown> {
 
 export interface ActionPayload {
   title: string;
+  description?: string;
+  project?: string;
   priority?: "low" | "medium" | "high";
   energy?: "low" | "medium" | "high";
   duration?: [number, number]; // [min, max] in minutes
@@ -21,6 +23,8 @@ export interface ActionPayload {
 export interface Action {
   id: string;
   title: string;
+  description?: string;
+  project?: string;
   priority: "low" | "medium" | "high";
   energy: "low" | "medium" | "high";
   duration?: [number, number];

@@ -1,19 +1,95 @@
 import { useEffect, useState } from "react";
 import { useOutletContext } from "react-router";
 import type { AppLayoutContext } from "@/components/layout/AppLayout";
-import { HeaderSearch, HeaderMore, HeaderNewAction } from "@/components/layout/AppHeader";
+import { HeaderSearch } from "@/components/layout/AppHeader";
 import { initDb } from "@/db";
-import { Alert, AlertTitle } from "@kreozalabs/ui";
-import { AlertCircleIcon, CheckCircle2Icon, HistoryIcon, DatabaseIcon } from "lucide-react";
-import { useCurrentDay } from "@/hooks/useCurrentDay";
-import { ActionInput } from "@/components/ActionInput";
-import { ActionList } from "@/components/ActionList";
+import { Alert, AlertTitle, Button } from "@kreozalabs/ui";
+import { DatabaseIcon, LockIcon, UnlockIcon } from "lucide-react";
+import type { Action } from "@/types/events";
+import { ActionSection } from "@/components/ActionSection";
+
+// --- Mock Data ---
+const mockOverdueActions: Action[] = [
+  {
+    id: "mock-1",
+    title: "Draft Q2 marketing strategy",
+    description: "Include budget breakdown and key campaign metrics",
+    project: "Marketing",
+    priority: "high",
+    energy: "high",
+    status: "active",
+    createdAt: Date.now() - 86400000 * 2,
+  },
+  {
+    id: "mock-2",
+    title: "Review PR #142 for dashboard UI",
+    description: "Check for mobile responsiveness on smaller breakpoints",
+    project: "Engineering",
+    priority: "medium",
+    energy: "medium",
+    status: "active",
+    createdAt: Date.now() - 86400000,
+  },
+];
+
+const mockTodayActions: Action[] = [
+  {
+    id: "mock-3",
+    title: "Weekly team sync",
+    description: "Prepare talking points about Q2 okrs",
+    project: "Management",
+    priority: "low",
+    energy: "low",
+    status: "active",
+    createdAt: Date.now(),
+  },
+  {
+    id: "mock-4",
+    title: "Fix responsive issue on landing page",
+    description: "Hero image scaling on mobile is broken on Android",
+    project: "Engineering",
+    priority: "high",
+    energy: "medium",
+    status: "active",
+    createdAt: Date.now(),
+  },
+  {
+    id: "mock-5",
+    title: "Order coffee beans",
+    project: "Personal",
+    priority: "low",
+    energy: "low",
+    status: "active",
+    createdAt: Date.now(),
+  },
+  {
+    id: "mock-6",
+    title: "Update documentation for API v2",
+    description: "Add new endpoint examples for the /sync route",
+    project: "Engineering",
+    priority: "medium",
+    energy: "high",
+    status: "active",
+    createdAt: Date.now(),
+  },
+];
 
 export default function Dashboard() {
   const [isDbReady, setIsDbReady] = useState(false);
-  const { activeActions, completedActions, isInRedZone, maxActions, isLoading } = useCurrentDay();
-  const { setTitle, setSubtitle, setOnFabClick, setHeaderActions, openActionInput } =
-    useOutletContext<AppLayoutContext>();
+
+  const [isTodayLocked, setIsTodayLocked] = useState(() => {
+    if (typeof window !== "undefined") {
+      const stored = window.sessionStorage.getItem("kei-dashboard-timeline-locked");
+      if (stored !== null) return stored === "true";
+    }
+    return true; // Default to locked
+  });
+
+  useEffect(() => {
+    window.sessionStorage.setItem("kei-dashboard-timeline-locked", String(isTodayLocked));
+  }, [isTodayLocked]);
+
+  const { setTitle, setSubtitle, setHeaderActions } = useOutletContext<AppLayoutContext>();
 
   useEffect(() => {
     initDb().then(() => setIsDbReady(true));
@@ -21,87 +97,54 @@ export default function Dashboard() {
 
   useEffect(() => {
     setTitle("Today");
-    setSubtitle(`${activeActions.length} ${activeActions.length === 1 ? "task" : "tasks"}`);
+    setSubtitle(
+      new Date().toLocaleDateString("en-US", {
+        weekday: "short",
+        month: "short",
+        day: "numeric",
+      })
+    );
 
     setHeaderActions({
       center: <HeaderSearch />,
+      right: (
+        <div className="md:hidden flex items-center">
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => setIsTodayLocked((prev) => !prev)}
+            className="size-8 border-none rounded-full text-muted-foreground hover:text-primary hover:bg-primary/10 transition-all active:scale-95"
+            title={isTodayLocked ? "Unlock Timeline" : "Lock to Today"}
+          >
+            {isTodayLocked ? <LockIcon className="size-4" /> : <UnlockIcon className="size-4" />}
+          </Button>
+        </div>
+      ),
     });
 
     return () => setHeaderActions(undefined);
-  }, [
-    activeActions.length,
-    setTitle,
-    setSubtitle,
-    setHeaderActions,
-  ]);
+  }, [setTitle, setSubtitle, setHeaderActions, isTodayLocked]);
 
   return (
     <>
-      {/* Red Zone Warning */}
-      {isInRedZone && (
-        <Alert
-          variant="destructive"
-          size="lg"
-          className="mb-8 border-destructive/20 bg-destructive/5 backdrop-blur-xl animate-in fade-in slide-in-from-top-4 duration-700 rounded-2xl flex flex-row items-center gap-4"
-        >
-          <AlertCircleIcon className="size-5 text-destructive shrink-0 animate-pulse" />
-          <AlertTitle className="font-bold text-destructive leading-tight tracking-tight">
-            System Saturation Error: You are over-planned ({activeActions.length}/{maxActions}).
-          </AlertTitle>
-        </Alert>
-      )}
+      <div className="max-w-3xl mx-auto px-2 sm:px-0 mt-4 sm:mt-6">
+        {!isTodayLocked && <ActionSection id="overdue" sectionTitle="Overdue" actions={mockOverdueActions} />}
 
-      {/* Desktop Input Section (Hidden on Mobile) */}
-      <div className="hidden md:block mb-12">
-        <ActionInput onSuccess={() => {}} />
-      </div>
+        {/* Today Section */}
+        <ActionSection
+          id="today"
+          sectionTitle={
+            new Date().toLocaleDateString("en-US", { day: "numeric", month: "short" }) + " ‧ Today"
+          }
+          actions={mockTodayActions}
+          isTodayLocked={isTodayLocked}
+        />
 
-      {/* Dashboard Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 sm:gap-16">
-        {/* Active Actions */}
-        <div className="space-y-6 sm:space-y-8">
-          <div className="flex items-center justify-between border-b pb-4">
-            <h3 className="flex items-center gap-3 text-xs font-bold uppercase tracking-[0.25em] text-primary">
-              <HistoryIcon className="size-4" />
-              Active Initiatives
-            </h3>
-            <span className="text-[10px] font-mono font-bold bg-primary/10 px-2.5 py-1 rounded-full text-primary border border-primary/20">
-              {activeActions.length.toString().padStart(1, "0")}
-            </span>
-          </div>
+        {/* TODO: Later Section */}
+        {/* {!isTodayLocked && <ActionSection sectionTitle="Later" actions={mockLaterActions} />} */}
 
-          {isLoading ? (
-            <div className="flex flex-col items-center justify-center p-20 bg-muted/30 border border-dashed rounded-4xl gap-4">
-              <div className="size-10 animate-spin rounded-full border-2 border-primary/20 border-t-primary" />
-              <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground/60">
-                Calibrating...
-              </p>
-            </div>
-          ) : (
-            <ActionList actions={activeActions} type="active" />
-          )}
-        </div>
-
-        {/* Completed Actions */}
-        <div className="space-y-6 sm:space-y-8">
-          <div className="flex items-center justify-between border-b pb-4">
-            <h3 className="flex items-center gap-3 text-xs font-bold uppercase tracking-[0.25em] text-muted-foreground/70">
-              <CheckCircle2Icon className="size-4" />
-              Activity Archive
-            </h3>
-            <span className="text-[10px] font-mono font-bold bg-muted px-2.5 py-1 rounded-full text-muted-foreground/70 border">
-              {completedActions.length.toString().padStart(1, "0")}
-            </span>
-          </div>
-
-          {isLoading ? (
-            <div className="flex flex-col items-center justify-center p-20 bg-muted/30 border border-dashed rounded-4xl gap-4">
-              <div className="size-10 animate-spin rounded-full border-2 border-primary/20 border-t-primary" />
-            </div>
-          ) : (
-            <ActionList actions={completedActions} type="completed" />
-          )}
-        </div>
+        {/* Mobile bottom padding for FAB */}
+        <div className="h-24 md:h-8" />
       </div>
 
       {/* Status Alert */}
