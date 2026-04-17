@@ -1,9 +1,7 @@
 import {
   InboxIcon,
   CalendarDaysIcon,
-  CalendarIcon,
   PersonStandingIcon,
-  HandshakeIcon,
   MenuIcon,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
@@ -32,7 +30,7 @@ export const navGroups: NavGroup[] = [
         icon: InboxIcon,
         href: "/app/inbox",
         count: 5,
-        mobileVisible: false,
+        mobileVisible: true,
       },
       {
         id: "today",
@@ -43,30 +41,11 @@ export const navGroups: NavGroup[] = [
         mobileVisible: true,
       },
       {
-        id: "upcoming",
-        label: "Upcoming",
-        icon: CalendarIcon,
-        href: "/app/upcoming",
-        mobileVisible: true,
-      },
-    ],
-  },
-  {
-    label: "Reflection",
-    items: [
-      {
         id: "me",
         label: "Me",
         icon: PersonStandingIcon,
         href: "/app/me",
         mobileVisible: true,
-      },
-      {
-        id: "promises",
-        label: "Promises",
-        icon: HandshakeIcon,
-        href: "/app/promises",
-        mobileVisible: false,
       },
     ],
   },

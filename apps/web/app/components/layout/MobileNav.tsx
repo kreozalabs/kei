@@ -17,12 +17,12 @@ export function MobileNav() {
             draggable={false}
             className={({ isActive }) =>
               cn(
-                "flex flex-col items-center justify-center gap-1 min-w-16 h-16 transition-all border-none rounded-xl",
+                "flex flex-col items-center justify-center gap-1 min-w-16 h-full transition-colors rounded-xl",
                 isActive
-                  ? "text-primary bg-primary/2"
+                  ? "text-primary"
                   : isToday
-                    ? "text-foreground/80 bg-primary/2"
-                    : "text-muted-foreground/80"
+                    ? "text-muted-foreground/80"
+                    : "text-muted-foreground/60"
               )
             }
           >
