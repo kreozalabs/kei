@@ -1,6 +1,8 @@
-import { useState, useCallback, useMemo } from "react";
+import { useState, useCallback, useMemo, useEffect } from "react";
 import { Outlet, isRouteErrorResponse } from "react-router";
-import { PlusIcon } from "lucide-react";
+import { PlusIcon, SearchIcon } from "lucide-react";
+import { useKeyboardShortcuts } from "@/hooks/useKeyboardShortcuts";
+import { useFullscreen } from "@/hooks/useFullscreen";
 import { SidebarToggle } from "./SidebarToggle";
 import {
   Button,
@@ -52,6 +54,43 @@ export function AppLayout({ error }: { error?: unknown }) {
     setIsActionInputOpen(true);
   }, []);
   const toggleSidebar = useCallback(() => setIsSidebarOpen((prev) => !prev), []);
+
+  const { isFullscreen, toggleFullscreen } = useFullscreen();
+
+  const shortcuts = useMemo(
+    () => [
+      {
+        key: "b",
+        ctrlOrMeta: true,
+        handler: toggleSidebar,
+        description: "Toggle Sidebar",
+      },
+      {
+        key: "a",
+        alt: true,
+        handler: openActionInput,
+        description: "New Action",
+      },
+      {
+        key: "k",
+        ctrlOrMeta: true,
+        handler: () => {
+          console.log("Search shortcut triggered");
+          // TODO: Implement actual search trigger (e.g., focus search input or open command palette)
+        },
+        description: "Search",
+      },
+      {
+        key: "f",
+        alt: true,
+        handler: toggleFullscreen,
+        description: "Toggle Fullscreen",
+      },
+    ],
+    [toggleSidebar, openActionInput, toggleFullscreen]
+  );
+
+  useKeyboardShortcuts(shortcuts);
 
   const contextValue: AppLayoutContext = useMemo(
     () => ({

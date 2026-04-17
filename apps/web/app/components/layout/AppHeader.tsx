@@ -96,6 +96,7 @@ export const HeaderNewAction = forwardRef<HTMLButtonElement, { onClick?: () => v
       >
         <PlusIcon className="size-4" />
         <span className="text-sm">New Action</span>
+        <span className="hidden lg:inline text-[10px] opacity-40 ml-1 font-medium">Alt+A</span>
       </Button>
     );
   }

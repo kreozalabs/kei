@@ -16,6 +16,7 @@ export function SidebarToggle({ onClick, className }: SidebarToggleProps) {
         className
       )}
       onClick={onClick}
+      title="Toggle Sidebar (Ctrl+B)"
     >
       <PanelLeftIcon className="size-5" />
     </Button>

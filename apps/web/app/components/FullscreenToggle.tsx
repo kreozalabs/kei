@@ -1,6 +1,6 @@
 import { Maximize, Minimize } from "lucide-react";
 import { Button, cn } from "@kreozalabs/ui";
-import { useEffect, useState } from "react";
+import { useFullscreen } from "@/hooks/useFullscreen";
 
 export interface FullscreenToggleProps {
   className?: string;
@@ -8,26 +8,7 @@ export interface FullscreenToggleProps {
 }
 
 export function FullscreenToggle({ className, size = "icon-lg" }: FullscreenToggleProps) {
-  const [isFullscreen, setIsFullscreen] = useState(false);
-
-  useEffect(() => {
-    const handleFullscreenChange = () => {
-      setIsFullscreen(!!document.fullscreenElement);
-    };
-
-    document.addEventListener("fullscreenchange", handleFullscreenChange);
-    return () => document.removeEventListener("fullscreenchange", handleFullscreenChange);
-  }, []);
-
-  const toggleFullscreen = () => {
-    if (!document.fullscreenElement) {
-      document.documentElement.requestFullscreen().catch((err) => {
-        console.error(`Error attempting to enable full-screen mode: ${err.message}`);
-      });
-    } else {
-      document.exitFullscreen();
-    }
-  };
+  const { isFullscreen, toggleFullscreen } = useFullscreen();
 
   return (
     <Button
@@ -35,7 +16,7 @@ export function FullscreenToggle({ className, size = "icon-lg" }: FullscreenTogg
       size={size}
       className={cn("transition-colors hover:bg-muted", className)}
       onClick={toggleFullscreen}
-      title={isFullscreen ? "Exit Fullscreen" : "Enter Fullscreen"}
+      title={isFullscreen ? "Exit Fullscreen (Alt+F)" : "Enter Fullscreen (Alt+F)"}
     >
       {isFullscreen ? (
         <Minimize className="h-[1.2rem] w-[1.2rem]" />
