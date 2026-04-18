@@ -2,16 +2,27 @@ import { Button, cn } from "@kreozalabs/ui";
 import type { Action } from "../types/events";
 import { ActionItem } from "./ActionItem";
 import { useState, useEffect } from "react";
-import { ChevronDownIcon, SparklesIcon } from "lucide-react";
+import { ChevronDownIcon, SparklesIcon, PlusIcon } from "lucide-react";
 
 interface ActionListProps {
   id: string;
   sectionTitle: string;
   actions: Action[];
   isTodayLocked?: boolean;
+  onComplete?: (action: Action) => void;
+  onAbandon?: (action: Action) => void;
+  onAddAction?: () => void;
 }
 
-export function ActionSection({ id, sectionTitle, actions, isTodayLocked }: ActionListProps) {
+export function ActionSection({ 
+  id, 
+  sectionTitle, 
+  actions, 
+  isTodayLocked, 
+  onComplete, 
+  onAbandon,
+  onAddAction 
+}: ActionListProps) {
   const [isExpanded, setIsExpanded] = useState(() => {
     if (typeof window !== "undefined") {
       const stored = window.sessionStorage.getItem(`kei-section-expanded-${id}`);
@@ -24,19 +35,15 @@ export function ActionSection({ id, sectionTitle, actions, isTodayLocked }: Acti
     window.sessionStorage.setItem(`kei-section-expanded-${id}`, String(isExpanded));
   }, [id, isExpanded]);
 
-  // If locked to today, always show. Otherwise, rely on user expansion preference.
   const showContent = isTodayLocked ? true : isExpanded;
 
   return (
-    <div className="mb-8 group/section">
-      <div className="flex items-center gap-2 mb-2 px-1 sm:px-2 border-b border-border/40 pb-2">
+    <div className="mb-6 group/section">
+      <div className="flex items-center gap-2 px-1 sm:px-2 border-b border-border/20 pb-2 mb-1">
         <h2
           className="text-[14px] font-bold flex-1 tracking-tight flex items-center gap-2 text-foreground"
         >
           {sectionTitle}
-          <span className="text-[11px] font-medium px-1.5 py-0.5 rounded-md bg-muted/50 text-muted-foreground/70">
-            {actions.length}
-          </span>
         </h2>
 
         {!isTodayLocked && (
@@ -44,13 +51,13 @@ export function ActionSection({ id, sectionTitle, actions, isTodayLocked }: Acti
             variant="ghost"
             size="icon"
             onClick={() => setIsExpanded((prev) => !prev)}
-            className="pl-0.5 size-6 rounded-md text-muted-foreground/60 hover:text-foreground hover:bg-muted/50 transition-all active:scale-95 opacity-70 focus-visible:opacity-100 group-hover/section:opacity-100 -mr-1"
+            className="size-6 rounded-md text-muted-foreground/40 hover:text-foreground hover:bg-muted/50 transition-all active:scale-95 opacity-0 group-hover/section:opacity-100 -mr-1"
             title={isExpanded ? "Collapse section" : "Expand section"}
           >
             <ChevronDownIcon
               className={cn(
                 "size-4 transition-transform duration-200",
-                !showContent && "rotate-90"
+                !showContent && "rotate-[-90deg]"
               )}
             />
           </Button>
@@ -59,7 +66,7 @@ export function ActionSection({ id, sectionTitle, actions, isTodayLocked }: Acti
 
       <div
         className={cn(
-          "grid transition-all duration-300 ease-in-out",
+          "grid transition-all duration-300 ease-[cubic-bezier(0.33,1,0.68,1)]",
           showContent ? "grid-rows-[1fr] opacity-100" : "grid-rows-[0fr] opacity-0"
         )}
       >
@@ -69,14 +76,27 @@ export function ActionSection({ id, sectionTitle, actions, isTodayLocked }: Acti
               key={action.id}
               action={action}
               type="active"
-              onComplete={() => {}}
-              onAbandon={() => {}}
+              onComplete={onComplete ?? (() => {})}
+              onAbandon={onAbandon ?? (() => {})}
             />
           ))}
-          {actions.length === 0 && (
-            <div className="p-6 flex flex-col items-center justify-center gap-2 text-sm text-muted-foreground/50 border border-dashed border-border/50 rounded-lg mt-2 font-medium bg-muted/10">
-              <SparklesIcon className="size-5 text-muted-foreground/40" />
-              <p>All caught up!</p>
+          
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={onAddAction}
+            className="justify-start gap-2 h-9 px-1 text-muted-foreground/60 hover:text-primary hover:bg-transparent -ml-1 transition-colors group/add"
+          >
+            <div className="flex items-center justify-center size-5 rounded-full text-primary group-hover/add:bg-primary group-hover/add:text-primary-foreground transition-all">
+               <PlusIcon className="size-3.5" />
+            </div>
+            <span className="text-[13px] font-medium">Add task</span>
+          </Button>
+
+          {actions.length === 0 && showContent && (
+            <div className="py-8 flex flex-col items-center justify-center gap-2 text-sm text-muted-foreground/30 font-medium">
+              <SparklesIcon className="size-5" />
+              <p>No tasks for this day.</p>
             </div>
           )}
         </div>

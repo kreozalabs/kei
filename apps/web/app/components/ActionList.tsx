@@ -13,7 +13,6 @@ export function ActionList({ actions, type }: ActionListProps) {
   const queryClient = useQueryClient();
 
   const handleComplete = async (action: Action) => {
-    // eslint-disable-next-line react-hooks/purity
     const now = Date.now();
     try {
       const event = {
@@ -33,7 +32,6 @@ export function ActionList({ actions, type }: ActionListProps) {
   };
 
   const handleAbandon = async (action: Action) => {
-    // eslint-disable-next-line react-hooks/purity
     const now = Date.now();
     try {
       const event = {

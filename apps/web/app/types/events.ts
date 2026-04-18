@@ -1,5 +1,6 @@
 export type EventType = 
   | "ACTION_INTENDED" 
+  | "ACTION_UPDATED"
   | "ACTION_COMPLETED" 
   | "ACTION_ABANDONED" 
   | "TRANSITION_STARTED";
@@ -12,12 +13,13 @@ export interface Event<T = unknown> {
 }
 
 export interface ActionPayload {
-  title: string;
+  title?: string;
   description?: string;
   project?: string;
   priority?: "low" | "medium" | "high";
   energy?: "low" | "medium" | "high";
   duration?: [number, number]; // [min, max] in minutes
+  scheduledDate?: string; // YYYY-MM-DD
 }
 
 export interface Action {
@@ -28,6 +30,7 @@ export interface Action {
   priority: "low" | "medium" | "high";
   energy: "low" | "medium" | "high";
   duration?: [number, number];
+  scheduledDate: string; // YYYY-MM-DD
   status: "active" | "completed" | "abandoned";
   createdAt: number;
 }

@@ -1,11 +1,11 @@
 import { useEffect } from "react";
 import { useOutletContext } from "react-router";
 import type { AppLayoutContext } from "@/components/layout/AppLayout";
-import { HeaderSearch, HeaderMore, HeaderNewAction } from "@/components/layout/AppHeader";
+import { HeaderSearch } from "@/components/layout/AppHeader";
 import { InboxIcon } from "lucide-react";
 
 export default function Inbox() {
-  const { setTitle, setSubtitle, setOnFabClick, setHeaderActions, openActionInput } =
+  const { setTitle, setSubtitle, setHeaderActions } =
     useOutletContext<AppLayoutContext>();
 
   useEffect(() => {

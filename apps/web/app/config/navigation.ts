@@ -1,9 +1,4 @@
-import {
-  InboxIcon,
-  CalendarDaysIcon,
-  PersonStandingIcon,
-  MenuIcon,
-} from "lucide-react";
+import { InboxIcon, CalendarDaysIcon, PersonStandingIcon, MenuIcon } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 
 export interface NavItem {
@@ -33,8 +28,8 @@ export const navGroups: NavGroup[] = [
         mobileVisible: true,
       },
       {
-        id: "today",
-        label: "Today",
+        id: "days",
+        label: "Days",
         icon: CalendarDaysIcon,
         href: "/app",
         count: 6,

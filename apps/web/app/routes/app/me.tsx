@@ -5,7 +5,7 @@ import { HeaderMore } from "@/components/layout/AppHeader";
 import { PersonStandingIcon } from "lucide-react";
 
 export default function Me() {
-  const { setTitle, setSubtitle, setOnFabClick, setHeaderActions, openActionInput } =
+  const { setTitle, setSubtitle, setHeaderActions } =
     useOutletContext<AppLayoutContext>();
 
   useEffect(() => {

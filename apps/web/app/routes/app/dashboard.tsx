@@ -1,82 +1,32 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { useOutletContext } from "react-router";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import type { AppLayoutContext } from "@/components/layout/AppLayout";
-import { HeaderSearch } from "@/components/layout/AppHeader";
+import { HeaderSearch, HeaderNewAction } from "@/components/layout/AppHeader";
 import { initDb } from "@/db";
-import { Alert, AlertTitle, Button } from "@kreozalabs/ui";
+import { getActions, completeAction, abandonAction } from "@/db/actions";
+import {
+  Alert,
+  AlertTitle,
+  Button,
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogTrigger,
+} from "@kreozalabs/ui";
 import { DatabaseIcon, LockIcon, UnlockIcon } from "lucide-react";
 import type { Action } from "@/types/events";
 import { ActionSection } from "@/components/ActionSection";
+import { ActionInput } from "@/components/ActionInput";
+import { TimelineCalendar } from "@/components/TimelineCalendar";
 
-// --- Mock Data ---
-const mockOverdueActions: Action[] = [
-  {
-    id: "mock-1",
-    title: "Draft Q2 marketing strategy",
-    description: "Include budget breakdown and key campaign metrics",
-    project: "Marketing",
-    priority: "high",
-    energy: "high",
-    status: "active",
-    createdAt: Date.now() - 86400000 * 2,
-  },
-  {
-    id: "mock-2",
-    title: "Review PR #142 for dashboard UI",
-    description: "Check for mobile responsiveness on smaller breakpoints",
-    project: "Engineering",
-    priority: "medium",
-    energy: "medium",
-    status: "active",
-    createdAt: Date.now() - 86400000,
-  },
-];
-
-const mockTodayActions: Action[] = [
-  {
-    id: "mock-3",
-    title: "Weekly team sync",
-    description: "Prepare talking points about Q2 okrs",
-    project: "Management",
-    priority: "low",
-    energy: "low",
-    status: "active",
-    createdAt: Date.now(),
-  },
-  {
-    id: "mock-4",
-    title: "Fix responsive issue on landing page",
-    description: "Hero image scaling on mobile is broken on Android",
-    project: "Engineering",
-    priority: "high",
-    energy: "medium",
-    status: "active",
-    createdAt: Date.now(),
-  },
-  {
-    id: "mock-5",
-    title: "Order coffee beans",
-    project: "Personal",
-    priority: "low",
-    energy: "low",
-    status: "active",
-    createdAt: Date.now(),
-  },
-  {
-    id: "mock-6",
-    title: "Update documentation for API v2",
-    description: "Add new endpoint examples for the /sync route",
-    project: "Engineering",
-    priority: "medium",
-    energy: "high",
-    status: "active",
-    createdAt: Date.now(),
-  },
-];
+const getTodayString = () => new Date().toLocaleDateString('en-CA');
 
 export default function Dashboard() {
   const [isDbReady, setIsDbReady] = useState(false);
-
+  const queryClient = useQueryClient();
   const [isTodayLocked, setIsTodayLocked] = useState(() => {
     if (typeof window !== "undefined") {
       const stored = window.sessionStorage.getItem("kei-dashboard-timeline-locked");
@@ -84,6 +34,10 @@ export default function Dashboard() {
     }
     return true; // Default to locked
   });
+
+  const [selectedDate, setSelectedDate] = useState(getTodayString());
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [dialogPreDate, setDialogPreDate] = useState<string | null>(null);
 
   useEffect(() => {
     window.sessionStorage.setItem("kei-dashboard-timeline-locked", String(isTodayLocked));
@@ -96,7 +50,7 @@ export default function Dashboard() {
   }, []);
 
   useEffect(() => {
-    setTitle("Today");
+    setTitle("Timeline");
     setSubtitle(
       new Date().toLocaleDateString("en-US", {
         weekday: "short",
@@ -108,7 +62,28 @@ export default function Dashboard() {
     setHeaderActions({
       center: <HeaderSearch />,
       right: (
-        <div className="flex items-center">
+        <div className="flex items-center gap-2">
+          <Dialog open={isDialogOpen} onOpenChange={(open) => {
+            setIsDialogOpen(open);
+            if (!open) setDialogPreDate(null);
+          }}>
+            <DialogTrigger asChild>
+              <HeaderNewAction />
+            </DialogTrigger>
+            <DialogContent className="sm:max-w-xl p-6">
+              <DialogHeader className="mb-4">
+                <DialogTitle className="text-xl font-bold">Add New Action</DialogTitle>
+                <DialogDescription className="sr-only">
+                  Capture a new high-impact move in the system.
+                </DialogDescription>
+              </DialogHeader>
+              <ActionInput 
+                onSuccess={() => setIsDialogOpen(false)} 
+                initialDate={dialogPreDate || selectedDate} 
+              />
+            </DialogContent>
+          </Dialog>
+
           <Button
             variant="ghost"
             size="icon"
@@ -123,27 +98,112 @@ export default function Dashboard() {
     });
 
     return () => setHeaderActions(undefined);
-  }, [setTitle, setSubtitle, setHeaderActions, isTodayLocked]);
+  }, [setTitle, setSubtitle, setHeaderActions, isDialogOpen, selectedDate, dialogPreDate, isTodayLocked]);
+
+  const { data: allActions = [] } = useQuery({
+    queryKey: ["actions"],
+    queryFn: getActions,
+    enabled: isDbReady,
+  });
+
+  const handleComplete = async (action: Action) => {
+    await completeAction(action.id);
+    queryClient.invalidateQueries({ queryKey: ["actions"] });
+  };
+
+  const handleAbandon = async (action: Action) => {
+    await abandonAction(action.id);
+    queryClient.invalidateQueries({ queryKey: ["actions"] });
+  };
+
+  const todayStr = getTodayString();
+
+  const { overdueActions, daySections } = useMemo(() => {
+    const activeActions = allActions.filter((a) => a.status === "active");
+    const todayStr = getTodayString();
+    
+    // 1. Compute Overdue (tasks before Today)
+    const overdue = activeActions.filter(a => a.scheduledDate < todayStr);
+    
+    const sections = [];
+    
+    if (isTodayLocked) {
+      // Locked mode: Only show TODAY
+      const actionsForDay = activeActions.filter(a => a.scheduledDate === todayStr);
+      sections.push({
+        id: todayStr,
+        title: `${new Date(todayStr + "T12:00:00").toLocaleDateString("en-US", { day: "numeric", month: "short" })} ‧ Today ‧ ${new Date(todayStr + "T12:00:00").toLocaleDateString("en-US", { weekday: "long" })}`,
+        date: todayStr,
+        actions: actionsForDay
+      });
+    } else {
+      // Extended mode: Compute 7 days of sections starting from selectedDate
+      const baseDate = new Date(selectedDate + "T12:00:00");
+      
+      for (let i = 0; i < 7; i++) {
+        const d = new Date(baseDate);
+        d.setDate(d.getDate() + i);
+        const dateStr = d.toLocaleDateString('en-CA');
+        
+        const actionsForDay = activeActions.filter(a => a.scheduledDate === dateStr);
+        
+        let title = d.toLocaleDateString("en-US", { day: "numeric", month: "short" });
+        const isToday = dateStr === todayStr;
+        const isTomorrow = dateStr === new Date(new Date(todayStr + "T12:00:00").getTime() + 86400000).toLocaleDateString('en-CA');
+        
+        if (isToday) title += " ‧ Today";
+        else if (isTomorrow) title += " ‧ Tomorrow";
+        
+        title += ` ‧ ${d.toLocaleDateString("en-US", { weekday: "long" })}`;
+
+        sections.push({
+          id: dateStr,
+          title,
+          date: dateStr,
+          actions: actionsForDay
+        });
+      }
+    }
+
+    return { overdueActions: overdue, daySections: sections };
+  }, [allActions, selectedDate, isTodayLocked]);
+
+  const openAddDialog = (date: string) => {
+    setDialogPreDate(date);
+    setIsDialogOpen(true);
+  };
 
   return (
     <>
-      <div className="max-w-3xl mx-auto px-2 sm:px-0 mt-4 sm:mt-6">
+      <div className="max-w-3xl mx-auto px-2 sm:px-0 mt-2">
         {!isTodayLocked && (
-          <ActionSection id="overdue" sectionTitle="Overdue" actions={mockOverdueActions} />
+          <TimelineCalendar selectedDate={selectedDate} onDateSelect={setSelectedDate} />
         )}
 
-        {/* Today Section */}
-        <ActionSection
-          id="today"
-          sectionTitle={
-            new Date().toLocaleDateString("en-US", { day: "numeric", month: "short" }) + " ‧ Today"
-          }
-          actions={mockTodayActions}
-          isTodayLocked={isTodayLocked}
-        />
+        {/* Overdue Section (Visible only if viewing Today or nearby) */}
+        {overdueActions.length > 0 && selectedDate <= todayStr && (
+           <ActionSection 
+              id="overdue" 
+              sectionTitle="Overdue" 
+              actions={overdueActions}
+              onComplete={handleComplete}
+              onAbandon={handleAbandon}
+              onAddAction={() => openAddDialog(todayStr)} 
+           />
+        )}
 
-        {/* TODO: Later Section */}
-        {/* {!isTodayLocked && <ActionSection sectionTitle="Later" actions={mockLaterActions} />} */}
+        {/* Daily Sections */}
+        {daySections.map((section) => (
+           <ActionSection 
+              key={section.id}
+              id={`date-${section.id}`}
+              sectionTitle={section.title}
+              actions={section.actions}
+              onComplete={handleComplete}
+              onAbandon={handleAbandon}
+              onAddAction={() => openAddDialog(section.date)}
+           />
+        ))}
 
         {/* Mobile bottom padding for FAB */}
         <div className="h-24 md:h-8" />

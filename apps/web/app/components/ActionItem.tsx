@@ -1,6 +1,6 @@
 import type { Action } from "../types/events";
 import { Button, cn } from "@kreozalabs/ui";
-import { Trash2Icon, CheckCircle2Icon, CircleIcon, CalendarIcon, InboxIcon } from "lucide-react";
+import { Trash2Icon, CheckCircle2Icon, CalendarIcon, InboxIcon } from "lucide-react";
 
 interface ActionItemProps {
   action: Action;
@@ -13,75 +13,82 @@ export function ActionItem({ action, type, onComplete, onAbandon }: ActionItemPr
   const getPriorityColor = (priority: string) => {
     switch (priority?.toLowerCase()) {
       case "high":
-        return "text-red-500 hover:text-red-600 hover:bg-red-500/10";
+        return "text-red-500 border-red-500/50 hover:bg-red-500/5";
       case "medium":
-        return "text-orange-500 hover:text-orange-600 hover:bg-orange-500/10";
+        return "text-orange-500 border-orange-500/50 hover:bg-orange-500/5";
       case "low":
-        return "text-blue-500 hover:text-blue-600 hover:bg-blue-500/10";
+        return "text-blue-500 border-blue-500/50 hover:bg-blue-500/5";
       default:
-        return "text-muted-foreground/40 hover:text-primary hover:bg-primary/10";
+        return "text-muted-foreground/30 border-muted-foreground/20 hover:border-primary/40 hover:bg-primary/5";
     }
   };
 
-  const isOverdue = Date.now() - action.createdAt > 86400000;
-  // TODO: Use a proper date formatting library in the future
-  const dateColor = "text-muted-foreground/80";
-  const dateText = isOverdue ? "Yesterday" : "Today";
+  const todayString = new Date().toLocaleDateString('en-CA'); // YYYY-MM-DD
+  const isOverdue = action.scheduledDate < todayString;
 
   return (
     <div
       className={cn(
-        "group flex items-start gap-3 py-3 border-b border-border/40 last:border-none transition-colors px-2 sm:px-3 rounded-xl cursor-default",
-        type === "completed" ? "opacity-60 bg-muted/10 my-1 border-none" : "hover:bg-muted/40"
+        "group flex items-start gap-3 py-2.5 border-b border-border/40 last:border-none transition-colors px-1 sm:px-2 cursor-default",
+        type === "completed" ? "opacity-50" : "hover:bg-muted/10"
       )}
     >
       {type === "active" ? (
         <Button
-          variant="ghost"
+          variant="outline"
           size="icon"
           onClick={(e) => {
             e.stopPropagation();
             onComplete(action);
           }}
           className={cn(
-            "mt-0.5 size-5.5 rounded-full transition-all shrink-0 bg-transparent p-0",
+            "mt-0.5 size-4.5 rounded-full transition-all shrink-0 bg-transparent border-[1.5px] p-0 shadow-none flex items-center justify-center group/check hover:scale-110",
             getPriorityColor(action.priority)
           )}
           title="Mark as completed"
         >
-          <CircleIcon className="size-5 stroke-[1.5]" />
+          <div className="size-2 rounded-full bg-current opacity-0 group-hover/check:opacity-20 transition-opacity" />
         </Button>
       ) : (
-        <div className="mt-0.5 size-[1.375rem] shrink-0 flex items-center justify-center">
-          <CheckCircle2Icon className="size-5 text-muted-foreground/60" />
+        <div className="mt-0.5 size-4.5 shrink-0 flex items-center justify-center">
+          <CheckCircle2Icon className="size-4 text-primary" />
         </div>
       )}
 
-      <div className="flex-1 min-w-0 flex flex-col gap-1 cursor-pointer">
-        <span
-          className={cn(
-            "text-[14px] font-medium leading-tight transition-all",
-            type === "completed" ? "line-through text-muted-foreground" : "text-foreground"
-          )}
-        >
-          {action.title}
-        </span>
+      <div className="flex-1 min-w-0 flex flex-col gap-0.5 cursor-pointer">
+        <div className="flex items-start justify-between gap-4">
+          <div className="flex flex-col flex-1 min-w-0">
+            <span
+              className={cn(
+                "text-[14px] font-medium leading-[1.4] transition-all",
+                type === "completed" ? "line-through text-muted-foreground" : "text-foreground"
+              )}
+            >
+              {action.title}
+            </span>
 
-        {action.description && (
-          <span className="text-[12.5px] text-muted-foreground/80 line-clamp-1">
-            {action.description}
-          </span>
-        )}
+            {action.description && (
+              <span className="text-[12.5px] text-muted-foreground/80 line-clamp-1 leading-normal">
+                {action.description}
+              </span>
+            )}
 
-        <div className="flex items-center gap-3 mt-1.5 flex-wrap">
-          <div className="flex items-center gap-1.5">
-            <CalendarIcon className={cn("size-3.5", dateColor)} />
-            <span className={cn("text-[12px]", dateColor)}>{dateText}</span>
+            <div className="flex items-center gap-2 mt-1">
+              <span className={cn(
+                "text-[11px] font-medium flex items-center gap-1",
+                isOverdue ? "text-red-500/80" : "text-muted-foreground/60"
+              )}>
+                <CalendarIcon className="size-3" />
+                {isOverdue ? "Overdue" : "Scheduled"}
+              </span>
+            </div>
           </div>
 
-          <div className="flex items-center gap-1.5 text-muted-foreground/60 ml-auto bg-muted/50 px-1.5 py-0.5 rounded text-[11px] font-medium">
-            <InboxIcon className="size-3" />
-            <span>{action.project || "Inbox"}</span>
+          <div className="flex items-center gap-2 shrink-0 pt-0.5">
+            <span className="text-[11px] font-medium text-muted-foreground/60 hover:text-foreground transition-colors flex items-center gap-1 group/project">
+              {action.project || "Inbox"}
+              <InboxIcon className="size-3 opacity-40 group-hover/project:opacity-80" />
+            </span>
           </div>
         </div>
       </div>
@@ -94,10 +101,10 @@ export function ActionItem({ action, type, onComplete, onAbandon }: ActionItemPr
             e.stopPropagation();
             onAbandon(action);
           }}
-          className="opacity-0 lg:group-hover:opacity-100 transition-opacity size-7 text-muted-foreground hover:text-destructive hover:bg-destructive/10 shrink-0 select-none ml-2"
+          className="opacity-0 lg:group-hover:opacity-100 transition-opacity size-7 text-muted-foreground/40 hover:text-destructive hover:bg-destructive/10 shrink-0 select-none ml-1"
           title="Abandon action"
         >
-          <Trash2Icon className="size-4" />
+          <Trash2Icon className="size-3.5" />
         </Button>
       )}
     </div>

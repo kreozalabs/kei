@@ -1,15 +1,15 @@
 import { useState } from "react";
 import { Input, Button } from "@kreozalabs/ui";
 import { PlusIcon } from "lucide-react";
-import { v7 as uuidv7 } from "uuid";
-import { db } from "../db";
+import { addAction } from "../db/actions";
 import { useQueryClient } from "@tanstack/react-query";
 
 interface ActionInputProps {
   onSuccess?: () => void;
+  initialDate?: string;
 }
 
-export function ActionInput({ onSuccess }: ActionInputProps) {
+export function ActionInput({ onSuccess, initialDate }: ActionInputProps) {
   const [title, setTitle] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const queryClient = useQueryClient();
@@ -20,24 +20,13 @@ export function ActionInput({ onSuccess }: ActionInputProps) {
 
     setIsLoading(true);
     try {
-      const event = {
-        id: uuidv7(),
-        type: "ACTION_INTENDED",
-        timestamp: Date.now(),
-        payload: {
-          title: title.trim(),
-        },
-      };
-
-      await db.query("INSERT INTO events (id, type, timestamp, payload) VALUES ($1, $2, $3, $4)", [
-        event.id,
-        event.type,
-        event.timestamp,
-        JSON.stringify(event.payload),
-      ]);
+      await addAction({ 
+        title: title.trim(), 
+        scheduledDate: initialDate 
+      });
 
       setTitle("");
-      queryClient.invalidateQueries({ queryKey: ["events", "today"] });
+      queryClient.invalidateQueries({ queryKey: ["actions"] });
       onSuccess?.();
     } catch (error) {
       console.error("Failed to add action:", error);

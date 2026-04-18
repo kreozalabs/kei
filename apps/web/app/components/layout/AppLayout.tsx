@@ -1,6 +1,6 @@
-import { useState, useCallback, useMemo, useEffect } from "react";
+import { useState, useCallback, useMemo } from "react";
 import { Outlet, isRouteErrorResponse } from "react-router";
-import { PlusIcon, SearchIcon } from "lucide-react";
+import { PlusIcon } from "lucide-react";
 import { useKeyboardShortcuts } from "@/hooks/useKeyboardShortcuts";
 import { useFullscreen } from "@/hooks/useFullscreen";
 import { SidebarToggle } from "./SidebarToggle";
@@ -55,7 +55,7 @@ export function AppLayout({ error }: { error?: unknown }) {
   }, []);
   const toggleSidebar = useCallback(() => setIsSidebarOpen((prev) => !prev), []);
 
-  const { isFullscreen, toggleFullscreen } = useFullscreen();
+  const { toggleFullscreen } = useFullscreen();
 
   const shortcuts = useMemo(
     () => [
