@@ -10,16 +10,12 @@ export default [
   // 2. Main App (Prefixed with /app or /dashboard)
   route("app", "routes/app/_layout.tsx", [
     index("routes/app/dashboard.tsx"),
-    route("upcoming", "routes/app/upcoming.tsx"),
     route("inbox", "routes/app/inbox.tsx"),
     route("me", "routes/app/me.tsx"),
-    route("promises", "routes/app/promises.tsx"),
     route("browse", "routes/app/browse.tsx"),
     route("*", "routes/app/not-found.tsx"),
   ]),
 
   // 3. Documentation (Prefixed with /docs)
-  route("docs", "routes/docs/_layout.tsx", [
-    route("*", "routes/docs/not-found.tsx"),
-  ]),
+  route("docs", "routes/docs/_layout.tsx", [route("*", "routes/docs/not-found.tsx")]),
 ] satisfies RouteConfig;

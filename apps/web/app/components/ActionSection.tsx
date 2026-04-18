@@ -2,7 +2,7 @@ import { Button, cn } from "@kreozalabs/ui";
 import type { Action } from "../types/events";
 import { ActionItem } from "./ActionItem";
 import { useState, useEffect } from "react";
-import { ChevronDownIcon, SparklesIcon, PlusIcon } from "lucide-react";
+import { ChevronDownIcon, PlusIcon } from "lucide-react";
 
 interface ActionListProps {
   id: string;
@@ -14,14 +14,16 @@ interface ActionListProps {
   onAddAction?: () => void;
 }
 
-export function ActionSection({ 
-  id, 
-  sectionTitle, 
-  actions, 
-  isTodayLocked, 
-  onComplete, 
+// FIXME: When today is locked, it still shows chevron icon. It should be hidden.
+
+export function ActionSection({
+  id,
+  sectionTitle,
+  actions,
+  isTodayLocked,
+  onComplete,
   onAbandon,
-  onAddAction 
+  onAddAction,
 }: ActionListProps) {
   const [isExpanded, setIsExpanded] = useState(() => {
     if (typeof window !== "undefined") {
@@ -40,24 +42,35 @@ export function ActionSection({
   return (
     <div className="mb-6 group/section">
       <div className="flex items-center gap-2 px-1 sm:px-2 border-b border-border/20 pb-2 mb-1">
-        <h2
-          className="text-[14px] font-bold flex-1 tracking-tight flex items-center gap-2 text-foreground"
-        >
+        <h2 className="text-[14px] font-bold flex-1 tracking-tight flex items-center gap-2 text-foreground">
           {sectionTitle}
         </h2>
+
+        <Button
+          // TODO: Use generelized button, but pass the data such as date, etc, so it fills day by default since it is in some day section
+          // TODO: It should be near section title
+          variant="ghost"
+          size="sm"
+          onClick={onAddAction}
+          className="justify-start gap-2 h-9 px-1 text-muted-foreground hover:text-primary hover:bg-transparent transition-colors group/add"
+        >
+          <div className="flex items-center justify-center size-5 rounded-full text-primary group-hover/add:bg-primary group-hover/add:text-primary-foreground transition-all">
+            <PlusIcon className="size-3.5" />
+          </div>
+        </Button>
 
         {!isTodayLocked && (
           <Button
             variant="ghost"
             size="icon"
             onClick={() => setIsExpanded((prev) => !prev)}
-            className="size-6 rounded-md text-muted-foreground/40 hover:text-foreground hover:bg-muted/50 transition-all active:scale-95 opacity-0 group-hover/section:opacity-100 -mr-1"
+            className="size-6 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted transition-all active:scale-95 opacity-70 group-hover/section:opacity-100 -mr-1"
             title={isExpanded ? "Collapse section" : "Expand section"}
           >
             <ChevronDownIcon
               className={cn(
                 "size-4 transition-transform duration-200",
-                !showContent && "rotate-[-90deg]"
+                !showContent && "rotate-90"
               )}
             />
           </Button>
@@ -80,22 +93,9 @@ export function ActionSection({
               onAbandon={onAbandon ?? (() => {})}
             />
           ))}
-          
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={onAddAction}
-            className="justify-start gap-2 h-9 px-1 text-muted-foreground/60 hover:text-primary hover:bg-transparent -ml-1 transition-colors group/add"
-          >
-            <div className="flex items-center justify-center size-5 rounded-full text-primary group-hover/add:bg-primary group-hover/add:text-primary-foreground transition-all">
-               <PlusIcon className="size-3.5" />
-            </div>
-            <span className="text-[13px] font-medium">Add task</span>
-          </Button>
 
           {actions.length === 0 && showContent && (
-            <div className="py-8 flex flex-col items-center justify-center gap-2 text-sm text-muted-foreground/30 font-medium">
-              <SparklesIcon className="size-5" />
+            <div className="py-8 flex flex-col items-center justify-center gap-2 text-sm text-muted-foreground font-medium">
               <p>No tasks for this day.</p>
             </div>
           )}
