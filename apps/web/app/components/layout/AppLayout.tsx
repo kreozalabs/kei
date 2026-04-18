@@ -316,8 +316,12 @@ export function AppLayout({ error }: { error?: unknown }) {
                 Capture your next high-impact move in the system.
               </DialogDescription>
             </DialogHeader>
-            <div className="p-6">
-              <ActionInput onSuccess={() => setIsActionInputOpen(false)} />
+            <div className="p-0">
+              <ActionInput 
+                variant="dialog"
+                onSuccess={() => setIsActionInputOpen(false)} 
+                onCancel={() => setIsActionInputOpen(false)}
+              />
             </div>
           </DialogContent>
         </Dialog>

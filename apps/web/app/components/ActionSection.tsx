@@ -3,6 +3,7 @@ import type { Action } from "../types/events";
 import { ActionItem } from "./ActionItem";
 import { useState, useEffect } from "react";
 import { ChevronDownIcon, PlusIcon } from "lucide-react";
+import { ActionInput } from "./ActionInput";
 
 interface ActionListProps {
   id: string;
@@ -11,10 +12,8 @@ interface ActionListProps {
   isTodayLocked?: boolean;
   onComplete?: (action: Action) => void;
   onAbandon?: (action: Action) => void;
-  onAddAction?: () => void;
+  sectionDate: string;
 }
-
-// FIXME: When today is locked, it still shows chevron icon. It should be hidden.
 
 export function ActionSection({
   id,
@@ -23,8 +22,9 @@ export function ActionSection({
   isTodayLocked,
   onComplete,
   onAbandon,
-  onAddAction,
+  sectionDate,
 }: ActionListProps) {
+  const [isAdding, setIsAdding] = useState(false);
   const [isExpanded, setIsExpanded] = useState(() => {
     if (typeof window !== "undefined") {
       const stored = window.sessionStorage.getItem(`kei-section-expanded-${id}`);
@@ -41,24 +41,24 @@ export function ActionSection({
 
   return (
     <div className="mb-6 group/section">
-      <div className="flex items-center gap-2 px-1 sm:px-2 border-b border-border/20 pb-2 mb-1">
-        <h2 className="text-[14px] font-bold flex-1 tracking-tight flex items-center gap-2 text-foreground">
-          {sectionTitle}
-        </h2>
-
-        <Button
-          // TODO: Use generelized button, but pass the data such as date, etc, so it fills day by default since it is in some day section
-          // TODO: It should be near section title
-          variant="ghost"
-          size="sm"
-          onClick={onAddAction}
-          className="justify-start gap-2 h-9 px-1 text-muted-foreground hover:text-primary hover:bg-transparent transition-colors group/add"
-        >
-          <div className="flex items-center justify-center size-5 rounded-full text-primary group-hover/add:bg-primary group-hover/add:text-primary-foreground transition-all">
-            <PlusIcon className="size-3.5" />
-          </div>
-        </Button>
-
+      <div className="flex items-center gap-2 px-1 sm:px-2 border-b border-border/20 pb-2 mb-1 min-h-[40px]">
+        <div className="flex-1 flex items-center gap-2 overflow-hidden">
+          <h2 className="text-[14px] font-bold tracking-tight text-foreground truncate">
+            {sectionTitle}
+          </h2>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => {
+              setIsAdding(true);
+              setIsExpanded(true);
+            }}
+            className="size-6 p-0 rounded-md text-muted-foreground hover:text-primary hover:bg-primary/10 transition-all opacity-0 group-hover/section:opacity-100 flex items-center justify-center shrink-0"
+            title="Add Action"
+          >
+            <PlusIcon className="size-4" />
+          </Button>
+        </div>
         {!isTodayLocked && (
           <Button
             variant="ghost"
@@ -84,6 +84,16 @@ export function ActionSection({
         )}
       >
         <div className="flex flex-col overflow-hidden">
+          {isAdding && (
+            <div className="mt-2 mb-4">
+              <ActionInput
+                variant="inline"
+                initialDate={sectionDate}
+                onSuccess={() => setIsAdding(false)}
+                onCancel={() => setIsAdding(false)}
+              />
+            </div>
+          )}
           {actions.map((action) => (
             <ActionItem
               key={action.id}
@@ -94,8 +104,8 @@ export function ActionSection({
             />
           ))}
 
-          {actions.length === 0 && showContent && (
-            <div className="py-8 flex flex-col items-center justify-center gap-2 text-sm text-muted-foreground font-medium">
+          {actions.length === 0 && showContent && !isAdding && (
+            <div className="py-8 flex flex-col items-center justify-center gap-2 text-sm text-muted-foreground font-medium grayscale opacity-50">
               <p>No tasks for this day.</p>
             </div>
           )}

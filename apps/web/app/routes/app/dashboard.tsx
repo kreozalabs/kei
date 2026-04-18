@@ -70,17 +70,20 @@ export default function Dashboard() {
             <DialogTrigger asChild>
               <HeaderNewAction />
             </DialogTrigger>
-            <DialogContent className="sm:max-w-xl p-6">
-              <DialogHeader className="mb-4">
+            <DialogContent className="sm:max-w-xl p-0 gap-0">
+              <DialogHeader className="p-6 pb-2">
                 <DialogTitle className="text-xl font-bold">Add New Action</DialogTitle>
                 <DialogDescription className="sr-only">
                   Capture a new high-impact move in the system.
                 </DialogDescription>
               </DialogHeader>
-              <ActionInput 
-                onSuccess={() => setIsDialogOpen(false)} 
-                initialDate={dialogPreDate || selectedDate} 
-              />
+              <div className="px-2 pb-2">
+                <ActionInput 
+                  variant="dialog"
+                  onSuccess={() => setIsDialogOpen(false)} 
+                  initialDate={dialogPreDate || selectedDate} 
+                />
+              </div>
             </DialogContent>
           </Dialog>
 
@@ -186,9 +189,10 @@ export default function Dashboard() {
               id="overdue" 
               sectionTitle="Overdue" 
               actions={overdueActions}
+              isTodayLocked={isTodayLocked}
               onComplete={handleComplete}
               onAbandon={handleAbandon}
-              onAddAction={() => openAddDialog(todayStr)} 
+              sectionDate={todayStr}
            />
         )}
 
@@ -199,9 +203,10 @@ export default function Dashboard() {
               id={`date-${section.id}`}
               sectionTitle={section.title}
               actions={section.actions}
+              isTodayLocked={isTodayLocked}
               onComplete={handleComplete}
               onAbandon={handleAbandon}
-              onAddAction={() => openAddDialog(section.date)}
+              sectionDate={section.date}
            />
         ))}
 
