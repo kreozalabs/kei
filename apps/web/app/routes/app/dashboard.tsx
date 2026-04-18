@@ -108,7 +108,7 @@ export default function Dashboard() {
     setHeaderActions({
       center: <HeaderSearch />,
       right: (
-        <div className="md:hidden flex items-center">
+        <div className="flex items-center">
           <Button
             variant="ghost"
             size="icon"
@@ -128,7 +128,9 @@ export default function Dashboard() {
   return (
     <>
       <div className="max-w-3xl mx-auto px-2 sm:px-0 mt-4 sm:mt-6">
-        {!isTodayLocked && <ActionSection id="overdue" sectionTitle="Overdue" actions={mockOverdueActions} />}
+        {!isTodayLocked && (
+          <ActionSection id="overdue" sectionTitle="Overdue" actions={mockOverdueActions} />
+        )}
 
         {/* Today Section */}
         <ActionSection
