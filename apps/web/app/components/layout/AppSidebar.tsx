@@ -5,6 +5,7 @@ import { SidebarToggle } from "./SidebarToggle";
 import { Logo as KreozaLogo } from "@kreozalabs/icons";
 import { navGroups } from "@/config/navigation";
 import { FullscreenToggle } from "../FullscreenToggle";
+import { SettingsIcon } from "lucide-react";
 
 export interface AppSidebarProps {
   isOpen?: boolean;
@@ -126,6 +127,24 @@ export function AppSidebar({ isOpen = true, onToggle }: AppSidebarProps) {
               })}
             </div>
           ))}
+        </div>
+
+        <div className="mt-auto pt-4 border-t border-border/40">
+          <NavLink
+            to="/app/settings"
+            draggable={false}
+            className={({ isActive }) =>
+              cn(
+                "w-full flex items-center gap-2.5 px-3 py-2 font-medium transition-none border-none rounded-lg group",
+                isActive
+                  ? "bg-primary/10 text-primary"
+                  : "text-muted-foreground hover:bg-muted/60 hover:text-foreground"
+              )
+            }
+          >
+            <SettingsIcon className="size-4.5" />
+            <span className="tracking-tight text-sm">Settings</span>
+          </NavLink>
         </div>
       </div>
     </div>

@@ -97,6 +97,37 @@ export default function Browse() {
             </div>
           );
         })}
+
+        <div className="flex flex-col space-y-3">
+          <h4 className="text-xs font-bold uppercase tracking-wider text-muted-foreground/60 px-4">
+            System
+          </h4>
+          <div className="flex flex-col px-2">
+            <NavLink
+              to="/app/settings"
+              className={({ isActive }) =>
+                cn(
+                  "flex items-center gap-4 px-4 py-3.5 rounded-2xl transition-all duration-200 font-medium",
+                  isActive
+                    ? "bg-primary/10 text-primary"
+                    : "text-foreground/80 hover:bg-muted/80 active:bg-muted"
+                )
+              }
+            >
+              {({ isActive }) => (
+                <>
+                  <SettingsIcon
+                    className={cn(
+                      "size-5",
+                      isActive ? "text-primary fill-primary/20" : "text-muted-foreground/60"
+                    )}
+                  />
+                  <span className="text-base">Settings</span>
+                </>
+              )}
+            </NavLink>
+          </div>
+        </div>
       </div>
 
       {/* Desktop Message Placeholder */}

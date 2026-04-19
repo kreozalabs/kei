@@ -13,6 +13,7 @@ export default [
     route("inbox", "routes/app/inbox.tsx"),
     route("me", "routes/app/me.tsx"),
     route("browse", "routes/app/browse.tsx"),
+    route("settings", "routes/app/settings.tsx"),
     route("*", "routes/app/not-found.tsx"),
   ]),
 

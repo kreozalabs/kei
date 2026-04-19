@@ -1,7 +1,9 @@
 import { forwardRef } from "react";
-import { PlusIcon, SearchIcon, MoreVerticalIcon } from "lucide-react";
+import { PlusIcon, SearchIcon, MoreVerticalIcon, PaletteIcon } from "lucide-react";
 import { Button, cn } from "@kreozalabs/ui";
 import { useSubtleOnIdle } from "@/hooks/useSubtleOnIdle";
+import { ThemeToggle } from "../ThemeToggle";
+import { AccentPicker } from "../AccentPicker";
 
 export interface AppHeaderProps {
   title: string;
@@ -96,7 +98,7 @@ export const HeaderNewAction = forwardRef<HTMLButtonElement, { onClick?: () => v
       >
         <PlusIcon className="size-4" />
         <span className="text-sm">New Action</span>
-        <span className="hidden lg:inline text-[10px] opacity-40 ml-1 font-medium">Alt+A</span>
+        <span className="hidden lg:inline text-[10px] opacity-40 ml-1 font-medium">N</span>
       </Button>
     );
   }
@@ -113,5 +115,14 @@ export function HeaderMore({ onClick }: { onClick?: () => void }) {
     >
       <MoreVerticalIcon className="size-4" />
     </Button>
+  );
+}
+
+export function HeaderAppearance() {
+  return (
+    <div className="flex items-center gap-1">
+      <AccentPicker />
+      <ThemeToggle />
+    </div>
   );
 }

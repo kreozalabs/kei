@@ -18,7 +18,13 @@ import {
   cn,
 } from "@kreozalabs/ui";
 import { AppSidebar } from "./AppSidebar";
-import { AppHeader, HeaderSearch, HeaderNewAction, HeaderMore } from "./AppHeader";
+import {
+  AppHeader,
+  HeaderSearch,
+  HeaderNewAction,
+  HeaderMore,
+  HeaderAppearance,
+} from "./AppHeader";
 import { MobileNav } from "./MobileNav";
 import { ErrorPage } from "../ErrorPage";
 import { ActionInput } from "../ActionInput";
@@ -66,8 +72,7 @@ export function AppLayout({ error }: { error?: unknown }) {
         description: "Toggle Sidebar",
       },
       {
-        key: "a",
-        alt: true,
+        key: "n",
         handler: openActionInput,
         description: "New Action",
       },
@@ -135,15 +140,12 @@ export function AppLayout({ error }: { error?: unknown }) {
               <SidebarToggle onClick={toggleSidebar} />
             </div>
           }
-          center={
-            headerActions?.center ?? (
-              <div className="hidden md:block">
-                <HeaderSearch />
-              </div>
-            )
-          }
-          right={
-            headerActions?.right ?? (
+          center={headerActions?.center !== undefined ? headerActions.center : (
+            <div className="hidden md:block">
+              <HeaderSearch />
+            </div>
+          )}
+          right={headerActions?.right !== undefined ? headerActions.right : (
               <div className="hidden md:flex items-center gap-8">
                 {onFabClick === defaultFabClick ? (
                   <DropdownMenu open={isDesktopAddMenuOpen} onOpenChange={setIsDesktopAddMenuOpen}>
@@ -203,7 +205,7 @@ export function AppLayout({ error }: { error?: unknown }) {
                 ) : onFabClick ? (
                   <HeaderNewAction onClick={onFabClick} />
                 ) : null}
-                <div className="hidden md:block">
+                <div className="hidden md:flex items-center gap-1">
                   <HeaderMore />
                 </div>
               </div>
@@ -317,9 +319,9 @@ export function AppLayout({ error }: { error?: unknown }) {
               </DialogDescription>
             </DialogHeader>
             <div className="p-0">
-              <ActionInput 
+              <ActionInput
                 variant="dialog"
-                onSuccess={() => setIsActionInputOpen(false)} 
+                onSuccess={() => setIsActionInputOpen(false)}
                 onCancel={() => setIsActionInputOpen(false)}
               />
             </div>
