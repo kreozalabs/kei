@@ -41,9 +41,9 @@ export function ActionSection({
 
   return (
     <div className="mb-6 group/section">
-      <div className="flex items-center gap-2 px-1 sm:px-2 border-b border-border/20 pb-2 mb-1 min-h-[40px]">
+      <div className="flex items-center gap-2 px-1 sm:px-2 border-b border-border/20 pb-2 mb-1 min-h-10">
         <div className="flex-1 flex items-center gap-2 overflow-hidden">
-          <h2 className="text-[14px] font-bold tracking-tight text-foreground truncate">
+          <h2 className="text-[14px] font-bold tracking-tight text-muted-foreground/70 truncate">
             {sectionTitle}
           </h2>
           <Button

@@ -134,7 +134,7 @@ export function TimelineCalendar({ selectedDate, onDateSelect }: TimelineCalenda
           </DropdownMenuTrigger>
           <DropdownMenuContent 
             align="start" 
-            className="w-56 p-2 rounded-2xl bg-muted border border-border/40 shadow-2xl z-50 animate-in fade-in zoom-in-95"
+            className="w-56 p-2 rounded-2xl bg-muted border border-border/10 ring-0 shadow-2xl z-50 animate-in fade-in zoom-in-95"
           >
             <div className="flex items-center justify-between px-1 py-1">
                <Button 

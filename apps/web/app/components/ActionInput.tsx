@@ -22,6 +22,10 @@ interface ActionInputProps {
   variant?: "inline" | "dialog";
 }
 
+// TODO: If user filled any data, it should ask if user really wants to leave.
+// TODO: Add a bit space between title and note.
+// TODO: Add change date and start time~~~~around time.
+
 export function ActionInput({
   onSuccess,
   onCancel,
@@ -191,8 +195,9 @@ export function ActionInput({
           <Button
             type="button"
             variant="ghost"
-            size="sm"
-            className="size-8 p-0 rounded-lg text-muted-foreground/40 hover:text-foreground hover:bg-muted/50 transition-all font-bold"
+            size="icon"
+            className="size-8 rounded-lg text-muted-foreground/40 hover:text-foreground hover:bg-muted/80 transition-all font-bold"
+            // TODO: Add something or remove
           >
             <MoreHorizontal className="size-4" />
           </Button>

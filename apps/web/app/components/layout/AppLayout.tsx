@@ -103,7 +103,7 @@ export function AppLayout({ error }: { error?: unknown }) {
   );
 
   return (
-    <div className="flex flex-col md:flex-row h-dvh w-full overflow-hidden bg-background md:bg-muted/10 text-foreground">
+    <div className="flex flex-col md:flex-row h-dvh w-full overflow-hidden bg-background md:bg-muted text-foreground">
       {/* Desktop Sidebar */}
       <AppSidebar isOpen={isSidebarOpen} onToggle={toggleSidebar} />
 
