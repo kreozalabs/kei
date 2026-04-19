@@ -14,9 +14,8 @@ export interface Event<T = unknown> {
 
 export interface ActionPayload {
   title?: string;
-  description?: string;
-  project?: string;
-  priority?: "low" | "medium" | "high";
+  note?: string;
+  intention?: "must" | "want";
   energy?: "low" | "medium" | "high";
   duration?: [number, number]; // [min, max] in minutes
   scheduledDate?: string; // YYYY-MM-DD
@@ -25,9 +24,8 @@ export interface ActionPayload {
 export interface Action {
   id: string;
   title: string;
-  description?: string;
-  project?: string;
-  priority: "low" | "medium" | "high";
+  note?: string;
+  intention: "must" | "want";
   energy: "low" | "medium" | "high";
   duration?: [number, number];
   scheduledDate: string; // YYYY-MM-DD

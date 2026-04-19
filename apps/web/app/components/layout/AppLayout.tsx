@@ -18,13 +18,7 @@ import {
   cn,
 } from "@kreozalabs/ui";
 import { AppSidebar } from "./AppSidebar";
-import {
-  AppHeader,
-  HeaderSearch,
-  HeaderNewAction,
-  HeaderMore,
-  HeaderAppearance,
-} from "./AppHeader";
+import { AppHeader, HeaderSearch, HeaderNewAction, HeaderMore } from "./AppHeader";
 import { MobileNav } from "./MobileNav";
 import { ErrorPage } from "../ErrorPage";
 import { ActionInput } from "../ActionInput";
@@ -140,12 +134,19 @@ export function AppLayout({ error }: { error?: unknown }) {
               <SidebarToggle onClick={toggleSidebar} />
             </div>
           }
-          center={headerActions?.center !== undefined ? headerActions.center : (
-            <div className="hidden md:block">
-              <HeaderSearch />
-            </div>
-          )}
-          right={headerActions?.right !== undefined ? headerActions.right : (
+          center={
+            headerActions?.center !== undefined ? (
+              headerActions.center
+            ) : (
+              <div className="hidden md:block">
+                <HeaderSearch />
+              </div>
+            )
+          }
+          right={
+            headerActions?.right !== undefined ? (
+              headerActions.right
+            ) : (
               <div className="hidden md:flex items-center gap-8">
                 {onFabClick === defaultFabClick ? (
                   <DropdownMenu open={isDesktopAddMenuOpen} onOpenChange={setIsDesktopAddMenuOpen}>
@@ -214,7 +215,7 @@ export function AppLayout({ error }: { error?: unknown }) {
         />
 
         {/* Scrollable Content */}
-        <div className="flex-1 overflow-y-auto pb-24 md:pb-12">
+        <div className="flex-1 overflow-y-auto no-scrollbar pb-24 md:pb-12">
           <div className="w-full px-4 sm:px-8 md:px-12 pt-4 md:pt-10">
             <div className="max-w-3xl mx-auto">
               {error ? (
@@ -309,7 +310,7 @@ export function AppLayout({ error }: { error?: unknown }) {
 
         {/* Global Action Input Dialog */}
         <Dialog open={isActionInputOpen} onOpenChange={setIsActionInputOpen}>
-          <DialogContent className="sm:max-w-lg p-0 bg-background border-none shadow-2xl">
+          <DialogContent className="sm:max-w-lg p-0 bg-background/60 backdrop-blur-3xl border border-border/20 shadow-2xl ring-0">
             <DialogHeader className="px-6 pt-6">
               <DialogTitle className="text-xl font-extrabold tracking-tight">
                 New Action

@@ -1,24 +1,15 @@
 import { useState, useRef, useEffect } from "react";
-import { 
-  Input, 
-  Button, 
-  Textarea, 
-  Badge,
-  DropdownMenu,
-  DropdownMenuTrigger,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  cn 
-} from "@kreozalabs/ui";
-import { 
-  Calendar, 
-  Paperclip, 
-  Flag, 
-  AlarmClock, 
-  MoreHorizontal, 
-  Inbox,
+import { Input, Button, Textarea, cn } from "@kreozalabs/ui";
+import { ActionSelector } from "./ActionSelector";
+import {
+  MoreHorizontal,
   AudioLines,
-  X
+  Clock,
+  BatteryMedium,
+  BatteryFull,
+  BatteryLow,
+  Heart,
+  AlertCircle,
 } from "lucide-react";
 import { addAction } from "../db/actions";
 import { useQueryClient } from "@tanstack/react-query";
@@ -31,17 +22,18 @@ interface ActionInputProps {
   variant?: "inline" | "dialog";
 }
 
-export function ActionInput({ 
-  onSuccess, 
-  onCancel, 
-  initialDate, 
+export function ActionInput({
+  onSuccess,
+  onCancel,
+  initialDate,
   className,
-  variant = "inline"
+  variant = "inline",
 }: ActionInputProps) {
   const [title, setTitle] = useState("");
-  const [description, setDescription] = useState("");
-  const [priority, setPriority] = useState<"low" | "medium" | "high">("medium");
-  const [project, setProject] = useState("Inbox");
+  const [note, setNote] = useState("");
+  const [intention, setIntention] = useState<"must" | "want">("want");
+  const [energy, setEnergy] = useState<"low" | "medium" | "high">("medium");
+  const [duration, setDuration] = useState<[number, number]>([15, 30]);
   const [isLoading, setIsLoading] = useState(false);
   const queryClient = useQueryClient();
   const titleInputRef = useRef<HTMLInputElement>(null);
@@ -56,16 +48,17 @@ export function ActionInput({
 
     setIsLoading(true);
     try {
-      await addAction({ 
-        title: title.trim(), 
-        description: description.trim(),
-        priority,
-        project,
-        scheduledDate: initialDate 
+      await addAction({
+        title: title.trim(),
+        note: note.trim(),
+        intention,
+        energy,
+        duration,
+        scheduledDate: initialDate,
       });
 
       setTitle("");
-      setDescription("");
+      setNote("");
       queryClient.invalidateQueries({ queryKey: ["actions"] });
       onSuccess?.();
     } catch (error) {
@@ -76,13 +69,15 @@ export function ActionInput({
   };
 
   return (
-    <div className={cn(
-      "flex flex-col w-full transition-all duration-300 ease-out",
-      variant === "inline" 
-        ? "bg-card/40 backdrop-blur-xl border border-border/40 rounded-2xl shadow-2xl overflow-hidden" 
-        : "bg-transparent border-none rounded-none",
-      className
-    )}>
+    <div
+      className={cn(
+        "flex flex-col w-full transition-all duration-300 ease-out",
+        variant === "inline"
+          ? "bg-card/40 backdrop-blur-xl border border-border/40 rounded-2xl shadow-2xl overflow-hidden"
+          : "bg-transparent border-none rounded-none",
+        className
+      )}
+    >
       <form onSubmit={handleAdd} className="flex flex-col">
         {/* Input Section */}
         <div className="p-5 flex flex-col gap-2">
@@ -92,16 +87,16 @@ export function ActionInput({
                 ref={titleInputRef}
                 value={title}
                 onChange={(e: React.ChangeEvent<HTMLInputElement>) => setTitle(e.target.value)}
-                placeholder="Action title"
+                placeholder="What do you want to accomplish?"
                 className="h-8 p-0 text-[17px] font-bold bg-transparent border-none focus-visible:ring-0 placeholder:text-muted-foreground/30 selection:bg-primary/20"
                 disabled={isLoading}
               />
               <Textarea
-                value={description}
-                onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setDescription(e.target.value)}
-                placeholder="Description"
+                value={note}
+                onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setNote(e.target.value)}
+                placeholder="Any notes or constraints?"
                 className="min-h-0 h-auto p-0 text-[14px] leading-relaxed bg-transparent border-none focus-visible:ring-0 placeholder:text-muted-foreground/20 resize-none overflow-hidden"
-                style={{ height: description ? "auto" : "20px" }}
+                style={{ height: note ? "auto" : "20px" }}
                 disabled={isLoading}
                 onInput={(e) => {
                   const target = e.target as HTMLTextAreaElement;
@@ -110,10 +105,10 @@ export function ActionInput({
                 }}
               />
             </div>
-            <Button 
-              type="button" 
-              variant="ghost" 
-              size="icon" 
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon"
               className="size-9 rounded-xl text-muted-foreground/50 hover:text-primary hover:bg-primary/10 transition-all active:scale-95"
             >
               <AudioLines className="size-5" />
@@ -123,129 +118,138 @@ export function ActionInput({
 
         {/* Action Chips Row */}
         <div className="px-5 pb-5 flex flex-wrap gap-2.5 items-center">
-          <Button 
-            type="button" 
-            variant="outline" 
-            size="sm" 
-            className="h-8 rounded-lg border-green-500/20 bg-green-500/5 hover:bg-green-500/10 gap-2 px-2.5 group transition-all flex-nowrap"
-          >
-            <Calendar className="size-3.5 text-green-500" />
-            <span className="text-[12px] font-bold text-green-500">Today</span>
-            <X className="size-3 text-green-500/50 hover:text-green-500 opacity-0 group-hover:opacity-100 transition-opacity" />
-          </Button>
+          <ActionSelector
+            icon={<Clock className="size-3.5 text-blue-500/70" />}
+            label={
+              duration[0] === duration[1]
+                ? `${duration[0]} mins`
+                : duration[0] === 60
+                  ? "1 hr+"
+                  : `${duration[0]} - ${duration[1]} mins`
+            }
+            options={[
+              {
+                label: "15 mins",
+                value: [15, 15],
+                icon: <Clock className="size-4 text-muted-foreground" />,
+              },
+              {
+                label: "15 - 30 mins",
+                value: [15, 30],
+                icon: <Clock className="size-4 text-muted-foreground" />,
+              },
+              {
+                label: "30 - 60 mins",
+                value: [30, 60],
+                icon: <Clock className="size-4 text-muted-foreground" />,
+              },
+              {
+                label: "1 hour+",
+                value: [60, 120],
+                icon: <Clock className="size-4 text-muted-foreground" />,
+              },
+            ]}
+            onSelect={setDuration}
+            contentClassName="w-48"
+          />
 
-          <Button 
-            type="button" 
-            variant="outline" 
-            size="sm" 
-            className="h-8 rounded-lg border-border/30 hover:bg-muted/50 gap-2 px-2.5 group transition-all flex-nowrap"
-          >
-            <Paperclip className="size-3.5 text-muted-foreground/60" />
-            <span className="text-[12px] font-semibold text-muted-foreground/80">Attachment</span>
-            <Badge variant="default" className="bg-primary/20 text-[8px] h-3.5 px-1.5 leading-none text-primary border-none font-black tracking-widest uppercase">
-              New
-            </Badge>
-          </Button>
+          <ActionSelector
+            icon={
+              energy === "high" ? (
+                <BatteryFull className="size-3.5 text-red-500" />
+              ) : energy === "medium" ? (
+                <BatteryMedium className="size-3.5 text-yellow-500" />
+              ) : (
+                <BatteryLow className="size-3.5 text-green-500" />
+              )
+            }
+            label={`${energy} energy`}
+            options={[
+              {
+                label: "Low energy",
+                value: "low",
+                icon: <BatteryLow className="size-4" />,
+                className: "text-green-500",
+              },
+              {
+                label: "Medium energy",
+                value: "medium",
+                icon: <BatteryMedium className="size-4" />,
+                className: "text-yellow-500",
+              },
+              {
+                label: "High energy",
+                value: "high",
+                icon: <BatteryFull className="size-4" />,
+                className: "text-red-500",
+              },
+            ]}
+            onSelect={setEnergy}
+            contentClassName="w-48"
+          />
 
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button 
-                type="button" 
-                variant="outline" 
-                size="sm" 
-                className="h-8 rounded-lg border-border/30 hover:bg-muted/50 gap-2 px-2.5 group transition-all flex-nowrap"
-              >
-                <Flag className={cn(
-                  "size-3.5 transition-colors",
-                  priority === "high" ? "text-red-500" : priority === "medium" ? "text-yellow-500" : "text-blue-500"
-                )} />
-                <span className="text-[12px] font-semibold text-muted-foreground/80">Priority</span>
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="start" className="w-40 rounded-xl p-1.5 shadow-2xl border-border/40 backdrop-blur-xl">
-              <DropdownMenuItem onClick={() => setPriority("high")} className="rounded-lg gap-3 text-red-500 font-bold px-3 py-2">
-                <Flag className="size-4" /> High Priority
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => setPriority("medium")} className="rounded-lg gap-3 text-yellow-500 font-bold px-3 py-2">
-                <Flag className="size-4" /> Medium Priority
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => setPriority("low")} className="rounded-lg gap-3 text-blue-500 font-bold px-3 py-2">
-                <Flag className="size-4" /> Low Priority
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-
-          <Button 
-            type="button" 
-            variant="outline" 
-            size="sm" 
-            className="h-8 rounded-lg border-border/30 hover:bg-muted/50 gap-2 px-2.5 group transition-all flex-nowrap"
-          >
-            <AlarmClock className="size-3.5 text-muted-foreground/60" />
-            <span className="text-[12px] font-semibold text-muted-foreground/80">Reminders</span>
-          </Button>
-
-          <Button 
-            type="button" 
-            variant="ghost" 
-            size="sm" 
-            className="size-8 p-0 rounded-lg text-muted-foreground/40 hover:text-foreground hover:bg-muted/50 transition-all"
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            className="size-8 p-0 rounded-lg text-muted-foreground/40 hover:text-foreground hover:bg-muted/50 transition-all font-bold"
           >
             <MoreHorizontal className="size-4" />
           </Button>
         </div>
 
         {/* Footer */}
-        <div className="px-5 py-4 border-t border-border/20 flex items-center justify-between gap-4 bg-muted/5">
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button 
-                type="button" 
-                variant="ghost" 
-                size="sm" 
-                className="h-9 px-3 rounded-xl gap-2 hover:bg-muted/50 transition-all font-bold text-muted-foreground/70 hover:text-foreground"
+        <div className="px-5 py-4 flex items-center justify-between gap-4 bg-muted/5">
+          <ActionSelector
+            variant="ghost"
+            icon={
+              <div
+                className={cn(
+                  "size-5 rounded-md flex items-center justify-center",
+                  intention === "must" ? "bg-orange-500/10" : "bg-pink-500/10"
+                )}
               >
-                <div className="size-5 rounded-md bg-blue-500/10 flex items-center justify-center">
-                  <Inbox className="size-3.5 text-blue-400" />
-                </div>
-                <span className="text-sm">{project}</span>
-                <span className="text-[10px] opacity-30">▼</span>
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="start" className="w-56 rounded-2xl p-1.5 shadow-2xl border-border/40 backdrop-blur-xl">
-              <DropdownMenuItem onClick={() => setProject("Inbox")} className="rounded-xl gap-3 px-3 py-2.5 font-bold">
-                <div className="size-6 rounded-lg bg-blue-500/10 flex items-center justify-center">
-                  <Inbox className="size-4 text-blue-400" />
-                </div>
-                Inbox
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => setProject("Work")} className="rounded-xl gap-3 px-3 py-2.5 font-bold text-muted-foreground/70">
-                <div className="size-6 rounded-lg bg-primary/5 flex items-center justify-center text-[10px] text-primary">#</div>
-                Work
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => setProject("Personal")} className="rounded-xl gap-3 px-3 py-2.5 font-bold text-muted-foreground/70">
-                <div className="size-6 rounded-lg bg-primary/5 flex items-center justify-center text-[10px] text-primary">#</div>
-                Personal
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+                {intention === "must" ? (
+                  <AlertCircle className="size-3.5 text-orange-500" />
+                ) : (
+                  <Heart className="size-3.5 text-pink-500" />
+                )}
+              </div>
+            }
+            label={intention === "must" ? "Must do" : "Want to do"}
+            options={[
+              {
+                label: "Want to do",
+                value: "want",
+                icon: <Heart className="size-4 text-pink-500" />,
+              },
+              {
+                label: "Must do",
+                value: "must",
+                icon: <AlertCircle className="size-4 text-orange-500" />,
+              },
+            ]}
+            onSelect={setIntention}
+            triggerClassName="h-9 px-3 rounded-xl hover:bg-muted/50 font-bold text-muted-foreground/70 hover:text-foreground border-none"
+            contentClassName="w-48"
+          />
 
           <div className="flex items-center gap-2">
-            <Button 
-              type="button" 
-              variant="secondary" 
-              size="sm" 
+            <Button
+              type="button"
+              variant="secondary"
+              size="sm"
               onClick={onCancel}
               className="h-10 px-5 rounded-xl bg-muted/50 hover:bg-muted font-bold text-sm transition-all border-none active:scale-95"
             >
               Cancel
             </Button>
-            <Button 
-              type="submit" 
-              variant="default" 
-              size="sm" 
+            <Button
+              type="submit"
+              variant="default"
+              size="sm"
               disabled={isLoading || !title.trim()}
-              className="h-10 px-6 rounded-xl font-bold text-sm shadow-xl shadow-primary/10 transition-all bg-primary/10 hover:bg-primary/20 text-primary border border-primary/20 hover:border-primary/40 active:scale-95 disabled:opacity-50 disabled:scale-100"
+              className="h-10 px-6 rounded-xl font-bold text-sm shadow-xl shadow-primary/10 transition-all bg-primary/10 hover:bg-primary/15 text-primary active:scale-95 disabled:opacity-50 disabled:scale-100"
             >
               Add task
             </Button>

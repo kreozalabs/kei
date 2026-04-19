@@ -15,9 +15,8 @@ export async function getActions(): Promise<Action[]> {
       actionsMap.set(event.id, {
         id: event.id,
         title: event.payload.title || "Untitled",
-        description: event.payload.description,
-        project: event.payload.project,
-        priority: event.payload.priority || "medium",
+        note: event.payload.note,
+        intention: event.payload.intention || "want",
         energy: event.payload.energy || "medium",
         duration: event.payload.duration,
         scheduledDate: event.payload.scheduledDate || getTodayString(),

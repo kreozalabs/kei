@@ -6,8 +6,6 @@ import { HeaderSearch, HeaderNewAction } from "@/components/layout/AppHeader";
 import { initPromise } from "@/db";
 import { getActions, completeAction, abandonAction } from "@/db/actions";
 import {
-  Alert,
-  AlertTitle,
   Button,
   Dialog,
   DialogContent,
@@ -15,16 +13,15 @@ import {
   DialogTitle,
   DialogDescription,
   DialogTrigger,
-  cn,
 } from "@kreozalabs/ui";
-import { DatabaseIcon, LockIcon, UnlockIcon, Loader2Icon } from "lucide-react";
+import { LockIcon, UnlockIcon, Loader2Icon } from "lucide-react";
 import type { Action } from "@/types/events";
 import { ActionSection } from "@/components/ActionSection";
 import { ActionInput } from "@/components/ActionInput";
 import { TimelineCalendar } from "@/components/TimelineCalendar";
 import { ActionSectionSkeleton } from "@/components/ActionSkeleton";
 
-const getTodayString = () => new Date().toLocaleDateString('en-CA');
+const getTodayString = () => new Date().toLocaleDateString("en-CA");
 
 export default function Dashboard() {
   const [isDbReady, setIsDbReady] = useState(false);
@@ -65,14 +62,17 @@ export default function Dashboard() {
       center: <HeaderSearch />,
       right: (
         <div className="flex items-center gap-2">
-          <Dialog open={isDialogOpen} onOpenChange={(open) => {
-            setIsDialogOpen(open);
-            if (!open) setDialogPreDate(null);
-          }}>
+          <Dialog
+            open={isDialogOpen}
+            onOpenChange={(open) => {
+              setIsDialogOpen(open);
+              if (!open) setDialogPreDate(null);
+            }}
+          >
             <DialogTrigger asChild>
               <HeaderNewAction />
             </DialogTrigger>
-            <DialogContent className="sm:max-w-xl p-0 gap-0">
+            <DialogContent className="sm:max-w-xl p-0 bg-background/60 backdrop-blur-3xl border border-border/20 shadow-2xl ring-0 gap-0">
               <DialogHeader className="p-6 pb-2">
                 <DialogTitle className="text-xl font-bold">Add New Action</DialogTitle>
                 <DialogDescription className="sr-only">
@@ -80,10 +80,10 @@ export default function Dashboard() {
                 </DialogDescription>
               </DialogHeader>
               <div className="px-2 pb-2">
-                <ActionInput 
+                <ActionInput
                   variant="dialog"
-                  onSuccess={() => setIsDialogOpen(false)} 
-                  initialDate={dialogPreDate || selectedDate} 
+                  onSuccess={() => setIsDialogOpen(false)}
+                  initialDate={dialogPreDate || selectedDate}
                 />
               </div>
             </DialogContent>
@@ -103,7 +103,15 @@ export default function Dashboard() {
     });
 
     return () => setHeaderActions(undefined);
-  }, [setTitle, setSubtitle, setHeaderActions, isDialogOpen, selectedDate, dialogPreDate, isTodayLocked]);
+  }, [
+    setTitle,
+    setSubtitle,
+    setHeaderActions,
+    isDialogOpen,
+    selectedDate,
+    dialogPreDate,
+    isTodayLocked,
+  ]);
 
   const { data: allActions = [] } = useQuery({
     queryKey: ["actions"],
@@ -126,57 +134,56 @@ export default function Dashboard() {
   const { overdueActions, daySections } = useMemo(() => {
     const activeActions = allActions.filter((a) => a.status === "active");
     const todayStr = getTodayString();
-    
+
     // 1. Compute Overdue (tasks before Today)
-    const overdue = activeActions.filter(a => a.scheduledDate < todayStr);
-    
+    const overdue = activeActions.filter((a) => a.scheduledDate < todayStr);
+
     const sections = [];
-    
+
     if (isTodayLocked) {
       // Locked mode: Only show TODAY
-      const actionsForDay = activeActions.filter(a => a.scheduledDate === todayStr);
+      const actionsForDay = activeActions.filter((a) => a.scheduledDate === todayStr);
       sections.push({
         id: todayStr,
         title: `${new Date(todayStr + "T12:00:00").toLocaleDateString("en-US", { day: "numeric", month: "short" })} ‧ Today ‧ ${new Date(todayStr + "T12:00:00").toLocaleDateString("en-US", { weekday: "long" })}`,
         date: todayStr,
-        actions: actionsForDay
+        actions: actionsForDay,
       });
     } else {
       // Extended mode: Compute 7 days of sections starting from selectedDate
       const baseDate = new Date(selectedDate + "T12:00:00");
-      
+
       for (let i = 0; i < 7; i++) {
         const d = new Date(baseDate);
         d.setDate(d.getDate() + i);
-        const dateStr = d.toLocaleDateString('en-CA');
-        
-        const actionsForDay = activeActions.filter(a => a.scheduledDate === dateStr);
-        
+        const dateStr = d.toLocaleDateString("en-CA");
+
+        const actionsForDay = activeActions.filter((a) => a.scheduledDate === dateStr);
+
         let title = d.toLocaleDateString("en-US", { day: "numeric", month: "short" });
         const isToday = dateStr === todayStr;
-        const isTomorrow = dateStr === new Date(new Date(todayStr + "T12:00:00").getTime() + 86400000).toLocaleDateString('en-CA');
-        
+        const isTomorrow =
+          dateStr ===
+          new Date(new Date(todayStr + "T12:00:00").getTime() + 86400000).toLocaleDateString(
+            "en-CA"
+          );
+
         if (isToday) title += " ‧ Today";
         else if (isTomorrow) title += " ‧ Tomorrow";
-        
+
         title += ` ‧ ${d.toLocaleDateString("en-US", { weekday: "long" })}`;
 
         sections.push({
           id: dateStr,
           title,
           date: dateStr,
-          actions: actionsForDay
+          actions: actionsForDay,
         });
       }
     }
 
     return { overdueActions: overdue, daySections: sections };
   }, [allActions, selectedDate, isTodayLocked]);
-
-  const openAddDialog = (date: string) => {
-    setDialogPreDate(date);
-    setIsDialogOpen(true);
-  };
 
   return (
     <>
@@ -187,15 +194,15 @@ export default function Dashboard() {
 
         {/* Overdue Section (Visible only if viewing Today or nearby) */}
         {overdueActions.length > 0 && selectedDate <= todayStr && (
-           <ActionSection 
-              id="overdue" 
-              sectionTitle="Overdue" 
-              actions={overdueActions}
-              isTodayLocked={isTodayLocked}
-              onComplete={handleComplete}
-              onAbandon={handleAbandon}
-              sectionDate={todayStr}
-           />
+          <ActionSection
+            id="overdue"
+            sectionTitle="Overdue"
+            actions={overdueActions}
+            isTodayLocked={isTodayLocked}
+            onComplete={handleComplete}
+            onAbandon={handleAbandon}
+            sectionDate={todayStr}
+          />
         )}
 
         {/* Daily Sections */}
@@ -206,16 +213,16 @@ export default function Dashboard() {
           </div>
         ) : (
           daySections.map((section) => (
-             <ActionSection 
-                key={section.id}
-                id={`date-${section.id}`}
-                sectionTitle={section.title}
-                actions={section.actions}
-                isTodayLocked={isTodayLocked}
-                onComplete={handleComplete}
-                onAbandon={handleAbandon}
-                sectionDate={section.date}
-             />
+            <ActionSection
+              key={section.id}
+              id={`date-${section.id}`}
+              sectionTitle={section.title}
+              actions={section.actions}
+              isTodayLocked={isTodayLocked}
+              onComplete={handleComplete}
+              onAbandon={handleAbandon}
+              sectionDate={section.date}
+            />
           ))
         )}
 
