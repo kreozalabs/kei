@@ -1,6 +1,10 @@
-import { PGlite } from '@electric-sql/pglite'
+import { PGliteWorker } from '@electric-sql/pglite/worker'
 
-export const db = new PGlite()
+export const db = new PGliteWorker(
+  new Worker(new URL('./worker.ts', import.meta.url), {
+    type: 'module',
+  })
+)
 
 // Initialize some tables if needed
 export const initDb = async () => {
@@ -23,3 +27,6 @@ export const initDb = async () => {
     ON CONFLICT (key) DO NOTHING;
   `)
 }
+
+// Start initialization immediately
+export const initPromise = initDb()

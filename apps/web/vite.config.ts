@@ -70,5 +70,11 @@ export default defineConfig({
       '@': path.resolve(__dirname, './app'),
     },
   },
+  optimizeDeps: {
+    exclude: ['@electric-sql/pglite'],
+  },
+  worker: {
+    format: 'es',
+  },
 })
 

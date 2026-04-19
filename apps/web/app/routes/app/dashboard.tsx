@@ -3,7 +3,7 @@ import { useOutletContext } from "react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import type { AppLayoutContext } from "@/components/layout/AppLayout";
 import { HeaderSearch, HeaderNewAction } from "@/components/layout/AppHeader";
-import { initDb } from "@/db";
+import { initPromise } from "@/db";
 import { getActions, completeAction, abandonAction } from "@/db/actions";
 import {
   Alert,
@@ -15,12 +15,14 @@ import {
   DialogTitle,
   DialogDescription,
   DialogTrigger,
+  cn,
 } from "@kreozalabs/ui";
-import { DatabaseIcon, LockIcon, UnlockIcon } from "lucide-react";
+import { DatabaseIcon, LockIcon, UnlockIcon, Loader2Icon } from "lucide-react";
 import type { Action } from "@/types/events";
 import { ActionSection } from "@/components/ActionSection";
 import { ActionInput } from "@/components/ActionInput";
 import { TimelineCalendar } from "@/components/TimelineCalendar";
+import { ActionSectionSkeleton } from "@/components/ActionSkeleton";
 
 const getTodayString = () => new Date().toLocaleDateString('en-CA');
 
@@ -46,7 +48,7 @@ export default function Dashboard() {
   const { setTitle, setSubtitle, setHeaderActions } = useOutletContext<AppLayoutContext>();
 
   useEffect(() => {
-    initDb().then(() => setIsDbReady(true));
+    initPromise.then(() => setIsDbReady(true));
   }, []);
 
   useEffect(() => {
@@ -197,18 +199,25 @@ export default function Dashboard() {
         )}
 
         {/* Daily Sections */}
-        {daySections.map((section) => (
-           <ActionSection 
-              key={section.id}
-              id={`date-${section.id}`}
-              sectionTitle={section.title}
-              actions={section.actions}
-              isTodayLocked={isTodayLocked}
-              onComplete={handleComplete}
-              onAbandon={handleAbandon}
-              sectionDate={section.date}
-           />
-        ))}
+        {!isDbReady ? (
+          <div className="space-y-6">
+            <ActionSectionSkeleton />
+            <ActionSectionSkeleton />
+          </div>
+        ) : (
+          daySections.map((section) => (
+             <ActionSection 
+                key={section.id}
+                id={`date-${section.id}`}
+                sectionTitle={section.title}
+                actions={section.actions}
+                isTodayLocked={isTodayLocked}
+                onComplete={handleComplete}
+                onAbandon={handleAbandon}
+                sectionDate={section.date}
+             />
+          ))
+        )}
 
         {/* Mobile bottom padding for FAB */}
         <div className="h-24 md:h-8" />
@@ -216,16 +225,13 @@ export default function Dashboard() {
 
       {/* Status Alert */}
       {!isDbReady && (
-        <div className="fixed bottom-24 right-8 z-50 md:bottom-8">
-          <Alert
-            variant="default"
-            className="shadow-2xl border-primary/20 bg-background/80 backdrop-blur-md animate-pulse min-w-75 rounded-2xl"
-          >
-            <DatabaseIcon className="size-4 text-primary" />
-            <AlertTitle className="text-xs font-bold uppercase tracking-wider">
-              Initializing Local PGlite...
-            </AlertTitle>
-          </Alert>
+        <div className="fixed bottom-24 right-8 z-50 md:bottom-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+          <div className="flex items-center gap-3 px-4 py-2 border border-primary/20 bg-background/80 backdrop-blur-md rounded-2xl shadow-2xl">
+            <Loader2Icon className="size-4 text-primary animate-spin" />
+            <span className="text-[10px] font-bold uppercase tracking-[0.15em] text-primary/80">
+              Synchronizing Engine
+            </span>
+          </div>
         </div>
       )}
     </>
