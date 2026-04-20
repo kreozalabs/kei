@@ -1,4 +1,4 @@
-import { useTheme, type Accent } from "../providers/ThemeProvider";
+import { useTheme, type Accent } from "../providers/ThemeContext";
 import {
   DropdownMenu,
   DropdownMenuContent,

@@ -53,13 +53,7 @@ export const ActionInput = forwardRef<ActionInputHandle, ActionInputProps>(
 
     const { showConfirmDialog, setShowConfirmDialog, handleCancelAttempt, handleConfirmDiscard } =
       useDiscardGuard({
-        hasChanges:
-          title.trim() !== "" ||
-          note.trim() !== "" ||
-          intention !== "want" ||
-          energy !== "medium" ||
-          duration[0] !== 15 ||
-          duration[1] !== 30,
+        hasChanges: title.trim() !== "" || note.trim() !== "",
         onDiscard: onCancel,
       });
 
@@ -180,7 +174,7 @@ export const ActionInput = forwardRef<ActionInputHandle, ActionInputProps>(
                 },
               ]}
               onSelect={setDuration}
-              contentClassName="w-48"
+              value={duration}
             />
 
             <ActionSelector
@@ -215,7 +209,7 @@ export const ActionInput = forwardRef<ActionInputHandle, ActionInputProps>(
                 },
               ]}
               onSelect={setEnergy}
-              contentClassName="w-48"
+              value={energy}
             />
 
             <Button
@@ -262,8 +256,8 @@ export const ActionInput = forwardRef<ActionInputHandle, ActionInputProps>(
                 },
               ]}
               onSelect={setIntention}
+              value={intention}
               triggerClassName="h-9 px-3 rounded-xl hover:bg-muted/50 font-bold text-muted-foreground/70 hover:text-foreground border-none"
-              contentClassName="w-48"
             />
 
             <div className="flex items-center gap-2">

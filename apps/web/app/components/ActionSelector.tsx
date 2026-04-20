@@ -7,10 +7,11 @@ import {
   Button,
   cn,
 } from "@kreozalabs/ui";
+import { CheckIcon } from "lucide-react";
 
 export interface ActionSelectorOption {
   label: string;
-  value: any;
+  value: unknown;
   icon?: React.ReactNode;
   className?: string;
 }
@@ -19,10 +20,19 @@ export interface ActionSelectorProps {
   icon?: React.ReactNode;
   label: string;
   options: ActionSelectorOption[];
-  onSelect: (value: any) => void;
+  onSelect: (value: unknown) => void;
+  value?: unknown;
   variant?: "outline" | "ghost" | "secondary" | "default";
   triggerClassName?: string;
   contentClassName?: string;
+}
+
+function areValuesEqual(a: unknown, b: unknown): boolean {
+  if (a === b) return true;
+  if (Array.isArray(a) && Array.isArray(b)) {
+    return a.length === b.length && a.every((v, i) => v === b[i]);
+  }
+  return false;
 }
 
 export function ActionSelector({
@@ -30,6 +40,7 @@ export function ActionSelector({
   label,
   options,
   onSelect,
+  value,
   variant = "outline",
   triggerClassName,
   contentClassName,
@@ -42,35 +53,36 @@ export function ActionSelector({
           variant={variant}
           size="sm"
           className={cn(
-            "h-8 flex flex-row items-center justify-center gap-2 rounded-lg border-border/30 hover:bg-muted/50 px-2.5 transition-all outline-none whitespace-nowrap",
+            "h-8 flex flex-row items-center justify-center gap-2 rounded-lg border-border/30 hover:bg-muted/50 transition-all outline-none whitespace-nowrap",
             triggerClassName
           )}
         >
           {icon}
-          <span className="text-[12px] font-semibold text-muted-foreground/80">{label}</span>
-          <span className="text-[10px] opacity-30">▼</span>
+          <span className="text-[12px] font-medium text-muted-foreground/70">{label}</span>
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent
         align="start"
-        className={cn(
-          "ring-0 rounded-2xl p-1.5 shadow-2xl border-border/40 backdrop-blur-xl",
-          contentClassName
-        )}
+        className={cn("ring-0 p-1 shadow-xl border-border/40 bg-background w-45", contentClassName)}
       >
-        {options.map((option, index) => (
-          <DropdownMenuItem
-            key={index}
-            onClick={() => onSelect(option.value)}
-            className={cn(
-              "rounded-xl gap-3 px-3 py-2 font-bold focus:bg-primary/5 focus:text-primary",
-              option.className
-            )}
-          >
-            {option.icon}
-            {option.label}
-          </DropdownMenuItem>
-        ))}
+        {options.map((option, index) => {
+          const isSelected =
+            value !== undefined ? areValuesEqual(option.value, value) : label === option.label;
+          return (
+            <DropdownMenuItem
+              key={index}
+              onClick={() => onSelect(option.value)}
+              className={cn(
+                "flex items-center gap-3 px-2.5 py-2 font-medium hover:bg-muted/50 outline-none transition-colors",
+                option.className
+              )}
+            >
+              <div className="shrink-0">{option.icon}</div>
+              <span className="text-[13px] flex-1 truncate">{option.label}</span>
+              {isSelected && <CheckIcon className="size-3.5 text-primary ml-auto shrink-0" />}
+            </DropdownMenuItem>
+          );
+        })}
       </DropdownMenuContent>
     </DropdownMenu>
   );

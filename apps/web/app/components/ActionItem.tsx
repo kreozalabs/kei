@@ -8,6 +8,7 @@ interface ActionItemProps {
   onComplete: (action: Action) => void;
   onAbandon: (action: Action) => void;
 }
+// TODO: Add on click edit, and other things.
 
 export function ActionItem({ action, type, onComplete, onAbandon }: ActionItemProps) {
   const getPriorityColor = (priority: string) => {

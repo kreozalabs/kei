@@ -27,11 +27,13 @@ export function TimelineCalendar({ selectedDate, onDateSelect }: TimelineCalenda
 
   // Track the year the user is currently "viewing" in the month picker
   const [pickerYear, setPickerYear] = useState(() => new Date(selectedDate + "T12:00:00").getFullYear());
+  const [prevSelectedDate, setPrevSelectedDate] = useState(selectedDate);
 
   // Reset pickerYear when the selected date changes externally (e.g. today button)
-  useEffect(() => {
+  if (selectedDate !== prevSelectedDate) {
+    setPrevSelectedDate(selectedDate);
     setPickerYear(new Date(selectedDate + "T12:00:00").getFullYear());
-  }, [selectedDate]);
+  }
 
   // Generate a range of dates around the selected date
   const days = useMemo(() => {

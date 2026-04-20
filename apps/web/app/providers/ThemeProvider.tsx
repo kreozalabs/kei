@@ -1,8 +1,10 @@
 import * as React from "react";
-import { createContext, useContext, useEffect, useState } from "react";
-
-export type Theme = "dark" | "light" | "system";
-export type Accent = "blue" | "indigo" | "violet" | "emerald" | "rose" | "amber" | "forest";
+import { useEffect, useState } from "react";
+import { 
+  Theme, 
+  Accent, 
+  ThemeProviderContext 
+} from "./ThemeContext";
 
 interface ThemeProviderProps {
   children: React.ReactNode;
@@ -11,22 +13,6 @@ interface ThemeProviderProps {
   storageKey?: string;
   accentStorageKey?: string;
 }
-
-interface ThemeProviderState {
-  theme: Theme;
-  accent: Accent;
-  setTheme: (theme: Theme) => void;
-  setAccent: (accent: Accent) => void;
-}
-
-const initialState: ThemeProviderState = {
-  theme: "system",
-  accent: "rose",
-  setTheme: () => null,
-  setAccent: () => null,
-};
-
-const ThemeProviderContext = createContext<ThemeProviderState>(initialState);
 
 export function ThemeProvider({
   children,
@@ -103,11 +89,3 @@ export function ThemeProvider({
     </ThemeProviderContext.Provider>
   );
 }
-
-export const useTheme = () => {
-  const context = useContext(ThemeProviderContext);
-
-  if (context === undefined) throw new Error("useTheme must be used within a ThemeProvider");
-
-  return context;
-};

@@ -1,5 +1,5 @@
 import { forwardRef } from "react";
-import { PlusIcon, SearchIcon, MoreVerticalIcon, PaletteIcon } from "lucide-react";
+import { PlusIcon, SearchIcon, MoreVerticalIcon } from "lucide-react";
 import { Button, cn } from "@kreozalabs/ui";
 import { useSubtleOnIdle } from "@/hooks/useSubtleOnIdle";
 import { ThemeToggle } from "../ThemeToggle";

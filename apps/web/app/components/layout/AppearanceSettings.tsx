@@ -1,6 +1,6 @@
 import { MoonIcon, SunIcon, LaptopIcon } from "lucide-react";
 import { Button, cn } from "@kreozalabs/ui";
-import { useTheme, type Accent, type Theme } from "../../providers/ThemeProvider";
+import { useTheme, type Accent, type Theme } from "../../providers/ThemeContext";
 
 const ACCENTS: { name: Accent; color: string; hover: string }[] = [
   { name: "blue", color: "bg-[#1e60f2]", hover: "hover:bg-[#1e60f2]" },
