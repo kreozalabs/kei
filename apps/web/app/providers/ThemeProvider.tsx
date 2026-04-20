@@ -21,7 +21,7 @@ interface ThemeProviderState {
 
 const initialState: ThemeProviderState = {
   theme: "system",
-  accent: "blue",
+  accent: "rose",
   setTheme: () => null,
   setAccent: () => null,
 };
@@ -31,7 +31,7 @@ const ThemeProviderContext = createContext<ThemeProviderState>(initialState);
 export function ThemeProvider({
   children,
   defaultTheme = "system",
-  defaultAccent = "blue",
+  defaultAccent = "rose",
   storageKey = "kei-ui-theme",
   accentStorageKey = "kei-ui-accent",
   ...props
@@ -49,15 +49,27 @@ export function ThemeProvider({
   useEffect(() => {
     const root = window.document.documentElement;
 
-    root.classList.remove("light", "dark");
+    const applyTheme = () => {
+      root.classList.remove("light", "dark");
+
+      if (theme === "system") {
+        const systemTheme = window.matchMedia("(prefers-color-scheme: dark)").matches
+          ? "dark"
+          : "light";
+        root.classList.add(systemTheme);
+      } else {
+        root.classList.add(theme);
+      }
+    };
+
+    applyTheme();
 
     if (theme === "system") {
-      const systemTheme = window.matchMedia("(prefers-color-scheme: dark)").matches
-        ? "dark"
-        : "light";
-      root.classList.add(systemTheme);
-    } else {
-      root.classList.add(theme);
+      const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
+      const handleSystemChange = () => applyTheme();
+
+      mediaQuery.addEventListener("change", handleSystemChange);
+      return () => mediaQuery.removeEventListener("change", handleSystemChange);
     }
   }, [theme]);
 
