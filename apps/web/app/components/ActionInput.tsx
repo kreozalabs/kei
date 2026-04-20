@@ -24,6 +24,7 @@ import {
 import { ActionSelector } from "./ActionSelector";
 import { addAction } from "../db/actions";
 import { useQueryClient } from "@tanstack/react-query";
+import { useDiscardGuard } from "../hooks/useDiscardGuard";
 
 interface ActionInputProps {
   onSuccess?: () => void;
@@ -49,33 +50,24 @@ export function ActionInput({
   const [energy, setEnergy] = useState<"low" | "medium" | "high">("medium");
   const [duration, setDuration] = useState<[number, number]>([15, 30]);
   const [isLoading, setIsLoading] = useState(false);
-  const [showDiscardDialog, setShowDiscardDialog] = useState(false);
   const queryClient = useQueryClient();
   const titleInputRef = useRef<HTMLInputElement>(null);
 
-  const hasUnsavedChanges = () => {
-    return (
+  const {
+    showConfirmDialog,
+    setShowConfirmDialog,
+    handleCancelAttempt,
+    handleConfirmDiscard,
+  } = useDiscardGuard({
+    hasChanges:
       title.trim() !== "" ||
       note.trim() !== "" ||
       intention !== "want" ||
       energy !== "medium" ||
       duration[0] !== 15 ||
-      duration[1] !== 30
-    );
-  };
-
-  const handleCancel = () => {
-    if (hasUnsavedChanges()) {
-      setShowDiscardDialog(true);
-    } else {
-      onCancel?.();
-    }
-  };
-
-  const handleDiscard = () => {
-    setShowDiscardDialog(false);
-    onCancel?.();
-  };
+      duration[1] !== 30,
+    onDiscard: onCancel,
+  });
 
   useEffect(() => {
     titleInputRef.current?.focus();
@@ -281,7 +273,7 @@ export function ActionInput({
               type="button"
               variant="secondary"
               size="sm"
-              onClick={handleCancel}
+              onClick={handleCancelAttempt}
               className="h-10 px-5 rounded-xl bg-muted/50 hover:bg-muted font-bold text-sm transition-all border-none active:scale-95"
             >
               Cancel
@@ -299,11 +291,8 @@ export function ActionInput({
         </div>
       </form>
 
-      <Dialog open={showDiscardDialog} onOpenChange={setShowDiscardDialog}>
-        <DialogContent
-          overlay={false}
-          className="max-w-100 p-6 bg-zinc-900 border border-zinc-100/10 shadow-2xl rounded-2xl"
-        >
+      <Dialog open={showConfirmDialog} onOpenChange={setShowConfirmDialog}>
+        <DialogContent className="max-w-[400px] p-6 bg-zinc-900 border border-zinc-100/10 shadow-2xl rounded-2xl">
           <DialogHeader className="gap-2">
             <DialogTitle className="text-[17px] font-bold tracking-tight text-white">
               Discard unsaved changes?
@@ -312,17 +301,17 @@ export function ActionInput({
               Your unsaved changes will be discarded.
             </DialogDescription>
           </DialogHeader>
-          <DialogFooter className="flex flex-row justify-end gap-3 mt-6 bg-transparent border-none p-0 mx-0 mb-0">
+          <DialogFooter className="flex flex-row justify-end gap-3 mt-6 bg-transparent border-none p-0 -mx-0 -mb-0">
             <Button
               variant="ghost"
-              onClick={() => setShowDiscardDialog(false)}
+              onClick={() => setShowConfirmDialog(false)}
               className="h-9 px-4 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-zinc-200 font-bold transition-all active:scale-95 border-none"
             >
               Cancel
             </Button>
             <Button
               variant="destructive"
-              onClick={handleDiscard}
+              onClick={handleConfirmDiscard}
               className="h-9 px-4 rounded-lg bg-red-600 hover:bg-red-700 text-white font-bold transition-all active:scale-95"
             >
               Discard
