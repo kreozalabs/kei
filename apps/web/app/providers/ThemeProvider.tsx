@@ -1,10 +1,6 @@
 import * as React from "react";
 import { useEffect, useState } from "react";
-import { 
-  Theme, 
-  Accent, 
-  ThemeProviderContext 
-} from "./ThemeContext";
+import { type Theme, type Accent, ThemeProviderContext } from "./ThemeContext";
 
 interface ThemeProviderProps {
   children: React.ReactNode;

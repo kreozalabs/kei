@@ -8,6 +8,7 @@ import {
   BatteryLow,
   Heart,
   AlertCircle,
+  Star,
 } from "lucide-react";
 import {
   Dialog,
@@ -45,6 +46,7 @@ export const ActionInput = forwardRef<ActionInputHandle, ActionInputProps>(
     const [title, setTitle] = useState("");
     const [note, setNote] = useState("");
     const [intention, setIntention] = useState<"must" | "want">("want");
+    const [isImportant, setIsImportant] = useState(false);
     const [energy, setEnergy] = useState<"low" | "medium" | "high">("medium");
     const [duration, setDuration] = useState<[number, number]>([15, 30]);
     const [isLoading, setIsLoading] = useState(false);
@@ -75,6 +77,7 @@ export const ActionInput = forwardRef<ActionInputHandle, ActionInputProps>(
           title: title.trim(),
           note: note.trim(),
           intention,
+          important: isImportant,
           energy,
           duration,
           scheduledDate: initialDate,
@@ -153,23 +156,28 @@ export const ActionInput = forwardRef<ActionInputHandle, ActionInputProps>(
               }
               options={[
                 {
+                  label: "<15 mins",
+                  value: [0, 15] as [number, number],
+                  icon: <Clock className="size-4 text-muted-foreground" />,
+                },
+                {
                   label: "15 mins",
-                  value: [15, 15],
+                  value: [15, 15] as [number, number],
                   icon: <Clock className="size-4 text-muted-foreground" />,
                 },
                 {
                   label: "15 - 30 mins",
-                  value: [15, 30],
+                  value: [15, 30] as [number, number],
                   icon: <Clock className="size-4 text-muted-foreground" />,
                 },
                 {
                   label: "30 - 60 mins",
-                  value: [30, 60],
+                  value: [30, 60] as [number, number],
                   icon: <Clock className="size-4 text-muted-foreground" />,
                 },
                 {
                   label: "1 hour+",
-                  value: [60, 120],
+                  value: [60, 120] as [number, number],
                   icon: <Clock className="size-4 text-muted-foreground" />,
                 },
               ]}
@@ -225,40 +233,76 @@ export const ActionInput = forwardRef<ActionInputHandle, ActionInputProps>(
 
           {/* Footer */}
           <div className="px-5 py-4 flex items-center justify-between gap-4 bg-muted/5">
-            {/* TODO: Should we make it empty, so user sets I want to, or I must to, himself, or it will create more friction? */}
-            <ActionSelector
-              variant="ghost"
-              icon={
-                <div
-                  className={cn(
-                    "size-5 rounded-md flex items-center justify-center",
-                    intention === "must" ? "bg-orange-500/10" : "bg-pink-500/10"
-                  )}
-                >
-                  {intention === "must" ? (
-                    <AlertCircle className="size-3.5 text-orange-500" />
-                  ) : (
-                    <Heart className="size-3.5 text-pink-500" />
-                  )}
-                </div>
-              }
-              label={intention === "must" ? "Must do" : "Want to do"}
-              options={[
-                {
-                  label: "Want to do",
-                  value: "want",
-                  icon: <Heart className="size-4 text-pink-500" />,
-                },
-                {
-                  label: "Must do",
-                  value: "must",
-                  icon: <AlertCircle className="size-4 text-orange-500" />,
-                },
-              ]}
-              onSelect={setIntention}
-              value={intention}
-              triggerClassName="h-9 px-3 rounded-xl hover:bg-muted/50 font-bold text-muted-foreground/70 hover:text-foreground border-none"
-            />
+            <div className="flex items-center gap-1">
+              <ActionSelector
+                variant="ghost"
+                icon={
+                  <div
+                    className={cn(
+                      "size-5 rounded-md flex items-center justify-center",
+                      intention === "must" ? "bg-orange-500/10" : "bg-pink-500/10"
+                    )}
+                  >
+                    {intention === "must" ? (
+                      <AlertCircle className="size-3.5 text-orange-500" />
+                    ) : (
+                      <Heart className="size-3.5 text-pink-500" />
+                    )}
+                  </div>
+                }
+                label={intention === "must" ? "Must do" : "Want to do"}
+                options={[
+                  {
+                    label: "Want to do",
+                    value: "want",
+                    icon: <Heart className="size-4 text-pink-500" />,
+                  },
+                  {
+                    label: "Must do",
+                    value: "must",
+                    icon: <AlertCircle className="size-4 text-orange-500" />,
+                  },
+                ]}
+                onSelect={setIntention}
+                value={intention}
+                triggerClassName="h-9 px-3 rounded-xl hover:bg-muted/50 font-bold text-muted-foreground/70 hover:text-foreground border-none"
+              />
+
+              <ActionSelector
+                variant="ghost"
+                icon={
+                  <div
+                    className={cn(
+                      "size-5 rounded-md flex items-center justify-center",
+                      isImportant ? "bg-amber-500/10" : "bg-muted/30"
+                    )}
+                  >
+                    <Star
+                      className={cn(
+                        "size-3.5 mb-0.5",
+                        isImportant ? "text-amber-500 fill-amber-500" : "text-muted-foreground/40"
+                      )}
+                    />
+                  </div>
+                }
+                label={isImportant ? "Important" : ""}
+                options={[
+                  {
+                    label: "Regular",
+                    value: false,
+                    icon: <Star className="size-4 text-muted-foreground/40" />,
+                  },
+                  {
+                    label: "Important",
+                    value: true,
+                    icon: <Star className="size-4 text-amber-500 fill-amber-500" />,
+                  },
+                ]}
+                onSelect={setIsImportant}
+                value={isImportant}
+                triggerClassName="h-9 px-3 rounded-xl hover:bg-muted/50 font-bold text-muted-foreground/70 hover:text-foreground border-none"
+              />
+            </div>
 
             <div className="flex items-center gap-2">
               <Button

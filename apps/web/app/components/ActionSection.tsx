@@ -94,7 +94,7 @@ export function ActionSection({
               />
             </div>
           )}
-          {/* TODO: Add a moving logic for action item, so it can be moved to later or earlier date. */}
+          {/* TODO: Add a moving logic for action item, so it can be moved to later or earlier date. Icon 2*3 grid of dots*/}
           {actions.map((action) => (
             <ActionItem
               key={action.id}

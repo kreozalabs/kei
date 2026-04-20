@@ -9,19 +9,19 @@ import {
 } from "@kreozalabs/ui";
 import { CheckIcon } from "lucide-react";
 
-export interface ActionSelectorOption {
+export interface ActionSelectorOption<T = any> {
   label: string;
-  value: unknown;
+  value: T;
   icon?: React.ReactNode;
   className?: string;
 }
 
-export interface ActionSelectorProps {
+export interface ActionSelectorProps<T = any> {
   icon?: React.ReactNode;
   label: string;
-  options: ActionSelectorOption[];
-  onSelect: (value: unknown) => void;
-  value?: unknown;
+  options: ActionSelectorOption<T>[];
+  onSelect: (value: T) => void;
+  value?: T;
   variant?: "outline" | "ghost" | "secondary" | "default";
   triggerClassName?: string;
   contentClassName?: string;
@@ -35,7 +35,7 @@ function areValuesEqual(a: unknown, b: unknown): boolean {
   return false;
 }
 
-export function ActionSelector({
+export function ActionSelector<T = any>({
   icon,
   label,
   options,
@@ -44,7 +44,7 @@ export function ActionSelector({
   variant = "outline",
   triggerClassName,
   contentClassName,
-}: ActionSelectorProps) {
+}: ActionSelectorProps<T>) {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>

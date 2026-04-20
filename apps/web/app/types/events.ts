@@ -18,6 +18,7 @@ export interface ActionPayload {
   intention?: "must" | "want";
   energy?: "low" | "medium" | "high";
   duration?: [number, number]; // [min, max] in minutes
+  important?: boolean;
   scheduledDate?: string; // YYYY-MM-DD
 }
 
@@ -26,6 +27,7 @@ export interface Action {
   title: string;
   note?: string;
   intention: "must" | "want";
+  important: boolean;
   energy: "low" | "medium" | "high";
   duration?: [number, number];
   scheduledDate: string; // YYYY-MM-DD

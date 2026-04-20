@@ -1,6 +1,6 @@
 import type { Action } from "../types/events";
 import { Button, cn } from "@kreozalabs/ui";
-import { Trash2Icon, CheckCircle2Icon, CalendarIcon, InboxIcon } from "lucide-react";
+import { Trash2Icon, CheckCircle2Icon, CalendarIcon, InboxIcon, Star } from "lucide-react";
 
 interface ActionItemProps {
   action: Action;
@@ -61,11 +61,12 @@ export function ActionItem({ action, type, onComplete, onAbandon }: ActionItemPr
           <div className="flex flex-col flex-1 min-w-0">
             <span
               className={cn(
-                "text-[14px] font-medium leading-[1.4] transition-all",
+                "text-[14px] font-medium leading-[1.4] transition-all flex items-center gap-1.5",
                 type === "completed" ? "line-through text-muted-foreground" : "text-foreground"
               )}
             >
               {action.title}
+              {action.important && <Star className="size-3 text-amber-500 fill-amber-500 shrink-0" />}
             </span>
 
             {action.description && (

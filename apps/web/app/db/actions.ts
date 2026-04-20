@@ -17,6 +17,7 @@ export async function getActions(): Promise<Action[]> {
         title: event.payload.title || "Untitled",
         note: event.payload.note,
         intention: event.payload.intention || "want",
+        important: event.payload.important || false,
         energy: event.payload.energy || "medium",
         duration: event.payload.duration,
         scheduledDate: event.payload.scheduledDate || getTodayString(),
