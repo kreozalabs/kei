@@ -7,17 +7,11 @@ import { initPromise } from "@/db";
 import { getActions, completeAction, abandonAction } from "@/db/actions";
 import {
   Button,
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-  DialogTrigger,
 } from "@kreozalabs/ui";
 import { LockIcon, UnlockIcon, Loader2Icon } from "lucide-react";
 import type { Action } from "@/types/events";
 import { ActionSection } from "@/components/ActionSection";
-import { ActionInput } from "@/components/ActionInput";
+import { ActionInputDialog } from "@/components/ActionInputDialog";
 import { TimelineCalendar } from "@/components/TimelineCalendar";
 import { ActionSectionSkeleton } from "@/components/ActionSkeleton";
 
@@ -62,32 +56,16 @@ export default function Dashboard() {
       center: <HeaderSearch />,
       right: (
         <div className="flex items-center gap-2">
-          <Dialog
+          <ActionInputDialog
             open={isDialogOpen}
             onOpenChange={(open) => {
               setIsDialogOpen(open);
               if (!open) setDialogPreDate(null);
             }}
-          >
-            <DialogTrigger asChild>
-              <HeaderNewAction />
-            </DialogTrigger>
-            <DialogContent className="sm:max-w-xl p-0 bg-background/60 backdrop-blur-3xl border border-border/20 shadow-2xl ring-0 gap-0">
-              <DialogHeader className="p-6 pb-2">
-                <DialogTitle className="text-xl font-bold">Add New Action</DialogTitle>
-                <DialogDescription className="sr-only">
-                  Capture a new high-impact move in the system.
-                </DialogDescription>
-              </DialogHeader>
-              <div className="px-2 pb-2">
-                <ActionInput
-                  variant="dialog"
-                  onSuccess={() => setIsDialogOpen(false)}
-                  initialDate={dialogPreDate || selectedDate}
-                />
-              </div>
-            </DialogContent>
-          </Dialog>
+            trigger={<HeaderNewAction />}
+            initialDate={dialogPreDate}
+            selectedDate={selectedDate}
+          />
 
           <Button
             variant="ghost"

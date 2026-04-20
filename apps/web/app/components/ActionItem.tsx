@@ -23,7 +23,7 @@ export function ActionItem({ action, type, onComplete, onAbandon }: ActionItemPr
     }
   };
 
-  const todayString = new Date().toLocaleDateString('en-CA'); // YYYY-MM-DD
+  const todayString = new Date().toLocaleDateString("en-CA"); // YYYY-MM-DD
   const isOverdue = action.scheduledDate < todayString;
 
   return (
@@ -74,11 +74,14 @@ export function ActionItem({ action, type, onComplete, onAbandon }: ActionItemPr
             )}
 
             <div className="flex items-center gap-2 mt-1">
-              <span className={cn(
-                "text-[11px] font-medium flex items-center gap-1",
-                isOverdue ? "text-red-500/80" : "text-muted-foreground/60"
-              )}>
+              <span
+                className={cn(
+                  "text-[11px] font-medium flex items-center gap-1",
+                  isOverdue ? "text-red-500/80" : "text-muted-foreground/60"
+                )}
+              >
                 <CalendarIcon className="size-3" />
+                {/* TODO: Instead of overdue, maybe put date and time? */}
                 {isOverdue ? "Overdue" : "Scheduled"}
               </span>
             </div>

@@ -4,24 +4,12 @@ import { PlusIcon } from "lucide-react";
 import { useKeyboardShortcuts } from "@/hooks/useKeyboardShortcuts";
 import { useFullscreen } from "@/hooks/useFullscreen";
 import { SidebarToggle } from "./SidebarToggle";
-import {
-  Button,
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DropdownMenu,
-  DropdownMenuTrigger,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  cn,
-} from "@kreozalabs/ui";
+import { Button, cn } from "@kreozalabs/ui";
 import { AppSidebar } from "./AppSidebar";
 import { AppHeader, HeaderSearch, HeaderNewAction, HeaderMore } from "./AppHeader";
 import { MobileNav } from "./MobileNav";
 import { ErrorPage } from "../ErrorPage";
-import { ActionInput } from "../ActionInput";
+import { ActionInputDialog } from "../ActionInputDialog";
 
 export interface AppLayoutContext {
   setTitle: (title: string) => void;
@@ -49,8 +37,6 @@ export function AppLayout({ error }: { error?: unknown }) {
   >();
 
   const openActionInput = useCallback(() => {
-    setIsDesktopAddMenuOpen(false);
-    setIsMobileAddMenuOpen(false);
     setIsActionInputOpen(true);
   }, []);
   const toggleSidebar = useCallback(() => setIsSidebarOpen((prev) => !prev), []);
@@ -149,60 +135,7 @@ export function AppLayout({ error }: { error?: unknown }) {
             ) : (
               <div className="hidden md:flex items-center gap-8">
                 {onFabClick === defaultFabClick ? (
-                  <DropdownMenu open={isDesktopAddMenuOpen} onOpenChange={setIsDesktopAddMenuOpen}>
-                    <DropdownMenuTrigger asChild>
-                      <HeaderNewAction />
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent
-                      align="end"
-                      side="bottom"
-                      sideOffset={12}
-                      className="w-64 z-50 rounded-3xl p-2 border-border/10 bg-background/95 backdrop-blur-3xl shadow-2xl animate-in fade-in zoom-in-95 duration-200"
-                    >
-                      <DropdownMenuItem
-                        onClick={openActionInput}
-                        className="gap-3 py-3 px-3 rounded-2xl cursor-pointer transition-all hover:bg-muted/50 active:scale-[0.98]"
-                      >
-                        <div className="flex items-center justify-center size-9 rounded-full bg-primary/10 text-primary shrink-0 transition-transform group-hover:scale-110">
-                          <PlusIcon className="size-5" />
-                        </div>
-                        <div className="flex flex-col">
-                          <span className="font-semibold text-sm">New Task</span>
-                          <span className="text-xs text-muted-foreground/60 leading-tight">
-                            Log a new task
-                          </span>
-                        </div>
-                      </DropdownMenuItem>
-                      <DropdownMenuItem
-                        onClick={openActionInput}
-                        className="gap-3 py-3 px-3 rounded-2xl cursor-pointer transition-all hover:bg-muted/50 active:scale-[0.98]"
-                      >
-                        <div className="flex items-center justify-center size-9 rounded-full bg-blue-500/10 text-blue-500 shrink-0 transition-transform group-hover:scale-110">
-                          <span className="text-lg">📝</span>
-                        </div>
-                        <div className="flex flex-col">
-                          <span className="font-semibold text-sm">New Note</span>
-                          <span className="text-xs text-muted-foreground/60 leading-tight">
-                            Capture a thought
-                          </span>
-                        </div>
-                      </DropdownMenuItem>
-                      <DropdownMenuItem
-                        onClick={openActionInput}
-                        className="gap-3 py-3 px-3 rounded-2xl cursor-pointer transition-all hover:bg-muted/50 active:scale-[0.98]"
-                      >
-                        <div className="flex items-center justify-center size-9 rounded-full bg-green-500/10 text-green-500 shrink-0 transition-transform group-hover:scale-110">
-                          <span className="text-lg">🎯</span>
-                        </div>
-                        <div className="flex flex-col">
-                          <span className="font-semibold text-sm">New Goal</span>
-                          <span className="text-xs text-muted-foreground/60 leading-tight">
-                            Set a new objective
-                          </span>
-                        </div>
-                      </DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
+                  <HeaderNewAction onClick={openActionInput} />
                 ) : onFabClick ? (
                   <HeaderNewAction onClick={onFabClick} />
                 ) : null}
@@ -243,58 +176,15 @@ export function AppLayout({ error }: { error?: unknown }) {
 
         {/* Floating Action Button (Mobile only) */}
         {onFabClick === defaultFabClick ? (
-          <DropdownMenu open={isMobileAddMenuOpen} onOpenChange={setIsMobileAddMenuOpen}>
-            <DropdownMenuTrigger asChild>
-              <Button
-                className={cn(
-                  "md:hidden fixed bottom-24 right-6 size-14 rounded-2xl bg-primary hover:bg-primary/90 text-primary-foreground shadow-2xl flex items-center justify-center transition-all duration-300 active:scale-95 z-50 group border-none",
-                  isMobileAddMenuOpen ? "shadow-none bg-primary" : "shadow-primary/30"
-                )}
-                aria-label="Add Action"
-              >
-                <PlusIcon
-                  className={cn(
-                    "size-8 transition-transform duration-300",
-                    isMobileAddMenuOpen ? "rotate-45" : "group-hover:rotate-90"
-                  )}
-                />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent
-              align="end"
-              side="top"
-              sideOffset={20}
-              className="z-50 bg-transparent border-none shadow-none p-0 flex flex-col items-end gap-3 min-w-0"
-            >
-              <DropdownMenuItem
-                onClick={openActionInput}
-                className="flex items-center gap-3 py-2 px-4 rounded-full bg-background/95 backdrop-blur-xl border border-border/40 shadow-xl cursor-pointer transition-all active:scale-95 focus:bg-background/95 ring-0 outline-none group"
-              >
-                <div className="flex items-center justify-center size-9 rounded-full bg-green-500/10 text-green-500 shrink-0 transition-transform group-hover:scale-110">
-                  <span className="text-lg">🎯</span>
-                </div>
-                <span className="font-semibold text-sm pr-1">New Goal</span>
-              </DropdownMenuItem>
-              <DropdownMenuItem
-                onClick={openActionInput}
-                className="flex items-center gap-3 py-2 px-4 rounded-full bg-background/95 backdrop-blur-xl border border-border/40 shadow-xl cursor-pointer transition-all active:scale-95 focus:bg-background/95 ring-0 outline-none group"
-              >
-                <div className="flex items-center justify-center size-9 rounded-full bg-blue-500/10 text-blue-500 shrink-0 transition-transform group-hover:scale-110">
-                  <span className="text-lg">📝</span>
-                </div>
-                <span className="font-semibold text-sm pr-1">New Note</span>
-              </DropdownMenuItem>
-              <DropdownMenuItem
-                onClick={openActionInput}
-                className="flex items-center gap-3 py-2 px-4 rounded-full bg-background/95 backdrop-blur-xl border border-border/40 shadow-xl cursor-pointer transition-all active:scale-95 focus:bg-background/95 ring-0 outline-none group"
-              >
-                <div className="flex items-center justify-center size-9 rounded-full bg-primary/10 text-primary shrink-0 transition-transform group-hover:scale-110">
-                  <PlusIcon className="size-5" />
-                </div>
-                <span className="font-semibold text-sm pr-1">New Task</span>
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+          <Button
+            onClick={openActionInput}
+            className={cn(
+              "md:hidden fixed bottom-24 right-6 size-14 rounded-2xl bg-primary hover:bg-primary/90 text-primary-foreground shadow-2xl flex items-center justify-center transition-all duration-300 active:scale-95 z-50 group border-none shadow-primary/30"
+            )}
+            aria-label="Add Action"
+          >
+            <PlusIcon className="size-8 transition-transform duration-300 group-hover:rotate-90" />
+          </Button>
         ) : onFabClick ? (
           <Button
             onClick={onFabClick}
@@ -309,25 +199,7 @@ export function AppLayout({ error }: { error?: unknown }) {
         <MobileNav />
 
         {/* Global Action Input Dialog */}
-        <Dialog open={isActionInputOpen} onOpenChange={setIsActionInputOpen}>
-          <DialogContent className="sm:max-w-lg p-0 bg-background/60 backdrop-blur-3xl border border-border/20 shadow-2xl ring-0">
-            <DialogHeader className="px-6 pt-6">
-              <DialogTitle className="text-xl font-extrabold tracking-tight">
-                New Action
-              </DialogTitle>
-              <DialogDescription className="sr-only">
-                Capture your next high-impact move in the system.
-              </DialogDescription>
-            </DialogHeader>
-            <div className="p-0">
-              <ActionInput
-                variant="dialog"
-                onSuccess={() => setIsActionInputOpen(false)}
-                onCancel={() => setIsActionInputOpen(false)}
-              />
-            </div>
-          </DialogContent>
-        </Dialog>
+        <ActionInputDialog open={isActionInputOpen} onOpenChange={setIsActionInputOpen} />
       </main>
     </div>
   );
