@@ -64,7 +64,7 @@ export function ActionSection({
               setIsAdding(true);
               setIsExpanded(true);
             }}
-            className="size-6 p-0 rounded-md text-muted-foreground hover:text-primary hover:bg-primary/10 transition-all opacity-0 group-hover/section:opacity-100 flex items-center justify-center shrink-0"
+            className="size-6 p-0 rounded-md text-muted-foreground hover:text-primary hover:bg-primary/10 transition-all opacity-50 group-hover/section:opacity-100 flex items-center justify-center shrink-0"
             title="Add Action"
           >
             <PlusIcon className="size-4" />

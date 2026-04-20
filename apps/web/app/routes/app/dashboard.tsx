@@ -272,8 +272,8 @@ export default function Dashboard() {
           <TimelineCalendar selectedDate={selectedDate} onDateSelect={setSelectedDate} />
         )}
 
-        {/* Overdue Section (Visible only if viewing Today or nearby) */}
-        {overdueActions.length > 0 && selectedDate <= todayStr && (
+        {/* Overdue Section (Visible only if viewing Today or nearby and NOT locked) */}
+        {overdueActions.length > 0 && !isTodayLocked && selectedDate <= todayStr && (
           <ActionSection
             id="overdue"
             sectionTitle="Overdue"
