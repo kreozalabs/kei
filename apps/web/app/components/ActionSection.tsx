@@ -5,6 +5,9 @@ import { useState, useEffect } from "react";
 import { ChevronDownIcon, PlusIcon } from "lucide-react";
 import { ActionInput } from "./ActionInput";
 
+import { SortableContext, verticalListSortingStrategy } from "@dnd-kit/sortable";
+import { useDroppable } from "@dnd-kit/core";
+
 interface ActionListProps {
   id: string;
   sectionTitle: string;
@@ -25,6 +28,14 @@ export function ActionSection({
   sectionDate,
 }: ActionListProps) {
   const [isAdding, setIsAdding] = useState(false);
+  const { setNodeRef } = useDroppable({
+    id: `section-${sectionDate}`,
+    data: {
+      type: "section",
+      date: sectionDate,
+    },
+  });
+
   const [isExpanded, setIsExpanded] = useState(() => {
     if (typeof window !== "undefined") {
       const stored = window.sessionStorage.getItem(`kei-section-expanded-${id}`);
@@ -40,7 +51,7 @@ export function ActionSection({
   const showContent = isTodayLocked ? true : isExpanded;
 
   return (
-    <div className="mb-6 group/section">
+    <div className="mb-6 group/section" ref={setNodeRef}>
       <div className="flex items-center gap-2 px-1 sm:px-2 border-b border-border/20 pb-2 mb-1 min-h-10">
         <div className="flex-1 flex items-center gap-2 overflow-hidden">
           <h2 className="text-[14px] font-bold tracking-tight text-muted-foreground/70 truncate">
@@ -94,16 +105,20 @@ export function ActionSection({
               />
             </div>
           )}
-          {/* TODO: Add a moving logic for action item, so it can be moved to later or earlier date. Icon 2*3 grid of dots*/}
-          {actions.map((action) => (
-            <ActionItem
-              key={action.id}
-              action={action}
-              type="active"
-              onComplete={onComplete ?? (() => {})}
-              onAbandon={onAbandon ?? (() => {})}
-            />
-          ))}
+
+          <SortableContext items={actions.map((a) => a.id)} strategy={verticalListSortingStrategy}>
+            <div className="flex flex-col min-h-5">
+              {actions.map((action) => (
+                <ActionItem
+                  key={action.id}
+                  action={action}
+                  type="active"
+                  onComplete={onComplete ?? (() => {})}
+                  onAbandon={onAbandon ?? (() => {})}
+                />
+              ))}
+            </div>
+          </SortableContext>
 
           {actions.length === 0 && showContent && !isAdding && (
             <div className="py-8 flex flex-col items-center justify-center gap-2 text-sm text-muted-foreground font-medium grayscale opacity-50">

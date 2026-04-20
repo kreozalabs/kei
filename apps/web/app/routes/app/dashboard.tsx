@@ -4,18 +4,27 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import type { AppLayoutContext } from "@/components/layout/AppLayout";
 import { HeaderSearch, HeaderNewAction } from "@/components/layout/AppHeader";
 import { initPromise } from "@/db";
-import { getActions, completeAction, abandonAction } from "@/db/actions";
-import {
-  Button,
-} from "@kreozalabs/ui";
+import { getActions, updateAction, completeAction, abandonAction } from "@/db/actions";
+import { Button } from "@kreozalabs/ui";
 import { LockIcon, UnlockIcon, Loader2Icon } from "lucide-react";
 import type { Action } from "@/types/events";
 import { ActionSection } from "@/components/ActionSection";
 import { ActionInputDialog } from "@/components/ActionInputDialog";
 import { TimelineCalendar } from "@/components/TimelineCalendar";
 import { ActionSectionSkeleton } from "@/components/ActionSkeleton";
+import {
+  DndContext,
+  closestCorners,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  type DragEndEvent,
+} from "@dnd-kit/core";
 
 const getTodayString = () => new Date().toLocaleDateString("en-CA");
+// TODO: We need to do following:
+// 1. Logic for order of tasks, so we can move them within one day.
+// 2. Logic to move actions between days, so date of action is updated?
 
 export default function Dashboard() {
   const [isDbReady, setIsDbReady] = useState(false);
@@ -31,6 +40,14 @@ export default function Dashboard() {
   const [selectedDate, setSelectedDate] = useState(getTodayString());
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [dialogPreDate, setDialogPreDate] = useState<string | null>(null);
+
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: {
+        distance: 8,
+      },
+    })
+  );
 
   useEffect(() => {
     window.sessionStorage.setItem("kei-dashboard-timeline-locked", String(isTodayLocked));
@@ -114,13 +131,18 @@ export default function Dashboard() {
     const todayStr = getTodayString();
 
     // 1. Compute Overdue (tasks before Today)
-    const overdue = activeActions.filter((a) => a.scheduledDate < todayStr);
+    const overdue = activeActions
+      .filter((a) => a.scheduledDate < todayStr)
+      .sort((a, b) => b.sortOrder - a.sortOrder);
 
     const sections = [];
 
     if (isTodayLocked) {
       // Locked mode: Only show TODAY
-      const actionsForDay = activeActions.filter((a) => a.scheduledDate === todayStr);
+      const actionsForDay = activeActions
+        .filter((a) => a.scheduledDate === todayStr)
+        .sort((a, b) => b.sortOrder - a.sortOrder);
+
       sections.push({
         id: todayStr,
         title: `${new Date(todayStr + "T12:00:00").toLocaleDateString("en-US", { day: "numeric", month: "short" })} ‧ Today ‧ ${new Date(todayStr + "T12:00:00").toLocaleDateString("en-US", { weekday: "long" })}`,
@@ -136,7 +158,9 @@ export default function Dashboard() {
         d.setDate(d.getDate() + i);
         const dateStr = d.toLocaleDateString("en-CA");
 
-        const actionsForDay = activeActions.filter((a) => a.scheduledDate === dateStr);
+        const actionsForDay = activeActions
+          .filter((a) => a.scheduledDate === dateStr)
+          .sort((a, b) => b.sortOrder - a.sortOrder);
 
         let title = d.toLocaleDateString("en-US", { day: "numeric", month: "short" });
         const isToday = dateStr === todayStr;
@@ -163,8 +187,86 @@ export default function Dashboard() {
     return { overdueActions: overdue, daySections: sections };
   }, [allActions, selectedDate, isTodayLocked]);
 
+  const handleDragEnd = async (event: DragEndEvent) => {
+    const { active, over } = event;
+    if (!over) return;
+
+    const activeId = active.id as string;
+    const overId = over.id as string;
+
+    if (activeId === overId) return;
+
+    const activeAction = allActions.find((a) => a.id === activeId);
+    if (!activeAction) return;
+
+    let targetDate: string | undefined;
+    const overAction = allActions.find((a) => a.id === overId);
+
+    if (overAction) {
+      targetDate = overAction.scheduledDate;
+    } else if (overId.startsWith("section-")) {
+      targetDate = overId.replace("section-", "");
+    }
+
+    if (!targetDate) return;
+
+    // Calculate new sortOrder
+    // We exclude the active item from the target list to get an accurate representation of the target state
+    const actionsInTargetDay = allActions
+      .filter((a) => a.scheduledDate === targetDate && a.status === "active" && a.id !== activeId)
+      .sort((a, b) => b.sortOrder - a.sortOrder);
+
+    let newSortOrder: number;
+
+    if (overAction) {
+      const overIndex = actionsInTargetDay.findIndex((a) => a.id === overId);
+
+      if (overIndex === 0) {
+        // Dropped at the very top of the list
+        newSortOrder = actionsInTargetDay[0].sortOrder + 10000;
+      } else if (overIndex === -1) {
+        // Dropped on an item that somehow isn't in the target day list (shouldn't happen)
+        newSortOrder = Date.now();
+      } else {
+        // Dropped between two items
+        const prevItem = actionsInTargetDay[overIndex - 1];
+        const nextItem = actionsInTargetDay[overIndex];
+        newSortOrder = (prevItem.sortOrder + nextItem.sortOrder) / 2;
+      }
+    } else {
+      // Dropped on an empty section or section header
+      if (actionsInTargetDay.length > 0) {
+        newSortOrder = actionsInTargetDay[0].sortOrder + 10000;
+      } else {
+        newSortOrder = Date.now();
+      }
+    }
+
+    // --- Optimistic Update ---
+    const previousActions = allActions;
+    const updatedActions = allActions.map((a) =>
+      a.id === activeId ? { ...a, scheduledDate: targetDate!, sortOrder: newSortOrder } : a
+    );
+
+    // Update query cache immediately
+    queryClient.setQueryData(["actions"], updatedActions);
+
+    try {
+      await updateAction(activeId, {
+        scheduledDate: targetDate,
+        sortOrder: newSortOrder,
+      });
+      // Optional: invalidate to make sure we are in sync with any other changes
+      queryClient.invalidateQueries({ queryKey: ["actions"] });
+    } catch (error) {
+      console.error("Failed to update action order:", error);
+      // Rollback on error
+      queryClient.setQueryData(["actions"], previousActions);
+    }
+  };
+
   return (
-    <>
+    <DndContext sensors={sensors} collisionDetection={closestCorners} onDragEnd={handleDragEnd}>
       <div className="max-w-3xl mx-auto px-2 sm:px-0 mt-2">
         {!isTodayLocked && (
           <TimelineCalendar selectedDate={selectedDate} onDateSelect={setSelectedDate} />
@@ -219,6 +321,6 @@ export default function Dashboard() {
           </div>
         </div>
       )}
-    </>
+    </DndContext>
   );
 }

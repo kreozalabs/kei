@@ -23,12 +23,13 @@ export async function getActions(): Promise<Action[]> {
         scheduledDate: event.payload.scheduledDate || getTodayString(),
         status: "active",
         createdAt: event.timestamp,
+        sortOrder: event.payload.sortOrder ?? event.timestamp,
       });
     } else if (event.type === "ACTION_UPDATED") {
-      const existing = actionsMap.get(event.id);
-      if (existing) {
-        actionsMap.set(event.id, { ...existing, ...event.payload });
-      }
+        const existing = actionsMap.get(event.id);
+        if (existing) {
+          actionsMap.set(event.id, { ...existing, ...event.payload });
+        }
     } else if (event.type === "ACTION_COMPLETED") {
       const existing = actionsMap.get(event.id);
       if (existing) {
@@ -42,7 +43,7 @@ export async function getActions(): Promise<Action[]> {
     }
   }
 
-  return Array.from(actionsMap.values()).sort((a, b) => b.createdAt - a.createdAt);
+  return Array.from(actionsMap.values()).sort((a, b) => b.sortOrder - a.sortOrder);
 }
 
 export async function addAction(payload: ActionPayload) {
@@ -54,6 +55,7 @@ export async function addAction(payload: ActionPayload) {
     payload: {
       ...payload,
       scheduledDate: payload.scheduledDate || getTodayString(),
+      sortOrder: payload.sortOrder ?? Date.now(),
     },
   };
 
