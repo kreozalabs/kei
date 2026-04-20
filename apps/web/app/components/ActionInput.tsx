@@ -1,6 +1,4 @@
 import { useState, useRef, useEffect } from "react";
-import { Input, Button, Textarea, cn } from "@kreozalabs/ui";
-import { ActionSelector } from "./ActionSelector";
 import {
   MoreHorizontal,
   AudioLines,
@@ -11,6 +9,19 @@ import {
   Heart,
   AlertCircle,
 } from "lucide-react";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  Input,
+  Button,
+  Textarea,
+  cn,
+} from "@kreozalabs/ui";
+import { ActionSelector } from "./ActionSelector";
 import { addAction } from "../db/actions";
 import { useQueryClient } from "@tanstack/react-query";
 
@@ -22,9 +33,8 @@ interface ActionInputProps {
   variant?: "inline" | "dialog";
 }
 
-// TODO: If user filled any data, it should ask if user really wants to leave.
-// TODO: Add a bit space between title and note.
 // TODO: Add change date and start time~~~~around time.
+// TODO: Somehow we should allow user to move between input fields, so it is frictionless and requires less effort. Maybe enter, or arrows?
 
 export function ActionInput({
   onSuccess,
@@ -39,8 +49,33 @@ export function ActionInput({
   const [energy, setEnergy] = useState<"low" | "medium" | "high">("medium");
   const [duration, setDuration] = useState<[number, number]>([15, 30]);
   const [isLoading, setIsLoading] = useState(false);
+  const [showDiscardDialog, setShowDiscardDialog] = useState(false);
   const queryClient = useQueryClient();
   const titleInputRef = useRef<HTMLInputElement>(null);
+
+  const hasUnsavedChanges = () => {
+    return (
+      title.trim() !== "" ||
+      note.trim() !== "" ||
+      intention !== "want" ||
+      energy !== "medium" ||
+      duration[0] !== 15 ||
+      duration[1] !== 30
+    );
+  };
+
+  const handleCancel = () => {
+    if (hasUnsavedChanges()) {
+      setShowDiscardDialog(true);
+    } else {
+      onCancel?.();
+    }
+  };
+
+  const handleDiscard = () => {
+    setShowDiscardDialog(false);
+    onCancel?.();
+  };
 
   useEffect(() => {
     titleInputRef.current?.focus();
@@ -86,7 +121,7 @@ export function ActionInput({
         {/* Input Section */}
         <div className="p-5 flex flex-col gap-2">
           <div className="flex items-start justify-between gap-4">
-            <div className="flex-1 flex flex-col gap-1.5">
+            <div className="flex-1 flex flex-col gap-4">
               <Input
                 ref={titleInputRef}
                 value={title}
@@ -115,13 +150,14 @@ export function ActionInput({
               size="icon"
               className="size-9 rounded-xl text-muted-foreground/50 hover:text-primary hover:bg-primary/10 transition-all active:scale-95"
             >
+              {/* TODO: Make it work with device micro */}
               <AudioLines className="size-5" />
             </Button>
           </div>
         </div>
 
         {/* Action Chips Row */}
-        <div className="px-5 pb-5 flex flex-wrap gap-2.5 items-center">
+        <div className="px-5 pb-5 mt-5 flex flex-wrap gap-2.5 items-center">
           <ActionSelector
             icon={<Clock className="size-3.5 text-blue-500/70" />}
             label={
@@ -205,6 +241,7 @@ export function ActionInput({
 
         {/* Footer */}
         <div className="px-5 py-4 flex items-center justify-between gap-4 bg-muted/5">
+          {/* TODO: Should we make it empty, so user sets I want to, or I must to, himself, or it will create more friction? */}
           <ActionSelector
             variant="ghost"
             icon={
@@ -244,7 +281,7 @@ export function ActionInput({
               type="button"
               variant="secondary"
               size="sm"
-              onClick={onCancel}
+              onClick={handleCancel}
               className="h-10 px-5 rounded-xl bg-muted/50 hover:bg-muted font-bold text-sm transition-all border-none active:scale-95"
             >
               Cancel
@@ -261,6 +298,38 @@ export function ActionInput({
           </div>
         </div>
       </form>
+
+      <Dialog open={showDiscardDialog} onOpenChange={setShowDiscardDialog}>
+        <DialogContent
+          overlay={false}
+          className="max-w-100 p-6 bg-zinc-900 border border-zinc-100/10 shadow-2xl rounded-2xl"
+        >
+          <DialogHeader className="gap-2">
+            <DialogTitle className="text-[17px] font-bold tracking-tight text-white">
+              Discard unsaved changes?
+            </DialogTitle>
+            <DialogDescription className="text-[14px] text-zinc-400 leading-relaxed font-medium">
+              Your unsaved changes will be discarded.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="flex flex-row justify-end gap-3 mt-6 bg-transparent border-none p-0 mx-0 mb-0">
+            <Button
+              variant="ghost"
+              onClick={() => setShowDiscardDialog(false)}
+              className="h-9 px-4 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-zinc-200 font-bold transition-all active:scale-95 border-none"
+            >
+              Cancel
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={handleDiscard}
+              className="h-9 px-4 rounded-lg bg-red-600 hover:bg-red-700 text-white font-bold transition-all active:scale-95"
+            >
+              Discard
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
