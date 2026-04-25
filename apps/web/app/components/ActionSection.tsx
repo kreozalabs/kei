@@ -28,7 +28,7 @@ export function ActionSection({
   sectionDate,
 }: ActionListProps) {
   const [isAdding, setIsAdding] = useState(false);
-  const { setNodeRef: setScheduledRef } = useDroppable({
+  const { setNodeRef: setScheduledRef, isOver: isOverScheduled } = useDroppable({
     id: `section-${sectionDate}-scheduled`,
     data: {
       type: "section",
@@ -37,7 +37,7 @@ export function ActionSection({
     },
   });
 
-  const { setNodeRef: setAnytimeRef } = useDroppable({
+  const { setNodeRef: setAnytimeRef, isOver: isOverAnytime } = useDroppable({
     id: `section-${sectionDate}-anytime`,
     data: {
       type: "section",
@@ -121,7 +121,15 @@ export function ActionSection({
 
           <div className="flex flex-col gap-3">
             {/* Scheduled Dropzone */}
-            <div ref={setScheduledRef} className="flex flex-col min-h-12 bg-muted/5 rounded-xl border border-dashed border-transparent hover:border-border/50 transition-colors p-1">
+            <div 
+              ref={setScheduledRef} 
+              className={cn(
+                "flex flex-col min-h-12 rounded-xl border border-dashed transition-all p-1",
+                isOverScheduled 
+                  ? "bg-primary/5 border-primary/40 ring-1 ring-primary/10" 
+                  : "bg-muted/5 border-transparent hover:border-border/50"
+              )}
+            >
               <div className="text-[10px] uppercase font-bold text-muted-foreground/40 px-2 pt-1 pb-2">Scheduled</div>
               <SortableContext items={scheduledActions.map((a) => a.id)} strategy={verticalListSortingStrategy}>
                 <div className="flex flex-col min-h-5">
@@ -144,7 +152,15 @@ export function ActionSection({
             </div>
 
             {/* Anytime Dropzone */}
-            <div ref={setAnytimeRef} className="flex flex-col min-h-12 bg-muted/5 rounded-xl border border-dashed border-transparent hover:border-border/50 transition-colors p-1">
+            <div 
+              ref={setAnytimeRef} 
+              className={cn(
+                "flex flex-col min-h-12 rounded-xl border border-dashed transition-all p-1",
+                isOverAnytime 
+                  ? "bg-primary/5 border-primary/40 ring-1 ring-primary/10" 
+                  : "bg-muted/5 border-transparent hover:border-border/50"
+              )}
+            >
               <div className="text-[10px] uppercase font-bold text-muted-foreground/40 px-2 pt-1 pb-2">Anytime</div>
               <SortableContext items={anytimeActions.map((a) => a.id)} strategy={verticalListSortingStrategy}>
                 <div className="flex flex-col min-h-5">

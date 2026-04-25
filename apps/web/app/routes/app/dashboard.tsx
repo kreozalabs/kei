@@ -9,16 +9,20 @@ import { Button } from "@kreozalabs/ui";
 import { LockIcon, UnlockIcon, Loader2Icon } from "lucide-react";
 import type { Action } from "@/types/events";
 import { ActionSection } from "@/components/ActionSection";
+import { ActionItem } from "@/components/ActionItem";
 import { ActionInputDialog } from "@/components/ActionInputDialog";
 import { TimelineCalendar } from "@/components/TimelineCalendar";
 import { ActionSectionSkeleton } from "@/components/ActionSkeleton";
 import {
   DndContext,
-  closestCorners,
+  closestCenter,
   PointerSensor,
   useSensor,
   useSensors,
+  DragOverlay,
   type DragEndEvent,
+  type DragStartEvent,
+  type DragOverEvent,
 } from "@dnd-kit/core";
 
 const getTodayString = () => new Date().toLocaleDateString("en-CA");
@@ -40,6 +44,7 @@ export default function Dashboard() {
   const [selectedDate, setSelectedDate] = useState(getTodayString());
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [dialogPreDate, setDialogPreDate] = useState<string | null>(null);
+  const [activeId, setActiveId] = useState<string | null>(null);
 
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -187,7 +192,69 @@ export default function Dashboard() {
     return { overdueActions: overdue, daySections: sections };
   }, [allActions, selectedDate, isTodayLocked]);
 
+  const handleDragStart = (event: DragStartEvent) => {
+    setActiveId(event.active.id as string);
+  };
+
+  const handleDragOver = (event: DragOverEvent) => {
+    const { active, over } = event;
+    if (!over) return;
+
+    const activeId = active.id as string;
+    const overId = over.id as string;
+
+    if (activeId === overId) return;
+
+    const activeAction = allActions.find((a) => a.id === activeId);
+    if (!activeAction) return;
+
+    // Find target section/group
+    let targetDate: string | undefined;
+    let targetGroup: "scheduled" | "anytime" | undefined;
+
+    const overAction = allActions.find((a) => a.id === overId);
+    if (overAction) {
+      targetDate = overAction.scheduledDate;
+      targetGroup = overAction.startTime ? "scheduled" : "anytime";
+    } else {
+      const overData = over.data.current;
+      if (overData && overData.type === "section" && overData.date) {
+        targetDate = overData.date;
+        targetGroup = overData.group as "scheduled" | "anytime";
+      } else if (overId.startsWith("section-")) {
+        const match = overId.match(/^section-(.*)-(scheduled|anytime)$/);
+        if (match) {
+          targetDate = match[1];
+          targetGroup = match[2] as "scheduled" | "anytime";
+        }
+      }
+    }
+
+    if (!targetDate || !targetGroup) return;
+
+    // If section or group changed, update the UI state optimistically
+    const isDifferentSection = activeAction.scheduledDate !== targetDate;
+    const isDifferentGroup = (!!activeAction.startTime) !== (targetGroup === "scheduled");
+
+    if (isDifferentSection || isDifferentGroup) {
+      const updatedActions = allActions.map((a) => {
+        if (a.id === activeId) {
+          return {
+            ...a,
+            scheduledDate: targetDate!,
+            // We don't set sortOrder here to avoid jumping too much, just enough to be in the list
+            // But we do toggle startTime dummy-style to move it between lists
+            startTime: targetGroup === "scheduled" ? (a.startTime || "12:00") : null,
+          };
+        }
+        return a;
+      });
+      queryClient.setQueryData(["actions"], updatedActions);
+    }
+  };
+
   const handleDragEnd = async (event: DragEndEvent) => {
+    setActiveId(null);
     const { active, over } = event;
     if (!over) return;
 
@@ -302,13 +369,19 @@ export default function Dashboard() {
   };
 
   return (
-    <DndContext sensors={sensors} collisionDetection={closestCorners} onDragEnd={handleDragEnd}>
+    <DndContext 
+      sensors={sensors} 
+      collisionDetection={closestCenter} 
+      onDragStart={handleDragStart}
+      onDragOver={handleDragOver}
+      onDragEnd={handleDragEnd}
+    >
       <div className="max-w-3xl mx-auto px-2 sm:px-0 mt-2">
         {!isTodayLocked && (
           <TimelineCalendar selectedDate={selectedDate} onDateSelect={setSelectedDate} />
         )}
 
-        {/* Overdue Section (Visible only if viewing Today or nearby and NOT locked) */}
+        {/* ... (rest of the sections remain the same) ... */}
         {overdueActions.length > 0 && !isTodayLocked && selectedDate <= todayStr && (
           <ActionSection
             id="overdue"
@@ -342,9 +415,21 @@ export default function Dashboard() {
           ))
         )}
 
-        {/* Mobile bottom padding for FAB */}
         <div className="h-24 md:h-8" />
       </div>
+
+      <DragOverlay dropAnimation={null}>
+        {activeId ? (
+          <div className="opacity-80 scale-105 shadow-2xl rounded-xl border-2 border-primary/20 bg-background/50 backdrop-blur-md overflow-hidden pointer-events-none">
+            <ActionItem 
+              action={allActions.find(a => a.id === activeId)!} 
+              type="active"
+              onComplete={() => {}}
+              onAbandon={() => {}}
+            />
+          </div>
+        ) : null}
+      </DragOverlay>
 
       {/* Status Alert */}
       {!isDbReady && (
