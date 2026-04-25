@@ -32,13 +32,26 @@ export function ActionItem({ action, type, onComplete, onAbandon }: ActionItemPr
   const getEnergyColor = (energy: string) => {
     switch (energy?.toLowerCase()) {
       case "high":
-        return "text-red-500 border-red-500/50 hover:bg-red-500/5";
+        return "text-red-500";
       case "medium":
-        return "text-orange-500 border-orange-500/50 hover:bg-orange-500/5";
+        return "text-orange-500";
       case "low":
-        return "text-green-500 border-green-500/50 hover:bg-green-500/5";
+        return "text-emerald-500";
       default:
-        return "text-muted-foreground/30 border-muted-foreground/20 hover:border-primary/40 hover:bg-primary/5";
+        return "text-muted-foreground";
+    }
+  };
+
+  const getEnergyBg = (energy: string) => {
+    switch (energy?.toLowerCase()) {
+      case "high":
+        return "bg-red-500/10 border-red-500/20";
+      case "medium":
+        return "bg-orange-500/10 border-orange-500/20";
+      case "low":
+        return "bg-emerald-500/10 border-emerald-500/20";
+      default:
+        return "bg-muted/50 border-border/50";
     }
   };
 
@@ -78,7 +91,8 @@ export function ActionItem({ action, type, onComplete, onAbandon }: ActionItemPr
             }}
             className={cn(
               "mt-0.5 size-4.5 rounded-full transition-all shrink-0 bg-transparent border-[1.5px] p-0 shadow-none flex items-center justify-center group/check hover:scale-110",
-              getEnergyColor(action.energy)
+              getEnergyColor(action.energy),
+              getEnergyBg(action.energy).split(' ')[1] // Use the border color
             )}
             title="Mark as completed"
           >
@@ -128,7 +142,7 @@ export function ActionItem({ action, type, onComplete, onAbandon }: ActionItemPr
                 )}
 
                 {action.duration && (
-                  <span className="text-[11px] font-medium flex items-center gap-1 text-muted-foreground/60">
+                  <span className="text-[11px] font-bold flex items-center gap-1 text-muted-foreground/80 bg-muted/40 px-1.5 py-0.5 rounded-md">
                     <Clock className="size-3" />
                     {!action.duration[1] || action.duration[0] === action.duration[1] 
                       ? `${action.duration[0]}m` 
@@ -136,7 +150,11 @@ export function ActionItem({ action, type, onComplete, onAbandon }: ActionItemPr
                   </span>
                 )}
                 
-                <span className="text-[11px] font-medium flex items-center gap-1 text-muted-foreground/60 capitalize">
+                <span className={cn(
+                  "text-[10px] uppercase tracking-wider font-bold flex items-center gap-1 px-1.5 py-0.5 rounded-md border",
+                  getEnergyColor(action.energy),
+                  getEnergyBg(action.energy)
+                )}>
                   <BatteryMedium className="size-3" />
                   {action.energy}
                 </span>
@@ -144,7 +162,12 @@ export function ActionItem({ action, type, onComplete, onAbandon }: ActionItemPr
             </div>
 
             <div className="flex items-center gap-2 shrink-0 pt-0.5">
-              <span className="text-[11px] font-medium text-muted-foreground/60 hover:text-foreground transition-colors flex items-center gap-1 group/project">
+              <span className={cn(
+                "text-[10px] uppercase tracking-widest font-bold transition-colors flex items-center gap-1 group/project px-2 py-1 rounded-lg",
+                action.intention === "must" 
+                  ? "text-orange-500 bg-orange-500/5 border border-orange-500/10" 
+                  : "text-muted-foreground/60 hover:text-foreground bg-muted/20 border border-transparent"
+              )}>
                 {action.intention === "must" ? "Must Do" : "Want to Do"}
                 <InboxIcon className="size-3 opacity-40 group-hover/project:opacity-80" />
               </span>
