@@ -21,6 +21,8 @@ export async function getActions(): Promise<Action[]> {
         energy: event.payload.energy || "medium",
         duration: event.payload.duration,
         scheduledDate: event.payload.scheduledDate || getTodayString(),
+        startTime: event.payload.startTime,
+        endTime: event.payload.endTime,
         status: "active",
         createdAt: event.timestamp,
         sortOrder: event.payload.sortOrder ?? event.timestamp,
@@ -114,4 +116,33 @@ export async function abandonAction(id: string) {
     event.timestamp,
     JSON.stringify(event.payload),
   ]);
+}
+export async function getRecentConfigs(): Promise<ActionPayload[]> {
+  const result = await db.query(`SELECT payload FROM events WHERE type = 'ACTION_INTENDED' ORDER BY timestamp DESC LIMIT 30`);
+  const payloads = result.rows.map(r => JSON.parse(r.payload as string)) as ActionPayload[];
+  
+  const configs: ActionPayload[] = [];
+  const seen = new Set<string>();
+
+  for (const payload of payloads) {
+    const configKey = JSON.stringify({
+      intention: payload.intention || "want",
+      energy: payload.energy || "medium",
+      duration: payload.duration,
+      important: payload.important || false,
+    });
+
+    if (!seen.has(configKey)) {
+      seen.add(configKey);
+      configs.push({
+        intention: payload.intention || "want",
+        energy: payload.energy || "medium",
+        duration: payload.duration,
+        important: payload.important || false,
+      });
+    }
+    if (configs.length >= 4) break;
+  }
+
+  return configs;
 }

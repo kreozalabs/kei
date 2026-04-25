@@ -25,6 +25,7 @@ export interface ActionSelectorProps<T = any> {
   variant?: "outline" | "ghost" | "secondary" | "default";
   triggerClassName?: string;
   contentClassName?: string;
+  children?: React.ReactNode;
 }
 
 function areValuesEqual(a: unknown, b: unknown): boolean {
@@ -44,6 +45,7 @@ export function ActionSelector<T = any>({
   variant = "outline",
   triggerClassName,
   contentClassName,
+  children,
 }: ActionSelectorProps<T>) {
   return (
     <DropdownMenu>
@@ -83,6 +85,12 @@ export function ActionSelector<T = any>({
             </DropdownMenuItem>
           );
         })}
+        {children && (
+          <>
+            <div className="my-1 border-t border-border/40" />
+            <div className="p-1">{children}</div>
+          </>
+        )}
       </DropdownMenuContent>
     </DropdownMenu>
   );

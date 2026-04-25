@@ -9,6 +9,7 @@ import {
   Heart,
   AlertCircle,
   Star,
+  Calendar,
 } from "lucide-react";
 import {
   Dialog,
@@ -23,8 +24,8 @@ import {
   cn,
 } from "@kreozalabs/ui";
 import { ActionSelector } from "./ActionSelector";
-import { addAction } from "../db/actions";
-import { useQueryClient } from "@tanstack/react-query";
+import { addAction, getRecentConfigs } from "../db/actions";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useDiscardGuard } from "../hooks/useDiscardGuard";
 
 interface ActionInputProps {
@@ -35,11 +36,154 @@ interface ActionInputProps {
   variant?: "inline" | "dialog";
 }
 
-// TODO: Add change date and start time~~~~around time.
 // TODO: Somehow we should allow user to move between input fields, so it is frictionless and requires less effort. Maybe enter, or arrows?
+// TODO: NOT RELATED TO THIS COMPONENT, BUT IT IS BACKUP LOGIC. Allow user to import and export data.
+// TODO: Create settings to allow user to set custom default values for the input fields. So that if user does a lot of 150 minutes tasks, he does not need to reenter it over again.
+// TODO: Use config file instead of in line hard-coded settings, which should allow us to create custom settings with ease.
+
 export interface ActionInputHandle {
   handleCancelAttempt: () => void;
 }
+
+const DurationInputs = ({
+  value,
+  onChange,
+}: {
+  value: [number, number | null];
+  onChange: (v: [number, number | null]) => void;
+}) => {
+  const [min, setMin] = useState(value[0].toString());
+  const [max, setMax] = useState(value[1]?.toString() || "");
+
+  useEffect(() => {
+    setMin(value[0].toString());
+    setMax(value[1]?.toString() || "");
+  }, [value]);
+
+  const minVal = parseInt(min) || 0;
+  const maxVal = max === "" ? null : parseInt(max);
+  const isInvalid = maxVal !== null && maxVal < minVal;
+
+  const handleBlur = () => {
+    if (!isInvalid) {
+      onChange([minVal, maxVal]);
+    }
+  };
+
+  return (
+    <div className="p-2 space-y-2">
+      <div className="flex items-center justify-between px-1">
+        <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground/50">
+          Custom (min - max)
+        </p>
+        {isInvalid && (
+          <p className="text-[9px] font-bold uppercase text-red-500 animate-pulse">
+            Max must be ≥ Min
+          </p>
+        )}
+      </div>
+      <div className="flex items-center gap-2">
+        <Input
+          type="number"
+          placeholder="Min"
+          value={min}
+          className={cn(
+            "h-8 text-[12px] font-bold bg-muted/30 border-none focus-visible:ring-1 transition-all",
+            isInvalid ? "focus-visible:ring-red-500/50" : "focus-visible:ring-primary/20"
+          )}
+          onChange={(e) => setMin(e.target.value)}
+          onBlur={handleBlur}
+        />
+        <span
+          className={cn(
+            "font-bold transition-colors",
+            isInvalid ? "text-red-500/50" : "text-muted-foreground/30"
+          )}
+        >
+          -
+        </span>
+        <Input
+          type="number"
+          placeholder="Max (opt)"
+          value={max}
+          className={cn(
+            "h-8 text-[12px] font-bold bg-muted/30 border-none focus-visible:ring-1 transition-all",
+            isInvalid
+              ? "focus-visible:ring-red-500/50 ring-1 ring-red-500/20"
+              : "focus-visible:ring-primary/20"
+          )}
+          onChange={(e) => setMax(e.target.value)}
+          onBlur={handleBlur}
+        />
+      </div>
+    </div>
+  );
+};
+
+const TimeInputs = ({
+  startTime: initialStartTime,
+  endTime: initialEndTime,
+  onChange,
+}: {
+  startTime: string;
+  endTime: string;
+  onChange: (start: string, end: string) => void;
+}) => {
+  const [start, setStart] = useState(initialStartTime);
+  const [end, setEnd] = useState(initialEndTime);
+
+  useEffect(() => {
+    setStart(initialStartTime);
+    setEnd(initialEndTime);
+  }, [initialStartTime, initialEndTime]);
+
+  return (
+    <div className="p-2 space-y-2">
+      <div className="space-y-1">
+        <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground/50 px-1">
+          Start Time
+        </p>
+        <Input
+          type="time"
+          value={start}
+          onChange={(e) => {
+            setStart(e.target.value);
+            onChange(e.target.value, end);
+          }}
+          className="h-8 text-[12px] font-bold bg-muted/30 border-none focus-visible:ring-1 focus-visible:ring-primary/20 block w-full"
+        />
+      </div>
+      <div className="space-y-1">
+        <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground/50 px-1">
+          End Time (optional)
+        </p>
+        <Input
+          type="time"
+          value={end}
+          onChange={(e) => {
+            setEnd(e.target.value);
+            onChange(start, e.target.value);
+          }}
+          className="h-8 text-[12px] font-bold bg-muted/30 border-none focus-visible:ring-1 focus-visible:ring-primary/20 block w-full"
+        />
+      </div>
+      {start && (
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => {
+            setStart("");
+            setEnd("");
+            onChange("", "");
+          }}
+          className="w-full text-[10px] uppercase font-bold tracking-widest text-red-500 hover:text-red-600 hover:bg-red-500/10 h-7"
+        >
+          Clear time
+        </Button>
+      )}
+    </div>
+  );
+};
 
 export const ActionInput = forwardRef<ActionInputHandle, ActionInputProps>(
   ({ onSuccess, onCancel, initialDate, className, variant = "inline" }, ref) => {
@@ -48,10 +192,20 @@ export const ActionInput = forwardRef<ActionInputHandle, ActionInputProps>(
     const [intention, setIntention] = useState<"must" | "want">("want");
     const [isImportant, setIsImportant] = useState(false);
     const [energy, setEnergy] = useState<"low" | "medium" | "high">("medium");
-    const [duration, setDuration] = useState<[number, number]>([15, 30]);
+    const [duration, setDuration] = useState<[number, number | null]>([15, 30]);
+    const [scheduledDate, setScheduledDate] = useState(
+      initialDate || new Date().toLocaleDateString("en-CA")
+    );
+    const [startTime, setStartTime] = useState<string>("");
+    const [endTime, setEndTime] = useState<string>("");
     const [isLoading, setIsLoading] = useState(false);
     const queryClient = useQueryClient();
     const titleInputRef = useRef<HTMLInputElement>(null);
+
+    const { data: recentConfigs = [] } = useQuery({
+      queryKey: ["recent-configs"],
+      queryFn: getRecentConfigs,
+    });
 
     const { showConfirmDialog, setShowConfirmDialog, handleCancelAttempt, handleConfirmDiscard } =
       useDiscardGuard({
@@ -79,8 +233,10 @@ export const ActionInput = forwardRef<ActionInputHandle, ActionInputProps>(
           intention,
           important: isImportant,
           energy,
-          duration,
-          scheduledDate: initialDate,
+          duration: [duration[0], duration[1] ?? duration[0]] as [number, number],
+          scheduledDate,
+          startTime: startTime || undefined,
+          endTime: endTime || undefined,
         });
 
         setTitle("");
@@ -107,6 +263,35 @@ export const ActionInput = forwardRef<ActionInputHandle, ActionInputProps>(
         <form onSubmit={handleAdd} className="flex flex-col">
           {/* Input Section */}
           <div className="p-5 flex flex-col gap-2">
+            {/* Recent Configs */}
+            {recentConfigs.length > 0 && (
+              <div className="flex flex-wrap gap-2 mb-3">
+                {recentConfigs.map((config, idx) => (
+                  <Button
+                    key={idx}
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => {
+                      setDuration(config.duration || [15, 30]);
+                      setEnergy(config.energy || "medium");
+                      setIntention(config.intention || "want");
+                      setIsImportant(config.important || false);
+                    }}
+                    className="h-7 px-2.5 rounded-lg bg-primary/5 hover:bg-primary/10 text-[11px] font-bold text-primary/70 transition-all border border-primary/10 active:scale-95"
+                  >
+                    {config.duration?.[0] === config.duration?.[1] || !config.duration?.[1]
+                      ? `${config.duration?.[0]}m`
+                      : `${config.duration?.[0]}-${config.duration?.[1]}m`}
+                    <span className="mx-1 opacity-30">·</span>
+                    {config.energy}
+                    <span className="mx-1 opacity-30">·</span>
+                    {config.intention}
+                  </Button>
+                ))}
+              </div>
+            )}
+
             <div className="flex items-start justify-between gap-4">
               <div className="flex-1 flex flex-col gap-4">
                 <Input
@@ -148,7 +333,7 @@ export const ActionInput = forwardRef<ActionInputHandle, ActionInputProps>(
             <ActionSelector
               icon={<Clock className="size-3.5 text-blue-500/70" />}
               label={
-                duration[0] === duration[1]
+                !duration[1] || duration[0] === duration[1]
                   ? `${duration[0]} mins`
                   : duration[0] === 60
                     ? "1 hr+"
@@ -181,9 +366,11 @@ export const ActionInput = forwardRef<ActionInputHandle, ActionInputProps>(
                   icon: <Clock className="size-4 text-muted-foreground" />,
                 },
               ]}
-              onSelect={setDuration}
+              onSelect={(val) => setDuration(val as [number, number | null])}
               value={duration}
-            />
+            >
+              <DurationInputs value={duration} onChange={setDuration} />
+            </ActionSelector>
 
             <ActionSelector
               icon={
@@ -219,6 +406,71 @@ export const ActionInput = forwardRef<ActionInputHandle, ActionInputProps>(
               onSelect={setEnergy}
               value={energy}
             />
+
+            <ActionSelector
+              icon={<Calendar className="size-3.5 text-purple-500/70" />}
+              label={
+                scheduledDate === new Date().toLocaleDateString("en-CA")
+                  ? "Today"
+                  : scheduledDate === new Date(Date.now() + 86400000).toLocaleDateString("en-CA")
+                    ? "Tomorrow"
+                    : new Date(scheduledDate + "T12:00:00").toLocaleDateString("en-US", {
+                        month: "short",
+                        day: "numeric",
+                      })
+              }
+              options={[
+                {
+                  label: "Today",
+                  value: new Date().toLocaleDateString("en-CA"),
+                  icon: <Calendar className="size-4 text-muted-foreground" />,
+                },
+                {
+                  label: "Tomorrow",
+                  value: new Date(Date.now() + 86400000).toLocaleDateString("en-CA"),
+                  icon: <Calendar className="size-4 text-muted-foreground" />,
+                },
+              ]}
+              onSelect={(val) => {
+                if (val === "custom") {
+                  // TODO: open a full calendar picker instead of native date picker
+                } else {
+                  setScheduledDate(val);
+                }
+              }}
+              value={scheduledDate}
+            >
+              <div className="p-2 space-y-2">
+                <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground/50 px-1">
+                  Custom Date
+                </p>
+                <Input
+                  type="date"
+                  value={scheduledDate}
+                  onChange={(e) => setScheduledDate(e.target.value)}
+                  className="h-8 text-[12px] font-bold bg-muted/30 border-none focus-visible:ring-1 focus-visible:ring-primary/20 block w-full"
+                />
+              </div>
+            </ActionSelector>
+
+            {/* TODO: Create a better time picker, maybe with a slider? */}
+            <ActionSelector
+              icon={<Clock className="size-3.5 text-emerald-500/70" />}
+              label={
+                startTime ? (endTime ? `${startTime} - ${endTime}` : `At ${startTime}`) : "Any time"
+              }
+              options={[]}
+              onSelect={() => {}}
+            >
+              <TimeInputs
+                startTime={startTime}
+                endTime={endTime}
+                onChange={(s, e) => {
+                  setStartTime(s);
+                  setEndTime(e);
+                }}
+              />
+            </ActionSelector>
 
             <Button
               type="button"
