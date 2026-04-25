@@ -1,6 +1,6 @@
 import type { Action } from "../types/events";
 import { Button, cn } from "@kreozalabs/ui";
-import { Trash2Icon, CheckCircle2Icon, CalendarIcon, InboxIcon, Star, GripVertical } from "lucide-react";
+import { Trash2Icon, CheckCircle2Icon, CalendarIcon, InboxIcon, Star, GripVertical, Clock, BatteryMedium } from "lucide-react";
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 
@@ -29,14 +29,14 @@ export function ActionItem({ action, type, onComplete, onAbandon }: ActionItemPr
     transition,
   };
 
-  const getPriorityColor = (priority: string) => {
-    switch (priority?.toLowerCase()) {
+  const getEnergyColor = (energy: string) => {
+    switch (energy?.toLowerCase()) {
       case "high":
         return "text-red-500 border-red-500/50 hover:bg-red-500/5";
       case "medium":
         return "text-orange-500 border-orange-500/50 hover:bg-orange-500/5";
       case "low":
-        return "text-blue-500 border-blue-500/50 hover:bg-blue-500/5";
+        return "text-green-500 border-green-500/50 hover:bg-green-500/5";
       default:
         return "text-muted-foreground/30 border-muted-foreground/20 hover:border-primary/40 hover:bg-primary/5";
     }
@@ -78,7 +78,7 @@ export function ActionItem({ action, type, onComplete, onAbandon }: ActionItemPr
             }}
             className={cn(
               "mt-0.5 size-4.5 rounded-full transition-all shrink-0 bg-transparent border-[1.5px] p-0 shadow-none flex items-center justify-center group/check hover:scale-110",
-              getPriorityColor(action.priority)
+              getEnergyColor(action.energy)
             )}
             title="Mark as completed"
           >
@@ -103,28 +103,49 @@ export function ActionItem({ action, type, onComplete, onAbandon }: ActionItemPr
                 {action.important && <Star className="size-3 text-amber-500 fill-amber-500 shrink-0" />}
               </span>
 
-              {action.description && (
+              {action.note && (
                 <span className="text-[12.5px] text-muted-foreground/80 line-clamp-1 leading-normal">
-                  {action.description}
+                  {action.note}
                 </span>
               )}
 
-              <div className="flex items-center gap-2 mt-1">
-                <span
-                  className={cn(
-                    "text-[11px] font-medium flex items-center gap-1",
-                    isOverdue ? "text-red-500/80" : "text-muted-foreground/60"
-                  )}
-                >
-                  <CalendarIcon className="size-3" />
-                  {isOverdue ? "Overdue" : "Scheduled"}
+              <div className="flex items-center gap-3 mt-1 flex-wrap">
+                {action.startTime ? (
+                  <span className="text-[11px] font-medium flex items-center gap-1 text-primary/80">
+                    <Clock className="size-3" />
+                    {action.startTime}{action.endTime ? ` - ${action.endTime}` : ''}
+                  </span>
+                ) : (
+                  <span
+                    className={cn(
+                      "text-[11px] font-medium flex items-center gap-1",
+                      isOverdue ? "text-red-500/80" : "text-muted-foreground/60"
+                    )}
+                  >
+                    <CalendarIcon className="size-3" />
+                    {isOverdue ? "Overdue" : "Anytime"}
+                  </span>
+                )}
+
+                {action.duration && (
+                  <span className="text-[11px] font-medium flex items-center gap-1 text-muted-foreground/60">
+                    <Clock className="size-3" />
+                    {!action.duration[1] || action.duration[0] === action.duration[1] 
+                      ? `${action.duration[0]}m` 
+                      : `${action.duration[0]}-${action.duration[1]}m`}
+                  </span>
+                )}
+                
+                <span className="text-[11px] font-medium flex items-center gap-1 text-muted-foreground/60 capitalize">
+                  <BatteryMedium className="size-3" />
+                  {action.energy}
                 </span>
               </div>
             </div>
 
             <div className="flex items-center gap-2 shrink-0 pt-0.5">
               <span className="text-[11px] font-medium text-muted-foreground/60 hover:text-foreground transition-colors flex items-center gap-1 group/project">
-                {action.project || "Inbox"}
+                {action.intention === "must" ? "Must Do" : "Want to Do"}
                 <InboxIcon className="size-3 opacity-40 group-hover/project:opacity-80" />
               </span>
             </div>

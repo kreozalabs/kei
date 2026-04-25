@@ -21,8 +21,8 @@ export interface ActionPayload {
   duration?: [number, number]; // [min, max] in minutes
   important?: boolean;
   scheduledDate?: string; // YYYY-MM-DD
-  startTime?: string; // HH:mm
-  endTime?: string; // HH:mm
+  startTime?: string | null; // HH:mm
+  endTime?: string | null; // HH:mm
   sortOrder?: number;
 }
 
@@ -35,8 +35,8 @@ export interface Action {
   energy: "low" | "medium" | "high";
   duration?: [number, number];
   scheduledDate: string; // YYYY-MM-DD
-  startTime?: string;
-  endTime?: string;
+  startTime?: string | null;
+  endTime?: string | null;
   status: "active" | "completed" | "abandoned";
   createdAt: number;
   sortOrder: number;

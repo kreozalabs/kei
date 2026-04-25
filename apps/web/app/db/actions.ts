@@ -143,3 +143,22 @@ export async function getRecentConfigs(): Promise<ActionPayload[]> {
 
   return configs;
 }
+
+export async function getLastKnownTime(id: string): Promise<{startTime: string, endTime?: string | null} | null> {
+  const result = await db.query(
+    `SELECT payload FROM events WHERE id = $1 AND (type = 'ACTION_INTENDED' OR type = 'ACTION_UPDATED') ORDER BY timestamp DESC`,
+    [id]
+  );
+  
+  for (const row of result.rows) {
+    const payload = JSON.parse(row.payload as string) as Partial<ActionPayload>;
+    // Check if this payload has startTime defined and not null/empty string
+    if (payload.startTime) {
+      return {
+        startTime: payload.startTime,
+        endTime: payload.endTime
+      };
+    }
+  }
+  return null;
+}

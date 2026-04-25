@@ -4,7 +4,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import type { AppLayoutContext } from "@/components/layout/AppLayout";
 import { HeaderSearch, HeaderNewAction } from "@/components/layout/AppHeader";
 import { initPromise } from "@/db";
-import { getActions, updateAction, completeAction, abandonAction } from "@/db/actions";
+import { getActions, updateAction, completeAction, abandonAction, getLastKnownTime } from "@/db/actions";
 import { Button } from "@kreozalabs/ui";
 import { LockIcon, UnlockIcon, Loader2Icon } from "lucide-react";
 import type { Action } from "@/types/events";
@@ -200,21 +200,48 @@ export default function Dashboard() {
     if (!activeAction) return;
 
     let targetDate: string | undefined;
+    let targetGroup: "scheduled" | "anytime" | undefined;
     const overAction = allActions.find((a) => a.id === overId);
 
     if (overAction) {
       targetDate = overAction.scheduledDate;
+      targetGroup = overAction.startTime ? "scheduled" : "anytime";
     } else {
       // Check if we dropped on a section area
       const overData = over.data.current;
       if (overData && overData.type === "section" && overData.date) {
         targetDate = overData.date;
+        targetGroup = overData.group as "scheduled" | "anytime";
       } else if (overId.startsWith("section-")) {
-        targetDate = overId.replace("section-", "");
+        const match = overId.match(/^section-(.*)-(scheduled|anytime)$/);
+        if (match) {
+          targetDate = match[1];
+          targetGroup = match[2] as "scheduled" | "anytime";
+        }
       }
     }
 
     if (!targetDate) return;
+    targetGroup = targetGroup || "anytime";
+
+    let newStartTime = activeAction.startTime;
+    let newEndTime = activeAction.endTime;
+
+    // Moving from Anytime to Scheduled
+    if (!activeAction.startTime && targetGroup === "scheduled") {
+      const lastKnown = await getLastKnownTime(activeId);
+      if (lastKnown) {
+        newStartTime = lastKnown.startTime;
+        newEndTime = lastKnown.endTime || null;
+      } else {
+        newStartTime = "12:00"; // Fallback time
+      }
+    } 
+    // Moving from Scheduled to Anytime
+    else if (activeAction.startTime && targetGroup === "anytime") {
+      newStartTime = null;
+      newEndTime = null;
+    }
 
     // Calculate new sortOrder
     const actionsInTargetDay = allActions
@@ -252,7 +279,7 @@ export default function Dashboard() {
     // --- Optimistic Update ---
     const previousActions = allActions;
     const updatedActions = allActions.map((a) =>
-      a.id === activeId ? { ...a, scheduledDate: targetDate!, sortOrder: newSortOrder } : a
+      a.id === activeId ? { ...a, scheduledDate: targetDate!, sortOrder: newSortOrder, startTime: newStartTime, endTime: newEndTime } : a
     );
 
     // Update query cache immediately
@@ -262,6 +289,8 @@ export default function Dashboard() {
       await updateAction(activeId, {
         scheduledDate: targetDate,
         sortOrder: newSortOrder,
+        startTime: newStartTime,
+        endTime: newEndTime,
       });
       // Optional: invalidate to make sure we are in sync with any other changes
       queryClient.invalidateQueries({ queryKey: ["actions"] });
