@@ -204,17 +204,22 @@ export default function Dashboard() {
 
     if (overAction) {
       targetDate = overAction.scheduledDate;
-    } else if (overId.startsWith("section-")) {
-      targetDate = overId.replace("section-", "");
+    } else {
+      // Check if we dropped on a section area
+      const overData = over.data.current;
+      if (overData && overData.type === "section" && overData.date) {
+        targetDate = overData.date;
+      } else if (overId.startsWith("section-")) {
+        targetDate = overId.replace("section-", "");
+      }
     }
 
     if (!targetDate) return;
 
     // Calculate new sortOrder
-    // We exclude the active item from the target list to get an accurate representation of the target state
     const actionsInTargetDay = allActions
       .filter((a) => a.scheduledDate === targetDate && a.status === "active" && a.id !== activeId)
-      .sort((a, b) => b.sortOrder - a.sortOrder);
+      .sort((a, b) => b.sortOrder - a.sortOrder); // Sort DESCRESSING
 
     let newSortOrder: number;
 
@@ -222,13 +227,14 @@ export default function Dashboard() {
       const overIndex = actionsInTargetDay.findIndex((a) => a.id === overId);
 
       if (overIndex === 0) {
-        // Dropped at the very top of the list
+        // Dropped at the very top
         newSortOrder = actionsInTargetDay[0].sortOrder + 10000;
       } else if (overIndex === -1) {
-        // Dropped on an item that somehow isn't in the target day list (shouldn't happen)
+        // Dropped on an item that somehow isn't in filtered list
         newSortOrder = Date.now();
       } else {
-        // Dropped between two items
+        // Dropped between two items OR at the end
+        // If overIndex is last, we still put it "above" the overAction with this logic
         const prevItem = actionsInTargetDay[overIndex - 1];
         const nextItem = actionsInTargetDay[overIndex];
         newSortOrder = (prevItem.sortOrder + nextItem.sortOrder) / 2;
@@ -236,6 +242,7 @@ export default function Dashboard() {
     } else {
       // Dropped on an empty section or section header
       if (actionsInTargetDay.length > 0) {
+        // Drop at the top of the section by default when dropping on header
         newSortOrder = actionsInTargetDay[0].sortOrder + 10000;
       } else {
         newSortOrder = Date.now();

@@ -11,9 +11,10 @@ export async function getActions(): Promise<Action[]> {
   const actionsMap = new Map<string, Action>();
 
   for (const event of events) {
+    const actionId = event.id; // Now event.id is our entity id
     if (event.type === "ACTION_INTENDED") {
-      actionsMap.set(event.id, {
-        id: event.id,
+      actionsMap.set(actionId, {
+        id: actionId,
         title: event.payload.title || "Untitled",
         note: event.payload.note,
         intention: event.payload.intention || "want",
@@ -28,17 +29,17 @@ export async function getActions(): Promise<Action[]> {
         sortOrder: event.payload.sortOrder ?? event.timestamp,
       });
     } else if (event.type === "ACTION_UPDATED") {
-        const existing = actionsMap.get(event.id);
-        if (existing) {
-          actionsMap.set(event.id, { ...existing, ...event.payload });
-        }
+      const existing = actionsMap.get(actionId);
+      if (existing) {
+        actionsMap.set(actionId, { ...existing, ...event.payload });
+      }
     } else if (event.type === "ACTION_COMPLETED") {
-      const existing = actionsMap.get(event.id);
+      const existing = actionsMap.get(actionId);
       if (existing) {
         existing.status = "completed";
       }
     } else if (event.type === "ACTION_ABANDONED") {
-      const existing = actionsMap.get(event.id);
+      const existing = actionsMap.get(actionId);
       if (existing) {
         existing.status = "abandoned";
       }
@@ -49,9 +50,10 @@ export async function getActions(): Promise<Action[]> {
 }
 
 export async function addAction(payload: ActionPayload) {
-  const id = uuidv7();
+  const actionId = uuidv7();
   const event: Event<ActionPayload> = {
-    id,
+    eventId: uuidv7(),
+    id: actionId,
     type: "ACTION_INTENDED",
     timestamp: Date.now(),
     payload: {
@@ -61,61 +63,56 @@ export async function addAction(payload: ActionPayload) {
     },
   };
 
-  await db.query("INSERT INTO events (id, type, timestamp, payload) VALUES ($1, $2, $3, $4)", [
-    event.id,
-    event.type,
-    event.timestamp,
-    JSON.stringify(event.payload),
-  ]);
-  return id;
+  await db.query(
+    "INSERT INTO events (event_id, id, type, timestamp, payload) VALUES ($1, $2, $3, $4, $5)",
+    [event.eventId, event.id, event.type, event.timestamp, JSON.stringify(event.payload)]
+  );
+  return actionId;
 }
 
 export async function updateAction(id: string, payload: Partial<ActionPayload>) {
   const event: Event<Partial<ActionPayload>> = {
+    eventId: uuidv7(),
     id,
     type: "ACTION_UPDATED",
     timestamp: Date.now(),
     payload,
   };
 
-  await db.query("INSERT INTO events (id, type, timestamp, payload) VALUES ($1, $2, $3, $4)", [
-    event.id,
-    event.type,
-    event.timestamp,
-    JSON.stringify(event.payload),
-  ]);
+  await db.query(
+    "INSERT INTO events (event_id, id, type, timestamp, payload) VALUES ($1, $2, $3, $4, $5)",
+    [event.eventId, event.id, event.type, event.timestamp, JSON.stringify(event.payload)]
+  );
 }
 
 export async function completeAction(id: string) {
   const event = {
+    eventId: uuidv7(),
     id,
     type: "ACTION_COMPLETED",
     timestamp: Date.now(),
     payload: {},
   };
 
-  await db.query("INSERT INTO events (id, type, timestamp, payload) VALUES ($1, $2, $3, $4)", [
-    event.id,
-    event.type,
-    event.timestamp,
-    JSON.stringify(event.payload),
-  ]);
+  await db.query(
+    "INSERT INTO events (event_id, id, type, timestamp, payload) VALUES ($1, $2, $3, $4, $5)",
+    [event.eventId, event.id, event.type, event.timestamp, JSON.stringify(event.payload)]
+  );
 }
 
 export async function abandonAction(id: string) {
   const event = {
+    eventId: uuidv7(),
     id,
     type: "ACTION_ABANDONED",
     timestamp: Date.now(),
     payload: {},
   };
 
-  await db.query("INSERT INTO events (id, type, timestamp, payload) VALUES ($1, $2, $3, $4)", [
-    event.id,
-    event.type,
-    event.timestamp,
-    JSON.stringify(event.payload),
-  ]);
+  await db.query(
+    "INSERT INTO events (event_id, id, type, timestamp, payload) VALUES ($1, $2, $3, $4, $5)",
+    [event.eventId, event.id, event.type, event.timestamp, JSON.stringify(event.payload)]
+  );
 }
 export async function getRecentConfigs(): Promise<ActionPayload[]> {
   const result = await db.query(`SELECT payload FROM events WHERE type = 'ACTION_INTENDED' ORDER BY timestamp DESC LIMIT 30`);

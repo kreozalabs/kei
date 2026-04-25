@@ -6,7 +6,8 @@ export type EventType =
   | "TRANSITION_STARTED";
 
 export interface Event<T = unknown> {
-  id: string;
+  eventId: string;
+  id: string; // The action/entity ID
   type: EventType;
   timestamp: number;
   payload: T;
