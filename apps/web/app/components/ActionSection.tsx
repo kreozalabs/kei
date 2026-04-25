@@ -46,8 +46,16 @@ export function ActionSection({
     },
   });
 
-  const scheduledActions = actions.filter(a => a.startTime).sort((a, b) => (a.startTime as string).localeCompare(b.startTime as string));
-  const anytimeActions = actions.filter(a => !a.startTime).sort((a, b) => b.sortOrder - a.sortOrder);
+  const scheduledActions = actions
+    .filter(a => !!a.startTime)
+    .sort((a, b) => {
+      const timeCompare = (a.startTime as string).localeCompare(b.startTime as string);
+      if (timeCompare !== 0) return timeCompare;
+      return b.sortOrder - a.sortOrder;
+    });
+  const anytimeActions = actions
+    .filter(a => !a.startTime)
+    .sort((a, b) => b.sortOrder - a.sortOrder);
 
   const [isExpanded, setIsExpanded] = useState(() => {
     if (typeof window !== "undefined") {

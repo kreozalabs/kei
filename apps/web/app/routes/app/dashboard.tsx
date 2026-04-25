@@ -146,7 +146,14 @@ export default function Dashboard() {
       // Locked mode: Only show TODAY
       const actionsForDay = activeActions
         .filter((a) => a.scheduledDate === todayStr)
-        .sort((a, b) => b.sortOrder - a.sortOrder);
+        .sort((a, b) => {
+          if (a.startTime && b.startTime) {
+            const timeCompare = a.startTime.localeCompare(b.startTime);
+            if (timeCompare !== 0) return timeCompare;
+          } else if (a.startTime) return -1;
+          else if (b.startTime) return 1;
+          return b.sortOrder - a.sortOrder;
+        });
 
       sections.push({
         id: todayStr,
@@ -165,7 +172,14 @@ export default function Dashboard() {
 
         const actionsForDay = activeActions
           .filter((a) => a.scheduledDate === dateStr)
-          .sort((a, b) => b.sortOrder - a.sortOrder);
+          .sort((a, b) => {
+            if (a.startTime && b.startTime) {
+              const timeCompare = a.startTime.localeCompare(b.startTime);
+              if (timeCompare !== 0) return timeCompare;
+            } else if (a.startTime) return -1;
+            else if (b.startTime) return 1;
+            return b.sortOrder - a.sortOrder;
+          });
 
         let title = d.toLocaleDateString("en-US", { day: "numeric", month: "short" });
         const isToday = dateStr === todayStr;
@@ -239,12 +253,17 @@ export default function Dashboard() {
     if (isDifferentSection || isDifferentGroup) {
       const updatedActions = allActions.map((a) => {
         if (a.id === activeId) {
+          let dragStartTime = a.startTime;
+          if (targetGroup === "scheduled") {
+            dragStartTime = (overAction?.startTime) || a.startTime || "12:00";
+          } else {
+            dragStartTime = null;
+          }
+
           return {
             ...a,
             scheduledDate: targetDate!,
-            // We don't set sortOrder here to avoid jumping too much, just enough to be in the list
-            // But we do toggle startTime dummy-style to move it between lists
-            startTime: targetGroup === "scheduled" ? (a.startTime || "12:00") : null,
+            startTime: dragStartTime,
           };
         }
         return a;
@@ -294,14 +313,20 @@ export default function Dashboard() {
     let newStartTime = activeAction.startTime;
     let newEndTime = activeAction.endTime;
 
-    // Moving from Anytime to Scheduled
-    if (!activeAction.startTime && targetGroup === "scheduled") {
-      const lastKnown = await getLastKnownTime(activeId);
-      if (lastKnown) {
-        newStartTime = lastKnown.startTime;
-        newEndTime = lastKnown.endTime || null;
-      } else {
-        newStartTime = "12:00"; // Fallback time
+    // Moving to Scheduled group
+    if (targetGroup === "scheduled") {
+      if (overAction && overAction.startTime) {
+        newStartTime = overAction.startTime;
+        newEndTime = overAction.endTime || null;
+      } else if (!activeAction.startTime) {
+        // Only fetch history/default if it didn't already have a time and we aren't dropping on a specific task
+        const lastKnown = await getLastKnownTime(activeId);
+        if (lastKnown) {
+          newStartTime = lastKnown.startTime;
+          newEndTime = lastKnown.endTime || null;
+        } else {
+          newStartTime = "12:00"; 
+        }
       }
     } 
     // Moving from Scheduled to Anytime
@@ -313,7 +338,14 @@ export default function Dashboard() {
     // Calculate new sortOrder
     const actionsInTargetDay = allActions
       .filter((a) => a.scheduledDate === targetDate && a.status === "active" && a.id !== activeId)
-      .sort((a, b) => b.sortOrder - a.sortOrder); // Sort DESCRESSING
+      .sort((a, b) => {
+        if (a.startTime && b.startTime) {
+          const timeCompare = a.startTime.localeCompare(b.startTime);
+          if (timeCompare !== 0) return timeCompare;
+        } else if (a.startTime) return -1;
+        else if (b.startTime) return 1;
+        return b.sortOrder - a.sortOrder;
+      });
 
     let newSortOrder: number;
 
