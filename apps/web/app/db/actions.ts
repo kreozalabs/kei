@@ -13,6 +13,11 @@ export async function getActions(): Promise<Action[]> {
   for (const event of events) {
     const actionId = event.id; // Now event.id is our entity id
     if (event.type === "ACTION_INTENDED") {
+      let { startTime, endTime } = event.payload;
+      if (startTime && endTime && endTime < startTime) {
+        [startTime, endTime] = [endTime, startTime];
+      }
+
       actionsMap.set(actionId, {
         id: actionId,
         title: event.payload.title || "Untitled",
@@ -22,8 +27,8 @@ export async function getActions(): Promise<Action[]> {
         energy: event.payload.energy || "medium",
         duration: event.payload.duration,
         scheduledDate: event.payload.scheduledDate || getTodayString(),
-        startTime: event.payload.startTime,
-        endTime: event.payload.endTime,
+        startTime,
+        endTime,
         status: "active",
         createdAt: event.timestamp,
         sortOrder: event.payload.sortOrder ?? event.timestamp,
@@ -31,7 +36,13 @@ export async function getActions(): Promise<Action[]> {
     } else if (event.type === "ACTION_UPDATED") {
       const existing = actionsMap.get(actionId);
       if (existing) {
-        actionsMap.set(actionId, { ...existing, ...event.payload });
+        const merged = { ...existing, ...event.payload };
+        if (merged.startTime && merged.endTime && merged.endTime < merged.startTime) {
+          const temp = merged.startTime;
+          merged.startTime = merged.endTime;
+          merged.endTime = temp;
+        }
+        actionsMap.set(actionId, merged);
       }
     } else if (event.type === "ACTION_COMPLETED") {
       const existing = actionsMap.get(actionId);
@@ -49,18 +60,28 @@ export async function getActions(): Promise<Action[]> {
   return Array.from(actionsMap.values()).sort((a, b) => b.sortOrder - a.sortOrder);
 }
 
+function normalizeTimes(payload: Partial<ActionPayload>) {
+  if (payload.startTime && payload.endTime && payload.endTime < payload.startTime) {
+    const temp = payload.startTime;
+    payload.startTime = payload.endTime;
+    payload.endTime = temp;
+  }
+  return payload;
+}
+
 export async function addAction(payload: ActionPayload) {
   const actionId = uuidv7();
+  const normalizedPayload = normalizeTimes({ ...payload });
   const event: Event<ActionPayload> = {
     eventId: uuidv7(),
     id: actionId,
     type: "ACTION_INTENDED",
     timestamp: Date.now(),
     payload: {
-      ...payload,
-      scheduledDate: payload.scheduledDate || getTodayString(),
-      sortOrder: payload.sortOrder ?? Date.now(),
-    },
+      ...normalizedPayload,
+      scheduledDate: normalizedPayload.scheduledDate || getTodayString(),
+      sortOrder: normalizedPayload.sortOrder ?? Date.now(),
+    } as ActionPayload,
   };
 
   await db.query(
@@ -71,12 +92,13 @@ export async function addAction(payload: ActionPayload) {
 }
 
 export async function updateAction(id: string, payload: Partial<ActionPayload>) {
+  const normalizedPayload = normalizeTimes({ ...payload });
   const event: Event<Partial<ActionPayload>> = {
     eventId: uuidv7(),
     id,
     type: "ACTION_UPDATED",
     timestamp: Date.now(),
-    payload,
+    payload: normalizedPayload,
   };
 
   await db.query(

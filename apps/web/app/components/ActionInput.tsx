@@ -124,13 +124,21 @@ const TimeInputs = ({
   startTime: initialStartTime,
   endTime: initialEndTime,
   onChange,
+  onErrorChange,
 }: {
   startTime: string;
   endTime: string;
   onChange: (start: string, end: string) => void;
+  onErrorChange?: (hasError: boolean) => void;
 }) => {
   const [start, setStart] = useState(initialStartTime);
   const [end, setEnd] = useState(initialEndTime);
+
+  const isInvalid = start && end && end < start;
+
+  useEffect(() => {
+    onErrorChange?.(!!isInvalid);
+  }, [isInvalid, onErrorChange]);
 
   useEffect(() => {
     setStart(initialStartTime);
@@ -140,17 +148,28 @@ const TimeInputs = ({
   return (
     <div className="p-2 space-y-2">
       <div className="space-y-1">
-        <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground/50 px-1">
-          Start Time
-        </p>
+        <div className="flex items-center justify-between px-1">
+          <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground/50">
+            Start Time
+          </p>
+          {isInvalid && (
+            <p className="text-[9px] font-bold uppercase text-red-500 animate-pulse">
+              End must be after Start
+            </p>
+          )}
+        </div>
         <Input
           type="time"
           value={start}
+          max={end || undefined}
           onChange={(e) => {
             setStart(e.target.value);
             onChange(e.target.value, end);
           }}
-          className="h-8 text-[12px] font-bold bg-muted/30 border-none focus-visible:ring-1 focus-visible:ring-primary/20 block w-full"
+          className={cn(
+            "h-8 text-[12px] font-bold bg-muted/30 border-none focus-visible:ring-1 transition-all",
+            isInvalid ? "focus-visible:ring-red-500/50" : "focus-visible:ring-primary/20"
+          )}
         />
       </div>
       <div className="space-y-1">
@@ -160,11 +179,17 @@ const TimeInputs = ({
         <Input
           type="time"
           value={end}
+          min={start || undefined}
           onChange={(e) => {
             setEnd(e.target.value);
             onChange(start, e.target.value);
           }}
-          className="h-8 text-[12px] font-bold bg-muted/30 border-none focus-visible:ring-1 focus-visible:ring-primary/20 block w-full"
+          className={cn(
+            "h-8 text-[12px] font-bold bg-muted/30 border-none focus-visible:ring-1 transition-all",
+            isInvalid
+              ? "focus-visible:ring-red-500/50 ring-1 ring-red-500/20"
+              : "focus-visible:ring-primary/20"
+          )}
         />
       </div>
       {start && (
@@ -198,9 +223,43 @@ export const ActionInput = forwardRef<ActionInputHandle, ActionInputProps>(
     );
     const [startTime, setStartTime] = useState<string>("");
     const [endTime, setEndTime] = useState<string>("");
+    const [isTimeInvalid, setIsTimeInvalid] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
     const queryClient = useQueryClient();
     const titleInputRef = useRef<HTMLInputElement>(null);
+
+    // Auto-calculate duration from times OR times from duration
+    const isCalculatingRef = useRef(false);
+
+    useEffect(() => {
+      if (isCalculatingRef.current) return;
+      if (startTime && endTime) {
+        const [startH, startM] = startTime.split(":").map(Number);
+        const [endH, endM] = endTime.split(":").map(Number);
+        const startTotal = startH * 60 + startM;
+        const endTotal = endH * 60 + endM;
+
+        if (endTotal > startTotal) {
+          const diff = endTotal - startTotal;
+          isCalculatingRef.current = true;
+          setDuration([diff, diff]);
+          setTimeout(() => (isCalculatingRef.current = false), 0);
+        }
+      }
+    }, [startTime, endTime]);
+
+    // Update endTime if startTime changes but we want to maintain current duration
+    const handleStartTimeChange = (newStart: string) => {
+      setStartTime(newStart);
+      if (newStart && duration[0] > 0) {
+        const [h, m] = newStart.split(":").map(Number);
+        const newEndTotalM = Math.min(23 * 60 + 59, h * 60 + m + duration[0]);
+        const newEndH = Math.floor(newEndTotalM / 60);
+        const newEndM = newEndTotalM % 60;
+        const formattedEnd = `${newEndH.toString().padStart(2, "0")}:${newEndM.toString().padStart(2, "0")}`;
+        setEndTime(formattedEnd);
+      }
+    };
 
     const { data: recentConfigs = [] } = useQuery({
       queryKey: ["recent-configs"],
@@ -466,9 +525,14 @@ export const ActionInput = forwardRef<ActionInputHandle, ActionInputProps>(
                 startTime={startTime}
                 endTime={endTime}
                 onChange={(s, e) => {
-                  setStartTime(s);
-                  setEndTime(e);
+                  if (s !== startTime) {
+                    handleStartTimeChange(s);
+                  } else {
+                    setStartTime(s);
+                    setEndTime(e);
+                  }
                 }}
+                onErrorChange={setIsTimeInvalid}
               />
             </ActionSelector>
 
@@ -570,7 +634,7 @@ export const ActionInput = forwardRef<ActionInputHandle, ActionInputProps>(
                 type="submit"
                 variant="default"
                 size="sm"
-                disabled={isLoading || !title.trim()}
+                disabled={isLoading || !title.trim() || isTimeInvalid}
                 className="h-10 px-6 rounded-xl font-bold text-sm shadow-xl shadow-primary/10 transition-all bg-primary/10 hover:bg-primary/15 text-primary active:scale-95 disabled:opacity-50 disabled:scale-100"
               >
                 Add task
