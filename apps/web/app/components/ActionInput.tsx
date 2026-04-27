@@ -158,6 +158,62 @@ const formatGoogleDate = (dateStr: string) => {
   return d.toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" });
 };
 
+const parseManualTime = (input: string): string | null => {
+  const clean = input.trim().toLowerCase();
+  if (!clean) return null;
+
+  // Try HH:mm
+  const hhmm = clean.match(/^(\d{1,2}):(\d{2})$/);
+  if (hhmm) {
+    let h = parseInt(hhmm[1]);
+    let m = parseInt(hhmm[2]);
+    if (h >= 0 && h < 24 && m >= 0 && m < 60) {
+      return `${h.toString().padStart(2, "0")}:${m.toString().padStart(2, "0")}`;
+    }
+  }
+
+  // Try h am/pm
+  const h_ampm = clean.match(/^(\d{1,2})\s*(am|pm)$/);
+  if (h_ampm) {
+    let h = parseInt(h_ampm[1]);
+    const ampm = h_ampm[2];
+    if (h >= 1 && h <= 12) {
+      if (ampm === "pm" && h < 12) h += 12;
+      if (ampm === "am" && h === 12) h = 0;
+      return `${h.toString().padStart(2, "0")}:00`;
+    }
+  }
+
+  // Try h:mm am/pm
+  const hmm_ampm = clean.match(/^(\d{1,2}):(\d{2})\s*(am|pm)$/);
+  if (hmm_ampm) {
+    let h = parseInt(hmm_ampm[1]);
+    let m = parseInt(hmm_ampm[2]);
+    const ampm = hmm_ampm[3];
+    if (h >= 1 && h <= 12 && m >= 0 && m < 60) {
+      if (ampm === "pm" && h < 12) h += 12;
+      if (ampm === "am" && h === 12) h = 0;
+      return `${h.toString().padStart(2, "0")}:${m.toString().padStart(2, "0")}`;
+    }
+  }
+
+  return null;
+};
+
+const allTimezones = (Intl as any).supportedValuesOf?.("timeZone") || [
+  "UTC",
+  Intl.DateTimeFormat().resolvedOptions().timeZone,
+];
+
+const getNearestTimeValue = () => {
+  const now = new Date();
+  const minutes = now.getMinutes();
+  const roundedMinutes = Math.round(minutes / 15) * 15;
+  const hours = now.getHours() + (roundedMinutes === 60 ? 1 : 0);
+  const finalMinutes = roundedMinutes === 60 ? 0 : roundedMinutes;
+  return `${hours.toString().padStart(2, "0")}:${finalMinutes.toString().padStart(2, "0")}`;
+};
+
 export const ActionInput = forwardRef<ActionInputHandle, ActionInputProps>(
   ({ onSuccess, onCancel, initialDate, className, variant = "inline", actionToEdit }, ref) => {
     const [title, setTitle] = useState(actionToEdit?.title || "");
@@ -175,6 +231,10 @@ export const ActionInput = forwardRef<ActionInputHandle, ActionInputProps>(
     );
     const [startTime, setStartTime] = useState<string>(actionToEdit?.startTime || "");
     const [endTime, setEndTime] = useState<string>(actionToEdit?.endTime || "");
+    const [timezone, setTimezone] = useState<string>(
+      actionToEdit?.timezone || Intl.DateTimeFormat().resolvedOptions().timeZone
+    );
+    const [timezoneSearch, setTimezoneSearch] = useState("");
     const [isTimeInvalid, setIsTimeInvalid] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
     const queryClient = useQueryClient();
@@ -287,6 +347,7 @@ export const ActionInput = forwardRef<ActionInputHandle, ActionInputProps>(
           scheduledDate,
           startTime: startTime || undefined,
           endTime: endTime || undefined,
+          timezone,
         };
 
         if (actionToEdit) {
@@ -503,6 +564,7 @@ export const ActionInput = forwardRef<ActionInputHandle, ActionInputProps>(
               <ActionSelector
                 label={startTime ? formatTime12h(startTime) : "Time"}
                 options={timeOptions}
+                scrollTargetValue={getNearestTimeValue()}
                 onSelect={(val) => {
                   handleStartTimeChange(val);
                   if (val && endTime && val > endTime) {
@@ -516,22 +578,38 @@ export const ActionInput = forwardRef<ActionInputHandle, ActionInputProps>(
                   "bg-muted/30 border-none hover:bg-muted/50 rounded-md px-3 h-8 shadow-none",
                   !startTime && "text-muted-foreground/50"
                 )}
-                contentClassName="max-h-[250px] overflow-y-auto w-[160px]"
+                contentClassName="max-h-[350px] overflow-y-auto w-[180px]"
               >
-                {startTime && (
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => {
-                      setStartTime("");
-                      setEndTime("");
-                      setIsTimeInvalid(false);
+                <div className="p-2 flex flex-col gap-2">
+                  <Input
+                    placeholder="Custom (e.g. 5pm)"
+                    onKeyDown={(e) => {
+                      e.stopPropagation();
+                      if (e.key === "Enter") {
+                        const parsed = parseManualTime(e.currentTarget.value);
+                        if (parsed) {
+                          handleStartTimeChange(parsed);
+                          e.currentTarget.value = "";
+                        }
+                      }
                     }}
-                    className="w-full text-[10px] uppercase font-bold tracking-widest text-red-500 hover:text-red-600 hover:bg-red-500/10 h-7"
-                  >
-                    Clear time
-                  </Button>
-                )}
+                    className="h-8 text-xs bg-muted/20 border-none px-2 focus-visible:ring-1 focus-visible:ring-primary/20"
+                  />
+                  {startTime && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => {
+                        setStartTime("");
+                        setEndTime("");
+                        setIsTimeInvalid(false);
+                      }}
+                      className="w-full text-[10px] uppercase font-bold tracking-widest text-red-500 hover:text-red-600 hover:bg-red-500/10 h-7"
+                    >
+                      Clear time
+                    </Button>
+                  )}
+                </div>
               </ActionSelector>
 
               {startTime && (
@@ -539,7 +617,8 @@ export const ActionInput = forwardRef<ActionInputHandle, ActionInputProps>(
                   <span className="text-muted-foreground/50 px-0.5 font-medium">-</span>
                   <ActionSelector
                     label={endTime ? formatTime12h(endTime) : "End"}
-                    options={timeOptions.filter((opt) => !startTime || opt.value >= startTime)}
+                    options={timeOptions}
+                    scrollTargetValue={getNearestTimeValue()}
                     onSelect={(val) => {
                       setEndTime(val);
                       if (startTime && val < startTime) {
@@ -553,10 +632,61 @@ export const ActionInput = forwardRef<ActionInputHandle, ActionInputProps>(
                       "bg-muted/30 border-none hover:bg-muted/50 rounded-md px-3 h-8 shadow-none",
                       isTimeInvalid && "ring-1 ring-red-500/50"
                     )}
-                    contentClassName="max-h-[250px] overflow-y-auto w-[160px]"
-                  />
+                    contentClassName="max-h-[350px] overflow-y-auto w-[180px]"
+                  >
+                    <div className="p-2 flex flex-col gap-2">
+                      <Input
+                        placeholder="Custom (e.g. 6:30pm)"
+                        onKeyDown={(e) => {
+                          e.stopPropagation();
+                          if (e.key === "Enter") {
+                            const parsed = parseManualTime(e.currentTarget.value);
+                            if (parsed) {
+                              setEndTime(parsed);
+                              e.currentTarget.value = "";
+                            }
+                          }
+                        }}
+                        className="h-8 text-xs bg-muted/20 border-none px-2 focus-visible:ring-1 focus-visible:ring-primary/20"
+                      />
+                    </div>
+                  </ActionSelector>
                 </>
               )}
+
+              <ActionSelector
+                label={timezone.split("/").pop()?.replace("_", " ") || timezone}
+                options={allTimezones
+                  .filter((tz: string) =>
+                    tz.toLowerCase().includes(timezoneSearch.toLowerCase())
+                  )
+                  .slice(0, 50) // Limit for performance
+                  .map((tz: string) => ({
+                    label: tz.replace("_", " "),
+                    value: tz,
+                  }))}
+                onSelect={(val) => {
+                  setTimezone(val);
+                  setTimezoneSearch("");
+                }}
+                value={timezone}
+                triggerClassName="bg-muted/30 border-none hover:bg-muted/50 rounded-md px-3 h-8 shadow-none text-muted-foreground/60 text-[11px]"
+                contentClassName="max-h-[300px] overflow-y-auto w-[220px]"
+                title="Scheduling Timezone"
+              >
+                <div className="p-2 space-y-2">
+                  <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground/50 px-1">
+                    Search Timezone
+                  </p>
+                  <Input
+                    placeholder="Enter city or zone..."
+                    value={timezoneSearch}
+                    onChange={(e) => setTimezoneSearch(e.target.value)}
+                    className="h-8 text-[12px] bg-muted/30 border-none px-2 focus-visible:ring-1 focus-visible:ring-primary/20"
+                    onKeyDown={(e) => e.stopPropagation()}
+                  />
+                </div>
+              </ActionSelector>
             </div>
           </div>
 

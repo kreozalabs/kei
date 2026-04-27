@@ -23,6 +23,7 @@ export interface ActionPayload {
   scheduledDate?: string; // YYYY-MM-DD
   startTime?: string | null; // HH:mm
   endTime?: string | null; // HH:mm
+  timezone?: string;
   sortOrder?: number;
 }
 
@@ -37,6 +38,7 @@ export interface Action {
   scheduledDate: string; // YYYY-MM-DD
   startTime?: string | null;
   endTime?: string | null;
+  timezone?: string;
   status: "active" | "completed" | "abandoned";
   createdAt: number;
   sortOrder: number;
