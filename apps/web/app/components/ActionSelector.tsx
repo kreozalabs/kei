@@ -28,6 +28,7 @@ export interface ActionSelectorProps<T = any> {
   contentClassName?: string;
   children?: React.ReactNode;
   title?: string;
+  align?: "start" | "center" | "end";
 }
 
 function areValuesEqual(a: unknown, b: unknown): boolean {
@@ -50,6 +51,7 @@ export function ActionSelector<T = any>({
   contentClassName,
   children,
   title,
+  align = "start",
 }: ActionSelectorProps<T>) {
   const scrollRef = React.useRef<HTMLDivElement>(null);
 
@@ -85,7 +87,7 @@ export function ActionSelector<T = any>({
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent
-        align="start"
+        align={align}
         className={cn(
           "ring-0 p-1 shadow-xl border-border/40 bg-background w-45 overflow-y-auto max-h-80",
           contentClassName

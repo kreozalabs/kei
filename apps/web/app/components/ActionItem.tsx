@@ -11,7 +11,14 @@ import {
   BatteryMedium,
   RotateCcw,
   PencilIcon,
+  MoreVertical,
 } from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuItem,
+} from "@kreozalabs/ui";
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 
@@ -102,10 +109,12 @@ export function ActionItem({ action, type, onComplete, onAbandon, onEdit }: Acti
             )}
             title="Mark as completed"
           >
-            <CheckCircle2Icon className={cn(
-              "size-3.5 opacity-0 group-hover/check:opacity-100 transition-all duration-300",
-              "group-hover/check:scale-110 group-active/check:scale-90"
-            )} />
+            <CheckCircle2Icon
+              className={cn(
+                "size-3.5 opacity-0 group-hover/check:opacity-100 transition-all duration-300",
+                "group-hover/check:scale-110 group-active/check:scale-90"
+              )}
+            />
           </Button>
         ) : (
           <Button
@@ -123,7 +132,7 @@ export function ActionItem({ action, type, onComplete, onAbandon, onEdit }: Acti
           </Button>
         )}
 
-        <div 
+        <div
           className="flex-1 min-w-0 flex flex-col gap-0.5 cursor-pointer"
           onClick={() => type !== "completed" && onEdit(action)}
         >
@@ -137,7 +146,7 @@ export function ActionItem({ action, type, onComplete, onAbandon, onEdit }: Acti
               >
                 {action.title}
                 {/* Strike-through line */}
-                <div 
+                <div
                   className={cn(
                     "absolute left-0 top-1/2 -translate-y-1/2 h-[1px] bg-muted-foreground/40 transition-all duration-300 ease-in-out",
                     type === "completed" ? "w-full opacity-100" : "w-0 opacity-0"
@@ -214,6 +223,7 @@ export function ActionItem({ action, type, onComplete, onAbandon, onEdit }: Acti
 
       {type === "active" && (
         <div className="flex items-center gap-0.5 shrink-0 ml-1">
+          {/* Desktop Hover Actions */}
           <Button
             variant="ghost"
             size="icon"
@@ -221,7 +231,7 @@ export function ActionItem({ action, type, onComplete, onAbandon, onEdit }: Acti
               e.stopPropagation();
               onEdit(action);
             }}
-            className="opacity-0 lg:group-hover:opacity-100 transition-all duration-200 size-7 text-muted-foreground/40 hover:text-primary hover:bg-primary/10 select-none active:scale-90 hover:rotate-12"
+            className="hidden lg:flex opacity-0 group-hover:opacity-100 transition-all duration-200 size-7 text-muted-foreground/40 hover:text-primary hover:bg-primary/10 select-none active:scale-90 hover:rotate-12"
             title="Edit action"
           >
             <PencilIcon className="size-3.5" />
@@ -233,11 +243,52 @@ export function ActionItem({ action, type, onComplete, onAbandon, onEdit }: Acti
               e.stopPropagation();
               onAbandon(action);
             }}
-            className="opacity-0 lg:group-hover:opacity-100 transition-all duration-200 size-7 text-muted-foreground/40 hover:text-destructive hover:bg-destructive/10 select-none active:scale-90 hover:-rotate-12"
+            className="hidden lg:flex opacity-0 group-hover:opacity-100 transition-all duration-200 size-7 text-muted-foreground/40 hover:text-destructive hover:bg-destructive/10 select-none active:scale-90 hover:-rotate-12"
             title="Abandon action"
           >
             <Trash2Icon className="size-3.5" />
           </Button>
+
+          {/* Mobile/Compact Overflow Menu */}
+          <div className="lg:hidden">
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="size-7 text-muted-foreground/40 hover:text-foreground active:scale-90 transition-all"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <MoreVertical className="size-3.5" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent
+                align="end"
+                className="w-32 bg-background border-border/40 shadow-xl p-1 animate-in fade-in zoom-in-95 duration-200 ring-0"
+              >
+                <DropdownMenuItem
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onEdit(action);
+                  }}
+                  className="flex items-center gap-2 px-2 py-1.5 text-[13px] font-medium hover:bg-muted/50 rounded-md transition-colors"
+                >
+                  <PencilIcon className="size-3.5 text-muted-foreground/60" />
+                  Edit
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onAbandon(action);
+                  }}
+                  className="flex items-center gap-2 px-2 py-1.5 text-[13px] font-medium text-destructive focus:text-destructive hover:bg-destructive/5 rounded-md transition-colors"
+                >
+                  <Trash2Icon className="size-3.5" />
+                  Delete
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
         </div>
       )}
     </div>

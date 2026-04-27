@@ -547,6 +547,7 @@ export const ActionInput = forwardRef<ActionInputHandle, ActionInputProps>(
                   }
                 }}
                 value={scheduledDate}
+                align="center"
                 triggerClassName="bg-muted/30 border-none hover:bg-muted/50 rounded-md px-3 h-8 shadow-none"
               >
                 <div className="p-2 space-y-2">
@@ -575,6 +576,7 @@ export const ActionInput = forwardRef<ActionInputHandle, ActionInputProps>(
                   }
                 }}
                 value={startTime}
+                align="center"
                 triggerClassName={cn(
                   "bg-muted/30 border-none hover:bg-muted/50 rounded-md px-3 h-8 shadow-none",
                   !startTime && "text-muted-foreground/50"
@@ -629,6 +631,7 @@ export const ActionInput = forwardRef<ActionInputHandle, ActionInputProps>(
                       }
                     }}
                     value={endTime}
+                    align="center"
                     triggerClassName={cn(
                       "bg-muted/30 border-none hover:bg-muted/50 rounded-md px-3 h-8 shadow-none",
                       isTimeInvalid && "ring-1 ring-red-500/50"
@@ -671,6 +674,7 @@ export const ActionInput = forwardRef<ActionInputHandle, ActionInputProps>(
                   setTimezoneSearch("");
                 }}
                 value={timezone}
+                align="end"
                 triggerClassName="bg-muted/30 border-none hover:bg-muted/50 rounded-md px-3 h-8 shadow-none text-muted-foreground/60 text-[11px]"
                 contentClassName="max-h-[300px] overflow-y-auto w-[220px]"
                 title="Scheduling Timezone"
