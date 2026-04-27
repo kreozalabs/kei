@@ -15,6 +15,7 @@ interface ActionListProps {
   isTodayLocked?: boolean;
   onComplete?: (action: Action) => void;
   onAbandon?: (action: Action) => void;
+  onEdit?: (action: Action) => void;
   sectionDate: string;
 }
 
@@ -25,37 +26,19 @@ export function ActionSection({
   isTodayLocked,
   onComplete,
   onAbandon,
+  onEdit,
   sectionDate,
 }: ActionListProps) {
   const [isAdding, setIsAdding] = useState(false);
-  const { setNodeRef: setScheduledRef, isOver: isOverScheduled } = useDroppable({
-    id: `section-${sectionDate}-scheduled`,
+  const { setNodeRef: setSectionRef, isOver } = useDroppable({
+    id: `section-${sectionDate}`,
     data: {
       type: "section",
       date: sectionDate,
-      group: "scheduled"
     },
   });
 
-  const { setNodeRef: setAnytimeRef, isOver: isOverAnytime } = useDroppable({
-    id: `section-${sectionDate}-anytime`,
-    data: {
-      type: "section",
-      date: sectionDate,
-      group: "anytime"
-    },
-  });
 
-  const scheduledActions = actions
-    .filter(a => !!a.startTime)
-    .sort((a, b) => {
-      const timeCompare = (a.startTime as string).localeCompare(b.startTime as string);
-      if (timeCompare !== 0) return timeCompare;
-      return b.sortOrder - a.sortOrder;
-    });
-  const anytimeActions = actions
-    .filter(a => !a.startTime)
-    .sort((a, b) => b.sortOrder - a.sortOrder);
 
   const [isExpanded, setIsExpanded] = useState(() => {
     if (typeof window !== "undefined") {
@@ -127,68 +110,34 @@ export function ActionSection({
             </div>
           )}
 
-          <div className="flex flex-col gap-3">
-            {/* Scheduled Dropzone */}
-            <div 
-              ref={setScheduledRef} 
-              className={cn(
-                "flex flex-col min-h-12 rounded-xl border border-dashed transition-all p-1",
-                isOverScheduled 
-                  ? "bg-primary/5 border-primary/40 ring-1 ring-primary/10" 
-                  : "bg-muted/5 border-transparent hover:border-border/50"
-              )}
-            >
-              <div className="text-[10px] uppercase font-bold text-muted-foreground/40 px-2 pt-1 pb-2">Scheduled</div>
-              <SortableContext items={scheduledActions.map((a) => a.id)} strategy={verticalListSortingStrategy}>
-                <div className="flex flex-col min-h-5">
-                  {scheduledActions.map((action) => (
-                    <ActionItem
-                      key={action.id}
-                      action={action}
-                      type="active"
-                      onComplete={onComplete ?? (() => {})}
-                      onAbandon={onAbandon ?? (() => {})}
-                    />
-                  ))}
-                  {scheduledActions.length === 0 && (
-                    <div className="text-[11px] font-medium text-muted-foreground/30 p-3 text-center border border-dashed border-border/20 rounded-lg mx-1 mb-1">
-                      Drop to schedule
-                    </div>
-                  )}
-                </div>
-              </SortableContext>
-            </div>
-
-            {/* Anytime Dropzone */}
-            <div 
-              ref={setAnytimeRef} 
-              className={cn(
-                "flex flex-col min-h-12 rounded-xl border border-dashed transition-all p-1",
-                isOverAnytime 
-                  ? "bg-primary/5 border-primary/40 ring-1 ring-primary/10" 
-                  : "bg-muted/5 border-transparent hover:border-border/50"
-              )}
-            >
-              <div className="text-[10px] uppercase font-bold text-muted-foreground/40 px-2 pt-1 pb-2">Anytime</div>
-              <SortableContext items={anytimeActions.map((a) => a.id)} strategy={verticalListSortingStrategy}>
-                <div className="flex flex-col min-h-5">
-                  {anytimeActions.map((action) => (
-                    <ActionItem
-                      key={action.id}
-                      action={action}
-                      type="active"
-                      onComplete={onComplete ?? (() => {})}
-                      onAbandon={onAbandon ?? (() => {})}
-                    />
-                  ))}
-                  {anytimeActions.length === 0 && (
-                    <div className="text-[11px] font-medium text-muted-foreground/30 p-3 text-center border border-dashed border-border/20 rounded-lg mx-1 mb-1">
-                      Drop anytime task
-                    </div>
-                  )}
-                </div>
-              </SortableContext>
-            </div>
+          <div 
+            ref={setSectionRef} 
+            className={cn(
+              "flex flex-col min-h-12 rounded-xl border border-dashed transition-all p-1",
+              isOver 
+                ? "bg-primary/5 border-primary/40 ring-1 ring-primary/10" 
+                : "bg-muted/5 border-transparent hover:border-border/50"
+            )}
+          >
+            <SortableContext items={actions.map((a) => a.id)} strategy={verticalListSortingStrategy}>
+              <div className="flex flex-col min-h-5">
+                {actions.map((action) => (
+                  <ActionItem
+                    key={action.id}
+                    action={action}
+                    type={action.status === "completed" ? "completed" : "active"}
+                    onComplete={onComplete ?? (() => {})}
+                    onAbandon={onAbandon ?? (() => {})}
+                    onEdit={onEdit ?? (() => {})}
+                  />
+                ))}
+                {actions.length === 0 && (
+                  <div className="text-[11px] font-medium text-muted-foreground/30 p-3 text-center border border-dashed border-border/20 rounded-lg mx-1 mb-1">
+                    No actions for this day
+                  </div>
+                )}
+              </div>
+            </SortableContext>
           </div>
         </div>
       </div>

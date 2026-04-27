@@ -49,6 +49,11 @@ export async function getActions(): Promise<Action[]> {
       if (existing) {
         existing.status = "completed";
       }
+    } else if (event.type === "ACTION_ACTIVATED") {
+      const existing = actionsMap.get(actionId);
+      if (existing) {
+        existing.status = "active";
+      }
     } else if (event.type === "ACTION_ABANDONED") {
       const existing = actionsMap.get(actionId);
       if (existing) {
@@ -112,6 +117,21 @@ export async function completeAction(id: string) {
     eventId: uuidv7(),
     id,
     type: "ACTION_COMPLETED",
+    timestamp: Date.now(),
+    payload: {},
+  };
+
+  await db.query(
+    "INSERT INTO events (event_id, id, type, timestamp, payload) VALUES ($1, $2, $3, $4, $5)",
+    [event.eventId, event.id, event.type, event.timestamp, JSON.stringify(event.payload)]
+  );
+}
+
+export async function activateAction(id: string) {
+  const event = {
+    eventId: uuidv7(),
+    id,
+    type: "ACTION_ACTIVATED",
     timestamp: Date.now(),
     payload: {},
   };

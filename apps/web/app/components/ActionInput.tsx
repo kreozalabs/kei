@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect, useImperativeHandle, forwardRef } from "react";
+import { useState, useRef, useEffect, useMemo, useImperativeHandle, forwardRef } from "react";
 import {
   MoreHorizontal,
   AudioLines,
@@ -9,7 +9,8 @@ import {
   Heart,
   AlertCircle,
   Star,
-  Calendar,
+  Plus,
+  Minus,
 } from "lucide-react";
 import {
   Dialog,
@@ -24,7 +25,8 @@ import {
   cn,
 } from "@kreozalabs/ui";
 import { ActionSelector } from "./ActionSelector";
-import { addAction, getRecentConfigs } from "../db/actions";
+import { addAction, updateAction, getRecentConfigs } from "../db/actions";
+import type { Action } from "../types/events";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useDiscardGuard } from "../hooks/useDiscardGuard";
 
@@ -34,6 +36,7 @@ interface ActionInputProps {
   initialDate?: string;
   className?: string;
   variant?: "inline" | "dialog";
+  actionToEdit?: Action;
 }
 
 // TODO: Somehow we should allow user to move between input fields, so it is frictionless and requires less effort. Maybe enter, or arrows?
@@ -45,6 +48,50 @@ export interface ActionInputHandle {
   handleCancelAttempt: () => void;
 }
 
+const DurationStepper = ({
+  value,
+  label,
+  onChange,
+}: {
+  value: number;
+  label: string;
+  onChange: (v: number) => void;
+}) => {
+  const getIncrement = (val: number) => (val < 60 ? 5 : 15);
+  const getDecrement = (val: number) => (val <= 60 ? 5 : 15);
+
+  return (
+    <div className="flex flex-col gap-1.5 items-center flex-1 bg-muted/20 p-2.5 rounded-xl border border-border/30">
+      <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground/60">
+        {label}
+      </span>
+      <div className="flex items-center gap-1.5 w-full justify-between mt-0.5">
+        <Button
+          type="button"
+          variant="ghost"
+          size="icon"
+          className="size-7 bg-background/50 hover:bg-background shadow-sm border border-border/40 text-muted-foreground hover:text-foreground rounded-lg transition-all active:scale-95 shrink-0"
+          onClick={() => onChange(Math.max(0, value - getDecrement(value)))}
+        >
+          <Minus className="size-3" />
+        </Button>
+        <div className="font-bold text-[13px] text-foreground tracking-tight select-none">
+          {value}m
+        </div>
+        <Button
+          type="button"
+          variant="ghost"
+          size="icon"
+          className="size-7 bg-background/50 hover:bg-background shadow-sm border border-border/40 text-muted-foreground hover:text-foreground rounded-lg transition-all active:scale-95 shrink-0"
+          onClick={() => onChange(value + getIncrement(value))}
+        >
+          <Plus className="size-3" />
+        </Button>
+      </div>
+    </div>
+  );
+};
+
 const DurationInputs = ({
   value,
   onChange,
@@ -52,177 +99,82 @@ const DurationInputs = ({
   value: [number, number | null];
   onChange: (v: [number, number | null]) => void;
 }) => {
-  const [min, setMin] = useState(value[0].toString());
-  const [max, setMax] = useState(value[1]?.toString() || "");
+  const currentMin = value[0];
+  const currentMax = value[1] === null ? currentMin : value[1];
 
-  useEffect(() => {
-    setMin(value[0].toString());
-    setMax(value[1]?.toString() || "");
-  }, [value]);
+  const handleMinChange = (newMin: number) => {
+    let newMax = currentMax;
+    if (newMin > newMax) newMax = newMin;
+    onChange([newMin, newMax]);
+  };
 
-  const minVal = parseInt(min) || 0;
-  const maxVal = max === "" ? null : parseInt(max);
-  const isInvalid = maxVal !== null && maxVal < minVal;
-
-  const handleBlur = () => {
-    if (!isInvalid) {
-      onChange([minVal, maxVal]);
-    }
+  const handleMaxChange = (newMax: number) => {
+    let newMin = currentMin;
+    if (newMax < newMin) newMin = newMax;
+    onChange([newMin, newMax]);
   };
 
   return (
-    <div className="p-2 space-y-2">
+    <div className="p-2 space-y-3">
       <div className="flex items-center justify-between px-1">
         <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground/50">
-          Custom (min - max)
+          Custom Duration
         </p>
-        {isInvalid && (
-          <p className="text-[9px] font-bold uppercase text-red-500 animate-pulse">
-            Max must be ≥ Min
-          </p>
-        )}
       </div>
       <div className="flex items-center gap-2">
-        <Input
-          type="number"
-          placeholder="Min"
-          value={min}
-          className={cn(
-            "h-8 text-[12px] font-bold bg-muted/30 border-none focus-visible:ring-1 transition-all",
-            isInvalid ? "focus-visible:ring-red-500/50" : "focus-visible:ring-primary/20"
-          )}
-          onChange={(e) => setMin(e.target.value)}
-          onBlur={handleBlur}
-        />
-        <span
-          className={cn(
-            "font-bold transition-colors",
-            isInvalid ? "text-red-500/50" : "text-muted-foreground/30"
-          )}
-        >
-          -
-        </span>
-        <Input
-          type="number"
-          placeholder="Max (opt)"
-          value={max}
-          className={cn(
-            "h-8 text-[12px] font-bold bg-muted/30 border-none focus-visible:ring-1 transition-all",
-            isInvalid
-              ? "focus-visible:ring-red-500/50 ring-1 ring-red-500/20"
-              : "focus-visible:ring-primary/20"
-          )}
-          onChange={(e) => setMax(e.target.value)}
-          onBlur={handleBlur}
-        />
+        <DurationStepper value={currentMin} label="Min" onChange={handleMinChange} />
+        <DurationStepper value={currentMax} label="Max" onChange={handleMaxChange} />
       </div>
     </div>
   );
 };
 
-const TimeInputs = ({
-  startTime: initialStartTime,
-  endTime: initialEndTime,
-  onChange,
-  onErrorChange,
-}: {
-  startTime: string;
-  endTime: string;
-  onChange: (start: string, end: string) => void;
-  onErrorChange?: (hasError: boolean) => void;
-}) => {
-  const [start, setStart] = useState(initialStartTime);
-  const [end, setEnd] = useState(initialEndTime);
+const timeOptions = Array.from({ length: 96 }).map((_, i) => {
+  const hours = Math.floor(i / 4);
+  const minutes = (i % 4) * 15;
+  const ampm = hours >= 12 ? "pm" : "am";
+  const displayHours = hours % 12 === 0 ? 12 : hours % 12;
+  const displayMinutes = minutes.toString().padStart(2, "0");
+  const value = `${hours.toString().padStart(2, "0")}:${minutes.toString().padStart(2, "0")}`;
+  return {
+    label: `${displayHours}:${displayMinutes}${ampm}`,
+    value: value,
+  };
+});
 
-  const isInvalid = start && end && end < start;
+const formatTime12h = (time24: string) => {
+  if (!time24) return "Time";
+  const [h, m] = time24.split(":");
+  const hours = parseInt(h, 10);
+  const ampm = hours >= 12 ? "pm" : "am";
+  const displayHours = hours % 12 || 12;
+  return `${displayHours}:${m}${ampm}`;
+};
 
-  useEffect(() => {
-    onErrorChange?.(!!isInvalid);
-  }, [isInvalid, onErrorChange]);
-
-  useEffect(() => {
-    setStart(initialStartTime);
-    setEnd(initialEndTime);
-  }, [initialStartTime, initialEndTime]);
-
-  return (
-    <div className="p-2 space-y-2">
-      <div className="space-y-1">
-        <div className="flex items-center justify-between px-1">
-          <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground/50">
-            Start Time
-          </p>
-          {isInvalid && (
-            <p className="text-[9px] font-bold uppercase text-red-500 animate-pulse">
-              End must be after Start
-            </p>
-          )}
-        </div>
-        <Input
-          type="time"
-          value={start}
-          max={end || undefined}
-          onChange={(e) => {
-            setStart(e.target.value);
-            onChange(e.target.value, end);
-          }}
-          className={cn(
-            "h-8 text-[12px] font-bold bg-muted/30 border-none focus-visible:ring-1 transition-all",
-            isInvalid ? "focus-visible:ring-red-500/50" : "focus-visible:ring-primary/20"
-          )}
-        />
-      </div>
-      <div className="space-y-1">
-        <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground/50 px-1">
-          End Time (optional)
-        </p>
-        <Input
-          type="time"
-          value={end}
-          min={start || undefined}
-          onChange={(e) => {
-            setEnd(e.target.value);
-            onChange(start, e.target.value);
-          }}
-          className={cn(
-            "h-8 text-[12px] font-bold bg-muted/30 border-none focus-visible:ring-1 transition-all",
-            isInvalid
-              ? "focus-visible:ring-red-500/50 ring-1 ring-red-500/20"
-              : "focus-visible:ring-primary/20"
-          )}
-        />
-      </div>
-      {start && (
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={() => {
-            setStart("");
-            setEnd("");
-            onChange("", "");
-          }}
-          className="w-full text-[10px] uppercase font-bold tracking-widest text-red-500 hover:text-red-600 hover:bg-red-500/10 h-7"
-        >
-          Clear time
-        </Button>
-      )}
-    </div>
-  );
+const formatGoogleDate = (dateStr: string) => {
+  if (!dateStr) return "Date";
+  // We use dateStr + 'T12:00:00' to avoid timezone shift issues from "YYYY-MM-DD"
+  const d = new Date(dateStr + "T12:00:00");
+  return d.toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" });
 };
 
 export const ActionInput = forwardRef<ActionInputHandle, ActionInputProps>(
-  ({ onSuccess, onCancel, initialDate, className, variant = "inline" }, ref) => {
-    const [title, setTitle] = useState("");
-    const [note, setNote] = useState("");
-    const [intention, setIntention] = useState<"must" | "want">("want");
-    const [isImportant, setIsImportant] = useState(false);
-    const [energy, setEnergy] = useState<"low" | "medium" | "high">("medium");
-    const [duration, setDuration] = useState<[number, number | null]>([15, 30]);
-    const [scheduledDate, setScheduledDate] = useState(
-      initialDate || new Date().toLocaleDateString("en-CA")
+  ({ onSuccess, onCancel, initialDate, className, variant = "inline", actionToEdit }, ref) => {
+    const [title, setTitle] = useState(actionToEdit?.title || "");
+    const [note, setNote] = useState(actionToEdit?.note || "");
+    const [intention, setIntention] = useState<"must" | "want">(actionToEdit?.intention || "want");
+    const [isImportant, setIsImportant] = useState(actionToEdit?.important || false);
+    const [energy, setEnergy] = useState<"low" | "medium" | "high">(
+      actionToEdit?.energy || "medium"
     );
-    const [startTime, setStartTime] = useState<string>("");
-    const [endTime, setEndTime] = useState<string>("");
+    const [duration, setDuration] = useState<[number, number | null]>(
+      actionToEdit?.duration ? [actionToEdit.duration[0], actionToEdit.duration[1]] : [15, 30]
+    );
+    const [scheduledDate, setScheduledDate] = useState(
+      actionToEdit?.scheduledDate || initialDate || new Date().toLocaleDateString("en-CA")
+    );
+    const [startTime, setStartTime] = useState<string>(actionToEdit?.startTime || "");
+    const [endTime, setEndTime] = useState<string>(actionToEdit?.endTime || "");
     const [isTimeInvalid, setIsTimeInvalid] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
     const queryClient = useQueryClient();
@@ -266,9 +218,48 @@ export const ActionInput = forwardRef<ActionInputHandle, ActionInputProps>(
       queryFn: getRecentConfigs,
     });
 
+    const hasChanges = useMemo(() => {
+      const initialTitle = actionToEdit?.title || "";
+      const initialNote = actionToEdit?.note || "";
+      const initialIntention = actionToEdit?.intention || "want";
+      const initialEnergy = actionToEdit?.energy || "medium";
+      const initialImportant = actionToEdit?.important || false;
+      const initialDurationMin = actionToEdit?.duration?.[0] ?? 15;
+      const initialDurationMax = actionToEdit?.duration?.[1] ?? 30;
+      const initialScheduledDate =
+        actionToEdit?.scheduledDate || initialDate || new Date().toLocaleDateString("en-CA");
+      const initialStartTime = actionToEdit?.startTime || "";
+      const initialEndTime = actionToEdit?.endTime || "";
+
+      return (
+        title.trim() !== initialTitle ||
+        note.trim() !== initialNote ||
+        intention !== initialIntention ||
+        energy !== initialEnergy ||
+        isImportant !== initialImportant ||
+        duration[0] !== initialDurationMin ||
+        (duration[1] ?? duration[0]) !== initialDurationMax ||
+        scheduledDate !== initialScheduledDate ||
+        startTime !== initialStartTime ||
+        endTime !== initialEndTime
+      );
+    }, [
+      title,
+      note,
+      intention,
+      energy,
+      isImportant,
+      duration,
+      scheduledDate,
+      startTime,
+      endTime,
+      actionToEdit,
+      initialDate,
+    ]);
+
     const { showConfirmDialog, setShowConfirmDialog, handleCancelAttempt, handleConfirmDiscard } =
       useDiscardGuard({
-        hasChanges: title.trim() !== "" || note.trim() !== "",
+        hasChanges,
         onDiscard: onCancel,
       });
 
@@ -280,13 +271,13 @@ export const ActionInput = forwardRef<ActionInputHandle, ActionInputProps>(
       titleInputRef.current?.focus();
     }, []);
 
-    const handleAdd = async (e?: React.FormEvent) => {
+    const handleSubmit = async (e?: React.FormEvent) => {
       e?.preventDefault();
       if (!title.trim() || isLoading) return;
 
       setIsLoading(true);
       try {
-        await addAction({
+        const payload = {
           title: title.trim(),
           note: note.trim(),
           intention,
@@ -296,14 +287,20 @@ export const ActionInput = forwardRef<ActionInputHandle, ActionInputProps>(
           scheduledDate,
           startTime: startTime || undefined,
           endTime: endTime || undefined,
-        });
+        };
+
+        if (actionToEdit) {
+          await updateAction(actionToEdit.id, payload);
+        } else {
+          await addAction(payload);
+        }
 
         setTitle("");
         setNote("");
         queryClient.invalidateQueries({ queryKey: ["actions"] });
         onSuccess?.();
       } catch (error) {
-        console.error("Failed to add action:", error);
+        console.error("Failed to save action:", error);
       } finally {
         setIsLoading(false);
       }
@@ -319,7 +316,7 @@ export const ActionInput = forwardRef<ActionInputHandle, ActionInputProps>(
           className
         )}
       >
-        <form onSubmit={handleAdd} className="flex flex-col">
+        <form onSubmit={handleSubmit} className="flex flex-col">
           {/* Input Section */}
           <div className="p-5 flex flex-col gap-2">
             {/* Recent Configs */}
@@ -427,6 +424,7 @@ export const ActionInput = forwardRef<ActionInputHandle, ActionInputProps>(
               ]}
               onSelect={(val) => setDuration(val as [number, number | null])}
               value={duration}
+              contentClassName="w-[280px]"
             >
               <DurationInputs value={duration} onChange={setDuration} />
             </ActionSelector>
@@ -466,85 +464,100 @@ export const ActionInput = forwardRef<ActionInputHandle, ActionInputProps>(
               value={energy}
             />
 
-            <ActionSelector
-              icon={<Calendar className="size-3.5 text-purple-500/70" />}
-              label={
-                scheduledDate === new Date().toLocaleDateString("en-CA")
-                  ? "Today"
-                  : scheduledDate === new Date(Date.now() + 86400000).toLocaleDateString("en-CA")
-                    ? "Tomorrow"
-                    : new Date(scheduledDate + "T12:00:00").toLocaleDateString("en-US", {
-                        month: "short",
-                        day: "numeric",
-                      })
-              }
-              options={[
-                {
-                  label: "Today",
-                  value: new Date().toLocaleDateString("en-CA"),
-                  icon: <Calendar className="size-4 text-muted-foreground" />,
-                },
-                {
-                  label: "Tomorrow",
-                  value: new Date(Date.now() + 86400000).toLocaleDateString("en-CA"),
-                  icon: <Calendar className="size-4 text-muted-foreground" />,
-                },
-              ]}
-              onSelect={(val) => {
-                if (val === "custom") {
-                  // TODO: open a full calendar picker instead of native date picker
-                } else {
-                  setScheduledDate(val);
-                }
-              }}
-              value={scheduledDate}
-            >
-              <div className="p-2 space-y-2">
-                <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground/50 px-1">
-                  Custom Date
-                </p>
-                <Input
-                  type="date"
-                  value={scheduledDate}
-                  onChange={(e) => setScheduledDate(e.target.value)}
-                  className="h-8 text-[12px] font-bold bg-muted/30 border-none focus-visible:ring-1 focus-visible:ring-primary/20 block w-full"
-                />
-              </div>
-            </ActionSelector>
-
-            {/* TODO: Create a better time picker, maybe with a slider? */}
-            <ActionSelector
-              icon={<Clock className="size-3.5 text-emerald-500/70" />}
-              label={
-                startTime ? (endTime ? `${startTime} - ${endTime}` : `At ${startTime}`) : "Any time"
-              }
-              options={[]}
-              onSelect={() => {}}
-            >
-              <TimeInputs
-                startTime={startTime}
-                endTime={endTime}
-                onChange={(s, e) => {
-                  if (s !== startTime) {
-                    handleStartTimeChange(s);
+            <div className="flex items-center gap-1">
+              <ActionSelector
+                label={formatGoogleDate(scheduledDate)}
+                options={[
+                  {
+                    label: "Today",
+                    value: new Date().toLocaleDateString("en-CA"),
+                  },
+                  {
+                    label: "Tomorrow",
+                    value: new Date(Date.now() + 86400000).toLocaleDateString("en-CA"),
+                  },
+                ]}
+                onSelect={(val) => {
+                  if (val === "custom") {
+                    // TODO: open calendar picker
                   } else {
-                    setStartTime(s);
-                    setEndTime(e);
+                    setScheduledDate(val);
                   }
                 }}
-                onErrorChange={setIsTimeInvalid}
-              />
-            </ActionSelector>
+                value={scheduledDate}
+                triggerClassName="bg-muted/30 border-none hover:bg-muted/50 rounded-md px-3 h-8 shadow-none"
+              >
+                <div className="p-2 space-y-2">
+                  <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground/50 px-1">
+                    Custom Date
+                  </p>
+                  <Input
+                    type="date"
+                    value={scheduledDate}
+                    onChange={(e) => setScheduledDate(e.target.value)}
+                    className="h-8 text-[12px] font-bold bg-muted/30 border-none focus-visible:ring-1 focus-visible:ring-primary/20 block w-full"
+                  />
+                </div>
+              </ActionSelector>
 
-            <Button
-              type="button"
-              variant="ghost"
-              size="icon"
-              className="size-8 rounded-lg text-muted-foreground/40 hover:text-foreground hover:bg-muted/80 transition-all font-bold"
-              // TODO: Add something or remove
-            >
-              <MoreHorizontal className="size-4" />
-            </Button>
+              <ActionSelector
+                label={startTime ? formatTime12h(startTime) : "Time"}
+                options={timeOptions}
+                onSelect={(val) => {
+                  handleStartTimeChange(val);
+                  if (val && endTime && val > endTime) {
+                    setIsTimeInvalid(true);
+                  } else {
+                    setIsTimeInvalid(false);
+                  }
+                }}
+                value={startTime}
+                triggerClassName={cn(
+                  "bg-muted/30 border-none hover:bg-muted/50 rounded-md px-3 h-8 shadow-none",
+                  !startTime && "text-muted-foreground/50"
+                )}
+                contentClassName="max-h-[250px] overflow-y-auto w-[160px]"
+              >
+                {startTime && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => {
+                      setStartTime("");
+                      setEndTime("");
+                      setIsTimeInvalid(false);
+                    }}
+                    className="w-full text-[10px] uppercase font-bold tracking-widest text-red-500 hover:text-red-600 hover:bg-red-500/10 h-7"
+                  >
+                    Clear time
+                  </Button>
+                )}
+              </ActionSelector>
+
+              {startTime && (
+                <>
+                  <span className="text-muted-foreground/50 px-0.5 font-medium">-</span>
+                  <ActionSelector
+                    label={endTime ? formatTime12h(endTime) : "End"}
+                    options={timeOptions.filter((opt) => !startTime || opt.value >= startTime)}
+                    onSelect={(val) => {
+                      setEndTime(val);
+                      if (startTime && val < startTime) {
+                        setIsTimeInvalid(true);
+                      } else {
+                        setIsTimeInvalid(false);
+                      }
+                    }}
+                    value={endTime}
+                    triggerClassName={cn(
+                      "bg-muted/30 border-none hover:bg-muted/50 rounded-md px-3 h-8 shadow-none",
+                      isTimeInvalid && "ring-1 ring-red-500/50"
+                    )}
+                    contentClassName="max-h-[250px] overflow-y-auto w-[160px]"
+                  />
+                </>
+              )}
+            </div>
           </div>
 
           {/* Footer */}
@@ -637,7 +650,7 @@ export const ActionInput = forwardRef<ActionInputHandle, ActionInputProps>(
                 disabled={isLoading || !title.trim() || isTimeInvalid}
                 className="h-10 px-6 rounded-xl font-bold text-sm shadow-xl shadow-primary/10 transition-all bg-primary/10 hover:bg-primary/15 text-primary active:scale-95 disabled:opacity-50 disabled:scale-100"
               >
-                Add task
+                {actionToEdit ? "Update task" : "Add task"}
               </Button>
             </div>
           </div>
@@ -646,28 +659,28 @@ export const ActionInput = forwardRef<ActionInputHandle, ActionInputProps>(
         <Dialog open={showConfirmDialog} onOpenChange={setShowConfirmDialog}>
           <DialogContent
             showCloseButton={false}
-            className="max-w-100 p-6 bg-zinc-900 border border-zinc-100/10 shadow-2xl rounded-2xl"
+            className="max-w-100 p-6 bg-popover border border-border/50 shadow-2xl rounded-xl"
           >
             <DialogHeader className="gap-2">
-              <DialogTitle className="text-[17px] font-bold tracking-tight text-white">
+              <DialogTitle className="text-[17px] font-bold tracking-tight text-foreground">
                 Discard unsaved changes?
               </DialogTitle>
-              <DialogDescription className="text-[14px] text-zinc-400 leading-relaxed font-medium">
+              <DialogDescription className="text-[14px] text-muted-foreground leading-relaxed font-medium">
                 Your unsaved changes will be discarded.
               </DialogDescription>
             </DialogHeader>
             <DialogFooter className="flex flex-row justify-end gap-3 mt-6 bg-transparent border-none p-0 mx-0 mb-0">
               <Button
-                variant="ghost"
+                variant="secondary"
                 onClick={() => setShowConfirmDialog(false)}
-                className="h-9 px-4 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-zinc-200 font-bold transition-all active:scale-95 border-none"
+                className="h-9 px-4 rounded-lg font-bold transition-all active:scale-95 border-none"
               >
                 Cancel
               </Button>
               <Button
-                variant="destructive"
+                variant="default"
                 onClick={handleConfirmDiscard}
-                className="h-9 px-4 rounded-lg bg-red-600 hover:bg-red-700 text-white font-bold transition-all active:scale-95"
+                className="h-9 px-4 rounded-lg bg-destructive hover:bg-destructive/90 text-destructive-foreground font-bold transition-all active:scale-95 border-none"
               >
                 Discard
               </Button>

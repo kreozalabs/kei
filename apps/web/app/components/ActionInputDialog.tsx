@@ -7,6 +7,7 @@ import {
   DialogDescription,
   DialogTrigger,
 } from "@kreozalabs/ui";
+import type { Action } from "../types/events";
 import { ActionInput, type ActionInputHandle } from "./ActionInput";
 
 interface ActionInputDialogProps {
@@ -15,6 +16,7 @@ interface ActionInputDialogProps {
   trigger?: React.ReactNode;
   initialDate?: string | null;
   selectedDate?: string;
+  actionToEdit?: Action;
 }
 
 export function ActionInputDialog({
@@ -23,6 +25,7 @@ export function ActionInputDialog({
   trigger,
   initialDate,
   selectedDate,
+  actionToEdit,
 }: ActionInputDialogProps) {
   const actionInputRef = useRef<ActionInputHandle>(null);
 
@@ -41,18 +44,22 @@ export function ActionInputDialog({
         onEscapeKeyDown={handleCloseAttempt}
       >
         <DialogHeader className="p-6 pb-2">
-          <DialogTitle className="text-xl font-bold">Add New Action</DialogTitle>
+          <DialogTitle className="text-xl font-bold">
+            {actionToEdit ? "Update Action" : "Add New Action"}
+          </DialogTitle>
           <DialogDescription className="sr-only">
-            Capture a new high-impact move in the system.
+            Capture or refine your high-impact move.
           </DialogDescription>
         </DialogHeader>
         <div className="px-2 pb-2">
           <ActionInput
+            key={actionToEdit?.id || "new"}
             ref={actionInputRef}
             variant="dialog"
             onSuccess={() => onOpenChange(false)}
             onCancel={() => onOpenChange(false)}
             initialDate={initialDate || selectedDate}
+            actionToEdit={actionToEdit}
           />
         </div>
       </DialogContent>

@@ -4,7 +4,13 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import type { AppLayoutContext } from "@/components/layout/AppLayout";
 import { HeaderSearch, HeaderNewAction } from "@/components/layout/AppHeader";
 import { initPromise } from "@/db";
-import { getActions, updateAction, completeAction, abandonAction, getLastKnownTime } from "@/db/actions";
+import {
+  getActions,
+  updateAction,
+  completeAction,
+  activateAction,
+  abandonAction,
+} from "@/db/actions";
 import { Button } from "@kreozalabs/ui";
 import { LockIcon, UnlockIcon, Loader2Icon } from "lucide-react";
 import type { Action } from "@/types/events";
@@ -44,6 +50,7 @@ export default function Dashboard() {
   const [selectedDate, setSelectedDate] = useState(getTodayString());
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [dialogPreDate, setDialogPreDate] = useState<string | null>(null);
+  const [actionToEdit, setActionToEdit] = useState<Action | null>(null);
   const [activeId, setActiveId] = useState<string | null>(null);
 
   const sensors = useSensors(
@@ -82,11 +89,15 @@ export default function Dashboard() {
             open={isDialogOpen}
             onOpenChange={(open) => {
               setIsDialogOpen(open);
-              if (!open) setDialogPreDate(null);
+              if (!open) {
+                setDialogPreDate(null);
+                setActionToEdit(null);
+              }
             }}
             trigger={<HeaderNewAction />}
             initialDate={dialogPreDate}
             selectedDate={selectedDate}
+            actionToEdit={actionToEdit ?? undefined}
           />
 
           <Button
@@ -120,7 +131,11 @@ export default function Dashboard() {
   });
 
   const handleComplete = async (action: Action) => {
-    await completeAction(action.id);
+    if (action.status === "completed") {
+      await activateAction(action.id);
+    } else {
+      await completeAction(action.id);
+    }
     queryClient.invalidateQueries({ queryKey: ["actions"] });
   };
 
@@ -129,31 +144,45 @@ export default function Dashboard() {
     queryClient.invalidateQueries({ queryKey: ["actions"] });
   };
 
+  const handleEdit = (action: Action) => {
+    setActionToEdit(action);
+    setIsDialogOpen(true);
+  };
+
   const todayStr = getTodayString();
 
   const { overdueActions, daySections } = useMemo(() => {
-    const activeActions = allActions.filter((a) => a.status === "active");
+    const visibleActions = allActions.filter(
+      (a) => a.status === "active" || a.status === "completed"
+    );
     const todayStr = getTodayString();
 
+    const sortFn = (a: Action, b: Action) => {
+      // Completed items always go to the bottom
+      if (a.status === "completed" && b.status !== "completed") return 1;
+      if (a.status !== "completed" && b.status === "completed") return -1;
+
+      // For active items, sort by time if both have it
+      if (a.startTime && b.startTime) {
+        const timeCompare = a.startTime.localeCompare(b.startTime);
+        if (timeCompare !== 0) return timeCompare;
+      } else if (a.startTime) return -1;
+      else if (b.startTime) return 1;
+
+      // Default fallback to sortOrder
+      return b.sortOrder - a.sortOrder;
+    };
+
     // 1. Compute Overdue (tasks before Today)
-    const overdue = activeActions
-      .filter((a) => a.scheduledDate < todayStr)
-      .sort((a, b) => b.sortOrder - a.sortOrder);
+    const overdue = visibleActions
+      .filter((a) => a.scheduledDate < todayStr && a.status === "active")
+      .sort(sortFn);
 
     const sections = [];
 
     if (isTodayLocked) {
       // Locked mode: Only show TODAY
-      const actionsForDay = activeActions
-        .filter((a) => a.scheduledDate === todayStr)
-        .sort((a, b) => {
-          if (a.startTime && b.startTime) {
-            const timeCompare = a.startTime.localeCompare(b.startTime);
-            if (timeCompare !== 0) return timeCompare;
-          } else if (a.startTime) return -1;
-          else if (b.startTime) return 1;
-          return b.sortOrder - a.sortOrder;
-        });
+      const actionsForDay = visibleActions.filter((a) => a.scheduledDate === todayStr).sort(sortFn);
 
       sections.push({
         id: todayStr,
@@ -170,16 +199,9 @@ export default function Dashboard() {
         d.setDate(d.getDate() + i);
         const dateStr = d.toLocaleDateString("en-CA");
 
-        const actionsForDay = activeActions
+        const actionsForDay = visibleActions
           .filter((a) => a.scheduledDate === dateStr)
-          .sort((a, b) => {
-            if (a.startTime && b.startTime) {
-              const timeCompare = a.startTime.localeCompare(b.startTime);
-              if (timeCompare !== 0) return timeCompare;
-            } else if (a.startTime) return -1;
-            else if (b.startTime) return 1;
-            return b.sortOrder - a.sortOrder;
-          });
+          .sort(sortFn);
 
         let title = d.toLocaleDateString("en-US", { day: "numeric", month: "short" });
         const isToday = dateStr === todayStr;
@@ -224,46 +246,30 @@ export default function Dashboard() {
 
     // Find target section/group
     let targetDate: string | undefined;
-    let targetGroup: "scheduled" | "anytime" | undefined;
 
     const overAction = allActions.find((a) => a.id === overId);
     if (overAction) {
       targetDate = overAction.scheduledDate;
-      targetGroup = overAction.startTime ? "scheduled" : "anytime";
     } else {
       const overData = over.data.current;
       if (overData && overData.type === "section" && overData.date) {
         targetDate = overData.date;
-        targetGroup = overData.group as "scheduled" | "anytime";
       } else if (overId.startsWith("section-")) {
-        const match = overId.match(/^section-(.*)-(scheduled|anytime)$/);
-        if (match) {
-          targetDate = match[1];
-          targetGroup = match[2] as "scheduled" | "anytime";
-        }
+        targetDate = overId.replace("section-", "");
       }
     }
 
-    if (!targetDate || !targetGroup) return;
+    if (!targetDate) return;
 
-    // If section or group changed, update the UI state optimistically
+    // If section changed, update UI state optimistically
     const isDifferentSection = activeAction.scheduledDate !== targetDate;
-    const isDifferentGroup = (!!activeAction.startTime) !== (targetGroup === "scheduled");
 
-    if (isDifferentSection || isDifferentGroup) {
+    if (isDifferentSection) {
       const updatedActions = allActions.map((a) => {
         if (a.id === activeId) {
-          let dragStartTime = a.startTime;
-          if (targetGroup === "scheduled") {
-            dragStartTime = (overAction?.startTime) || a.startTime || "12:00";
-          } else {
-            dragStartTime = null;
-          }
-
           return {
             ...a,
             scheduledDate: targetDate!,
-            startTime: dragStartTime,
           };
         }
         return a;
@@ -286,53 +292,29 @@ export default function Dashboard() {
     if (!activeAction) return;
 
     let targetDate: string | undefined;
-    let targetGroup: "scheduled" | "anytime" | undefined;
     const overAction = allActions.find((a) => a.id === overId);
 
     if (overAction) {
       targetDate = overAction.scheduledDate;
-      targetGroup = overAction.startTime ? "scheduled" : "anytime";
     } else {
       // Check if we dropped on a section area
       const overData = over.data.current;
       if (overData && overData.type === "section" && overData.date) {
         targetDate = overData.date;
-        targetGroup = overData.group as "scheduled" | "anytime";
       } else if (overId.startsWith("section-")) {
-        const match = overId.match(/^section-(.*)-(scheduled|anytime)$/);
-        if (match) {
-          targetDate = match[1];
-          targetGroup = match[2] as "scheduled" | "anytime";
-        }
+        targetDate = overId.replace("section-", "");
       }
     }
 
     if (!targetDate) return;
-    targetGroup = targetGroup || "anytime";
 
     let newStartTime = activeAction.startTime;
     let newEndTime = activeAction.endTime;
 
-    // Moving to Scheduled group
-    if (targetGroup === "scheduled") {
-      if (overAction && overAction.startTime) {
-        newStartTime = overAction.startTime;
-        newEndTime = overAction.endTime || null;
-      } else if (!activeAction.startTime) {
-        // Only fetch history/default if it didn't already have a time and we aren't dropping on a specific task
-        const lastKnown = await getLastKnownTime(activeId);
-        if (lastKnown) {
-          newStartTime = lastKnown.startTime;
-          newEndTime = lastKnown.endTime || null;
-        } else {
-          newStartTime = "12:00"; 
-        }
-      }
-    } 
-    // Moving from Scheduled to Anytime
-    else if (activeAction.startTime && targetGroup === "anytime") {
-      newStartTime = null;
-      newEndTime = null;
+    // If dropped ONTO another action that has a time, adopt its time (Time adoption logic)
+    if (overAction && overAction.startTime) {
+      newStartTime = overAction.startTime;
+      newEndTime = overAction.endTime || null;
     }
 
     // Calculate new sortOrder
@@ -378,7 +360,15 @@ export default function Dashboard() {
     // --- Optimistic Update ---
     const previousActions = allActions;
     const updatedActions = allActions.map((a) =>
-      a.id === activeId ? { ...a, scheduledDate: targetDate!, sortOrder: newSortOrder, startTime: newStartTime, endTime: newEndTime } : a
+      a.id === activeId
+        ? {
+            ...a,
+            scheduledDate: targetDate!,
+            sortOrder: newSortOrder,
+            startTime: newStartTime,
+            endTime: newEndTime,
+          }
+        : a
     );
 
     // Update query cache immediately
@@ -401,9 +391,9 @@ export default function Dashboard() {
   };
 
   return (
-    <DndContext 
-      sensors={sensors} 
-      collisionDetection={closestCenter} 
+    <DndContext
+      sensors={sensors}
+      collisionDetection={closestCenter}
       onDragStart={handleDragStart}
       onDragOver={handleDragOver}
       onDragEnd={handleDragEnd}
@@ -422,6 +412,7 @@ export default function Dashboard() {
             isTodayLocked={isTodayLocked}
             onComplete={handleComplete}
             onAbandon={handleAbandon}
+            onEdit={handleEdit}
             sectionDate={todayStr}
           />
         )}
@@ -442,6 +433,7 @@ export default function Dashboard() {
               isTodayLocked={isTodayLocked}
               onComplete={handleComplete}
               onAbandon={handleAbandon}
+              onEdit={handleEdit}
               sectionDate={section.date}
             />
           ))
@@ -453,8 +445,8 @@ export default function Dashboard() {
       <DragOverlay dropAnimation={null}>
         {activeId ? (
           <div className="opacity-80 scale-105 shadow-2xl rounded-xl border-2 border-primary/20 bg-background/50 backdrop-blur-md overflow-hidden pointer-events-none">
-            <ActionItem 
-              action={allActions.find(a => a.id === activeId)!} 
+            <ActionItem
+              action={allActions.find((a) => a.id === activeId)!}
               type="active"
               onComplete={() => {}}
               onAbandon={() => {}}
