@@ -123,14 +123,14 @@ export function TimelineCalendar({ selectedDate, onDateSelect }: TimelineCalenda
   };
 
   return (
-    <div className="flex flex-col gap-4 mb-6 sticky top-0 bg-background/95 backdrop-blur-md z-30 py-3 border-b border-border/5 shadow-sm">
-      <div className="flex items-center justify-between px-2">
+    <div className="flex flex-col gap-1.5 mb-4 sticky top-0 bg-background/95 backdrop-blur-xl z-30 py-2 border-b border-border/5 shadow-sm">
+      <div className="flex items-center justify-between px-3">
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <h3 className="text-[15px] font-black tracking-tight flex items-center gap-1.5 cursor-pointer hover:text-primary transition-colors group">
+            <h3 className="text-[13px] font-black tracking-tight flex items-center gap-1.5 cursor-pointer hover:text-primary transition-colors group">
               {currentMonthYear}
-              <div className="size-5 flex items-center justify-center rounded-full bg-muted/30 group-hover:bg-primary/10 transition-colors">
-                <ChevronDownIcon className="size-3 opacity-60 group-hover:opacity-100 group-hover:text-primary transition-all" />
+              <div className="size-4 flex items-center justify-center rounded-full bg-muted/30 group-hover:bg-primary/10 transition-colors">
+                <ChevronDownIcon className="size-2.5 opacity-60 group-hover:opacity-100 group-hover:text-primary transition-all" />
               </div>
             </h3>
           </DropdownMenuTrigger>
@@ -178,21 +178,21 @@ export function TimelineCalendar({ selectedDate, onDateSelect }: TimelineCalenda
           </DropdownMenuContent>
         </DropdownMenu>
 
-        <div className="flex items-center gap-1.5">
+        <div className="flex items-center gap-1">
           <div className="flex items-center bg-muted/20 p-0.5 rounded-lg border border-border/40">
             <Button
               variant="ghost"
               size="icon"
               onClick={() => shiftDate(-1)}
-              className="size-7 rounded-md hover:bg-background hover:shadow-sm transition-all"
+              className="size-6 rounded-md hover:bg-background hover:shadow-sm transition-all"
             >
-              <ChevronLeftIcon className="size-4" />
+              <ChevronLeftIcon className="size-3.5" />
             </Button>
             <Button
               variant="ghost"
               size="sm"
               onClick={handleToday}
-              className="h-7 px-3 text-[10px] font-black uppercase tracking-widest hover:bg-background hover:shadow-sm transition-all text-muted-foreground/80 hover:text-foreground"
+              className="h-6 px-2 text-[9px] font-black uppercase tracking-widest hover:bg-background hover:shadow-sm transition-all text-muted-foreground/80 hover:text-foreground"
             >
               Today
             </Button>
@@ -200,9 +200,9 @@ export function TimelineCalendar({ selectedDate, onDateSelect }: TimelineCalenda
               variant="ghost"
               size="icon"
               onClick={() => shiftDate(1)}
-              className="size-7 rounded-md hover:bg-background hover:shadow-sm transition-all"
+              className="size-6 rounded-md hover:bg-background hover:shadow-sm transition-all"
             >
-              <ChevronRightIcon className="size-4" />
+              <ChevronRightIcon className="size-3.5" />
             </Button>
           </div>
         </div>
@@ -216,7 +216,7 @@ export function TimelineCalendar({ selectedDate, onDateSelect }: TimelineCalenda
           onMouseUp={handleMouseUp}
           onMouseMove={handleMouseMove}
           className={cn(
-            "flex items-center gap-3 overflow-x-auto pb-2 pt-1 no-scrollbar mask-fade-edges cursor-grab active:cursor-grabbing",
+            "flex items-center gap-2 overflow-x-auto pb-1.5 no-scrollbar mask-fade-edges cursor-grab active:cursor-grabbing",
             isDragging && "select-none"
           )}
         >
@@ -229,28 +229,28 @@ export function TimelineCalendar({ selectedDate, onDateSelect }: TimelineCalenda
                 data-selected={isSelected}
                 onClick={() => !isDragging && onDateSelect(day.full)}
                 className={cn(
-                  "flex flex-col items-center justify-center min-w-[3.5rem] h-20 rounded-2xl transition-all duration-300 relative border border-transparent shadow-none shrink-0 group",
+                  "flex flex-col items-center justify-center min-w-[2.75rem] h-14 rounded-xl transition-all duration-300 relative border border-transparent shadow-none shrink-0 group",
                   isSelected
-                    ? "bg-primary text-primary-foreground shadow-xl shadow-primary/25 scale-105 z-10"
+                    ? "bg-primary text-primary-foreground shadow-lg shadow-primary/20 z-10"
                     : "hover:bg-muted/40 text-muted-foreground/60 hover:text-foreground active:scale-95",
                   day.isToday && !isSelected && "bg-primary/5 border-primary/20"
                 )}
               >
                 <span
                   className={cn(
-                    "text-[10px] uppercase font-black tracking-widest mb-1.5 transition-colors",
+                    "text-[8px] uppercase font-black tracking-widest mb-0.5 transition-colors",
                     isSelected ? "text-primary-foreground/70" : "text-muted-foreground/40 group-hover:text-muted-foreground"
                   )}
                 >
                   {day.dayName}
                 </span>
-                <span className="text-lg font-black leading-none">
+                <span className="text-[15px] font-black leading-none">
                   {day.dayNum}
                 </span>
                 
                 {day.isToday && (
                   <div className={cn(
-                    "absolute bottom-2 size-1.5 rounded-full",
+                    "absolute bottom-1.5 size-1 rounded-full",
                     isSelected ? "bg-primary-foreground/40" : "bg-primary"
                   )} />
                 )}
@@ -261,4 +261,5 @@ export function TimelineCalendar({ selectedDate, onDateSelect }: TimelineCalenda
       </div>
     </div>
   );
+
 }
