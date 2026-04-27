@@ -263,9 +263,10 @@ export const ActionInput = forwardRef<ActionInputHandle, ActionInputProps>(
     // Update endTime if startTime changes but we want to maintain current duration
     const handleStartTimeChange = (newStart: string) => {
       setStartTime(newStart);
-      if (newStart && duration[0] > 0) {
+      const targetDuration = duration[1] || duration[0];
+      if (newStart && targetDuration > 0) {
         const [h, m] = newStart.split(":").map(Number);
-        const newEndTotalM = Math.min(23 * 60 + 59, h * 60 + m + duration[0]);
+        const newEndTotalM = Math.min(23 * 60 + 59, h * 60 + m + targetDuration);
         const newEndH = Math.floor(newEndTotalM / 60);
         const newEndM = newEndTotalM % 60;
         const formattedEnd = `${newEndH.toString().padStart(2, "0")}:${newEndM.toString().padStart(2, "0")}`;

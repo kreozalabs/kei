@@ -308,14 +308,9 @@ export default function Dashboard() {
 
     if (!targetDate) return;
 
+    // Keep original times, only adoption logic removed to avoid data loss/confusion
     let newStartTime = activeAction.startTime;
     let newEndTime = activeAction.endTime;
-
-    // If dropped ONTO another action that has a time, adopt its time (Time adoption logic)
-    if (overAction && overAction.startTime) {
-      newStartTime = overAction.startTime;
-      newEndTime = overAction.endTime || null;
-    }
 
     // Calculate new sortOrder
     const actionsInTargetDay = allActions
