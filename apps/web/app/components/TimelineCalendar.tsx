@@ -1,18 +1,14 @@
 import { useState, useMemo, useEffect, useRef } from "react";
-import { 
-  Button, 
-  cn, 
-  DropdownMenu, 
-  DropdownMenuTrigger, 
-  DropdownMenuContent, 
-  DropdownMenuItem, 
-  DropdownMenuSeparator 
+import {
+  Button,
+  cn,
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
 } from "@kreozalabs/ui";
-import { 
-  ChevronLeftIcon, 
-  ChevronRightIcon, 
-  ChevronDownIcon 
-} from "lucide-react";
+import { ChevronLeftIcon, ChevronRightIcon, ChevronDownIcon } from "lucide-react";
 
 interface TimelineCalendarProps {
   selectedDate: string; // YYYY-MM-DD
@@ -26,7 +22,9 @@ export function TimelineCalendar({ selectedDate, onDateSelect }: TimelineCalenda
   const [scrollLeft, setScrollLeft] = useState(0);
 
   // Track the year the user is currently "viewing" in the month picker
-  const [pickerYear, setPickerYear] = useState(() => new Date(selectedDate + "T12:00:00").getFullYear());
+  const [pickerYear, setPickerYear] = useState(() =>
+    new Date(selectedDate + "T12:00:00").getFullYear()
+  );
   const [prevSelectedDate, setPrevSelectedDate] = useState(selectedDate);
 
   // Reset pickerYear when the selected date changes externally (e.g. today button)
@@ -40,8 +38,8 @@ export function TimelineCalendar({ selectedDate, onDateSelect }: TimelineCalenda
     const centerDate = new Date(selectedDate + "T12:00:00");
     const result = [];
 
-    // Show 21 days (10 before, 10 after) for better horizontal context
-    for (let i = -10; i <= 10; i++) {
+    // Show half a year (90 before, 90 after) for extensive horizontal scrolling
+    for (let i = -90; i <= 90; i++) {
       const d = new Date(centerDate);
       d.setDate(d.getDate() + i);
       result.push({
@@ -78,8 +76,18 @@ export function TimelineCalendar({ selectedDate, onDateSelect }: TimelineCalenda
   }, [selectedDate]);
 
   const months = [
-    "Jan", "Feb", "Mar", "Apr", "May", "Jun", 
-    "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"
+    "Jan",
+    "Feb",
+    "Mar",
+    "Apr",
+    "May",
+    "Jun",
+    "Jul",
+    "Aug",
+    "Sep",
+    "Oct",
+    "Nov",
+    "Dec",
   ];
 
   // Drag to scroll logic
@@ -134,40 +142,46 @@ export function TimelineCalendar({ selectedDate, onDateSelect }: TimelineCalenda
               </div>
             </h3>
           </DropdownMenuTrigger>
-          <DropdownMenuContent 
-            align="start" 
+          <DropdownMenuContent
+            align="start"
             className="w-56 p-2 rounded-2xl bg-muted border border-border/10 ring-0 shadow-2xl z-50 animate-in fade-in zoom-in-95"
           >
             <div className="flex items-center justify-between px-1 py-1">
-               <Button 
-                variant="ghost" 
-                size="icon" 
+              <Button
+                variant="ghost"
+                size="icon"
                 className="size-7"
-                onClick={(e) => { e.stopPropagation(); setPickerYear(p => p - 1); }}
-               >
-                 <ChevronLeftIcon className="size-4" />
-               </Button>
-               <span className="text-sm font-black tracking-widest">{pickerYear}</span>
-               <Button 
-                variant="ghost" 
-                size="icon" 
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setPickerYear((p) => p - 1);
+                }}
+              >
+                <ChevronLeftIcon className="size-4" />
+              </Button>
+              <span className="text-sm font-black tracking-widest">{pickerYear}</span>
+              <Button
+                variant="ghost"
+                size="icon"
                 className="size-7"
-                onClick={(e) => { e.stopPropagation(); setPickerYear(p => p + 1); }}
-               >
-                 <ChevronRightIcon className="size-4" />
-               </Button>
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setPickerYear((p) => p + 1);
+                }}
+              >
+                <ChevronRightIcon className="size-4" />
+              </Button>
             </div>
             <DropdownMenuSeparator className="my-2" />
             <div className="grid grid-cols-3 gap-1">
               {months.map((month, idx) => (
-                <DropdownMenuItem 
+                <DropdownMenuItem
                   key={month}
                   onClick={() => handleMonthSelect(idx)}
                   className={cn(
                     "flex items-center justify-center h-9 text-[11px] font-black uppercase tracking-widest rounded-lg cursor-pointer transition-all",
-                    new Date(selectedDate + "T12:00:00").getMonth() === idx && 
-                    new Date(selectedDate + "T12:00:00").getFullYear() === pickerYear
-                      ? "bg-primary text-primary-foreground focus:bg-primary focus:text-primary-foreground" 
+                    new Date(selectedDate + "T12:00:00").getMonth() === idx &&
+                      new Date(selectedDate + "T12:00:00").getFullYear() === pickerYear
+                      ? "bg-primary text-primary-foreground focus:bg-primary focus:text-primary-foreground"
                       : "hover:bg-accent focus:bg-accent"
                   )}
                 >
@@ -229,7 +243,7 @@ export function TimelineCalendar({ selectedDate, onDateSelect }: TimelineCalenda
                 data-selected={isSelected}
                 onClick={() => !isDragging && onDateSelect(day.full)}
                 className={cn(
-                  "flex flex-col items-center justify-center min-w-[2.75rem] h-14 rounded-xl transition-all duration-300 relative border border-transparent shadow-none shrink-0 group",
+                  "flex flex-col items-center justify-center min-w-11 h-14 rounded-xl transition-all duration-300 relative border border-transparent shadow-none shrink-0 group",
                   isSelected
                     ? "bg-primary text-primary-foreground shadow-lg shadow-primary/20 z-10"
                     : "hover:bg-muted/40 text-muted-foreground/60 hover:text-foreground active:scale-95",
@@ -239,20 +253,22 @@ export function TimelineCalendar({ selectedDate, onDateSelect }: TimelineCalenda
                 <span
                   className={cn(
                     "text-[8px] uppercase font-black tracking-widest mb-0.5 transition-colors",
-                    isSelected ? "text-primary-foreground/70" : "text-muted-foreground/40 group-hover:text-muted-foreground"
+                    isSelected
+                      ? "text-primary-foreground/70"
+                      : "text-muted-foreground/40 group-hover:text-muted-foreground"
                   )}
                 >
                   {day.dayName}
                 </span>
-                <span className="text-[15px] font-black leading-none">
-                  {day.dayNum}
-                </span>
-                
+                <span className="text-[15px] font-black leading-none">{day.dayNum}</span>
+
                 {day.isToday && (
-                  <div className={cn(
-                    "absolute bottom-1.5 size-1 rounded-full",
-                    isSelected ? "bg-primary-foreground/40" : "bg-primary"
-                  )} />
+                  <div
+                    className={cn(
+                      "absolute bottom-1.5 size-1 rounded-full",
+                      isSelected ? "bg-primary-foreground/40" : "bg-primary"
+                    )}
+                  />
                 )}
               </Button>
             );
@@ -261,5 +277,4 @@ export function TimelineCalendar({ selectedDate, onDateSelect }: TimelineCalenda
       </div>
     </div>
   );
-
 }

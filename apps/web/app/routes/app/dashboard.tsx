@@ -32,9 +32,6 @@ import {
 } from "@dnd-kit/core";
 
 const getTodayString = () => new Date().toLocaleDateString("en-CA");
-// TODO: We need to do following:
-// 1. Logic for order of tasks, so we can move them within one day.
-// 2. Logic to move actions between days, so date of action is updated?
 
 export default function Dashboard() {
   const [isDbReady, setIsDbReady] = useState(false);
@@ -118,6 +115,7 @@ export default function Dashboard() {
     setTitle,
     setSubtitle,
     setHeaderActions,
+    actionToEdit,
     isDialogOpen,
     selectedDate,
     dialogPreDate,
@@ -191,10 +189,10 @@ export default function Dashboard() {
         actions: actionsForDay,
       });
     } else {
-      // Extended mode: Compute 7 days of sections starting from selectedDate
+      // Extended mode: Compute 30 days of sections starting from selectedDate
       const baseDate = new Date(selectedDate + "T12:00:00");
 
-      for (let i = 0; i < 7; i++) {
+      for (let i = 0; i < 30; i++) {
         const d = new Date(baseDate);
         d.setDate(d.getDate() + i);
         const dateStr = d.toLocaleDateString("en-CA");
@@ -309,8 +307,8 @@ export default function Dashboard() {
     if (!targetDate) return;
 
     // Keep original times, only adoption logic removed to avoid data loss/confusion
-    let newStartTime = activeAction.startTime;
-    let newEndTime = activeAction.endTime;
+    const newStartTime = activeAction.startTime;
+    const newEndTime = activeAction.endTime;
 
     // Calculate new sortOrder
     const actionsInTargetDay = allActions
@@ -398,7 +396,6 @@ export default function Dashboard() {
           <TimelineCalendar selectedDate={selectedDate} onDateSelect={setSelectedDate} />
         )}
 
-        {/* ... (rest of the sections remain the same) ... */}
         {overdueActions.length > 0 && !isTodayLocked && selectedDate <= todayStr && (
           <ActionSection
             id="overdue"
@@ -445,6 +442,7 @@ export default function Dashboard() {
               type="active"
               onComplete={() => {}}
               onAbandon={() => {}}
+              onEdit={() => {}}
             />
           </div>
         ) : null}
