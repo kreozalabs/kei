@@ -41,7 +41,7 @@ export default function Dashboard() {
       const stored = window.sessionStorage.getItem("kei-dashboard-timeline-locked");
       if (stored !== null) return stored === "true";
     }
-    return true; // Default to locked
+    return true; // NOTE: Default to locked
   });
 
   const [selectedDate, setSelectedDate] = useState(getTodayString());

@@ -38,14 +38,12 @@ export function ActionSection({
     },
   });
 
-
-
   const [isExpanded, setIsExpanded] = useState(() => {
     if (typeof window !== "undefined") {
       const stored = window.sessionStorage.getItem(`kei-section-expanded-${id}`);
       if (stored !== null) return stored === "true";
     }
-    return true; // Default to expanded
+    return true; // NOTE: Default to expanded
   });
 
   useEffect(() => {
@@ -110,16 +108,19 @@ export function ActionSection({
             </div>
           )}
 
-          <div 
-            ref={setSectionRef} 
+          <div
+            ref={setSectionRef}
             className={cn(
               "flex flex-col min-h-12 rounded-xl border border-dashed transition-all p-1",
-              isOver 
-                ? "bg-primary/5 border-primary/40 ring-1 ring-primary/10" 
+              isOver
+                ? "bg-primary/5 border-primary/40 ring-1 ring-primary/10"
                 : "bg-muted/5 border-transparent hover:border-border/50"
             )}
           >
-            <SortableContext items={actions.map((a) => a.id)} strategy={verticalListSortingStrategy}>
+            <SortableContext
+              items={actions.map((a) => a.id)}
+              strategy={verticalListSortingStrategy}
+            >
               <div className="flex flex-col min-h-5">
                 {actions.map((action) => (
                   <ActionItem
