@@ -1,6 +1,5 @@
 import { useState, useRef, useEffect, useMemo, useImperativeHandle, forwardRef } from "react";
 import {
-  MoreHorizontal,
   AudioLines,
   Clock,
   BatteryMedium,
@@ -165,8 +164,8 @@ const parseManualTime = (input: string): string | null => {
   // Try HH:mm
   const hhmm = clean.match(/^(\d{1,2}):(\d{2})$/);
   if (hhmm) {
-    let h = parseInt(hhmm[1]);
-    let m = parseInt(hhmm[2]);
+    const h = parseInt(hhmm[1]);
+    const m = parseInt(hhmm[2]);
     if (h >= 0 && h < 24 && m >= 0 && m < 60) {
       return `${h.toString().padStart(2, "0")}:${m.toString().padStart(2, "0")}`;
     }
@@ -188,7 +187,7 @@ const parseManualTime = (input: string): string | null => {
   const hmm_ampm = clean.match(/^(\d{1,2}):(\d{2})\s*(am|pm)$/);
   if (hmm_ampm) {
     let h = parseInt(hmm_ampm[1]);
-    let m = parseInt(hmm_ampm[2]);
+    const m = parseInt(hmm_ampm[2]);
     const ampm = hmm_ampm[3];
     if (h >= 1 && h <= 12 && m >= 0 && m < 60) {
       if (ampm === "pm" && h < 12) h += 12;
@@ -200,7 +199,7 @@ const parseManualTime = (input: string): string | null => {
   return null;
 };
 
-const allTimezones = (Intl as any).supportedValuesOf?.("timeZone") || [
+const allTimezones = (Intl as typeof Intl & { supportedValuesOf?: (key: string) => string[] }).supportedValuesOf?.("timeZone") || [
   "UTC",
   Intl.DateTimeFormat().resolvedOptions().timeZone,
 ];
@@ -380,7 +379,7 @@ export const ActionInput = forwardRef<ActionInputHandle, ActionInputProps>(
       >
         <form onSubmit={handleSubmit} className="flex flex-col">
           {/* Input Section */}
-          <div className="p-5 flex flex-col gap-2">
+          <div className="p-4 sm:p-5 flex flex-col gap-2">
             {/* Recent Configs */}
             {recentConfigs.length > 0 && (
               <div className="flex flex-wrap gap-2 mb-3">
@@ -410,7 +409,7 @@ export const ActionInput = forwardRef<ActionInputHandle, ActionInputProps>(
               </div>
             )}
 
-            <div className="flex items-start justify-between gap-4">
+            <div className="flex items-start justify-between gap-2 sm:gap-4">
               <div className="flex-1 flex flex-col gap-4">
                 <Input
                   ref={titleInputRef}
@@ -447,7 +446,7 @@ export const ActionInput = forwardRef<ActionInputHandle, ActionInputProps>(
           </div>
 
           {/* Action Chips Row */}
-          <div className="px-5 pb-5 mt-5 flex flex-wrap gap-2.5 items-center">
+          <div className="px-4 sm:px-5 pb-5 mt-5 flex flex-wrap gap-2 sm:gap-2.5 items-center">
             <ActionSelector
               icon={<Clock className="size-3.5 text-blue-500/70" />}
               label={
@@ -526,7 +525,7 @@ export const ActionInput = forwardRef<ActionInputHandle, ActionInputProps>(
               value={energy}
             />
 
-            <div className="flex items-center gap-1">
+            <div className="flex flex-wrap items-center gap-2 sm:gap-1">
               <ActionSelector
                 label={formatGoogleDate(scheduledDate)}
                 options={[
@@ -661,9 +660,7 @@ export const ActionInput = forwardRef<ActionInputHandle, ActionInputProps>(
               <ActionSelector
                 label={timezone.split("/").pop()?.replace("_", " ") || timezone}
                 options={allTimezones
-                  .filter((tz: string) =>
-                    tz.toLowerCase().includes(timezoneSearch.toLowerCase())
-                  )
+                  .filter((tz: string) => tz.toLowerCase().includes(timezoneSearch.toLowerCase()))
                   .slice(0, 50) // Limit for performance
                   .map((tz: string) => ({
                     label: tz.replace("_", " "),
@@ -696,7 +693,7 @@ export const ActionInput = forwardRef<ActionInputHandle, ActionInputProps>(
           </div>
 
           {/* Footer */}
-          <div className="px-5 py-4 flex items-center justify-between gap-4 bg-muted/5">
+          <div className="px-4 sm:px-5 py-4 flex flex-wrap items-center justify-between gap-4 bg-muted/5">
             <div className="flex items-center gap-1">
               <ActionSelector
                 variant="ghost"
@@ -729,7 +726,7 @@ export const ActionInput = forwardRef<ActionInputHandle, ActionInputProps>(
                 ]}
                 onSelect={setIntention}
                 value={intention}
-                triggerClassName="h-9 px-3 rounded-xl hover:bg-muted/50 font-bold text-muted-foreground/70 hover:text-foreground border-none"
+                triggerClassName="h-9 px-2 sm:px-3 rounded-xl hover:bg-muted/50 font-bold text-muted-foreground/70 hover:text-foreground border-none"
               />
 
               <ActionSelector
@@ -764,7 +761,7 @@ export const ActionInput = forwardRef<ActionInputHandle, ActionInputProps>(
                 ]}
                 onSelect={setIsImportant}
                 value={isImportant}
-                triggerClassName="h-9 px-3 rounded-xl hover:bg-muted/50 font-bold text-muted-foreground/70 hover:text-foreground border-none"
+                triggerClassName="h-9 px-2 sm:px-3 rounded-xl hover:bg-muted/50 font-bold text-muted-foreground/70 hover:text-foreground border-none"
               />
             </div>
 
@@ -774,7 +771,7 @@ export const ActionInput = forwardRef<ActionInputHandle, ActionInputProps>(
                 variant="secondary"
                 size="sm"
                 onClick={handleCancelAttempt}
-                className="h-10 px-5 rounded-xl bg-muted/50 hover:bg-muted font-bold text-sm transition-all border-none active:scale-95"
+                className="h-10 px-4 sm:px-5 rounded-xl bg-muted/50 hover:bg-muted font-bold text-sm transition-all border-none active:scale-95"
               >
                 Cancel
               </Button>
@@ -783,7 +780,7 @@ export const ActionInput = forwardRef<ActionInputHandle, ActionInputProps>(
                 variant="default"
                 size="sm"
                 disabled={isLoading || !title.trim() || isTimeInvalid}
-                className="h-10 px-6 rounded-xl font-bold text-sm shadow-xl shadow-primary/10 transition-all bg-primary/10 hover:bg-primary/15 text-primary active:scale-95 disabled:opacity-50 disabled:scale-100"
+                className="h-10 px-4 sm:px-6 rounded-xl font-bold text-sm shadow-xl shadow-primary/10 transition-all bg-primary/10 hover:bg-primary/15 text-primary active:scale-95 disabled:opacity-50 disabled:scale-100"
               >
                 {actionToEdit ? "Update task" : "Add task"}
               </Button>
