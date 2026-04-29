@@ -41,6 +41,8 @@ export default function Dashboard() {
       const stored = window.sessionStorage.getItem("kei-dashboard-timeline-locked");
       if (stored !== null) return stored === "true";
     }
+
+    // TODO: Allow user to set default state for locked.
     return true; // NOTE: Default to locked
   });
 

@@ -38,6 +38,7 @@ export function ActionSection({
     },
   });
 
+  // TODO: Allow user to set settings if he wants to save state at all.
   const [isExpanded, setIsExpanded] = useState(() => {
     if (typeof window !== "undefined") {
       const stored = window.sessionStorage.getItem(`kei-section-expanded-${id}`);
