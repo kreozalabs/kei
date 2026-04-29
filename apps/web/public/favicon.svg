@@ -1,0 +1,12 @@
+<svg width="200" height="200" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Solid Hexagon: The Sanctuary -->
+  <path d="M50 0L93.3 25V75L50 100L6.7 75V25L50 0Z" fill="#18181b"/>
+  
+  <!-- Negative Space K: The Clarity -->
+  <!-- Vertical Spine -->
+  <rect x="28" y="25" width="12" height="50" fill="white"/>
+  <!-- Top Arm -->
+  <path d="M72 25L42 50H56L72 36V25Z" fill="white"/>
+  <!-- Bottom Arm -->
+  <path d="M72 75L42 50H56L72 64V75Z" fill="white"/>
+</svg>

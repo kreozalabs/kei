@@ -1,0 +1,74 @@
+@import "@kreozalabs/styles/base.css";
+
+/* Local overrides */
+body {
+  @apply bg-background text-foreground antialiased;
+  /* Prevent scrolling the whole document to enhance the "app" feel */
+  overscroll-behavior: none;
+  /* Eliminate the 300ms double-tap delay and accidental zooming */
+  touch-action: manipulation;
+}
+
+/* Responsive Typography Variables */
+:root {
+  --text-3xl-val: 2.75rem;
+  --text-2xl-val: 2.25rem;
+  --text-xl-val: 1.75rem;
+  --text-lg-val: 1.5rem;
+  --text-sm-val: 1rem;
+  --text-xs-val: 0.875rem;
+  --font-size-base: 1.125rem; /* 18px for desktop body */
+  --font-size-small: 1rem; /* 16px for desktop small */
+  --font-size-h1: 4.5rem;
+  --font-size-h2: 3.5rem;
+  --font-size-h3: 2.5rem;
+  --font-size-h4: 2rem;
+  --font-size-h5: 1.75rem;
+}
+
+@theme {
+  --text-3xl: var(--text-3xl-val);
+  --text-2xl: var(--text-2xl-val);
+  --text-xl: var(--text-xl-val);
+  --text-lg: var(--text-lg-val);
+  --text-sm: var(--text-sm-val);
+  --text-xs: var(--text-xs-val);
+}
+
+@utility no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+@utility mask-fade-edges {
+  mask-image: linear-gradient(
+    to right,
+    transparent,
+    black 10%,
+    black 90%,
+    transparent
+  );
+}
+
+@media (max-width: 768px) {
+  :root {
+    --font-size-h1: 1.75rem;
+    --font-size-h2: 1.5rem;
+    --font-size-h3: 1.25rem;
+    --font-size-h4: 1.0625rem;
+    --font-size-h5: 0.9375rem;
+    --font-size-base: 0.8125rem; /* 13px */
+    --font-size-small: 0.6875rem; /* 11px */
+
+    /* Map Tailwind sizes to smaller values on mobile */
+    --text-3xl-val: 1.25rem;
+    --text-2xl-val: 1.125rem;
+    --text-xl-val: 1rem;
+    --text-lg-val: 0.875rem;
+    --text-sm-val: 0.6875rem;
+    --text-xs-val: 0.625rem;
+  }
+}
