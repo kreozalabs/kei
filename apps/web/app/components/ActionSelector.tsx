@@ -89,7 +89,7 @@ export function ActionSelector<T = unknown>({
       <DropdownMenuContent
         align={align}
         className={cn(
-          "ring-0 p-1 shadow-xl border-border/40 bg-background w-45 overflow-y-auto max-h-80",
+          "ring-0 p-1 shadow-xl border-border/40 bg-background w-45 overflow-y-auto overflow-x-hidden max-h-80 custom-scrollbar",
           contentClassName
         )}
       >

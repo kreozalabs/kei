@@ -24,7 +24,7 @@ export const ACTION_STATUS = {
 } as const;
 
 export const DEFAULT_CONFIG = {
-  TITLE: "Untitled",
+  TITLE: "",
   DURATION: [15, 30] as [number, number],
   ENERGY: ENERGY_LEVELS.MEDIUM,
   INTENTION: INTENTIONS.WANT,
