@@ -1,6 +1,7 @@
 import * as React from "react";
 import { useEffect, useState } from "react";
 import { type Theme, type Accent, type TimeFormat, ThemeProviderContext } from "./ThemeContext";
+import { TIME_FORMATS } from "../config/constants";
 
 interface ThemeProviderProps {
   children: React.ReactNode;
@@ -33,8 +34,8 @@ export function ThemeProvider({
   });
 
   const [timeFormat, setTimeFormat] = useState<TimeFormat>(() => {
-    if (typeof window === "undefined") return "12h";
-    return (localStorage.getItem(timeFormatStorageKey) as TimeFormat) || "12h";
+    if (typeof window === "undefined") return TIME_FORMATS.H12;
+    return (localStorage.getItem(timeFormatStorageKey) as TimeFormat) || TIME_FORMATS.H12;
   });
 
   const [showRecentConfigs, setShowRecentConfigs] = useState<boolean>(() => {

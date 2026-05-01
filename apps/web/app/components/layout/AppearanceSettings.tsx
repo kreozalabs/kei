@@ -1,6 +1,7 @@
 import { MoonIcon, SunIcon, LaptopIcon } from "lucide-react";
 import { Button, cn } from "@kreozalabs/ui";
 import { useTheme, type Accent, type Theme } from "../../providers/ThemeContext";
+import { TIME_FORMATS } from "../../config/constants";
 
 const ACCENTS: { name: Accent; color: string; hover: string }[] = [
   { name: "blue", color: "bg-[#1e60f2]", hover: "hover:bg-[#1e60f2]" },
@@ -76,7 +77,7 @@ export function AppearanceSettings() {
           Time Format
         </h4>
         <div className="flex items-center gap-1.5 p-1 bg-muted/40 rounded-xl">
-          {(["12h", "24h"] as const).map((f) => (
+          {[TIME_FORMATS.H12, TIME_FORMATS.H24].map((f) => (
             <Button
               key={f}
               variant="ghost"
@@ -89,7 +90,7 @@ export function AppearanceSettings() {
                   : "text-muted-foreground hover:text-foreground hover:bg-muted/80"
               )}
             >
-              <span>{f === "12h" ? "12-hour" : "24-hour"}</span>
+              <span>{f === TIME_FORMATS.H12 ? "12-hour" : "24-hour"}</span>
             </Button>
           ))}
         </div>

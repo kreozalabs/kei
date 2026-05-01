@@ -1,8 +1,9 @@
 import { createContext, useContext } from "react";
+import { TIME_FORMATS } from "../config/constants";
 
 export type Theme = "dark" | "light" | "system";
 export type Accent = "blue" | "indigo" | "violet" | "emerald" | "rose" | "amber" | "forest";
-export type TimeFormat = "12h" | "24h";
+export type TimeFormat = (typeof TIME_FORMATS)[keyof typeof TIME_FORMATS];
 
 export interface ThemeProviderState {
   theme: Theme;
@@ -18,7 +19,7 @@ export interface ThemeProviderState {
 export const initialState: ThemeProviderState = {
   theme: "system",
   accent: "rose",
-  timeFormat: "12h",
+  timeFormat: TIME_FORMATS.H12,
   showRecentConfigs: true,
   setTheme: () => null,
   setAccent: () => null,

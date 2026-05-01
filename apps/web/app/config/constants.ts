@@ -30,6 +30,11 @@ export const DEFAULT_CONFIG = {
   INTENTION: INTENTIONS.WANT,
 };
 
+export const TIME_FORMATS = {
+  H12: "12h",
+  H24: "24h",
+} as const;
+
 export const TIME = {
   MINUTES_IN_DAY: 1440,
   MINUTES_IN_HOUR: 60,

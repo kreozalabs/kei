@@ -1,3 +1,5 @@
+import { TIME_FORMATS } from "../config/constants";
+
 export const timeToMinutes = (time24: string): number => {
   if (!time24) return 0;
   const [h, m] = time24.split(":").map(Number);
@@ -11,9 +13,9 @@ export const minutesToTime = (totalMinutes: number): string => {
   return `${h.toString().padStart(2, "0")}:${m.toString().padStart(2, "0")}`;
 };
 
-export const formatTime = (time24: string, format: "12h" | "24h") => {
+export const formatTime = (time24: string, format: (typeof TIME_FORMATS)[keyof typeof TIME_FORMATS]) => {
   if (!time24) return "";
-  if (format === "24h") return time24;
+  if (format === TIME_FORMATS.H24) return time24;
   const [h, m] = time24.split(":");
   const hours = parseInt(h, 10);
   const ampm = hours >= 12 ? "pm" : "am";
@@ -35,7 +37,7 @@ export const formatGoogleDate = (dateStr: string) => {
   return d.toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" });
 };
 
-export const getTimeOptions = (format: "12h" | "24h") =>
+export const getTimeOptions = (format: (typeof TIME_FORMATS)[keyof typeof TIME_FORMATS]) =>
   Array.from({ length: 96 }).map((_, i) => {
     const hours = Math.floor(i / 4);
     const minutes = (i % 4) * 15;
