@@ -24,8 +24,9 @@ import {
 } from "@kreozalabs/ui";
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
+import { NextDayBadge } from "./NextDayBadge";
 import { useTheme } from "../providers/ThemeContext";
-import { formatTime, isNextDay, getTodayString } from "../utils/time";
+import { formatTime, getTodayString } from "../utils/time";
 import { ACTION_STATUS, ENERGY_LEVELS, ENERGY_OPTIONS, INTENTIONS } from "../config/constants";
 
 interface ActionItemProps {
@@ -153,11 +154,11 @@ export function ActionItem({ action, type, onComplete, onAbandon, onEdit }: Acti
                       <>
                         {" - "}
                         {formatTime(action.endTime, timeFormat)}
-                        {isNextDay(action.startTime, action.endTime) && (
-                          <span className="ml-1 text-[8px] opacity-70 bg-primary/10 px-1 rounded-sm font-black">
-                            +1
-                          </span>
-                        )}
+                        <NextDayBadge
+                          startTime={action.startTime}
+                          endTime={action.endTime}
+                          className="ml-1 opacity-70"
+                        />
                       </>
                     ) : (
                       ""

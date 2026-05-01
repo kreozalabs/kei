@@ -11,6 +11,7 @@ import {
 } from "lucide-react";
 import { Input, Button, Textarea, cn } from "@kreozalabs/ui";
 import { ActionSelector } from "../ActionSelector";
+import { NextDayBadge } from "../NextDayBadge";
 import { addAction, updateAction, getRecentConfigs } from "../../db/actions";
 import type { Action, EnergyType, IntentionType } from "../../types/events";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
@@ -18,7 +19,6 @@ import { useDiscardGuard } from "../../hooks/useDiscardGuard";
 import { useTheme } from "../../providers/ThemeContext";
 import {
   formatTime,
-  isNextDay,
   timeToMinutes,
   minutesToTime,
   getTodayString,
@@ -492,11 +492,7 @@ export const ActionInput = forwardRef<ActionInputHandle, ActionInputProps>(
                       endTime ? (
                         <span className="flex items-center gap-1">
                           {formatTime(endTime, timeFormat)}
-                          {isNextDay(startTime, endTime) && (
-                            <span className="text-[9px] text-primary bg-primary/10 px-1 rounded-sm font-black">
-                              +1
-                            </span>
-                          )}
+                          <NextDayBadge startTime={startTime} endTime={endTime} />
                         </span>
                       ) : (
                         "End"
