@@ -1,6 +1,14 @@
 import { useQuery } from "@tanstack/react-query";
 import { db } from "../db";
 import type { Action, Event, ActionPayload } from "../types/events";
+import {
+  ACTION_STATUS,
+  DEFAULT_CONFIG,
+  ENERGY_LEVELS,
+  EVENT_TYPES,
+  INTENTIONS,
+} from "@/config/constants";
+import type { IntentionType, EnergyType } from "../types/events";
 
 export interface CurrentDayState {
   activeActions: Action[];
@@ -55,32 +63,55 @@ export function useCurrentDay() {
 
   events?.forEach((event) => {
     switch (event.type) {
-      case "ACTION_INTENDED": {
+      case EVENT_TYPES.ACTION_INTENDED: {
         const payload = event.payload as ActionPayload;
         actionsMap.set(event.id, {
           id: event.id,
-          title: payload.title,
-          priority: payload.priority || "medium",
-          energy: payload.energy || "medium",
+          title: payload.title || DEFAULT_CONFIG.TITLE,
+          note: payload.note,
+          intention: payload.intention || (INTENTIONS.WANT as IntentionType),
+          important: payload.important || false,
+          energy: payload.energy || (ENERGY_LEVELS.MEDIUM as EnergyType),
           duration: payload.duration,
-          status: "active",
+          scheduledDate:
+            payload.scheduledDate || new Date(event.timestamp).toLocaleDateString("en-CA"),
+          startTime: payload.startTime,
+          endTime: payload.endTime,
+          status: ACTION_STATUS.ACTIVE,
           createdAt: event.timestamp,
+          sortOrder: payload.sortOrder ?? event.timestamp,
         });
         break;
       }
-      case "ACTION_COMPLETED": {
-        const payload = event.payload as { id: string };
-        const actionToComplete = actionsMap.get(payload.id);
-        if (actionToComplete) {
-          actionToComplete.status = "completed";
+      case EVENT_TYPES.ACTION_UPDATED: {
+        const payload = event.payload as Partial<ActionPayload>;
+        const existing = actionsMap.get(event.id);
+        if (existing) {
+          actionsMap.set(event.id, { ...existing, ...payload });
         }
         break;
       }
-      case "ACTION_ABANDONED": {
+      case EVENT_TYPES.ACTION_COMPLETED: {
         const payload = event.payload as { id: string };
-        const actionToAbandon = actionsMap.get(payload.id);
+        const actionToComplete = actionsMap.get(payload.id || event.id);
+        if (actionToComplete) {
+          actionToComplete.status = ACTION_STATUS.COMPLETED;
+        }
+        break;
+      }
+      case EVENT_TYPES.ACTION_ACTIVATED: {
+        const payload = event.payload as { id: string };
+        const actionToActivate = actionsMap.get(payload.id || event.id);
+        if (actionToActivate) {
+          actionToActivate.status = ACTION_STATUS.ACTIVE;
+        }
+        break;
+      }
+      case EVENT_TYPES.ACTION_ABANDONED: {
+        const payload = event.payload as { id: string };
+        const actionToAbandon = actionsMap.get(payload.id || event.id);
         if (actionToAbandon) {
-          actionToAbandon.status = "abandoned";
+          actionToAbandon.status = ACTION_STATUS.ABANDONED;
         }
         break;
       }
@@ -88,9 +119,9 @@ export function useCurrentDay() {
   });
 
   actionsMap.forEach((action) => {
-    if (action.status === "active") {
+    if (action.status === ACTION_STATUS.ACTIVE) {
       activeActions.push(action);
-    } else if (action.status === "completed") {
+    } else if (action.status === ACTION_STATUS.COMPLETED) {
       completedActions.push(action);
     }
   });

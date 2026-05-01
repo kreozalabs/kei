@@ -1,7 +1,13 @@
 import { db } from "./index";
 import { v7 as uuidv7 } from "uuid";
 import type { Action, Event, ActionPayload } from "../types/events";
-import { EVENT_TYPES, ENERGY_LEVELS, INTENTIONS } from "../config/constants";
+import {
+  EVENT_TYPES,
+  ENERGY_LEVELS,
+  INTENTIONS,
+  ACTION_STATUS,
+  DEFAULT_CONFIG,
+} from "../config/constants";
 
 const getTodayString = () => new Date().toLocaleDateString("en-CA"); // YYYY-MM-DD local time
 
@@ -18,7 +24,7 @@ export async function getActions(): Promise<Action[]> {
 
       actionsMap.set(actionId, {
         id: actionId,
-        title: event.payload.title || "Untitled",
+        title: event.payload.title || DEFAULT_CONFIG.TITLE,
         note: event.payload.note,
         intention: event.payload.intention || INTENTIONS.WANT,
         important: event.payload.important || false,
@@ -27,7 +33,7 @@ export async function getActions(): Promise<Action[]> {
         scheduledDate: event.payload.scheduledDate || getTodayString(),
         startTime,
         endTime,
-        status: "active",
+        status: ACTION_STATUS.ACTIVE,
         createdAt: event.timestamp,
         sortOrder: event.payload.sortOrder ?? event.timestamp,
       });
@@ -40,17 +46,17 @@ export async function getActions(): Promise<Action[]> {
     } else if (event.type === EVENT_TYPES.ACTION_COMPLETED) {
       const existing = actionsMap.get(actionId);
       if (existing) {
-        existing.status = "completed";
+        existing.status = ACTION_STATUS.COMPLETED;
       }
     } else if (event.type === EVENT_TYPES.ACTION_ACTIVATED) {
       const existing = actionsMap.get(actionId);
       if (existing) {
-        existing.status = "active";
+        existing.status = ACTION_STATUS.ACTIVE;
       }
     } else if (event.type === EVENT_TYPES.ACTION_ABANDONED) {
       const existing = actionsMap.get(actionId);
       if (existing) {
-        existing.status = "abandoned";
+        existing.status = ACTION_STATUS.ABANDONED;
       }
     }
   }
@@ -142,7 +148,9 @@ export async function getRecentConfigs(): Promise<ActionPayload[]> {
   const result = await db.query(
     `SELECT payload FROM events WHERE type = '${EVENT_TYPES.ACTION_INTENDED}' ORDER BY timestamp DESC LIMIT 30`
   );
-  const payloads = result.rows.map((r) => JSON.parse(r.payload as string)) as ActionPayload[];
+  const payloads = (result.rows as { payload: string | object }[]).map((r) =>
+    typeof r.payload === "string" ? JSON.parse(r.payload) : r.payload
+  ) as ActionPayload[];
 
   const configs: ActionPayload[] = [];
   const seen = new Set<string>();
@@ -178,8 +186,10 @@ export async function getLastKnownTime(
     [id]
   );
 
-  for (const row of result.rows) {
-    const payload = JSON.parse(row.payload as string) as Partial<ActionPayload>;
+  for (const row of result.rows as { payload: string | object }[]) {
+    const payload = (
+      typeof row.payload === "string" ? JSON.parse(row.payload) : row.payload
+    ) as Partial<ActionPayload>;
     // Check if this payload has startTime defined and not null/empty string
     if (payload.startTime) {
       return {

@@ -12,7 +12,7 @@ import {
 import { Input, Button, Textarea, cn } from "@kreozalabs/ui";
 import { ActionSelector } from "../ActionSelector";
 import { addAction, updateAction, getRecentConfigs } from "../../db/actions";
-import type { Action } from "../../types/events";
+import type { Action, EnergyType, IntentionType } from "../../types/events";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useDiscardGuard } from "../../hooks/useDiscardGuard";
 import { useTheme } from "../../providers/ThemeContext";
@@ -25,6 +25,7 @@ import {
   formatGoogleDate,
   getTimeOptions,
   parseManualTime,
+  formatDuration,
 } from "../../utils/time";
 import {
   DEFAULT_CONFIG,
@@ -71,14 +72,14 @@ const getNearestTimeValue = () => {
 
 export const ActionInput = forwardRef<ActionInputHandle, ActionInputProps>(
   ({ onSuccess, onCancel, initialDate, className, variant = "inline", actionToEdit }, ref) => {
-    const [title, setTitle] = useState(actionToEdit?.title || "");
+    const [title, setTitle] = useState(actionToEdit?.title || DEFAULT_CONFIG.TITLE);
     const [note, setNote] = useState(actionToEdit?.note || "");
-    const [intention, setIntention] = useState<"must" | "want">(
-      actionToEdit?.intention || (DEFAULT_CONFIG.INTENTION as "must" | "want")
+    const [intention, setIntention] = useState<IntentionType>(
+      actionToEdit?.intention || (DEFAULT_CONFIG.INTENTION as IntentionType)
     );
     const [isImportant, setIsImportant] = useState(actionToEdit?.important || false);
-    const [energy, setEnergy] = useState<"low" | "medium" | "high">(
-      actionToEdit?.energy || (DEFAULT_CONFIG.ENERGY as "low" | "medium" | "high")
+    const [energy, setEnergy] = useState<EnergyType>(
+      actionToEdit?.energy || (DEFAULT_CONFIG.ENERGY as EnergyType)
     );
     const [duration, setDuration] = useState<[number, number | null]>(
       actionToEdit?.duration
@@ -101,6 +102,39 @@ export const ActionInput = forwardRef<ActionInputHandle, ActionInputProps>(
     const titleInputRef = useRef<HTMLInputElement>(null);
 
     const timeOptions = useMemo(() => getTimeOptions(timeFormat), [timeFormat]);
+    const energyOption =
+      ENERGY_OPTIONS.find((opt) => opt.value === energy) || ENERGY_OPTIONS[1];
+
+    const energyOptionsWithIcons = useMemo(
+      () =>
+        ENERGY_OPTIONS.map((opt) => {
+          const Icon =
+            opt.value === ENERGY_LEVELS.HIGH
+              ? BatteryFull
+              : opt.value === ENERGY_LEVELS.MEDIUM
+                ? BatteryMedium
+                : BatteryLow;
+          return {
+            ...opt,
+            icon: <Icon className="size-4" />,
+            className: opt.color,
+          };
+        }),
+      []
+    );
+
+    const EnergyIcon = useMemo(() => {
+      switch (energy) {
+        case ENERGY_LEVELS.HIGH:
+          return BatteryFull;
+        case ENERGY_LEVELS.MEDIUM:
+          return BatteryMedium;
+        case ENERGY_LEVELS.LOW:
+          return BatteryLow;
+        default:
+          return BatteryMedium;
+      }
+    }, [energy]);
 
     const isCalculatingRef = useRef(false);
 
@@ -155,7 +189,7 @@ export const ActionInput = forwardRef<ActionInputHandle, ActionInputProps>(
     });
 
     const hasChanges = useMemo(() => {
-      const initialTitle = actionToEdit?.title || "";
+      const initialTitle = actionToEdit?.title || DEFAULT_CONFIG.TITLE;
       const initialNote = actionToEdit?.note || "";
       const initialIntention = actionToEdit?.intention || DEFAULT_CONFIG.INTENTION;
       const initialEnergy = actionToEdit?.energy || DEFAULT_CONFIG.ENERGY;
@@ -274,10 +308,8 @@ export const ActionInput = forwardRef<ActionInputHandle, ActionInputProps>(
                     size="sm"
                     onClick={() => {
                       handleDurationChange(config.duration || DEFAULT_CONFIG.DURATION);
-                      setEnergy(
-                        (config.energy as "low" | "medium" | "high") || ENERGY_LEVELS.MEDIUM
-                      );
-                      setIntention((config.intention as "must" | "want") || INTENTIONS.WANT);
+                      setEnergy((config.energy as EnergyType) || ENERGY_LEVELS.MEDIUM);
+                      setIntention((config.intention as IntentionType) || INTENTIONS.WANT);
                       setIsImportant(config.important || false);
                     }}
                     className="h-7 px-2.5 rounded-lg bg-primary/5 hover:bg-primary/10 text-[11px] font-bold text-primary/70 transition-all border border-primary/10 active:scale-95"
@@ -333,13 +365,7 @@ export const ActionInput = forwardRef<ActionInputHandle, ActionInputProps>(
           <div className="px-4 sm:px-5 pb-5 mt-5 flex flex-wrap gap-2 sm:gap-2.5 items-center">
             <ActionSelector
               icon={<Clock className="size-3.5 text-blue-500/70" />}
-              label={
-                !duration[1] || duration[0] === duration[1]
-                  ? `${duration[0]} mins`
-                  : duration[0] === 60
-                    ? "1 hr+"
-                    : `${duration[0]} - ${duration[1]} mins`
-              }
+              label={formatDuration(duration[0], duration[1])}
               options={DURATION_OPTIONS.map((opt) => ({
                 ...opt,
                 icon: <Clock className="size-4 text-muted-foreground" />,
@@ -352,30 +378,9 @@ export const ActionInput = forwardRef<ActionInputHandle, ActionInputProps>(
             </ActionSelector>
 
             <ActionSelector
-              icon={
-                energy === ENERGY_LEVELS.HIGH ? (
-                  <BatteryFull className="size-3.5 text-red-500" />
-                ) : energy === ENERGY_LEVELS.MEDIUM ? (
-                  <BatteryMedium className="size-3.5 text-orange-500" />
-                ) : (
-                  <BatteryLow className="size-3.5 text-emerald-500" />
-                )
-              }
-              label={
-                ENERGY_OPTIONS.find((opt) => opt.value === energy)?.label || `${energy} energy`
-              }
-              options={ENERGY_OPTIONS.map((opt) => ({
-                ...opt,
-                icon:
-                  opt.value === ENERGY_LEVELS.HIGH ? (
-                    <BatteryFull className="size-4" />
-                  ) : opt.value === ENERGY_LEVELS.MEDIUM ? (
-                    <BatteryMedium className="size-4" />
-                  ) : (
-                    <BatteryLow className="size-4" />
-                  ),
-                className: opt.color,
-              }))}
+              icon={<EnergyIcon className={cn("size-3.5", energyOption.color)} />}
+              label={energyOption.label}
+              options={energyOptionsWithIcons}
               onSelect={setEnergy as (v: unknown) => void}
               value={energy}
             />

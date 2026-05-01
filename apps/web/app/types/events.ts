@@ -1,9 +1,14 @@
-export type EventType = 
-  | "ACTION_INTENDED" 
+export type EventType =
+  | "ACTION_INTENDED"
   | "ACTION_UPDATED"
-  | "ACTION_COMPLETED" 
-  | "ACTION_ABANDONED" 
+  | "ACTION_COMPLETED"
+  | "ACTION_ACTIVATED"
+  | "ACTION_ABANDONED"
   | "TRANSITION_STARTED";
+
+export type EnergyType = "low" | "medium" | "high";
+export type IntentionType = "must" | "want";
+export type ActionStatus = "active" | "completed" | "abandoned";
 
 export interface Event<T = unknown> {
   eventId: string;
@@ -16,8 +21,8 @@ export interface Event<T = unknown> {
 export interface ActionPayload {
   title?: string;
   note?: string;
-  intention?: "must" | "want";
-  energy?: "low" | "medium" | "high";
+  intention?: IntentionType;
+  energy?: EnergyType;
   duration?: [number, number]; // [min, max] in minutes
   important?: boolean;
   scheduledDate?: string; // YYYY-MM-DD
@@ -31,15 +36,15 @@ export interface Action {
   id: string;
   title: string;
   note?: string;
-  intention: "must" | "want";
+  intention: IntentionType;
   important: boolean;
-  energy: "low" | "medium" | "high";
+  energy: EnergyType;
   duration?: [number, number];
   scheduledDate: string; // YYYY-MM-DD
   startTime?: string | null;
   endTime?: string | null;
   timezone?: string;
-  status: "active" | "completed" | "abandoned";
+  status: ActionStatus;
   createdAt: number;
   sortOrder: number;
 }

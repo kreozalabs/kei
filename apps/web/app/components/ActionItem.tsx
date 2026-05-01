@@ -1,4 +1,4 @@
-import type { Action } from "../types/events";
+import type { Action, ActionStatus } from "../types/events";
 import { Button, cn } from "@kreozalabs/ui";
 import {
   Trash2Icon,
@@ -26,11 +26,11 @@ import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { useTheme } from "../providers/ThemeContext";
 import { formatTime, isNextDay, getTodayString } from "../utils/time";
-import { ENERGY_OPTIONS, INTENTIONS } from "../config/constants";
+import { ACTION_STATUS, ENERGY_LEVELS, ENERGY_OPTIONS, INTENTIONS } from "../config/constants";
 
 interface ActionItemProps {
   action: Action;
-  type: "active" | "completed";
+  type: ActionStatus;
   onComplete: (action: Action) => void;
   onAbandon: (action: Action) => void;
   onEdit: (action: Action) => void;
@@ -39,7 +39,7 @@ interface ActionItemProps {
 export function ActionItem({ action, type, onComplete, onAbandon, onEdit }: ActionItemProps) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id: action.id,
-    disabled: type === "completed",
+    disabled: type === ACTION_STATUS.COMPLETED,
   });
   const { timeFormat } = useTheme();
 
@@ -58,13 +58,13 @@ export function ActionItem({ action, type, onComplete, onAbandon, onEdit }: Acti
       style={style}
       className={cn(
         "group flex items-start gap-1 py-2.5 border-b border-border/40 last:border-none transition-colors px-1 sm:px-2 cursor-default relative",
-        type === "completed" ? "opacity-50" : "hover:bg-muted/10",
+        type === ACTION_STATUS.COMPLETED ? "opacity-50" : "hover:bg-muted/10",
         isDragging &&
           "opacity-50 z-50 bg-background shadow-lg rounded-lg border-2 border-primary/20"
       )}
     >
       {/* Drag Handle */}
-      {type === "active" && (
+      {type === ACTION_STATUS.ACTIVE && (
         <div
           {...attributes}
           {...listeners}
@@ -76,7 +76,7 @@ export function ActionItem({ action, type, onComplete, onAbandon, onEdit }: Acti
       )}
 
       <div className="flex items-start gap-3 flex-1 min-w-0">
-        {type === "active" ? (
+        {type === ACTION_STATUS.ACTIVE ? (
           <Button
             variant="outline"
             size="icon"
@@ -116,14 +116,14 @@ export function ActionItem({ action, type, onComplete, onAbandon, onEdit }: Acti
 
         <div
           className="flex-1 min-w-0 flex flex-col gap-0.5 cursor-pointer"
-          onClick={() => type !== "completed" && onEdit(action)}
+          onClick={() => type !== ACTION_STATUS.COMPLETED && onEdit(action)}
         >
           <div className="flex items-start justify-between gap-4">
             <div className="flex flex-col flex-1 min-w-0">
               <span
                 className={cn(
                   "text-[14px] font-medium leading-[1.4] transition-colors relative flex-1 truncate",
-                  type === "completed" ? "text-muted-foreground" : "text-foreground"
+                  type === ACTION_STATUS.COMPLETED ? "text-muted-foreground" : "text-foreground"
                 )}
               >
                 {action.title}
@@ -131,7 +131,7 @@ export function ActionItem({ action, type, onComplete, onAbandon, onEdit }: Acti
                 <div
                   className={cn(
                     "absolute left-0 top-1/2 -translate-y-1/2 h-px bg-muted-foreground/40 transition-all duration-300 ease-in-out",
-                    type === "completed" ? "w-full opacity-100" : "w-0 opacity-0"
+                    type === ACTION_STATUS.COMPLETED ? "w-full opacity-100" : "w-0 opacity-0"
                   )}
                 />
                 {action.important && (
@@ -190,9 +190,9 @@ export function ActionItem({ action, type, onComplete, onAbandon, onEdit }: Acti
                     energyConfig?.bg || "bg-muted/50 border-border/50"
                   )}
                 >
-                  {action.energy?.toLowerCase() === "high" ? (
+                  {action.energy === ENERGY_LEVELS.HIGH ? (
                     <BatteryFull className={cn("size-3", energyConfig?.color)} />
-                  ) : action.energy?.toLowerCase() === "medium" ? (
+                  ) : action.energy === ENERGY_LEVELS.MEDIUM ? (
                     <BatteryMedium className={cn("size-3", energyConfig?.color)} />
                   ) : (
                     <BatteryLow className={cn("size-3", energyConfig?.color)} />
@@ -235,7 +235,7 @@ export function ActionItem({ action, type, onComplete, onAbandon, onEdit }: Acti
         </div>
       </div>
 
-      {type === "active" && (
+      {type === ACTION_STATUS.ACTIVE && (
         <div className="flex items-center gap-0.5 shrink-0 ml-1">
           {/* Desktop Hover Actions */}
           <Button

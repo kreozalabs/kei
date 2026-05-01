@@ -85,3 +85,28 @@ export const parseManualTime = (input: string): string | null => {
 
   return null;
 };
+
+export const formatDuration = (min: number, max: number | null): string => {
+  const formatSingle = (m: number) => {
+    if (m === 0) return "0 mins";
+    if (m % 60 === 0) {
+      const hrs = m / 60;
+      return `${hrs} ${hrs === 1 ? "hr" : "hrs"}`;
+    }
+    return `${m} mins`;
+  };
+
+  if (max === null || min === max) {
+    return formatSingle(min);
+  }
+
+  // Handle common range cases
+  if (min === 0) return `< ${formatSingle(max)}`;
+
+  // If both are hours, format as hours
+  if (min % 60 === 0 && max % 60 === 0) {
+    return `${min / 60} - ${max / 60} hrs`;
+  }
+
+  return `${min} - ${max} mins`;
+};

@@ -17,7 +17,14 @@ export const INTENTIONS = {
   WANT: "want",
 } as const;
 
+export const ACTION_STATUS = {
+  ACTIVE: "active",
+  COMPLETED: "completed",
+  ABANDONED: "abandoned",
+} as const;
+
 export const DEFAULT_CONFIG = {
+  TITLE: "Untitled",
   DURATION: [15, 30] as [number, number],
   ENERGY: ENERGY_LEVELS.MEDIUM,
   INTENTION: INTENTIONS.WANT,
@@ -29,23 +36,23 @@ export const TIME = {
 };
 
 export const ENERGY_OPTIONS = [
-  { 
-    label: "Low energy", 
-    value: ENERGY_LEVELS.LOW, 
+  {
+    label: "Low energy",
+    value: ENERGY_LEVELS.LOW,
     color: "text-emerald-500",
-    bg: "bg-emerald-500/10 border-emerald-500/20" 
+    bg: "bg-emerald-500/10 border-emerald-500/20",
   },
-  { 
-    label: "Medium energy", 
-    value: ENERGY_LEVELS.MEDIUM, 
+  {
+    label: "Medium energy",
+    value: ENERGY_LEVELS.MEDIUM,
     color: "text-orange-500",
-    bg: "bg-orange-500/10 border-orange-500/20" 
+    bg: "bg-orange-500/10 border-orange-500/20",
   },
-  { 
-    label: "High energy", 
-    value: ENERGY_LEVELS.HIGH, 
+  {
+    label: "High energy",
+    value: ENERGY_LEVELS.HIGH,
     color: "text-red-500",
-    bg: "bg-red-500/10 border-red-500/20" 
+    bg: "bg-red-500/10 border-red-500/20",
   },
 ];
 
