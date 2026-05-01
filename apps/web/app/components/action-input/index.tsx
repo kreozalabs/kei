@@ -98,7 +98,7 @@ export const ActionInput = forwardRef<ActionInputHandle, ActionInputProps>(
     const [isTimeInvalid, setIsTimeInvalid] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
     const queryClient = useQueryClient();
-    const { timeFormat } = useTheme();
+    const { timeFormat, showRecentConfigs } = useTheme();
     const titleInputRef = useRef<HTMLInputElement>(null);
 
     const timeOptions = useMemo(() => getTimeOptions(timeFormat), [timeFormat]);
@@ -185,6 +185,7 @@ export const ActionInput = forwardRef<ActionInputHandle, ActionInputProps>(
     const { data: recentConfigs = [] } = useQuery({
       queryKey: ["recent-configs"],
       queryFn: getRecentConfigs,
+      enabled: showRecentConfigs,
     });
 
     const hasChanges = useMemo(() => {
@@ -309,7 +310,7 @@ export const ActionInput = forwardRef<ActionInputHandle, ActionInputProps>(
         <form onSubmit={handleSubmit} className="flex flex-col">
           {/* Input Section */}
           <div className="p-4 sm:p-5 flex flex-col gap-2">
-            {recentConfigs.length > 0 && (
+            {showRecentConfigs && recentConfigs.length > 0 && (
               <div className="flex flex-wrap gap-2 mb-3">
                 {recentConfigs.map((config, idx) => (
                   <Button

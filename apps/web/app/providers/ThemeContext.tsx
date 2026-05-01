@@ -8,18 +8,22 @@ export interface ThemeProviderState {
   theme: Theme;
   accent: Accent;
   timeFormat: TimeFormat;
+  showRecentConfigs: boolean;
   setTheme: (theme: Theme) => void;
   setAccent: (accent: Accent) => void;
   setTimeFormat: (format: TimeFormat) => void;
+  setShowRecentConfigs: (show: boolean) => void;
 }
 
 export const initialState: ThemeProviderState = {
   theme: "system",
   accent: "rose",
   timeFormat: "12h",
+  showRecentConfigs: true,
   setTheme: () => null,
   setAccent: () => null,
   setTimeFormat: () => null,
+  setShowRecentConfigs: () => null,
 };
 
 export const ThemeProviderContext = createContext<ThemeProviderState>(initialState);

@@ -9,6 +9,7 @@ interface ThemeProviderProps {
   storageKey?: string;
   accentStorageKey?: string;
   timeFormatStorageKey?: string;
+  showRecentConfigsStorageKey?: string;
 }
 
 export function ThemeProvider({
@@ -18,6 +19,7 @@ export function ThemeProvider({
   storageKey = "kei-ui-theme",
   accentStorageKey = "kei-ui-accent",
   timeFormatStorageKey = "kei-ui-time-format",
+  showRecentConfigsStorageKey = "kei-ui-show-recent-configs",
   ...props
 }: ThemeProviderProps) {
   const [theme, setTheme] = useState<Theme>(() => {
@@ -33,6 +35,12 @@ export function ThemeProvider({
   const [timeFormat, setTimeFormat] = useState<TimeFormat>(() => {
     if (typeof window === "undefined") return "12h";
     return (localStorage.getItem(timeFormatStorageKey) as TimeFormat) || "12h";
+  });
+
+  const [showRecentConfigs, setShowRecentConfigs] = useState<boolean>(() => {
+    if (typeof window === "undefined") return true;
+    const stored = localStorage.getItem(showRecentConfigsStorageKey);
+    return stored === null ? true : stored === "true";
   });
 
   useEffect(() => {
@@ -77,6 +85,7 @@ export function ThemeProvider({
     theme,
     accent,
     timeFormat,
+    showRecentConfigs,
     setTheme: (theme: Theme) => {
       localStorage.setItem(storageKey, theme);
       setTheme(theme);
@@ -88,6 +97,10 @@ export function ThemeProvider({
     setTimeFormat: (format: TimeFormat) => {
       localStorage.setItem(timeFormatStorageKey, format);
       setTimeFormat(format);
+    },
+    setShowRecentConfigs: (show: boolean) => {
+      localStorage.setItem(showRecentConfigsStorageKey, String(show));
+      setShowRecentConfigs(show);
     },
   };
 

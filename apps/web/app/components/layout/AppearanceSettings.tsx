@@ -13,7 +13,7 @@ const ACCENTS: { name: Accent; color: string; hover: string }[] = [
 ];
 
 export function AppearanceSettings() {
-  const { theme, setTheme, accent, setAccent, timeFormat, setTimeFormat } = useTheme();
+  const { theme, setTheme, accent, setAccent, timeFormat, setTimeFormat, showRecentConfigs, setShowRecentConfigs } = useTheme();
 
   return (
     <div className="space-y-8">
@@ -90,6 +90,38 @@ export function AppearanceSettings() {
               )}
             >
               <span>{f === "12h" ? "12-hour" : "24-hour"}</span>
+            </Button>
+          ))}
+        </div>
+      </div>
+
+      <div className="space-y-3">
+        <div className="flex items-center justify-between px-2">
+          <h4 className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground/50">
+            Recent Configs
+          </h4>
+          <span className="text-[10px] text-muted-foreground/40 font-medium">
+            Quick action presets
+          </span>
+        </div>
+        <div className="flex items-center gap-1.5 p-1 bg-muted/40 rounded-xl">
+          {[
+            { label: "Show", value: true },
+            { label: "Hide", value: false },
+          ].map((opt) => (
+            <Button
+              key={opt.label}
+              variant="ghost"
+              size="sm"
+              onClick={() => setShowRecentConfigs(opt.value)}
+              className={cn(
+                "flex-1 flex flex-row items-center justify-center h-8 rounded-lg text-[12px] font-medium transition-all border-none",
+                showRecentConfigs === opt.value
+                  ? "bg-background text-foreground shadow-sm hover:bg-background"
+                  : "text-muted-foreground hover:text-foreground hover:bg-muted/80"
+              )}
+            >
+              <span>{opt.label}</span>
             </Button>
           ))}
         </div>
