@@ -102,8 +102,7 @@ export const ActionInput = forwardRef<ActionInputHandle, ActionInputProps>(
     const titleInputRef = useRef<HTMLInputElement>(null);
 
     const timeOptions = useMemo(() => getTimeOptions(timeFormat), [timeFormat]);
-    const energyOption =
-      ENERGY_OPTIONS.find((opt) => opt.value === energy) || ENERGY_OPTIONS[1];
+    const energyOption = ENERGY_OPTIONS.find((opt) => opt.value === energy) || ENERGY_OPTIONS[1];
 
     const energyOptionsWithIcons = useMemo(
       () =>
@@ -189,6 +188,14 @@ export const ActionInput = forwardRef<ActionInputHandle, ActionInputProps>(
     });
 
     const hasChanges = useMemo(() => {
+      // Define the "Empty State" check for New Actions
+      const isNewAction = !actionToEdit;
+      const isBaseEmpty = !title.trim() && !note.trim();
+
+      // If it's a new draft and nothing has been typed yet, don't trigger the guard
+      // regardless of other setting changes (Energy, Intention, etc.)
+      if (isNewAction && isBaseEmpty) return false;
+
       const initialTitle = actionToEdit?.title || DEFAULT_CONFIG.TITLE;
       const initialNote = actionToEdit?.note || "";
       const initialIntention = actionToEdit?.intention || DEFAULT_CONFIG.INTENTION;
@@ -199,6 +206,8 @@ export const ActionInput = forwardRef<ActionInputHandle, ActionInputProps>(
       const initialScheduledDate = actionToEdit?.scheduledDate || initialDate || getTodayString();
       const initialStartTime = actionToEdit?.startTime || "";
       const initialEndTime = actionToEdit?.endTime || "";
+      const initialTimezone =
+        actionToEdit?.timezone || Intl.DateTimeFormat().resolvedOptions().timeZone;
 
       return (
         title.trim() !== initialTitle ||
@@ -210,7 +219,8 @@ export const ActionInput = forwardRef<ActionInputHandle, ActionInputProps>(
         (duration[1] ?? duration[0]) !== initialDurationMax ||
         scheduledDate !== initialScheduledDate ||
         startTime !== initialStartTime ||
-        endTime !== initialEndTime
+        endTime !== initialEndTime ||
+        timezone !== initialTimezone
       );
     }, [
       title,
@@ -222,6 +232,7 @@ export const ActionInput = forwardRef<ActionInputHandle, ActionInputProps>(
       scheduledDate,
       startTime,
       endTime,
+      timezone,
       actionToEdit,
       initialDate,
     ]);
