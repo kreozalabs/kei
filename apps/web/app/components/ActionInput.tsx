@@ -29,7 +29,8 @@ import type { Action } from "../types/events";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useDiscardGuard } from "../hooks/useDiscardGuard";
 import { useTheme } from "../providers/ThemeContext";
-import { formatTime } from "../utils/time";
+import { formatTime, isNextDay, timeToMinutes, minutesToTime, getTodayString, formatGoogleDate, getTimeOptions, parseManualTime } from "../utils/time";
+import { DEFAULT_CONFIG, ENERGY_LEVELS, INTENTIONS, TIME, ENERGY_OPTIONS, INTENTION_OPTIONS, DURATION_OPTIONS } from "../config/constants";
 
 interface ActionInputProps {
   onSuccess?: () => void;
@@ -130,64 +131,6 @@ const DurationInputs = ({
   );
 };
 
-const getTimeOptions = (format: "12h" | "24h") =>
-  Array.from({ length: 96 }).map((_, i) => {
-    const hours = Math.floor(i / 4);
-    const minutes = (i % 4) * 15;
-    const value = `${hours.toString().padStart(2, "0")}:${minutes.toString().padStart(2, "0")}`;
-    const label = formatTime(value, format);
-    return { label, value };
-  });
-
-const formatGoogleDate = (dateStr: string) => {
-  if (!dateStr) return "Date";
-  // We use dateStr + 'T12:00:00' to avoid timezone shift issues from "YYYY-MM-DD"
-  const d = new Date(dateStr + "T12:00:00");
-  return d.toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" });
-};
-
-const parseManualTime = (input: string): string | null => {
-  const clean = input.trim().toLowerCase();
-  if (!clean) return null;
-
-  // Try HH:mm
-  const hhmm = clean.match(/^(\d{1,2}):(\d{2})$/);
-  if (hhmm) {
-    const h = parseInt(hhmm[1]);
-    const m = parseInt(hhmm[2]);
-    if (h >= 0 && h < 24 && m >= 0 && m < 60) {
-      return `${h.toString().padStart(2, "0")}:${m.toString().padStart(2, "0")}`;
-    }
-  }
-
-  // Try h am/pm
-  const h_ampm = clean.match(/^(\d{1,2})\s*(am|pm)$/);
-  if (h_ampm) {
-    let h = parseInt(h_ampm[1]);
-    const ampm = h_ampm[2];
-    if (h >= 1 && h <= 12) {
-      if (ampm === "pm" && h < 12) h += 12;
-      if (ampm === "am" && h === 12) h = 0;
-      return `${h.toString().padStart(2, "0")}:00`;
-    }
-  }
-
-  // Try h:mm am/pm
-  const hmm_ampm = clean.match(/^(\d{1,2}):(\d{2})\s*(am|pm)$/);
-  if (hmm_ampm) {
-    let h = parseInt(hmm_ampm[1]);
-    const m = parseInt(hmm_ampm[2]);
-    const ampm = hmm_ampm[3];
-    if (h >= 1 && h <= 12 && m >= 0 && m < 60) {
-      if (ampm === "pm" && h < 12) h += 12;
-      if (ampm === "am" && h === 12) h = 0;
-      return `${h.toString().padStart(2, "0")}:${m.toString().padStart(2, "0")}`;
-    }
-  }
-
-  return null;
-};
-
 const allTimezones = (
   Intl as typeof Intl & { supportedValuesOf?: (key: string) => string[] }
 ).supportedValuesOf?.("timeZone") || ["UTC", Intl.DateTimeFormat().resolvedOptions().timeZone];
@@ -205,16 +148,16 @@ export const ActionInput = forwardRef<ActionInputHandle, ActionInputProps>(
   ({ onSuccess, onCancel, initialDate, className, variant = "inline", actionToEdit }, ref) => {
     const [title, setTitle] = useState(actionToEdit?.title || "");
     const [note, setNote] = useState(actionToEdit?.note || "");
-    const [intention, setIntention] = useState<"must" | "want">(actionToEdit?.intention || "want");
+    const [intention, setIntention] = useState<"must" | "want">(actionToEdit?.intention || DEFAULT_CONFIG.INTENTION as any);
     const [isImportant, setIsImportant] = useState(actionToEdit?.important || false);
     const [energy, setEnergy] = useState<"low" | "medium" | "high">(
-      actionToEdit?.energy || "medium"
+      actionToEdit?.energy || DEFAULT_CONFIG.ENERGY as any
     );
     const [duration, setDuration] = useState<[number, number | null]>(
-      actionToEdit?.duration ? [actionToEdit.duration[0], actionToEdit.duration[1]] : [15, 30]
+      actionToEdit?.duration ? [actionToEdit.duration[0], actionToEdit.duration[1]] : DEFAULT_CONFIG.DURATION
     );
     const [scheduledDate, setScheduledDate] = useState(
-      actionToEdit?.scheduledDate || initialDate || new Date().toLocaleDateString("en-CA")
+      actionToEdit?.scheduledDate || initialDate || getTodayString()
     );
     const [startTime, setStartTime] = useState<string>(actionToEdit?.startTime || "");
     const [endTime, setEndTime] = useState<string>(actionToEdit?.endTime || "");
@@ -233,39 +176,25 @@ export const ActionInput = forwardRef<ActionInputHandle, ActionInputProps>(
     // Auto-calculate duration from times OR times from duration
     const isCalculatingRef = useRef(false);
 
-    useEffect(() => {
-      if (isCalculatingRef.current) return;
-      if (startTime && endTime) {
-        const [startH, startM] = startTime.split(":").map(Number);
-        const [endH, endM] = endTime.split(":").map(Number);
-        const startTotal = startH * 60 + startM;
-        let endTotal = endH * 60 + endM;
+    const syncDurationFromTimes = (start: string, end: string) => {
+      if (!start || !end || isCalculatingRef.current) return;
+      const startTotal = timeToMinutes(start);
+      let endTotal = timeToMinutes(end);
+      if (endTotal < startTotal) endTotal += TIME.MINUTES_IN_DAY;
+      const diff = endTotal - startTotal;
+      
+      isCalculatingRef.current = true;
+      setDuration([diff, diff]);
+      setTimeout(() => (isCalculatingRef.current = false), 0);
+    };
 
-        // Handle case where end time is on the next day
-        if (endTotal < startTotal) {
-          endTotal += 24 * 60;
-        }
-
-        const diff = endTotal - startTotal;
-        if (diff !== duration[0] || diff !== duration[1]) {
-          isCalculatingRef.current = true;
-          setDuration([diff, diff]);
-          setTimeout(() => (isCalculatingRef.current = false), 0);
-        }
-      }
-    }, [startTime, endTime]);
-
-    // Update endTime if startTime changes but we want to maintain current duration
     const handleStartTimeChange = (newStart: string) => {
       setStartTime(newStart);
       if (isCalculatingRef.current) return;
       const targetDuration = duration[1] || duration[0];
       if (newStart && targetDuration > 0) {
-        const [h, m] = newStart.split(":").map(Number);
-        const newEndTotalM = (h * 60 + m + targetDuration) % (24 * 60);
-        const newEndH = Math.floor(newEndTotalM / 60);
-        const newEndM = newEndTotalM % 60;
-        const formattedEnd = `${newEndH.toString().padStart(2, "0")}:${newEndM.toString().padStart(2, "0")}`;
+        const newEndTotalM = timeToMinutes(newStart) + targetDuration;
+        const formattedEnd = minutesToTime(newEndTotalM);
 
         isCalculatingRef.current = true;
         setEndTime(formattedEnd);
@@ -273,16 +202,18 @@ export const ActionInput = forwardRef<ActionInputHandle, ActionInputProps>(
       }
     };
 
+    const handleEndTimeChange = (newEnd: string) => {
+      setEndTime(newEnd);
+      syncDurationFromTimes(startTime, newEnd);
+    };
+
     const handleDurationChange = (newDuration: [number, number | null]) => {
       setDuration(newDuration);
       if (isCalculatingRef.current) return;
       const targetDuration = newDuration[1] || newDuration[0];
       if (startTime && targetDuration > 0) {
-        const [h, m] = startTime.split(":").map(Number);
-        const newEndTotalM = (h * 60 + m + targetDuration) % (24 * 60);
-        const newEndH = Math.floor(newEndTotalM / 60);
-        const newEndM = newEndTotalM % 60;
-        const formattedEnd = `${newEndH.toString().padStart(2, "0")}:${newEndM.toString().padStart(2, "0")}`;
+        const newEndTotalM = timeToMinutes(startTime) + targetDuration;
+        const formattedEnd = minutesToTime(newEndTotalM);
 
         isCalculatingRef.current = true;
         setEndTime(formattedEnd);
@@ -298,13 +229,13 @@ export const ActionInput = forwardRef<ActionInputHandle, ActionInputProps>(
     const hasChanges = useMemo(() => {
       const initialTitle = actionToEdit?.title || "";
       const initialNote = actionToEdit?.note || "";
-      const initialIntention = actionToEdit?.intention || "want";
-      const initialEnergy = actionToEdit?.energy || "medium";
+      const initialIntention = actionToEdit?.intention || DEFAULT_CONFIG.INTENTION;
+      const initialEnergy = actionToEdit?.energy || DEFAULT_CONFIG.ENERGY;
       const initialImportant = actionToEdit?.important || false;
-      const initialDurationMin = actionToEdit?.duration?.[0] ?? 15;
-      const initialDurationMax = actionToEdit?.duration?.[1] ?? 30;
+      const initialDurationMin = actionToEdit?.duration?.[0] ?? DEFAULT_CONFIG.DURATION[0];
+      const initialDurationMax = actionToEdit?.duration?.[1] ?? DEFAULT_CONFIG.DURATION[1];
       const initialScheduledDate =
-        actionToEdit?.scheduledDate || initialDate || new Date().toLocaleDateString("en-CA");
+        actionToEdit?.scheduledDate || initialDate || getTodayString();
       const initialStartTime = actionToEdit?.startTime || "";
       const initialEndTime = actionToEdit?.endTime || "";
 
@@ -354,13 +285,23 @@ export const ActionInput = forwardRef<ActionInputHandle, ActionInputProps>(
 
       setIsLoading(true);
       try {
+        // Final sync before save
+        let finalDuration = duration;
+        if (startTime && endTime) {
+          const startTotal = timeToMinutes(startTime);
+          let endTotal = timeToMinutes(endTime);
+          if (endTotal < startTotal) endTotal += TIME.MINUTES_IN_DAY;
+          const diff = endTotal - startTotal;
+          finalDuration = [diff, diff];
+        }
+
         const payload = {
           title: title.trim(),
           note: note.trim(),
           intention,
           important: isImportant,
           energy,
-          duration: [duration[0], duration[1] ?? duration[0]] as [number, number],
+          duration: [finalDuration[0], finalDuration[1] ?? finalDuration[0]] as [number, number],
           scheduledDate,
           startTime: startTime || undefined,
           endTime: endTime || undefined,
@@ -407,9 +348,9 @@ export const ActionInput = forwardRef<ActionInputHandle, ActionInputProps>(
                     variant="ghost"
                     size="sm"
                     onClick={() => {
-                      handleDurationChange(config.duration || [15, 30]);
-                      setEnergy(config.energy || "medium");
-                      setIntention(config.intention || "want");
+                      handleDurationChange(config.duration || DEFAULT_CONFIG.DURATION);
+                      setEnergy(config.energy || ENERGY_LEVELS.MEDIUM);
+                      setIntention(config.intention || INTENTIONS.WANT);
                       setIsImportant(config.important || false);
                     }}
                     className="h-7 px-2.5 rounded-lg bg-primary/5 hover:bg-primary/10 text-[11px] font-bold text-primary/70 transition-all border border-primary/10 active:scale-95"
@@ -473,33 +414,10 @@ export const ActionInput = forwardRef<ActionInputHandle, ActionInputProps>(
                     ? "1 hr+"
                     : `${duration[0]} - ${duration[1]} mins`
               }
-              options={[
-                {
-                  label: "<15 mins",
-                  value: [0, 15] as [number, number],
-                  icon: <Clock className="size-4 text-muted-foreground" />,
-                },
-                {
-                  label: "15 mins",
-                  value: [15, 15] as [number, number],
-                  icon: <Clock className="size-4 text-muted-foreground" />,
-                },
-                {
-                  label: "15 - 30 mins",
-                  value: [15, 30] as [number, number],
-                  icon: <Clock className="size-4 text-muted-foreground" />,
-                },
-                {
-                  label: "30 - 60 mins",
-                  value: [30, 60] as [number, number],
-                  icon: <Clock className="size-4 text-muted-foreground" />,
-                },
-                {
-                  label: "1 -2 hours",
-                  value: [60, 120] as [number, number],
-                  icon: <Clock className="size-4 text-muted-foreground" />,
-                },
-              ]}
+              options={DURATION_OPTIONS.map((opt) => ({
+                ...opt,
+                icon: <Clock className="size-4 text-muted-foreground" />,
+              }))}
               onSelect={(val) => handleDurationChange(val as [number, number | null])}
               value={duration}
               contentClassName="w-[280px]"
@@ -509,35 +427,27 @@ export const ActionInput = forwardRef<ActionInputHandle, ActionInputProps>(
 
             <ActionSelector
               icon={
-                energy === "high" ? (
+                energy === ENERGY_LEVELS.HIGH ? (
                   <BatteryFull className="size-3.5 text-red-500" />
-                ) : energy === "medium" ? (
-                  <BatteryMedium className="size-3.5 text-yellow-500" />
+                ) : energy === ENERGY_LEVELS.MEDIUM ? (
+                  <BatteryMedium className="size-3.5 text-orange-500" />
                 ) : (
-                  <BatteryLow className="size-3.5 text-green-500" />
+                  <BatteryLow className="size-3.5 text-emerald-500" />
                 )
               }
-              label={`${energy} energy`}
-              options={[
-                {
-                  label: "Low energy",
-                  value: "low",
-                  icon: <BatteryLow className="size-4" />,
-                  className: "text-green-500",
-                },
-                {
-                  label: "Medium energy",
-                  value: "medium",
-                  icon: <BatteryMedium className="size-4" />,
-                  className: "text-yellow-500",
-                },
-                {
-                  label: "High energy",
-                  value: "high",
-                  icon: <BatteryFull className="size-4" />,
-                  className: "text-red-500",
-                },
-              ]}
+              label={ENERGY_OPTIONS.find((opt) => opt.value === energy)?.label || `${energy} energy`}
+              options={ENERGY_OPTIONS.map((opt) => ({
+                ...opt,
+                icon:
+                  opt.value === ENERGY_LEVELS.HIGH ? (
+                    <BatteryFull className="size-4" />
+                  ) : opt.value === ENERGY_LEVELS.MEDIUM ? (
+                    <BatteryMedium className="size-4" />
+                  ) : (
+                    <BatteryLow className="size-4" />
+                  ),
+                className: opt.color,
+              }))}
               onSelect={setEnergy}
               value={energy}
             />
@@ -585,11 +495,7 @@ export const ActionInput = forwardRef<ActionInputHandle, ActionInputProps>(
                 scrollTargetValue={getNearestTimeValue()}
                 onSelect={(val) => {
                   handleStartTimeChange(val);
-                  if (val && endTime && val > endTime) {
-                    setIsTimeInvalid(true);
-                  } else {
-                    setIsTimeInvalid(false);
-                  }
+                  setIsTimeInvalid(false); // Duration logic handles validity now
                 }}
                 value={startTime}
                 align="center"
@@ -619,9 +525,11 @@ export const ActionInput = forwardRef<ActionInputHandle, ActionInputProps>(
                       variant="ghost"
                       size="sm"
                       onClick={() => {
+                        isCalculatingRef.current = true;
                         setStartTime("");
                         setEndTime("");
                         setIsTimeInvalid(false);
+                        setTimeout(() => (isCalculatingRef.current = false), 0);
                       }}
                       className="w-full text-[10px] uppercase font-bold tracking-widest text-red-500 hover:text-red-600 hover:bg-red-500/10 h-7"
                     >
@@ -635,16 +543,24 @@ export const ActionInput = forwardRef<ActionInputHandle, ActionInputProps>(
                 <>
                   <span className="text-muted-foreground/50 px-0.5 font-medium">-</span>
                   <ActionSelector
-                    label={endTime ? formatTime(endTime, timeFormat) : "End"}
+                    label={
+                      endTime ? (
+                        <span className="flex items-center gap-1">
+                          {formatTime(endTime, timeFormat)}
+                          {isNextDay(startTime, endTime) && (
+                            <span className="text-[9px] text-primary bg-primary/10 px-1 rounded-sm font-black">
+                              +1
+                            </span>
+                          )}
+                        </span>
+                      ) : (
+                        "End"
+                      )
+                    }
                     options={timeOptions}
                     scrollTargetValue={getNearestTimeValue()}
                     onSelect={(val) => {
-                      setEndTime(val);
-                      if (startTime && val < startTime) {
-                        setIsTimeInvalid(true);
-                      } else {
-                        setIsTimeInvalid(false);
-                      }
+                      handleEndTimeChange(val);
                     }}
                     value={endTime}
                     align="center"
@@ -662,7 +578,7 @@ export const ActionInput = forwardRef<ActionInputHandle, ActionInputProps>(
                           if (e.key === "Enter") {
                             const parsed = parseManualTime(e.currentTarget.value);
                             if (parsed) {
-                              setEndTime(parsed);
+                              handleEndTimeChange(parsed);
                               e.currentTarget.value = "";
                             }
                           }
@@ -718,29 +634,21 @@ export const ActionInput = forwardRef<ActionInputHandle, ActionInputProps>(
                   <div
                     className={cn(
                       "size-5 rounded-md flex items-center justify-center",
-                      intention === "must" ? "bg-orange-500/10" : "bg-pink-500/10"
+                      intention === INTENTIONS.MUST ? "bg-orange-500/10" : "bg-pink-500/10"
                     )}
                   >
-                    {intention === "must" ? (
+                    {intention === INTENTIONS.MUST ? (
                       <AlertCircle className="size-3.5 text-orange-500" />
                     ) : (
                       <Heart className="size-3.5 text-pink-500" />
                     )}
                   </div>
                 }
-                label={intention === "must" ? "Must do" : "Want to do"}
-                options={[
-                  {
-                    label: "Want to do",
-                    value: "want",
-                    icon: <Heart className="size-4 text-pink-500" />,
-                  },
-                  {
-                    label: "Must do",
-                    value: "must",
-                    icon: <AlertCircle className="size-4 text-orange-500" />,
-                  },
-                ]}
+                label={INTENTION_OPTIONS.find((opt) => opt.value === intention)?.label || (intention === INTENTIONS.MUST ? "Must do" : "Want to do")}
+                options={INTENTION_OPTIONS.map((opt) => ({
+                  ...opt,
+                  icon: opt.value === INTENTIONS.MUST ? <AlertCircle className="size-4 text-orange-500" /> : <Heart className="size-4 text-pink-500" />,
+                }))}
                 onSelect={setIntention}
                 value={intention}
                 triggerClassName="h-9 px-2 sm:px-3 rounded-xl hover:bg-muted/50 font-bold text-muted-foreground/70 hover:text-foreground border-none"

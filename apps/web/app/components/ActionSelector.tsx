@@ -18,7 +18,7 @@ export interface ActionSelectorOption<T = any> {
 
 export interface ActionSelectorProps<T = any> {
   icon?: React.ReactNode;
-  label: string;
+  label: React.ReactNode;
   options: ActionSelectorOption<T>[];
   onSelect: (value: T) => void;
   value?: T;
