@@ -27,7 +27,14 @@ import { CSS } from "@dnd-kit/utilities";
 import { NextDayBadge } from "./NextDayBadge";
 import { useTheme } from "../providers/ThemeContext";
 import { formatTime, getTodayString } from "../utils/time";
-import { ACTION_STATUS, ENERGY_LEVELS, ENERGY_OPTIONS, INTENTIONS } from "../config/constants";
+import {
+  ACTION_STATUS,
+  ENERGY_LEVELS,
+  ENERGY_OPTIONS,
+  INTENTIONS,
+  INTENTION_OPTIONS,
+  IMPORTANT_CONFIG,
+} from "../config/constants";
 
 interface ActionItemProps {
   action: Action;
@@ -50,6 +57,8 @@ export function ActionItem({ action, type, onComplete, onAbandon, onEdit }: Acti
   };
 
   const energyConfig = ENERGY_OPTIONS.find((opt) => opt.value === action.energy?.toLowerCase());
+  const intentionConfig =
+    INTENTION_OPTIONS.find((opt) => opt.value === action.intention) || INTENTION_OPTIONS[0];
   const todayString = getTodayString();
   const isOverdue = action.scheduledDate < todayString;
 
@@ -136,7 +145,13 @@ export function ActionItem({ action, type, onComplete, onAbandon, onEdit }: Acti
                   )}
                 />
                 {action.important && (
-                  <Star className="size-3 ml-1.5 text-amber-500 fill-amber-500 shrink-0 inline-block" />
+                  <Star
+                    className={cn(
+                      "size-3 ml-1.5 shrink-0 inline-block",
+                      IMPORTANT_CONFIG.active.color,
+                      IMPORTANT_CONFIG.active.fill
+                    )}
+                  />
                 )}
               </span>
 
@@ -214,9 +229,8 @@ export function ActionItem({ action, type, onComplete, onAbandon, onEdit }: Acti
               <span
                 className={cn(
                   "text-[10px] uppercase tracking-widest font-bold transition-colors flex items-center gap-1.5 group/project px-2 py-1 rounded-lg border",
-                  action.intention === INTENTIONS.MUST
-                    ? "text-orange-500 bg-orange-500/5 border-orange-500/10"
-                    : "text-pink-500 bg-pink-500/5 border-pink-500/10"
+                  intentionConfig.bg,
+                  intentionConfig.color
                 )}
               >
                 {action.intention === INTENTIONS.MUST ? (

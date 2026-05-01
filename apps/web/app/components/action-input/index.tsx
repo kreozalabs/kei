@@ -35,6 +35,7 @@ import {
   ENERGY_OPTIONS,
   INTENTION_OPTIONS,
   DURATION_OPTIONS,
+  IMPORTANT_CONFIG,
 } from "../../config/constants";
 import { DurationInputs } from "./DurationInputs";
 import { DiscardDialog } from "./DiscardDialog";
@@ -134,6 +135,45 @@ export const ActionInput = forwardRef<ActionInputHandle, ActionInputProps>(
           return BatteryMedium;
       }
     }, [energy]);
+ 
+    const intentionConfig = useMemo(
+      () => INTENTION_OPTIONS.find((opt) => opt.value === intention) || INTENTION_OPTIONS[0],
+      [intention]
+    );
+ 
+    const intentionOptionsWithIcons = useMemo(
+      () =>
+        INTENTION_OPTIONS.map((opt) => ({
+          ...opt,
+          icon:
+            opt.value === INTENTIONS.MUST ? (
+              <AlertCircle className={cn("size-4", opt.color)} />
+            ) : (
+              <Heart className={cn("size-4", opt.color)} />
+            ),
+        })),
+      []
+    );
+ 
+    const importantOptionsWithIcons = useMemo(
+      () => [
+        {
+          label: "Regular",
+          value: false,
+          icon: <Star className={cn("size-4", IMPORTANT_CONFIG.inactive.color)} />,
+        },
+        {
+          label: "Important",
+          value: true,
+          icon: (
+            <Star
+              className={cn("size-4", IMPORTANT_CONFIG.active.color, IMPORTANT_CONFIG.active.fill)}
+            />
+          ),
+        },
+      ],
+      []
+    );
 
     const isCalculatingRef = useRef(false);
 
@@ -574,30 +614,19 @@ export const ActionInput = forwardRef<ActionInputHandle, ActionInputProps>(
                 icon={
                   <div
                     className={cn(
-                      "size-5 rounded-md flex items-center justify-center",
-                      intention === INTENTIONS.MUST ? "bg-orange-500/10" : "bg-pink-500/10"
+                      "size-5 rounded-md flex items-center justify-center border",
+                      intentionConfig.bg
                     )}
                   >
                     {intention === INTENTIONS.MUST ? (
-                      <AlertCircle className="size-3.5 text-orange-500" />
+                      <AlertCircle className={cn("size-3.5", intentionConfig.color)} />
                     ) : (
-                      <Heart className="size-3.5 text-pink-500" />
+                      <Heart className={cn("size-3.5", intentionConfig.color)} />
                     )}
                   </div>
                 }
-                label={
-                  INTENTION_OPTIONS.find((opt) => opt.value === intention)?.label ||
-                  (intention === INTENTIONS.MUST ? "Must do" : "Want to do")
-                }
-                options={INTENTION_OPTIONS.map((opt) => ({
-                  ...opt,
-                  icon:
-                    opt.value === INTENTIONS.MUST ? (
-                      <AlertCircle className="size-4 text-orange-500" />
-                    ) : (
-                      <Heart className="size-4 text-pink-500" />
-                    ),
-                }))}
+                label={intentionConfig.label}
+                options={intentionOptionsWithIcons}
                 onSelect={setIntention as (v: unknown) => void}
                 value={intention}
                 triggerClassName="h-9 px-2 sm:px-3 rounded-xl hover:bg-muted/50 font-bold text-muted-foreground/70 hover:text-foreground border-none"
@@ -609,30 +638,21 @@ export const ActionInput = forwardRef<ActionInputHandle, ActionInputProps>(
                   <div
                     className={cn(
                       "size-5 rounded-md flex items-center justify-center",
-                      isImportant ? "bg-amber-500/10" : "bg-muted/30"
+                      isImportant ? IMPORTANT_CONFIG.active.bg : IMPORTANT_CONFIG.inactive.bg
                     )}
                   >
                     <Star
                       className={cn(
                         "size-3.5 mb-0.5",
-                        isImportant ? "text-amber-500 fill-amber-500" : "text-muted-foreground/40"
+                        isImportant
+                          ? cn(IMPORTANT_CONFIG.active.color, IMPORTANT_CONFIG.active.fill)
+                          : IMPORTANT_CONFIG.inactive.color
                       )}
                     />
                   </div>
                 }
                 label={isImportant ? "Important" : ""}
-                options={[
-                  {
-                    label: "Regular",
-                    value: false,
-                    icon: <Star className="size-4 text-muted-foreground/40" />,
-                  },
-                  {
-                    label: "Important",
-                    value: true,
-                    icon: <Star className="size-4 text-amber-500 fill-amber-500" />,
-                  },
-                ]}
+                options={importantOptionsWithIcons}
                 onSelect={setIsImportant as (v: unknown) => void}
                 value={isImportant}
                 triggerClassName="h-9 px-2 sm:px-3 rounded-xl hover:bg-muted/50 font-bold text-muted-foreground/70 hover:text-foreground border-none"

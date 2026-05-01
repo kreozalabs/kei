@@ -62,9 +62,31 @@ export const ENERGY_OPTIONS = [
 ];
 
 export const INTENTION_OPTIONS = [
-  { label: "Want to do", value: INTENTIONS.WANT, color: "text-pink-500" },
-  { label: "Must do", value: INTENTIONS.MUST, color: "text-orange-500" },
+  {
+    label: "Want to do",
+    value: INTENTIONS.WANT,
+    color: "text-pink-500",
+    bg: "bg-pink-500/5 border-pink-500/10",
+  },
+  {
+    label: "Must do",
+    value: INTENTIONS.MUST,
+    color: "text-orange-500",
+    bg: "bg-orange-500/5 border-orange-500/10",
+  },
 ];
+
+export const IMPORTANT_CONFIG = {
+  active: {
+    color: "text-amber-500",
+    fill: "fill-amber-500",
+    bg: "bg-amber-500/10",
+  },
+  inactive: {
+    color: "text-muted-foreground/40",
+    bg: "bg-muted/30",
+  },
+};
 
 export const DURATION_OPTIONS = [
   { label: "<15 mins", value: [0, 15] as [number, number] },
