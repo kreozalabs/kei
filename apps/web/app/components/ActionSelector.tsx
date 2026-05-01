@@ -27,6 +27,7 @@ export interface ActionSelectorProps<T = unknown> {
   triggerClassName?: string;
   contentClassName?: string;
   children?: React.ReactNode;
+  childrenPosition?: "top" | "bottom";
   title?: string;
   align?: "start" | "center" | "end";
 }
@@ -50,6 +51,7 @@ export function ActionSelector<T = unknown>({
   triggerClassName,
   contentClassName,
   children,
+  childrenPosition = "bottom",
   title,
   align = "start",
 }: ActionSelectorProps<T>) {
@@ -93,6 +95,12 @@ export function ActionSelector<T = unknown>({
           contentClassName
         )}
       >
+        {children && childrenPosition === "top" && (
+          <>
+            <div className="p-1">{children}</div>
+            <div className="my-1 border-t border-border/40" />
+          </>
+        )}
         <div ref={scrollRef}>
           {title && (
             <div className="px-2 py-1.5 text-[10px] uppercase font-bold tracking-wider text-muted-foreground/40">
@@ -125,7 +133,7 @@ export function ActionSelector<T = unknown>({
             );
           })}
         </div>
-        {children && (
+        {children && childrenPosition === "bottom" && (
           <>
             <div className="my-1 border-t border-border/40" />
             <div className="p-1">{children}</div>

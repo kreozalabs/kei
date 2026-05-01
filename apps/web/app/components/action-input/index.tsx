@@ -44,6 +44,8 @@ import { DiscardDialog } from "./DiscardDialog";
 // TODO: NOT RELATED TO THIS COMPONENT, BUT IT IS BACKUP LOGIC. Allow user to import and export data.
 // TODO: Create settings to allow user to set custom default values for the input fields. So that if user does a lot of 150 minutes tasks, he does not need to reenter it over again.
 // TODO: Use config file instead of in line hard-coded settings, which should allow us to create custom settings with ease.
+// TODO: Show recent timezones at the top of the timezone dropdown,
+// TODO: Allow to set default timezone, used in the app, in settings.
 
 export interface ActionInputProps {
   onSuccess?: () => void;
@@ -105,6 +107,39 @@ export const ActionInput = forwardRef<ActionInputHandle, ActionInputProps>(
     const timeOptions = useMemo(() => getTimeOptions(timeFormat), [timeFormat]);
     const energyOption = ENERGY_OPTIONS.find((opt) => opt.value === energy) || ENERGY_OPTIONS[1];
 
+    const sortedTimezones = useMemo(() => {
+      const local = Intl.DateTimeFormat().resolvedOptions().timeZone;
+      // TODO: This list is hardcoded. We should use a config file to set the default timezones, including a list of "major" timezones.
+      const major = [
+        "UTC",
+        "America/New_York",
+        "America/Chicago",
+        "America/Denver",
+        "America/Los_Angeles",
+        "Europe/London",
+        "Europe/Paris",
+        "Europe/Berlin",
+        "Asia/Tokyo",
+        "Asia/Shanghai",
+        "Asia/Dubai",
+        "Australia/Sydney",
+      ];
+
+      // Filter out local and major from the main list to avoid duplicates
+      const others = allTimezones.filter((tz) => tz !== local && !major.includes(tz));
+
+      return [local, ...major.filter((m) => allTimezones.includes(m) && m !== local), ...others];
+    }, []);
+
+    const filteredTimezones = useMemo(() => {
+      const search = timezoneSearch.toLowerCase().trim();
+      if (!search) return sortedTimezones.slice(0, 15);
+
+      // When searching, we might want to show more than 50 if there are many matches,
+      // but let's keep a reasonable limit for performance.
+      return sortedTimezones.filter((tz) => tz.toLowerCase().includes(search)).slice(0, 100);
+    }, [timezoneSearch, sortedTimezones]);
+
     const energyOptionsWithIcons = useMemo(
       () =>
         ENERGY_OPTIONS.map((opt) => {
@@ -135,12 +170,12 @@ export const ActionInput = forwardRef<ActionInputHandle, ActionInputProps>(
           return BatteryMedium;
       }
     }, [energy]);
- 
+
     const intentionConfig = useMemo(
       () => INTENTION_OPTIONS.find((opt) => opt.value === intention) || INTENTION_OPTIONS[0],
       [intention]
     );
- 
+
     const intentionOptionsWithIcons = useMemo(
       () =>
         INTENTION_OPTIONS.map((opt) => ({
@@ -154,7 +189,7 @@ export const ActionInput = forwardRef<ActionInputHandle, ActionInputProps>(
         })),
       []
     );
- 
+
     const importantOptionsWithIcons = useMemo(
       () => [
         {
@@ -573,19 +608,17 @@ export const ActionInput = forwardRef<ActionInputHandle, ActionInputProps>(
 
               <ActionSelector
                 label={timezone.split("/").pop()?.replace("_", " ") || timezone}
-                options={allTimezones
-                  .filter((tz: string) => tz.toLowerCase().includes(timezoneSearch.toLowerCase()))
-                  .slice(0, 50)
-                  .map((tz: string) => ({
-                    label: tz.replace("_", " "),
-                    value: tz,
-                  }))}
+                options={filteredTimezones.map((tz: string) => ({
+                  label: tz.replace("_", " "),
+                  value: tz,
+                }))}
                 onSelect={(val) => {
                   setTimezone(val as string);
                   setTimezoneSearch("");
                 }}
                 value={timezone}
                 align="end"
+                childrenPosition="top"
                 triggerClassName="bg-muted/30 border-none hover:bg-muted/50 rounded-md px-3 h-8 shadow-none text-muted-foreground/60 text-[11px]"
                 contentClassName="max-h-[300px] overflow-y-auto w-[220px]"
                 title="Scheduling Timezone"
