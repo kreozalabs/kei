@@ -9,14 +9,14 @@ import {
 } from "@kreozalabs/ui";
 import { CheckIcon } from "lucide-react";
 
-export interface ActionSelectorOption<T = any> {
+export interface ActionSelectorOption<T = unknown> {
   label: string;
   value: T;
   icon?: React.ReactNode;
   className?: string;
 }
 
-export interface ActionSelectorProps<T = any> {
+export interface ActionSelectorProps<T = unknown> {
   icon?: React.ReactNode;
   label: React.ReactNode;
   options: ActionSelectorOption<T>[];
@@ -39,7 +39,7 @@ function areValuesEqual(a: unknown, b: unknown): boolean {
   return false;
 }
 
-export function ActionSelector<T = any>({
+export function ActionSelector<T = unknown>({
   icon,
   label,
   options,

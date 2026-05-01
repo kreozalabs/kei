@@ -8,31 +8,42 @@ import {
   Heart,
   AlertCircle,
   Star,
-  Plus,
-  Minus,
 } from "lucide-react";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  Input,
-  Button,
-  Textarea,
-  cn,
-} from "@kreozalabs/ui";
-import { ActionSelector } from "./ActionSelector";
-import { addAction, updateAction, getRecentConfigs } from "../db/actions";
-import type { Action } from "../types/events";
+import { Input, Button, Textarea, cn } from "@kreozalabs/ui";
+import { ActionSelector } from "../ActionSelector";
+import { addAction, updateAction, getRecentConfigs } from "../../db/actions";
+import type { Action } from "../../types/events";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { useDiscardGuard } from "../hooks/useDiscardGuard";
-import { useTheme } from "../providers/ThemeContext";
-import { formatTime, isNextDay, timeToMinutes, minutesToTime, getTodayString, formatGoogleDate, getTimeOptions, parseManualTime } from "../utils/time";
-import { DEFAULT_CONFIG, ENERGY_LEVELS, INTENTIONS, TIME, ENERGY_OPTIONS, INTENTION_OPTIONS, DURATION_OPTIONS } from "../config/constants";
+import { useDiscardGuard } from "../../hooks/useDiscardGuard";
+import { useTheme } from "../../providers/ThemeContext";
+import {
+  formatTime,
+  isNextDay,
+  timeToMinutes,
+  minutesToTime,
+  getTodayString,
+  formatGoogleDate,
+  getTimeOptions,
+  parseManualTime,
+} from "../../utils/time";
+import {
+  DEFAULT_CONFIG,
+  ENERGY_LEVELS,
+  INTENTIONS,
+  TIME,
+  ENERGY_OPTIONS,
+  INTENTION_OPTIONS,
+  DURATION_OPTIONS,
+} from "../../config/constants";
+import { DurationInputs } from "./DurationInputs";
+import { DiscardDialog } from "./DiscardDialog";
 
-interface ActionInputProps {
+// TODO: Somehow we should allow user to move between input fields, so it is frictionless and requires less effort. Maybe enter, or arrows?
+// TODO: NOT RELATED TO THIS COMPONENT, BUT IT IS BACKUP LOGIC. Allow user to import and export data.
+// TODO: Create settings to allow user to set custom default values for the input fields. So that if user does a lot of 150 minutes tasks, he does not need to reenter it over again.
+// TODO: Use config file instead of in line hard-coded settings, which should allow us to create custom settings with ease.
+
+export interface ActionInputProps {
   onSuccess?: () => void;
   onCancel?: () => void;
   initialDate?: string;
@@ -41,95 +52,9 @@ interface ActionInputProps {
   actionToEdit?: Action;
 }
 
-// TODO: Somehow we should allow user to move between input fields, so it is frictionless and requires less effort. Maybe enter, or arrows?
-// TODO: NOT RELATED TO THIS COMPONENT, BUT IT IS BACKUP LOGIC. Allow user to import and export data.
-// TODO: Create settings to allow user to set custom default values for the input fields. So that if user does a lot of 150 minutes tasks, he does not need to reenter it over again.
-// TODO: Use config file instead of in line hard-coded settings, which should allow us to create custom settings with ease.
-
 export interface ActionInputHandle {
   handleCancelAttempt: () => void;
 }
-
-const DurationStepper = ({
-  value,
-  label,
-  onChange,
-}: {
-  value: number;
-  label: string;
-  onChange: (v: number) => void;
-}) => {
-  const getIncrement = (val: number) => (val < 60 ? 5 : 15);
-  const getDecrement = (val: number) => (val <= 60 ? 5 : 15);
-
-  return (
-    <div className="flex flex-col gap-1.5 items-center flex-1 bg-muted/20 p-2.5 rounded-xl border border-border/30">
-      <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground/60">
-        {label}
-      </span>
-      <div className="flex items-center gap-1.5 w-full justify-between mt-0.5">
-        <Button
-          type="button"
-          variant="ghost"
-          size="icon"
-          className="size-7 bg-background/50 hover:bg-background shadow-sm border border-border/40 text-muted-foreground hover:text-foreground rounded-lg transition-all active:scale-95 shrink-0"
-          onClick={() => onChange(Math.max(0, value - getDecrement(value)))}
-        >
-          <Minus className="size-3" />
-        </Button>
-        <div className="font-bold text-[13px] text-foreground tracking-tight select-none">
-          {value}m
-        </div>
-        <Button
-          type="button"
-          variant="ghost"
-          size="icon"
-          className="size-7 bg-background/50 hover:bg-background shadow-sm border border-border/40 text-muted-foreground hover:text-foreground rounded-lg transition-all active:scale-95 shrink-0"
-          onClick={() => onChange(value + getIncrement(value))}
-        >
-          <Plus className="size-3" />
-        </Button>
-      </div>
-    </div>
-  );
-};
-
-const DurationInputs = ({
-  value,
-  onChange,
-}: {
-  value: [number, number | null];
-  onChange: (v: [number, number | null]) => void;
-}) => {
-  const currentMin = value[0];
-  const currentMax = value[1] === null ? currentMin : value[1];
-
-  const handleMinChange = (newMin: number) => {
-    let newMax = currentMax;
-    if (newMin > newMax) newMax = newMin;
-    onChange([newMin, newMax]);
-  };
-
-  const handleMaxChange = (newMax: number) => {
-    let newMin = currentMin;
-    if (newMax < newMin) newMin = newMax;
-    onChange([newMin, newMax]);
-  };
-
-  return (
-    <div className="p-2 space-y-3">
-      <div className="flex items-center justify-between px-1">
-        <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground/50">
-          Custom Duration
-        </p>
-      </div>
-      <div className="flex items-center gap-2">
-        <DurationStepper value={currentMin} label="Min" onChange={handleMinChange} />
-        <DurationStepper value={currentMax} label="Max" onChange={handleMaxChange} />
-      </div>
-    </div>
-  );
-};
 
 const allTimezones = (
   Intl as typeof Intl & { supportedValuesOf?: (key: string) => string[] }
@@ -148,13 +73,17 @@ export const ActionInput = forwardRef<ActionInputHandle, ActionInputProps>(
   ({ onSuccess, onCancel, initialDate, className, variant = "inline", actionToEdit }, ref) => {
     const [title, setTitle] = useState(actionToEdit?.title || "");
     const [note, setNote] = useState(actionToEdit?.note || "");
-    const [intention, setIntention] = useState<"must" | "want">(actionToEdit?.intention || DEFAULT_CONFIG.INTENTION as any);
+    const [intention, setIntention] = useState<"must" | "want">(
+      actionToEdit?.intention || (DEFAULT_CONFIG.INTENTION as "must" | "want")
+    );
     const [isImportant, setIsImportant] = useState(actionToEdit?.important || false);
     const [energy, setEnergy] = useState<"low" | "medium" | "high">(
-      actionToEdit?.energy || DEFAULT_CONFIG.ENERGY as any
+      actionToEdit?.energy || (DEFAULT_CONFIG.ENERGY as "low" | "medium" | "high")
     );
     const [duration, setDuration] = useState<[number, number | null]>(
-      actionToEdit?.duration ? [actionToEdit.duration[0], actionToEdit.duration[1]] : DEFAULT_CONFIG.DURATION
+      actionToEdit?.duration
+        ? [actionToEdit.duration[0], actionToEdit.duration[1]]
+        : DEFAULT_CONFIG.DURATION
     );
     const [scheduledDate, setScheduledDate] = useState(
       actionToEdit?.scheduledDate || initialDate || getTodayString()
@@ -173,7 +102,6 @@ export const ActionInput = forwardRef<ActionInputHandle, ActionInputProps>(
 
     const timeOptions = useMemo(() => getTimeOptions(timeFormat), [timeFormat]);
 
-    // Auto-calculate duration from times OR times from duration
     const isCalculatingRef = useRef(false);
 
     const syncDurationFromTimes = (start: string, end: string) => {
@@ -182,7 +110,7 @@ export const ActionInput = forwardRef<ActionInputHandle, ActionInputProps>(
       let endTotal = timeToMinutes(end);
       if (endTotal < startTotal) endTotal += TIME.MINUTES_IN_DAY;
       const diff = endTotal - startTotal;
-      
+
       isCalculatingRef.current = true;
       setDuration([diff, diff]);
       setTimeout(() => (isCalculatingRef.current = false), 0);
@@ -234,8 +162,7 @@ export const ActionInput = forwardRef<ActionInputHandle, ActionInputProps>(
       const initialImportant = actionToEdit?.important || false;
       const initialDurationMin = actionToEdit?.duration?.[0] ?? DEFAULT_CONFIG.DURATION[0];
       const initialDurationMax = actionToEdit?.duration?.[1] ?? DEFAULT_CONFIG.DURATION[1];
-      const initialScheduledDate =
-        actionToEdit?.scheduledDate || initialDate || getTodayString();
+      const initialScheduledDate = actionToEdit?.scheduledDate || initialDate || getTodayString();
       const initialStartTime = actionToEdit?.startTime || "";
       const initialEndTime = actionToEdit?.endTime || "";
 
@@ -285,7 +212,6 @@ export const ActionInput = forwardRef<ActionInputHandle, ActionInputProps>(
 
       setIsLoading(true);
       try {
-        // Final sync before save
         let finalDuration = duration;
         if (startTime && endTime) {
           const startTotal = timeToMinutes(startTime);
@@ -338,7 +264,6 @@ export const ActionInput = forwardRef<ActionInputHandle, ActionInputProps>(
         <form onSubmit={handleSubmit} className="flex flex-col">
           {/* Input Section */}
           <div className="p-4 sm:p-5 flex flex-col gap-2">
-            {/* Recent Configs */}
             {recentConfigs.length > 0 && (
               <div className="flex flex-wrap gap-2 mb-3">
                 {recentConfigs.map((config, idx) => (
@@ -349,8 +274,10 @@ export const ActionInput = forwardRef<ActionInputHandle, ActionInputProps>(
                     size="sm"
                     onClick={() => {
                       handleDurationChange(config.duration || DEFAULT_CONFIG.DURATION);
-                      setEnergy(config.energy || ENERGY_LEVELS.MEDIUM);
-                      setIntention(config.intention || INTENTIONS.WANT);
+                      setEnergy(
+                        (config.energy as "low" | "medium" | "high") || ENERGY_LEVELS.MEDIUM
+                      );
+                      setIntention((config.intention as "must" | "want") || INTENTIONS.WANT);
                       setIsImportant(config.important || false);
                     }}
                     className="h-7 px-2.5 rounded-lg bg-primary/5 hover:bg-primary/10 text-[11px] font-bold text-primary/70 transition-all border border-primary/10 active:scale-95"
@@ -397,7 +324,6 @@ export const ActionInput = forwardRef<ActionInputHandle, ActionInputProps>(
                 size="icon"
                 className="size-9 rounded-xl text-muted-foreground/50 hover:text-primary hover:bg-primary/10 transition-all active:scale-95"
               >
-                {/* TODO: Make it work with device micro */}
                 <AudioLines className="size-5" />
               </Button>
             </div>
@@ -435,7 +361,9 @@ export const ActionInput = forwardRef<ActionInputHandle, ActionInputProps>(
                   <BatteryLow className="size-3.5 text-emerald-500" />
                 )
               }
-              label={ENERGY_OPTIONS.find((opt) => opt.value === energy)?.label || `${energy} energy`}
+              label={
+                ENERGY_OPTIONS.find((opt) => opt.value === energy)?.label || `${energy} energy`
+              }
               options={ENERGY_OPTIONS.map((opt) => ({
                 ...opt,
                 icon:
@@ -448,7 +376,7 @@ export const ActionInput = forwardRef<ActionInputHandle, ActionInputProps>(
                   ),
                 className: opt.color,
               }))}
-              onSelect={setEnergy}
+              onSelect={setEnergy as (v: unknown) => void}
               value={energy}
             />
 
@@ -469,7 +397,7 @@ export const ActionInput = forwardRef<ActionInputHandle, ActionInputProps>(
                   if (val === "custom") {
                     // TODO: open calendar picker
                   } else {
-                    setScheduledDate(val);
+                    setScheduledDate(val as string);
                   }
                 }}
                 value={scheduledDate}
@@ -494,8 +422,8 @@ export const ActionInput = forwardRef<ActionInputHandle, ActionInputProps>(
                 options={timeOptions}
                 scrollTargetValue={getNearestTimeValue()}
                 onSelect={(val) => {
-                  handleStartTimeChange(val);
-                  setIsTimeInvalid(false); // Duration logic handles validity now
+                  handleStartTimeChange(val as string);
+                  setIsTimeInvalid(false);
                 }}
                 value={startTime}
                 align="center"
@@ -560,7 +488,7 @@ export const ActionInput = forwardRef<ActionInputHandle, ActionInputProps>(
                     options={timeOptions}
                     scrollTargetValue={getNearestTimeValue()}
                     onSelect={(val) => {
-                      handleEndTimeChange(val);
+                      handleEndTimeChange(val as string);
                     }}
                     value={endTime}
                     align="center"
@@ -594,13 +522,13 @@ export const ActionInput = forwardRef<ActionInputHandle, ActionInputProps>(
                 label={timezone.split("/").pop()?.replace("_", " ") || timezone}
                 options={allTimezones
                   .filter((tz: string) => tz.toLowerCase().includes(timezoneSearch.toLowerCase()))
-                  .slice(0, 50) // Limit for performance
+                  .slice(0, 50)
                   .map((tz: string) => ({
                     label: tz.replace("_", " "),
                     value: tz,
                   }))}
                 onSelect={(val) => {
-                  setTimezone(val);
+                  setTimezone(val as string);
                   setTimezoneSearch("");
                 }}
                 value={timezone}
@@ -644,12 +572,20 @@ export const ActionInput = forwardRef<ActionInputHandle, ActionInputProps>(
                     )}
                   </div>
                 }
-                label={INTENTION_OPTIONS.find((opt) => opt.value === intention)?.label || (intention === INTENTIONS.MUST ? "Must do" : "Want to do")}
+                label={
+                  INTENTION_OPTIONS.find((opt) => opt.value === intention)?.label ||
+                  (intention === INTENTIONS.MUST ? "Must do" : "Want to do")
+                }
                 options={INTENTION_OPTIONS.map((opt) => ({
                   ...opt,
-                  icon: opt.value === INTENTIONS.MUST ? <AlertCircle className="size-4 text-orange-500" /> : <Heart className="size-4 text-pink-500" />,
+                  icon:
+                    opt.value === INTENTIONS.MUST ? (
+                      <AlertCircle className="size-4 text-orange-500" />
+                    ) : (
+                      <Heart className="size-4 text-pink-500" />
+                    ),
                 }))}
-                onSelect={setIntention}
+                onSelect={setIntention as (v: unknown) => void}
                 value={intention}
                 triggerClassName="h-9 px-2 sm:px-3 rounded-xl hover:bg-muted/50 font-bold text-muted-foreground/70 hover:text-foreground border-none"
               />
@@ -684,7 +620,7 @@ export const ActionInput = forwardRef<ActionInputHandle, ActionInputProps>(
                     icon: <Star className="size-4 text-amber-500 fill-amber-500" />,
                   },
                 ]}
-                onSelect={setIsImportant}
+                onSelect={setIsImportant as (v: unknown) => void}
                 value={isImportant}
                 triggerClassName="h-9 px-2 sm:px-3 rounded-xl hover:bg-muted/50 font-bold text-muted-foreground/70 hover:text-foreground border-none"
               />
@@ -713,37 +649,11 @@ export const ActionInput = forwardRef<ActionInputHandle, ActionInputProps>(
           </div>
         </form>
 
-        <Dialog open={showConfirmDialog} onOpenChange={setShowConfirmDialog}>
-          <DialogContent
-            showCloseButton={false}
-            className="max-w-100 p-6 bg-popover border border-border/50 shadow-2xl rounded-xl"
-          >
-            <DialogHeader className="gap-2">
-              <DialogTitle className="text-[17px] font-bold tracking-tight text-foreground">
-                Discard unsaved changes?
-              </DialogTitle>
-              <DialogDescription className="text-[14px] text-muted-foreground leading-relaxed font-medium">
-                Your unsaved changes will be discarded.
-              </DialogDescription>
-            </DialogHeader>
-            <DialogFooter className="flex flex-row justify-end gap-3 mt-6 bg-transparent border-none p-0 mx-0 mb-0">
-              <Button
-                variant="secondary"
-                onClick={() => setShowConfirmDialog(false)}
-                className="h-9 px-4 rounded-lg font-bold transition-all active:scale-95 border-none"
-              >
-                Cancel
-              </Button>
-              <Button
-                variant="default"
-                onClick={handleConfirmDiscard}
-                className="h-9 px-4 rounded-lg bg-destructive hover:bg-destructive/90 text-destructive-foreground font-bold transition-all active:scale-95 border-none"
-              >
-                Discard
-              </Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
+        <DiscardDialog
+          open={showConfirmDialog}
+          onOpenChange={setShowConfirmDialog}
+          onConfirm={handleConfirmDiscard}
+        />
       </div>
     );
   }

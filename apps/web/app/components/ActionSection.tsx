@@ -3,7 +3,7 @@ import type { Action } from "../types/events";
 import { ActionItem } from "./ActionItem";
 import { useState, useEffect } from "react";
 import { ChevronDownIcon, PlusIcon } from "lucide-react";
-import { ActionInput } from "./ActionInput";
+import { ActionInput } from "./action-input";
 
 import { SortableContext, verticalListSortingStrategy } from "@dnd-kit/sortable";
 import { useDroppable } from "@dnd-kit/core";
