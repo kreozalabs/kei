@@ -1,6 +1,6 @@
 import * as React from "react";
 import { useEffect, useState } from "react";
-import { type Theme, type Accent, ThemeProviderContext } from "./ThemeContext";
+import { type Theme, type Accent, type TimeFormat, ThemeProviderContext } from "./ThemeContext";
 
 interface ThemeProviderProps {
   children: React.ReactNode;
@@ -8,6 +8,7 @@ interface ThemeProviderProps {
   defaultAccent?: Accent;
   storageKey?: string;
   accentStorageKey?: string;
+  timeFormatStorageKey?: string;
 }
 
 export function ThemeProvider({
@@ -16,6 +17,7 @@ export function ThemeProvider({
   defaultAccent = "rose",
   storageKey = "kei-ui-theme",
   accentStorageKey = "kei-ui-accent",
+  timeFormatStorageKey = "kei-ui-time-format",
   ...props
 }: ThemeProviderProps) {
   const [theme, setTheme] = useState<Theme>(() => {
@@ -26,6 +28,11 @@ export function ThemeProvider({
   const [accent, setAccent] = useState<Accent>(() => {
     if (typeof window === "undefined") return defaultAccent;
     return (localStorage.getItem(accentStorageKey) as Accent) || defaultAccent;
+  });
+
+  const [timeFormat, setTimeFormat] = useState<TimeFormat>(() => {
+    if (typeof window === "undefined") return "12h";
+    return (localStorage.getItem(timeFormatStorageKey) as TimeFormat) || "12h";
   });
 
   useEffect(() => {
@@ -69,6 +76,7 @@ export function ThemeProvider({
   const value = {
     theme,
     accent,
+    timeFormat,
     setTheme: (theme: Theme) => {
       localStorage.setItem(storageKey, theme);
       setTheme(theme);
@@ -76,6 +84,10 @@ export function ThemeProvider({
     setAccent: (accent: Accent) => {
       localStorage.setItem(accentStorageKey, accent);
       setAccent(accent);
+    },
+    setTimeFormat: (format: TimeFormat) => {
+      localStorage.setItem(timeFormatStorageKey, format);
+      setTimeFormat(format);
     },
   };
 

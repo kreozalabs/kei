@@ -2,19 +2,24 @@ import { createContext, useContext } from "react";
 
 export type Theme = "dark" | "light" | "system";
 export type Accent = "blue" | "indigo" | "violet" | "emerald" | "rose" | "amber" | "forest";
+export type TimeFormat = "12h" | "24h";
 
 export interface ThemeProviderState {
   theme: Theme;
   accent: Accent;
+  timeFormat: TimeFormat;
   setTheme: (theme: Theme) => void;
   setAccent: (accent: Accent) => void;
+  setTimeFormat: (format: TimeFormat) => void;
 }
 
 export const initialState: ThemeProviderState = {
   theme: "system",
   accent: "rose",
+  timeFormat: "12h",
   setTheme: () => null,
   setAccent: () => null,
+  setTimeFormat: () => null,
 };
 
 export const ThemeProviderContext = createContext<ThemeProviderState>(initialState);

@@ -21,6 +21,8 @@ import {
 } from "@kreozalabs/ui";
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
+import { useTheme } from "../providers/ThemeContext";
+import { formatTime } from "../utils/time";
 
 interface ActionItemProps {
   action: Action;
@@ -35,6 +37,7 @@ export function ActionItem({ action, type, onComplete, onAbandon, onEdit }: Acti
     id: action.id,
     disabled: type === "completed",
   });
+  const { timeFormat } = useTheme();
 
   const style = {
     transform: CSS.Translate.toString(transform),
@@ -162,13 +165,12 @@ export function ActionItem({ action, type, onComplete, onAbandon, onEdit }: Acti
                   {action.note}
                 </span>
               )}
-
               <div className="flex items-center gap-3 mt-1 flex-wrap">
                 {action.startTime ? (
                   <span className="text-[11px] font-medium flex items-center gap-1 text-primary/80">
                     <Clock className="size-3" />
-                    {action.startTime}
-                    {action.endTime ? ` - ${action.endTime}` : ""}
+                    {formatTime(action.startTime, timeFormat)}
+                    {action.endTime ? ` - ${formatTime(action.endTime, timeFormat)}` : ""}
                   </span>
                 ) : (
                   <span

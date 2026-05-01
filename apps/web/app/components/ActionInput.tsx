@@ -28,6 +28,8 @@ import { addAction, updateAction, getRecentConfigs } from "../db/actions";
 import type { Action } from "../types/events";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useDiscardGuard } from "../hooks/useDiscardGuard";
+import { useTheme } from "../providers/ThemeContext";
+import { formatTime } from "../utils/time";
 
 interface ActionInputProps {
   onSuccess?: () => void;
@@ -128,27 +130,14 @@ const DurationInputs = ({
   );
 };
 
-const timeOptions = Array.from({ length: 96 }).map((_, i) => {
-  const hours = Math.floor(i / 4);
-  const minutes = (i % 4) * 15;
-  const ampm = hours >= 12 ? "pm" : "am";
-  const displayHours = hours % 12 === 0 ? 12 : hours % 12;
-  const displayMinutes = minutes.toString().padStart(2, "0");
-  const value = `${hours.toString().padStart(2, "0")}:${minutes.toString().padStart(2, "0")}`;
-  return {
-    label: `${displayHours}:${displayMinutes}${ampm}`,
-    value: value,
-  };
-});
-
-const formatTime12h = (time24: string) => {
-  if (!time24) return "Time";
-  const [h, m] = time24.split(":");
-  const hours = parseInt(h, 10);
-  const ampm = hours >= 12 ? "pm" : "am";
-  const displayHours = hours % 12 || 12;
-  return `${displayHours}:${m}${ampm}`;
-};
+const getTimeOptions = (format: "12h" | "24h") =>
+  Array.from({ length: 96 }).map((_, i) => {
+    const hours = Math.floor(i / 4);
+    const minutes = (i % 4) * 15;
+    const value = `${hours.toString().padStart(2, "0")}:${minutes.toString().padStart(2, "0")}`;
+    const label = formatTime(value, format);
+    return { label, value };
+  });
 
 const formatGoogleDate = (dateStr: string) => {
   if (!dateStr) return "Date";
@@ -199,10 +188,9 @@ const parseManualTime = (input: string): string | null => {
   return null;
 };
 
-const allTimezones = (Intl as typeof Intl & { supportedValuesOf?: (key: string) => string[] }).supportedValuesOf?.("timeZone") || [
-  "UTC",
-  Intl.DateTimeFormat().resolvedOptions().timeZone,
-];
+const allTimezones = (
+  Intl as typeof Intl & { supportedValuesOf?: (key: string) => string[] }
+).supportedValuesOf?.("timeZone") || ["UTC", Intl.DateTimeFormat().resolvedOptions().timeZone];
 
 const getNearestTimeValue = () => {
   const now = new Date();
@@ -237,7 +225,10 @@ export const ActionInput = forwardRef<ActionInputHandle, ActionInputProps>(
     const [isTimeInvalid, setIsTimeInvalid] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
     const queryClient = useQueryClient();
+    const { timeFormat } = useTheme();
     const titleInputRef = useRef<HTMLInputElement>(null);
+
+    const timeOptions = useMemo(() => getTimeOptions(timeFormat), [timeFormat]);
 
     // Auto-calculate duration from times OR times from duration
     const isCalculatingRef = useRef(false);
@@ -248,10 +239,15 @@ export const ActionInput = forwardRef<ActionInputHandle, ActionInputProps>(
         const [startH, startM] = startTime.split(":").map(Number);
         const [endH, endM] = endTime.split(":").map(Number);
         const startTotal = startH * 60 + startM;
-        const endTotal = endH * 60 + endM;
+        let endTotal = endH * 60 + endM;
 
-        if (endTotal > startTotal) {
-          const diff = endTotal - startTotal;
+        // Handle case where end time is on the next day
+        if (endTotal < startTotal) {
+          endTotal += 24 * 60;
+        }
+
+        const diff = endTotal - startTotal;
+        if (diff !== duration[0] || diff !== duration[1]) {
           isCalculatingRef.current = true;
           setDuration([diff, diff]);
           setTimeout(() => (isCalculatingRef.current = false), 0);
@@ -262,14 +258,35 @@ export const ActionInput = forwardRef<ActionInputHandle, ActionInputProps>(
     // Update endTime if startTime changes but we want to maintain current duration
     const handleStartTimeChange = (newStart: string) => {
       setStartTime(newStart);
+      if (isCalculatingRef.current) return;
       const targetDuration = duration[1] || duration[0];
       if (newStart && targetDuration > 0) {
         const [h, m] = newStart.split(":").map(Number);
-        const newEndTotalM = Math.min(23 * 60 + 59, h * 60 + m + targetDuration);
+        const newEndTotalM = (h * 60 + m + targetDuration) % (24 * 60);
         const newEndH = Math.floor(newEndTotalM / 60);
         const newEndM = newEndTotalM % 60;
         const formattedEnd = `${newEndH.toString().padStart(2, "0")}:${newEndM.toString().padStart(2, "0")}`;
+
+        isCalculatingRef.current = true;
         setEndTime(formattedEnd);
+        setTimeout(() => (isCalculatingRef.current = false), 0);
+      }
+    };
+
+    const handleDurationChange = (newDuration: [number, number | null]) => {
+      setDuration(newDuration);
+      if (isCalculatingRef.current) return;
+      const targetDuration = newDuration[1] || newDuration[0];
+      if (startTime && targetDuration > 0) {
+        const [h, m] = startTime.split(":").map(Number);
+        const newEndTotalM = (h * 60 + m + targetDuration) % (24 * 60);
+        const newEndH = Math.floor(newEndTotalM / 60);
+        const newEndM = newEndTotalM % 60;
+        const formattedEnd = `${newEndH.toString().padStart(2, "0")}:${newEndM.toString().padStart(2, "0")}`;
+
+        isCalculatingRef.current = true;
+        setEndTime(formattedEnd);
+        setTimeout(() => (isCalculatingRef.current = false), 0);
       }
     };
 
@@ -390,7 +407,7 @@ export const ActionInput = forwardRef<ActionInputHandle, ActionInputProps>(
                     variant="ghost"
                     size="sm"
                     onClick={() => {
-                      setDuration(config.duration || [15, 30]);
+                      handleDurationChange(config.duration || [15, 30]);
                       setEnergy(config.energy || "medium");
                       setIntention(config.intention || "want");
                       setIsImportant(config.important || false);
@@ -478,16 +495,16 @@ export const ActionInput = forwardRef<ActionInputHandle, ActionInputProps>(
                   icon: <Clock className="size-4 text-muted-foreground" />,
                 },
                 {
-                  label: "1 hour+",
+                  label: "1 -2 hours",
                   value: [60, 120] as [number, number],
                   icon: <Clock className="size-4 text-muted-foreground" />,
                 },
               ]}
-              onSelect={(val) => setDuration(val as [number, number | null])}
+              onSelect={(val) => handleDurationChange(val as [number, number | null])}
               value={duration}
               contentClassName="w-[280px]"
             >
-              <DurationInputs value={duration} onChange={setDuration} />
+              <DurationInputs value={duration} onChange={handleDurationChange} />
             </ActionSelector>
 
             <ActionSelector
@@ -563,7 +580,7 @@ export const ActionInput = forwardRef<ActionInputHandle, ActionInputProps>(
               </ActionSelector>
 
               <ActionSelector
-                label={startTime ? formatTime12h(startTime) : "Time"}
+                label={startTime ? formatTime(startTime, timeFormat) : "Time"}
                 options={timeOptions}
                 scrollTargetValue={getNearestTimeValue()}
                 onSelect={(val) => {
@@ -618,7 +635,7 @@ export const ActionInput = forwardRef<ActionInputHandle, ActionInputProps>(
                 <>
                   <span className="text-muted-foreground/50 px-0.5 font-medium">-</span>
                   <ActionSelector
-                    label={endTime ? formatTime12h(endTime) : "End"}
+                    label={endTime ? formatTime(endTime, timeFormat) : "End"}
                     options={timeOptions}
                     scrollTargetValue={getNearestTimeValue()}
                     onSelect={(val) => {

@@ -13,7 +13,7 @@ const ACCENTS: { name: Accent; color: string; hover: string }[] = [
 ];
 
 export function AppearanceSettings() {
-  const { theme, setTheme, accent, setAccent } = useTheme();
+  const { theme, setTheme, accent, setAccent, timeFormat, setTimeFormat } = useTheme();
 
   return (
     <div className="space-y-8">
@@ -58,7 +58,7 @@ export function AppearanceSettings() {
               className={cn(
                 "flex flex-row items-center justify-center h-8 rounded-lg text-[12px] font-medium transition-all gap-1.5 border-none",
                 theme === t
-                  ? "bg-background text-foreground shadow-sm hover:bg-background"
+                   ? "bg-background text-foreground shadow-sm hover:bg-background"
                   : "text-muted-foreground hover:text-foreground hover:bg-muted/80"
               )}
             >
@@ -66,6 +66,30 @@ export function AppearanceSettings() {
               {t === "dark" && <MoonIcon className="size-3.5" />}
               {t === "system" && <LaptopIcon className="size-3.5" />}
               <span className="capitalize">{t}</span>
+            </Button>
+          ))}
+        </div>
+      </div>
+
+      <div className="space-y-3">
+        <h4 className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground/50 px-2">
+          Time Format
+        </h4>
+        <div className="flex items-center gap-1.5 p-1 bg-muted/40 rounded-xl">
+          {(["12h", "24h"] as const).map((f) => (
+            <Button
+              key={f}
+              variant="ghost"
+              size="sm"
+              onClick={() => setTimeFormat(f)}
+              className={cn(
+                "flex-1 flex flex-row items-center justify-center h-8 rounded-lg text-[12px] font-medium transition-all border-none",
+                timeFormat === f
+                  ? "bg-background text-foreground shadow-sm hover:bg-background"
+                  : "text-muted-foreground hover:text-foreground hover:bg-muted/80"
+              )}
+            >
+              <span>{f === "12h" ? "12-hour" : "24-hour"}</span>
             </Button>
           ))}
         </div>
