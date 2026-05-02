@@ -21,7 +21,7 @@ import {
 } from "@/utils/time";
 import { Button } from "@kreozalabs/ui";
 import { LockIcon, UnlockIcon, Loader2Icon } from "lucide-react";
-import type { Action } from "@/types/actions";
+import type { Action, ActionStatus } from "@/types/actions";
 import { ActionSection } from "@/components/ActionSection";
 import { ActionItem } from "@/components/ActionItem";
 import { ActionInputDialog } from "@/components/ActionInputDialog";
@@ -39,16 +39,6 @@ import {
   type DragOverEvent,
 } from "@dnd-kit/core";
 import { ACTION_STATUS } from "@/config/constants";
-
-// TODO: HOW DOES IT WORK IF Session is kept open for long time, and the data has already changed in db via another tab or device?
-// TODO: MAYBE Make it refresh like API request that refreshes with a polling mechanism on user interval. Since backend development will be beneficial, it will be quite efficient if there is one funciton that fetches data depending on internet connection, either from the local db or the backend, and handles syncing of db between local and cloud.
-// TODO: How does update, add and delete work? Do they refetch everything ? How is stale data handled?
-// NOTE: It should work in following way:
-// 1. User opens the app, and the data is fetched from the local db, first, so that user sees the data immediately. In the background, app checks if there are any other devices or if cloud is connected. If yes, it checks for data.
-// 2. User makes some changes to the data, and the changes are written to the local db and queued for sync. Other devices see the change and update its db. Centralized db is written on access, right after any changes are made to the local db if connection is possible.
-// 3. This process should happen in the background, without interrupting the user.
-// 4. This should also work when the user is offline, but the app should notify the user when the data is out of sync.
-// Changes should be automatically reflected in all tabs and devices as long as app is active, even if the tab is in the background. If app is closed, it does not do anything, unless told to do so.
 
 export default function Dashboard() {
   const [isDbReady, setIsDbReady] = useState(false);
@@ -151,7 +141,7 @@ export default function Dashboard() {
 
   const { data: activeActions = [] } = useQuery({
     queryKey: ["actions", { status: "active" }],
-    queryFn: () => getActions({ status: [ACTION_STATUS.ACTIVE as any] }),
+    queryFn: () => getActions({ status: [ACTION_STATUS.ACTIVE as ActionStatus] }),
     enabled: isDbReady,
   });
 
@@ -159,7 +149,7 @@ export default function Dashboard() {
     queryKey: ["actions", { status: "completed", startDate, endDate }],
     queryFn: () =>
       getActions({
-        status: [ACTION_STATUS.COMPLETED as any],
+        status: [ACTION_STATUS.COMPLETED as ActionStatus],
         startDate,
         endDate,
       }),
