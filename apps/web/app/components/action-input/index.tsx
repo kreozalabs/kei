@@ -13,7 +13,7 @@ import { Input, Button, Textarea, cn } from "@kreozalabs/ui";
 import { ActionSelector } from "../ActionSelector";
 import { NextDayBadge } from "../NextDayBadge";
 import { addAction, updateAction, getRecentConfigs } from "../../db/actions";
-import type { Action, EnergyType, IntentionType } from "../../types/events";
+import type { Action, EnergyType, IntentionType } from "../../types/actions";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useDiscardGuard } from "../../hooks/useDiscardGuard";
 import { useTheme } from "../../providers/ThemeContext";

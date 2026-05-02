@@ -1,6 +1,7 @@
 import { db } from "./index";
 import { v7 as uuidv7 } from "uuid";
-import type { Action, Event, ActionPayload, ActionStatus, EventType } from "../types/events";
+import type { Event } from "../types/events";
+import type { Action, ActionPayload, ActionStatus } from "../types/actions";
 import {
   EVENT_TYPES,
   ENERGY_LEVELS,
@@ -8,6 +9,7 @@ import {
   ACTION_STATUS,
   DEFAULT_CONFIG,
 } from "../config/constants";
+import { persistEvent } from "./events";
 
 const getTodayString = () => new Date().toLocaleDateString("en-CA"); // YYYY-MM-DD local time
 
@@ -58,19 +60,8 @@ function applyEventToAction(action: Action | null, event: Event<any>): Action {
  * Persists an event and updates the corresponding action snapshot.
  */
 async function pushEvent<T>(actionId: string, type: string, payload: T) {
-  const event: Event<T> = {
-    eventId: uuidv7(),
-    id: actionId,
-    type: type as EventType,
-    timestamp: Date.now(),
-    payload,
-  };
-
-  // 1. Store the event
-  await db.query(
-    "INSERT INTO events (event_id, id, type, timestamp, payload) VALUES ($1, $2, $3, $4, $5)",
-    [event.eventId, event.id, event.type, event.timestamp, JSON.stringify(event.payload)]
-  );
+  // 1. Store the event using the central persistence
+  const event = await persistEvent(actionId, type, payload);
 
   // 2. Update the snapshot
   // We fetch existing snapshot if it's an update, or start fresh if it's a creation
@@ -219,7 +210,7 @@ export async function rebuildSnapshots() {
     );
   }
 }
-
+// TODO: Create table for recent configs, or use settings table instead. It should help to avoid unnecessary reads from events table.
 export async function getRecentConfigs(): Promise<ActionPayload[]> {
   const result = await db.query(
     `SELECT payload FROM events WHERE type = '${EVENT_TYPES.ACTION_INTENDED}' ORDER BY timestamp DESC LIMIT 30`

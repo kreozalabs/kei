@@ -1,5 +1,5 @@
 import { Button, cn } from "@kreozalabs/ui";
-import type { Action } from "../types/events";
+import type { Action } from "../types/actions";
 import { ActionItem } from "./ActionItem";
 import { useState, useEffect } from "react";
 import { ChevronDownIcon, PlusIcon } from "lucide-react";

@@ -1,3 +1,4 @@
+import { DEFAULT_SETTINGS } from "@/config/constants";
 import { PGliteWorker } from "@electric-sql/pglite/worker";
 
 export const db = new PGliteWorker(
@@ -80,13 +81,8 @@ async function ensureSchema() {
 }
 
 async function ensureDefaults() {
-  // TODO: CENTRALIZE AND CREATE WITH OTHER DEFAULT SETTINGS, ideally with some function.
-  // TODO: MAKE USE OF min and max daily actions. RIGHT NOW, THEY ARE NOT USED
-  await db.exec(`
-    INSERT INTO settings (key, value)
-    VALUES ('min_daily_actions', '3'), ('max_daily_actions', '6')
-    ON CONFLICT (key) DO NOTHING;
-  `);
+  const { initDefaultSettings } = await import("./settings");
+  await initDefaultSettings(DEFAULT_SETTINGS);
 }
 
 async function ensureSnapshots() {

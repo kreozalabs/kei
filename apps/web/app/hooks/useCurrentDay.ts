@@ -1,6 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { db } from "../db";
-import type { Action, Event, ActionPayload } from "../types/events";
+import type { Event } from "../types/events";
+import type { Action, ActionPayload, IntentionType, EnergyType } from "../types/actions";
 import {
   ACTION_STATUS,
   DEFAULT_CONFIG,
@@ -8,7 +9,6 @@ import {
   EVENT_TYPES,
   INTENTIONS,
 } from "@/config/constants";
-import type { IntentionType, EnergyType } from "../types/events";
 
 export interface CurrentDayState {
   activeActions: Action[];

@@ -13,7 +13,7 @@ import {
 } from "@/db/actions";
 import { Button } from "@kreozalabs/ui";
 import { LockIcon, UnlockIcon, Loader2Icon } from "lucide-react";
-import type { Action } from "@/types/events";
+import type { Action } from "@/types/actions";
 import { ActionSection } from "@/components/ActionSection";
 import { ActionItem } from "@/components/ActionItem";
 import { ActionInputDialog } from "@/components/ActionInputDialog";

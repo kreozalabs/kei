@@ -1,4 +1,4 @@
-import type { Action, ActionStatus } from "../types/events";
+import type { Action, ActionStatus } from "../types/actions";
 import { Button, cn } from "@kreozalabs/ui";
 import {
   Trash2Icon,
