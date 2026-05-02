@@ -15,6 +15,7 @@ export function ActionList({ actions, type, onEdit }: ActionListProps) {
   const queryClient = useQueryClient();
 
   const handleComplete = async (action: Action) => {
+    // TODO: Call the function from db/actions.ts
     const now = Date.now();
     try {
       const event = {
@@ -36,6 +37,7 @@ export function ActionList({ actions, type, onEdit }: ActionListProps) {
   };
 
   const handleAbandon = async (action: Action) => {
+    // TODO: Call the function from db/actions.ts
     const now = Date.now();
     try {
       const event = {

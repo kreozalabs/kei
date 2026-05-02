@@ -22,9 +22,11 @@ interface SettingRow {
   value: string;
 }
 
+// TODO: WHAT IS THE POINT OF THIS FUNCTION?
 export function useCurrentDay() {
   // 1. Fetch settings (max_daily_actions)
   const { data: settings } = useQuery({
+    // TODO: Call the function from db/actions.ts
     queryKey: ["settings"],
     queryFn: async () => {
       const res = await db.query<SettingRow>("SELECT * FROM settings");
@@ -36,10 +38,12 @@ export function useCurrentDay() {
     },
   });
 
-  const maxActions = parseInt(settings?.max_daily_actions || "6", 10);
+  // FIXME: remove or keep this!
+  const maxActions = parseInt(settings?.max_daily_actions || "5", 10);
 
   // 2. Fetch today's events
   const { data: events, isLoading } = useQuery<Event<unknown>[]>({
+    // TODO: Call the function from db/actions.ts
     queryKey: ["events", "today"],
     queryFn: async () => {
       // Simple "today" filter: events from the start of the current day

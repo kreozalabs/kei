@@ -32,6 +32,10 @@ import {
 } from "@dnd-kit/core";
 import { ACTION_STATUS } from "@/config/constants";
 
+// TODO: HOW DOES IT WORK IF Session is kept open for long time, and the data has already changed in db via another tab or device?
+// TODO: MAYBE Make it refresh like API request that refreshes with a polling mechanism on user interval. Since backend development will be beneficial, it will be quite efficient if there is one funciton that fetches data depending on internet connection, either from the local db or the backend, and handles syncing of db between local and cloud.
+// TODO: How does update, add and delete work? Do they refetch everything ? How is stale data handled?
+
 const getTodayString = () => new Date().toLocaleDateString("en-CA");
 
 export default function Dashboard() {
@@ -43,7 +47,7 @@ export default function Dashboard() {
       if (stored !== null) return stored === "true";
     }
 
-    // TODO: Allow user to set default state for locked.
+    // TODO: Allow user to set default state for locked, in settings, but session storage device within session, while settings defines initial state across devices/sessions.
     return true; // NOTE: Default to locked
   });
 
@@ -125,6 +129,8 @@ export default function Dashboard() {
     isTodayLocked,
   ]);
 
+  // FIXME: IT IS INEFFICIENT TO QUERY ALL ACTIONS, especially since we only need to display a subset of them.
+  // TODO: CAN WE JUST QUERY FOR THE ACTIONS WE NEED, IE. OVERDUE AND NEXT 30 DAYS?
   const { data: allActions = [] } = useQuery({
     queryKey: ["actions"],
     queryFn: getActions,
