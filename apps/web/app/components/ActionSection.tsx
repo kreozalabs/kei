@@ -3,10 +3,11 @@ import type { Action } from "../types/events";
 import { ActionItem } from "./ActionItem";
 import { useState, useEffect } from "react";
 import { ChevronDownIcon, PlusIcon } from "lucide-react";
-import { ActionInput } from "./ActionInput";
+import { ActionInput } from "./action-input";
 
 import { SortableContext, verticalListSortingStrategy } from "@dnd-kit/sortable";
 import { useDroppable } from "@dnd-kit/core";
+import { ACTION_STATUS } from "@/config/constants";
 
 interface ActionListProps {
   id: string;
@@ -127,7 +128,11 @@ export function ActionSection({
                   <ActionItem
                     key={action.id}
                     action={action}
-                    type={action.status === "completed" ? "completed" : "active"}
+                    type={
+                      action.status === ACTION_STATUS.COMPLETED
+                        ? ACTION_STATUS.COMPLETED
+                        : ACTION_STATUS.ACTIVE
+                    }
                     onComplete={onComplete ?? (() => {})}
                     onAbandon={onAbandon ?? (() => {})}
                     onEdit={onEdit ?? (() => {})}

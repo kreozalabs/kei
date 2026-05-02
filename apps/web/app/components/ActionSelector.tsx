@@ -9,16 +9,16 @@ import {
 } from "@kreozalabs/ui";
 import { CheckIcon } from "lucide-react";
 
-export interface ActionSelectorOption<T = any> {
+export interface ActionSelectorOption<T = unknown> {
   label: string;
   value: T;
   icon?: React.ReactNode;
   className?: string;
 }
 
-export interface ActionSelectorProps<T = any> {
+export interface ActionSelectorProps<T = unknown> {
   icon?: React.ReactNode;
-  label: string;
+  label: React.ReactNode;
   options: ActionSelectorOption<T>[];
   onSelect: (value: T) => void;
   value?: T;
@@ -27,6 +27,7 @@ export interface ActionSelectorProps<T = any> {
   triggerClassName?: string;
   contentClassName?: string;
   children?: React.ReactNode;
+  childrenPosition?: "top" | "bottom";
   title?: string;
   align?: "start" | "center" | "end";
 }
@@ -39,7 +40,7 @@ function areValuesEqual(a: unknown, b: unknown): boolean {
   return false;
 }
 
-export function ActionSelector<T = any>({
+export function ActionSelector<T = unknown>({
   icon,
   label,
   options,
@@ -50,6 +51,7 @@ export function ActionSelector<T = any>({
   triggerClassName,
   contentClassName,
   children,
+  childrenPosition = "bottom",
   title,
   align = "start",
 }: ActionSelectorProps<T>) {
@@ -89,10 +91,16 @@ export function ActionSelector<T = any>({
       <DropdownMenuContent
         align={align}
         className={cn(
-          "ring-0 p-1 shadow-xl border-border/40 bg-background w-45 overflow-y-auto max-h-80",
+          "ring-0 p-1 shadow-xl border-border/40 bg-background w-45 overflow-y-auto overflow-x-hidden max-h-80 custom-scrollbar",
           contentClassName
         )}
       >
+        {children && childrenPosition === "top" && (
+          <>
+            <div className="p-1">{children}</div>
+            <div className="my-1 border-t border-border/40" />
+          </>
+        )}
         <div ref={scrollRef}>
           {title && (
             <div className="px-2 py-1.5 text-[10px] uppercase font-bold tracking-wider text-muted-foreground/40">
@@ -125,7 +133,7 @@ export function ActionSelector<T = any>({
             );
           })}
         </div>
-        {children && (
+        {children && childrenPosition === "bottom" && (
           <>
             <div className="my-1 border-t border-border/40" />
             <div className="p-1">{children}</div>

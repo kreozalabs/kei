@@ -1,6 +1,7 @@
 import * as React from "react";
 import { useEffect, useState } from "react";
-import { type Theme, type Accent, ThemeProviderContext } from "./ThemeContext";
+import { type Theme, type Accent, type TimeFormat, ThemeProviderContext } from "./ThemeContext";
+import { TIME_FORMATS } from "../config/constants";
 
 interface ThemeProviderProps {
   children: React.ReactNode;
@@ -8,6 +9,8 @@ interface ThemeProviderProps {
   defaultAccent?: Accent;
   storageKey?: string;
   accentStorageKey?: string;
+  timeFormatStorageKey?: string;
+  showRecentConfigsStorageKey?: string;
 }
 
 export function ThemeProvider({
@@ -16,6 +19,8 @@ export function ThemeProvider({
   defaultAccent = "rose",
   storageKey = "kei-ui-theme",
   accentStorageKey = "kei-ui-accent",
+  timeFormatStorageKey = "kei-ui-time-format",
+  showRecentConfigsStorageKey = "kei-ui-show-recent-configs",
   ...props
 }: ThemeProviderProps) {
   const [theme, setTheme] = useState<Theme>(() => {
@@ -26,6 +31,17 @@ export function ThemeProvider({
   const [accent, setAccent] = useState<Accent>(() => {
     if (typeof window === "undefined") return defaultAccent;
     return (localStorage.getItem(accentStorageKey) as Accent) || defaultAccent;
+  });
+
+  const [timeFormat, setTimeFormat] = useState<TimeFormat>(() => {
+    if (typeof window === "undefined") return TIME_FORMATS.H12;
+    return (localStorage.getItem(timeFormatStorageKey) as TimeFormat) || TIME_FORMATS.H12;
+  });
+
+  const [showRecentConfigs, setShowRecentConfigs] = useState<boolean>(() => {
+    if (typeof window === "undefined") return true;
+    const stored = localStorage.getItem(showRecentConfigsStorageKey);
+    return stored === null ? true : stored === "true";
   });
 
   useEffect(() => {
@@ -69,6 +85,8 @@ export function ThemeProvider({
   const value = {
     theme,
     accent,
+    timeFormat,
+    showRecentConfigs,
     setTheme: (theme: Theme) => {
       localStorage.setItem(storageKey, theme);
       setTheme(theme);
@@ -76,6 +94,14 @@ export function ThemeProvider({
     setAccent: (accent: Accent) => {
       localStorage.setItem(accentStorageKey, accent);
       setAccent(accent);
+    },
+    setTimeFormat: (format: TimeFormat) => {
+      localStorage.setItem(timeFormatStorageKey, format);
+      setTimeFormat(format);
+    },
+    setShowRecentConfigs: (show: boolean) => {
+      localStorage.setItem(showRecentConfigsStorageKey, String(show));
+      setShowRecentConfigs(show);
     },
   };
 

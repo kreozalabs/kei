@@ -8,7 +8,7 @@ import {
   DialogTrigger,
 } from "@kreozalabs/ui";
 import type { Action } from "../types/events";
-import { ActionInput, type ActionInputHandle } from "./ActionInput";
+import { ActionInput, type ActionInputHandle } from "./action-input";
 
 interface ActionInputDialogProps {
   open: boolean;

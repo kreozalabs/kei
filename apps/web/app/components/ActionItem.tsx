@@ -1,17 +1,20 @@
-import type { Action } from "../types/events";
+import type { Action, ActionStatus } from "../types/events";
 import { Button, cn } from "@kreozalabs/ui";
 import {
   Trash2Icon,
   CheckCircle2Icon,
   CalendarIcon,
-  InboxIcon,
   Star,
   GripVertical,
   Clock,
-  BatteryMedium,
   RotateCcw,
   PencilIcon,
   MoreVertical,
+  BatteryLow,
+  BatteryMedium,
+  BatteryFull,
+  AlertCircle,
+  Heart,
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -21,10 +24,21 @@ import {
 } from "@kreozalabs/ui";
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
+import { NextDayBadge } from "./NextDayBadge";
+import { useTheme } from "../providers/ThemeContext";
+import { formatTime, getTodayString } from "../utils/time";
+import {
+  ACTION_STATUS,
+  ENERGY_LEVELS,
+  ENERGY_OPTIONS,
+  INTENTIONS,
+  INTENTION_OPTIONS,
+  IMPORTANT_CONFIG,
+} from "../config/constants";
 
 interface ActionItemProps {
   action: Action;
-  type: "active" | "completed";
+  type: ActionStatus;
   onComplete: (action: Action) => void;
   onAbandon: (action: Action) => void;
   onEdit: (action: Action) => void;
@@ -33,41 +47,19 @@ interface ActionItemProps {
 export function ActionItem({ action, type, onComplete, onAbandon, onEdit }: ActionItemProps) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id: action.id,
-    disabled: type === "completed",
+    disabled: type === ACTION_STATUS.COMPLETED,
   });
+  const { timeFormat } = useTheme();
 
   const style = {
     transform: CSS.Translate.toString(transform),
     transition,
   };
 
-  const getEnergyColor = (energy: string) => {
-    switch (energy?.toLowerCase()) {
-      case "high":
-        return "text-red-500";
-      case "medium":
-        return "text-orange-500";
-      case "low":
-        return "text-emerald-500";
-      default:
-        return "text-muted-foreground";
-    }
-  };
-
-  const getEnergyBg = (energy: string) => {
-    switch (energy?.toLowerCase()) {
-      case "high":
-        return "bg-red-500/10 border-red-500/20";
-      case "medium":
-        return "bg-orange-500/10 border-orange-500/20";
-      case "low":
-        return "bg-emerald-500/10 border-emerald-500/20";
-      default:
-        return "bg-muted/50 border-border/50";
-    }
-  };
-
-  const todayString = new Date().toLocaleDateString("en-CA"); // YYYY-MM-DD
+  const energyConfig = ENERGY_OPTIONS.find((opt) => opt.value === action.energy?.toLowerCase());
+  const intentionConfig =
+    INTENTION_OPTIONS.find((opt) => opt.value === action.intention) || INTENTION_OPTIONS[0];
+  const todayString = getTodayString();
   const isOverdue = action.scheduledDate < todayString;
 
   return (
@@ -76,13 +68,13 @@ export function ActionItem({ action, type, onComplete, onAbandon, onEdit }: Acti
       style={style}
       className={cn(
         "group flex items-start gap-1 py-2.5 border-b border-border/40 last:border-none transition-colors px-1 sm:px-2 cursor-default relative",
-        type === "completed" ? "opacity-50" : "hover:bg-muted/10",
+        type === ACTION_STATUS.COMPLETED ? "opacity-50" : "hover:bg-muted/10",
         isDragging &&
           "opacity-50 z-50 bg-background shadow-lg rounded-lg border-2 border-primary/20"
       )}
     >
       {/* Drag Handle */}
-      {type === "active" && (
+      {type === ACTION_STATUS.ACTIVE && (
         <div
           {...attributes}
           {...listeners}
@@ -94,7 +86,7 @@ export function ActionItem({ action, type, onComplete, onAbandon, onEdit }: Acti
       )}
 
       <div className="flex items-start gap-3 flex-1 min-w-0">
-        {type === "active" ? (
+        {type === ACTION_STATUS.ACTIVE ? (
           <Button
             variant="outline"
             size="icon"
@@ -104,8 +96,8 @@ export function ActionItem({ action, type, onComplete, onAbandon, onEdit }: Acti
             }}
             className={cn(
               "mt-0.5 size-5 rounded-full transition-all shrink-0 bg-transparent border-[1.5px] p-0 shadow-none flex items-center justify-center group/check hover:scale-110",
-              getEnergyColor(action.energy),
-              getEnergyBg(action.energy).split(" ")[1]
+              energyConfig?.color || "text-muted-foreground",
+              energyConfig?.bg.split(" ")[1] || "border-border/40"
             )}
             title="Mark as completed"
           >
@@ -134,26 +126,32 @@ export function ActionItem({ action, type, onComplete, onAbandon, onEdit }: Acti
 
         <div
           className="flex-1 min-w-0 flex flex-col gap-0.5 cursor-pointer"
-          onClick={() => type !== "completed" && onEdit(action)}
+          onClick={() => type !== ACTION_STATUS.COMPLETED && onEdit(action)}
         >
           <div className="flex items-start justify-between gap-4">
             <div className="flex flex-col flex-1 min-w-0">
               <span
                 className={cn(
                   "text-[14px] font-medium leading-[1.4] transition-colors relative flex-1 truncate",
-                  type === "completed" ? "text-muted-foreground" : "text-foreground"
+                  type === ACTION_STATUS.COMPLETED ? "text-muted-foreground" : "text-foreground"
                 )}
               >
                 {action.title}
                 {/* Strike-through line */}
                 <div
                   className={cn(
-                    "absolute left-0 top-1/2 -translate-y-1/2 h-[1px] bg-muted-foreground/40 transition-all duration-300 ease-in-out",
-                    type === "completed" ? "w-full opacity-100" : "w-0 opacity-0"
+                    "absolute left-0 top-1/2 -translate-y-1/2 h-px bg-muted-foreground/40 transition-all duration-300 ease-in-out",
+                    type === ACTION_STATUS.COMPLETED ? "w-full opacity-100" : "w-0 opacity-0"
                   )}
                 />
                 {action.important && (
-                  <Star className="size-3 ml-1.5 text-amber-500 fill-amber-500 shrink-0 inline-block" />
+                  <Star
+                    className={cn(
+                      "size-3 ml-1.5 shrink-0 inline-block",
+                      IMPORTANT_CONFIG.active.color,
+                      IMPORTANT_CONFIG.active.fill
+                    )}
+                  />
                 )}
               </span>
 
@@ -162,13 +160,24 @@ export function ActionItem({ action, type, onComplete, onAbandon, onEdit }: Acti
                   {action.note}
                 </span>
               )}
-
               <div className="flex items-center gap-3 mt-1 flex-wrap">
                 {action.startTime ? (
                   <span className="text-[11px] font-medium flex items-center gap-1 text-primary/80">
                     <Clock className="size-3" />
-                    {action.startTime}
-                    {action.endTime ? ` - ${action.endTime}` : ""}
+                    {formatTime(action.startTime, timeFormat)}
+                    {action.endTime ? (
+                      <>
+                        {" - "}
+                        {formatTime(action.endTime, timeFormat)}
+                        <NextDayBadge
+                          startTime={action.startTime}
+                          endTime={action.endTime}
+                          className="ml-1 opacity-70"
+                        />
+                      </>
+                    ) : (
+                      ""
+                    )}
                   </span>
                 ) : (
                   <span
@@ -191,37 +200,57 @@ export function ActionItem({ action, type, onComplete, onAbandon, onEdit }: Acti
                   </span>
                 )}
 
-                <span
+                <div
                   className={cn(
-                    "text-[10px] uppercase tracking-wider font-bold flex items-center gap-1 px-1.5 py-0.5 rounded-md border",
-                    getEnergyColor(action.energy),
-                    getEnergyBg(action.energy)
+                    "px-2 py-0.5 rounded-full text-[10px] font-bold border flex items-center gap-1.5",
+                    energyConfig?.bg || "bg-muted/50 border-border/50"
                   )}
                 >
-                  <BatteryMedium className="size-3" />
-                  {action.energy}
-                </span>
+                  {action.energy === ENERGY_LEVELS.HIGH ? (
+                    <BatteryFull className={cn("size-3", energyConfig?.color)} />
+                  ) : action.energy === ENERGY_LEVELS.MEDIUM ? (
+                    <BatteryMedium className={cn("size-3", energyConfig?.color)} />
+                  ) : (
+                    <BatteryLow className={cn("size-3", energyConfig?.color)} />
+                  )}
+                  <span
+                    className={cn(
+                      "uppercase tracking-wider",
+                      energyConfig?.color || "text-muted-foreground"
+                    )}
+                  >
+                    {action.energy}
+                  </span>
+                </div>
               </div>
             </div>
 
             <div className="flex items-center gap-2 shrink-0 pt-0.5">
               <span
                 className={cn(
-                  "text-[10px] uppercase tracking-widest font-bold transition-colors flex items-center gap-1 group/project px-2 py-1 rounded-lg",
-                  action.intention === "must"
-                    ? "text-orange-500 bg-orange-500/5 border border-orange-500/10"
-                    : "text-muted-foreground/60 hover:text-foreground bg-muted/20 border border-transparent"
+                  "text-[10px] uppercase tracking-widest font-bold transition-colors flex items-center gap-1.5 group/project px-2 py-1 rounded-lg border",
+                  intentionConfig.bg,
+                  intentionConfig.color
                 )}
               >
-                {action.intention === "must" ? "Must Do" : "Want to Do"}
-                <InboxIcon className="size-3 opacity-40 group-hover/project:opacity-80" />
+                {action.intention === INTENTIONS.MUST ? (
+                  <>
+                    Must Do
+                    <AlertCircle className="size-3 opacity-60" />
+                  </>
+                ) : (
+                  <>
+                    Want to Do
+                    <Heart className="size-3 opacity-60" />
+                  </>
+                )}
               </span>
             </div>
           </div>
         </div>
       </div>
 
-      {type === "active" && (
+      {type === ACTION_STATUS.ACTIVE && (
         <div className="flex items-center gap-0.5 shrink-0 ml-1">
           {/* Desktop Hover Actions */}
           <Button

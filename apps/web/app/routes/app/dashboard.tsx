@@ -30,6 +30,7 @@ import {
   type DragStartEvent,
   type DragOverEvent,
 } from "@dnd-kit/core";
+import { ACTION_STATUS } from "@/config/constants";
 
 const getTodayString = () => new Date().toLocaleDateString("en-CA");
 
@@ -131,7 +132,7 @@ export default function Dashboard() {
   });
 
   const handleComplete = async (action: Action) => {
-    if (action.status === "completed") {
+    if (action.status === ACTION_STATUS.COMPLETED) {
       await activateAction(action.id);
     } else {
       await completeAction(action.id);
@@ -153,14 +154,14 @@ export default function Dashboard() {
 
   const { overdueActions, daySections } = useMemo(() => {
     const visibleActions = allActions.filter(
-      (a) => a.status === "active" || a.status === "completed"
+      (a) => a.status === ACTION_STATUS.ACTIVE || a.status === ACTION_STATUS.COMPLETED
     );
     const todayStr = getTodayString();
 
     const sortFn = (a: Action, b: Action) => {
       // Completed items always go to the bottom
-      if (a.status === "completed" && b.status !== "completed") return 1;
-      if (a.status !== "completed" && b.status === "completed") return -1;
+      if (a.status === ACTION_STATUS.COMPLETED && b.status !== ACTION_STATUS.COMPLETED) return 1;
+      if (a.status !== ACTION_STATUS.COMPLETED && b.status === ACTION_STATUS.COMPLETED) return -1;
 
       // For active items, sort by time if both have it
       if (a.startTime && b.startTime) {
@@ -175,7 +176,7 @@ export default function Dashboard() {
 
     // 1. Compute Overdue (tasks before Today)
     const overdue = visibleActions
-      .filter((a) => a.scheduledDate < todayStr && a.status === "active")
+      .filter((a) => a.scheduledDate < todayStr && a.status === ACTION_STATUS.ACTIVE)
       .sort(sortFn);
 
     const sections = [];
@@ -314,7 +315,10 @@ export default function Dashboard() {
 
     // Calculate new sortOrder
     const actionsInTargetDay = allActions
-      .filter((a) => a.scheduledDate === targetDate && a.status === "active" && a.id !== activeId)
+      .filter(
+        (a) =>
+          a.scheduledDate === targetDate && a.status === ACTION_STATUS.ACTIVE && a.id !== activeId
+      )
       .sort((a, b) => {
         if (a.startTime && b.startTime) {
           const timeCompare = a.startTime.localeCompare(b.startTime);
@@ -441,7 +445,7 @@ export default function Dashboard() {
           <div className="opacity-80 scale-105 shadow-2xl rounded-xl border-2 border-primary/20 bg-background/50 backdrop-blur-md overflow-hidden pointer-events-none">
             <ActionItem
               action={allActions.find((a) => a.id === activeId)!}
-              type="active"
+              type={ACTION_STATUS.ACTIVE}
               onComplete={() => {}}
               onAbandon={() => {}}
               onEdit={() => {}}

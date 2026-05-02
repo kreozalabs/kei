@@ -8,28 +8,46 @@ import {
   Heart,
   AlertCircle,
   Star,
-  Plus,
-  Minus,
 } from "lucide-react";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  Input,
-  Button,
-  Textarea,
-  cn,
-} from "@kreozalabs/ui";
-import { ActionSelector } from "./ActionSelector";
-import { addAction, updateAction, getRecentConfigs } from "../db/actions";
-import type { Action } from "../types/events";
+import { Input, Button, Textarea, cn } from "@kreozalabs/ui";
+import { ActionSelector } from "../ActionSelector";
+import { NextDayBadge } from "../NextDayBadge";
+import { addAction, updateAction, getRecentConfigs } from "../../db/actions";
+import type { Action, EnergyType, IntentionType } from "../../types/events";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { useDiscardGuard } from "../hooks/useDiscardGuard";
+import { useDiscardGuard } from "../../hooks/useDiscardGuard";
+import { useTheme } from "../../providers/ThemeContext";
+import {
+  formatTime,
+  timeToMinutes,
+  minutesToTime,
+  getTodayString,
+  formatGoogleDate,
+  getTimeOptions,
+  parseManualTime,
+  formatDuration,
+} from "../../utils/time";
+import {
+  DEFAULT_CONFIG,
+  ENERGY_LEVELS,
+  INTENTIONS,
+  TIME,
+  ENERGY_OPTIONS,
+  INTENTION_OPTIONS,
+  DURATION_OPTIONS,
+  IMPORTANT_CONFIG,
+} from "../../config/constants";
+import { DurationInputs } from "./DurationInputs";
+import { DiscardDialog } from "./DiscardDialog";
 
-interface ActionInputProps {
+// TODO: Somehow we should allow user to move between input fields, so it is frictionless and requires less effort. Maybe enter, or arrows?
+// TODO: NOT RELATED TO THIS COMPONENT, BUT IT IS BACKUP LOGIC. Allow user to import and export data.
+// TODO: Create settings to allow user to set custom default values for the input fields. So that if user does a lot of 150 minutes tasks, he does not need to reenter it over again.
+// TODO: Use config file instead of in line hard-coded settings, which should allow us to create custom settings with ease.
+// TODO: Show recent timezones at the top of the timezone dropdown,
+// TODO: Allow to set default timezone, used in the app, in settings.
+
+export interface ActionInputProps {
   onSuccess?: () => void;
   onCancel?: () => void;
   initialDate?: string;
@@ -38,171 +56,13 @@ interface ActionInputProps {
   actionToEdit?: Action;
 }
 
-// TODO: Somehow we should allow user to move between input fields, so it is frictionless and requires less effort. Maybe enter, or arrows?
-// TODO: NOT RELATED TO THIS COMPONENT, BUT IT IS BACKUP LOGIC. Allow user to import and export data.
-// TODO: Create settings to allow user to set custom default values for the input fields. So that if user does a lot of 150 minutes tasks, he does not need to reenter it over again.
-// TODO: Use config file instead of in line hard-coded settings, which should allow us to create custom settings with ease.
-
 export interface ActionInputHandle {
   handleCancelAttempt: () => void;
 }
 
-const DurationStepper = ({
-  value,
-  label,
-  onChange,
-}: {
-  value: number;
-  label: string;
-  onChange: (v: number) => void;
-}) => {
-  const getIncrement = (val: number) => (val < 60 ? 5 : 15);
-  const getDecrement = (val: number) => (val <= 60 ? 5 : 15);
-
-  return (
-    <div className="flex flex-col gap-1.5 items-center flex-1 bg-muted/20 p-2.5 rounded-xl border border-border/30">
-      <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground/60">
-        {label}
-      </span>
-      <div className="flex items-center gap-1.5 w-full justify-between mt-0.5">
-        <Button
-          type="button"
-          variant="ghost"
-          size="icon"
-          className="size-7 bg-background/50 hover:bg-background shadow-sm border border-border/40 text-muted-foreground hover:text-foreground rounded-lg transition-all active:scale-95 shrink-0"
-          onClick={() => onChange(Math.max(0, value - getDecrement(value)))}
-        >
-          <Minus className="size-3" />
-        </Button>
-        <div className="font-bold text-[13px] text-foreground tracking-tight select-none">
-          {value}m
-        </div>
-        <Button
-          type="button"
-          variant="ghost"
-          size="icon"
-          className="size-7 bg-background/50 hover:bg-background shadow-sm border border-border/40 text-muted-foreground hover:text-foreground rounded-lg transition-all active:scale-95 shrink-0"
-          onClick={() => onChange(value + getIncrement(value))}
-        >
-          <Plus className="size-3" />
-        </Button>
-      </div>
-    </div>
-  );
-};
-
-const DurationInputs = ({
-  value,
-  onChange,
-}: {
-  value: [number, number | null];
-  onChange: (v: [number, number | null]) => void;
-}) => {
-  const currentMin = value[0];
-  const currentMax = value[1] === null ? currentMin : value[1];
-
-  const handleMinChange = (newMin: number) => {
-    let newMax = currentMax;
-    if (newMin > newMax) newMax = newMin;
-    onChange([newMin, newMax]);
-  };
-
-  const handleMaxChange = (newMax: number) => {
-    let newMin = currentMin;
-    if (newMax < newMin) newMin = newMax;
-    onChange([newMin, newMax]);
-  };
-
-  return (
-    <div className="p-2 space-y-3">
-      <div className="flex items-center justify-between px-1">
-        <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground/50">
-          Custom Duration
-        </p>
-      </div>
-      <div className="flex items-center gap-2">
-        <DurationStepper value={currentMin} label="Min" onChange={handleMinChange} />
-        <DurationStepper value={currentMax} label="Max" onChange={handleMaxChange} />
-      </div>
-    </div>
-  );
-};
-
-const timeOptions = Array.from({ length: 96 }).map((_, i) => {
-  const hours = Math.floor(i / 4);
-  const minutes = (i % 4) * 15;
-  const ampm = hours >= 12 ? "pm" : "am";
-  const displayHours = hours % 12 === 0 ? 12 : hours % 12;
-  const displayMinutes = minutes.toString().padStart(2, "0");
-  const value = `${hours.toString().padStart(2, "0")}:${minutes.toString().padStart(2, "0")}`;
-  return {
-    label: `${displayHours}:${displayMinutes}${ampm}`,
-    value: value,
-  };
-});
-
-const formatTime12h = (time24: string) => {
-  if (!time24) return "Time";
-  const [h, m] = time24.split(":");
-  const hours = parseInt(h, 10);
-  const ampm = hours >= 12 ? "pm" : "am";
-  const displayHours = hours % 12 || 12;
-  return `${displayHours}:${m}${ampm}`;
-};
-
-const formatGoogleDate = (dateStr: string) => {
-  if (!dateStr) return "Date";
-  // We use dateStr + 'T12:00:00' to avoid timezone shift issues from "YYYY-MM-DD"
-  const d = new Date(dateStr + "T12:00:00");
-  return d.toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" });
-};
-
-const parseManualTime = (input: string): string | null => {
-  const clean = input.trim().toLowerCase();
-  if (!clean) return null;
-
-  // Try HH:mm
-  const hhmm = clean.match(/^(\d{1,2}):(\d{2})$/);
-  if (hhmm) {
-    const h = parseInt(hhmm[1]);
-    const m = parseInt(hhmm[2]);
-    if (h >= 0 && h < 24 && m >= 0 && m < 60) {
-      return `${h.toString().padStart(2, "0")}:${m.toString().padStart(2, "0")}`;
-    }
-  }
-
-  // Try h am/pm
-  const h_ampm = clean.match(/^(\d{1,2})\s*(am|pm)$/);
-  if (h_ampm) {
-    let h = parseInt(h_ampm[1]);
-    const ampm = h_ampm[2];
-    if (h >= 1 && h <= 12) {
-      if (ampm === "pm" && h < 12) h += 12;
-      if (ampm === "am" && h === 12) h = 0;
-      return `${h.toString().padStart(2, "0")}:00`;
-    }
-  }
-
-  // Try h:mm am/pm
-  const hmm_ampm = clean.match(/^(\d{1,2}):(\d{2})\s*(am|pm)$/);
-  if (hmm_ampm) {
-    let h = parseInt(hmm_ampm[1]);
-    const m = parseInt(hmm_ampm[2]);
-    const ampm = hmm_ampm[3];
-    if (h >= 1 && h <= 12 && m >= 0 && m < 60) {
-      if (ampm === "pm" && h < 12) h += 12;
-      if (ampm === "am" && h === 12) h = 0;
-      return `${h.toString().padStart(2, "0")}:${m.toString().padStart(2, "0")}`;
-    }
-  }
-
-  return null;
-};
-
-const allTimezones = (Intl as typeof Intl & { supportedValuesOf?: (key: string) => string[] }).supportedValuesOf?.("timeZone") || [
-  "UTC",
-  Intl.DateTimeFormat().resolvedOptions().timeZone,
-];
+const allTimezones = (
+  Intl as typeof Intl & { supportedValuesOf?: (key: string) => string[] }
+).supportedValuesOf?.("timeZone") || ["UTC", Intl.DateTimeFormat().resolvedOptions().timeZone];
 
 const getNearestTimeValue = () => {
   const now = new Date();
@@ -215,18 +75,22 @@ const getNearestTimeValue = () => {
 
 export const ActionInput = forwardRef<ActionInputHandle, ActionInputProps>(
   ({ onSuccess, onCancel, initialDate, className, variant = "inline", actionToEdit }, ref) => {
-    const [title, setTitle] = useState(actionToEdit?.title || "");
+    const [title, setTitle] = useState(actionToEdit?.title || DEFAULT_CONFIG.TITLE);
     const [note, setNote] = useState(actionToEdit?.note || "");
-    const [intention, setIntention] = useState<"must" | "want">(actionToEdit?.intention || "want");
+    const [intention, setIntention] = useState<IntentionType>(
+      actionToEdit?.intention || (DEFAULT_CONFIG.INTENTION as IntentionType)
+    );
     const [isImportant, setIsImportant] = useState(actionToEdit?.important || false);
-    const [energy, setEnergy] = useState<"low" | "medium" | "high">(
-      actionToEdit?.energy || "medium"
+    const [energy, setEnergy] = useState<EnergyType>(
+      actionToEdit?.energy || (DEFAULT_CONFIG.ENERGY as EnergyType)
     );
     const [duration, setDuration] = useState<[number, number | null]>(
-      actionToEdit?.duration ? [actionToEdit.duration[0], actionToEdit.duration[1]] : [15, 30]
+      actionToEdit?.duration
+        ? [actionToEdit.duration[0], actionToEdit.duration[1]]
+        : DEFAULT_CONFIG.DURATION
     );
     const [scheduledDate, setScheduledDate] = useState(
-      actionToEdit?.scheduledDate || initialDate || new Date().toLocaleDateString("en-CA")
+      actionToEdit?.scheduledDate || initialDate || getTodayString()
     );
     const [startTime, setStartTime] = useState<string>(actionToEdit?.startTime || "");
     const [endTime, setEndTime] = useState<string>(actionToEdit?.endTime || "");
@@ -237,59 +101,189 @@ export const ActionInput = forwardRef<ActionInputHandle, ActionInputProps>(
     const [isTimeInvalid, setIsTimeInvalid] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
     const queryClient = useQueryClient();
+    const { timeFormat, showRecentConfigs } = useTheme();
     const titleInputRef = useRef<HTMLInputElement>(null);
 
-    // Auto-calculate duration from times OR times from duration
+    const timeOptions = useMemo(() => getTimeOptions(timeFormat), [timeFormat]);
+    const energyOption = ENERGY_OPTIONS.find((opt) => opt.value === energy) || ENERGY_OPTIONS[1];
+
+    const sortedTimezones = useMemo(() => {
+      const local = Intl.DateTimeFormat().resolvedOptions().timeZone;
+      // TODO: This list is hardcoded. We should use a config file to set the default timezones, including a list of "major" timezones.
+      const major = [
+        "UTC",
+        "America/New_York",
+        "America/Chicago",
+        "America/Denver",
+        "America/Los_Angeles",
+        "Europe/London",
+        "Europe/Paris",
+        "Europe/Berlin",
+        "Asia/Tokyo",
+        "Asia/Shanghai",
+        "Asia/Dubai",
+        "Australia/Sydney",
+      ];
+
+      // Filter out local and major from the main list to avoid duplicates
+      const others = allTimezones.filter((tz) => tz !== local && !major.includes(tz));
+
+      return [local, ...major.filter((m) => allTimezones.includes(m) && m !== local), ...others];
+    }, []);
+
+    const filteredTimezones = useMemo(() => {
+      const search = timezoneSearch.toLowerCase().trim();
+      if (!search) return sortedTimezones.slice(0, 15);
+
+      // When searching, we might want to show more than 50 if there are many matches,
+      // but let's keep a reasonable limit for performance.
+      return sortedTimezones.filter((tz) => tz.toLowerCase().includes(search)).slice(0, 100);
+    }, [timezoneSearch, sortedTimezones]);
+
+    const energyOptionsWithIcons = useMemo(
+      () =>
+        ENERGY_OPTIONS.map((opt) => {
+          const Icon =
+            opt.value === ENERGY_LEVELS.HIGH
+              ? BatteryFull
+              : opt.value === ENERGY_LEVELS.MEDIUM
+                ? BatteryMedium
+                : BatteryLow;
+          return {
+            ...opt,
+            icon: <Icon className="size-4" />,
+            className: opt.color,
+          };
+        }),
+      []
+    );
+
+    const EnergyIcon = useMemo(() => {
+      switch (energy) {
+        case ENERGY_LEVELS.HIGH:
+          return BatteryFull;
+        case ENERGY_LEVELS.MEDIUM:
+          return BatteryMedium;
+        case ENERGY_LEVELS.LOW:
+          return BatteryLow;
+        default:
+          return BatteryMedium;
+      }
+    }, [energy]);
+
+    const intentionConfig = useMemo(
+      () => INTENTION_OPTIONS.find((opt) => opt.value === intention) || INTENTION_OPTIONS[0],
+      [intention]
+    );
+
+    const intentionOptionsWithIcons = useMemo(
+      () =>
+        INTENTION_OPTIONS.map((opt) => ({
+          ...opt,
+          icon:
+            opt.value === INTENTIONS.MUST ? (
+              <AlertCircle className={cn("size-4", opt.color)} />
+            ) : (
+              <Heart className={cn("size-4", opt.color)} />
+            ),
+        })),
+      []
+    );
+
+    const importantOptionsWithIcons = useMemo(
+      () => [
+        {
+          label: "Regular",
+          value: false,
+          icon: <Star className={cn("size-4", IMPORTANT_CONFIG.inactive.color)} />,
+        },
+        {
+          label: "Important",
+          value: true,
+          icon: (
+            <Star
+              className={cn("size-4", IMPORTANT_CONFIG.active.color, IMPORTANT_CONFIG.active.fill)}
+            />
+          ),
+        },
+      ],
+      []
+    );
+
     const isCalculatingRef = useRef(false);
 
-    useEffect(() => {
-      if (isCalculatingRef.current) return;
-      if (startTime && endTime) {
-        const [startH, startM] = startTime.split(":").map(Number);
-        const [endH, endM] = endTime.split(":").map(Number);
-        const startTotal = startH * 60 + startM;
-        const endTotal = endH * 60 + endM;
+    const syncDurationFromTimes = (start: string, end: string) => {
+      if (!start || !end || isCalculatingRef.current) return;
+      const startTotal = timeToMinutes(start);
+      let endTotal = timeToMinutes(end);
+      if (endTotal < startTotal) endTotal += TIME.MINUTES_IN_DAY;
+      const diff = endTotal - startTotal;
 
-        if (endTotal > startTotal) {
-          const diff = endTotal - startTotal;
-          isCalculatingRef.current = true;
-          setDuration([diff, diff]);
-          setTimeout(() => (isCalculatingRef.current = false), 0);
-        }
-      }
-    }, [startTime, endTime]);
+      isCalculatingRef.current = true;
+      setDuration([diff, diff]);
+      setTimeout(() => (isCalculatingRef.current = false), 0);
+    };
 
-    // Update endTime if startTime changes but we want to maintain current duration
     const handleStartTimeChange = (newStart: string) => {
       setStartTime(newStart);
+      if (isCalculatingRef.current) return;
       const targetDuration = duration[1] || duration[0];
       if (newStart && targetDuration > 0) {
-        const [h, m] = newStart.split(":").map(Number);
-        const newEndTotalM = Math.min(23 * 60 + 59, h * 60 + m + targetDuration);
-        const newEndH = Math.floor(newEndTotalM / 60);
-        const newEndM = newEndTotalM % 60;
-        const formattedEnd = `${newEndH.toString().padStart(2, "0")}:${newEndM.toString().padStart(2, "0")}`;
+        const newEndTotalM = timeToMinutes(newStart) + targetDuration;
+        const formattedEnd = minutesToTime(newEndTotalM);
+
+        isCalculatingRef.current = true;
         setEndTime(formattedEnd);
+        setTimeout(() => (isCalculatingRef.current = false), 0);
+      }
+    };
+
+    const handleEndTimeChange = (newEnd: string) => {
+      setEndTime(newEnd);
+      syncDurationFromTimes(startTime, newEnd);
+    };
+
+    const handleDurationChange = (newDuration: [number, number | null]) => {
+      setDuration(newDuration);
+      if (isCalculatingRef.current) return;
+      const targetDuration = newDuration[1] || newDuration[0];
+      if (startTime && targetDuration > 0) {
+        const newEndTotalM = timeToMinutes(startTime) + targetDuration;
+        const formattedEnd = minutesToTime(newEndTotalM);
+
+        isCalculatingRef.current = true;
+        setEndTime(formattedEnd);
+        setTimeout(() => (isCalculatingRef.current = false), 0);
       }
     };
 
     const { data: recentConfigs = [] } = useQuery({
       queryKey: ["recent-configs"],
       queryFn: getRecentConfigs,
+      enabled: showRecentConfigs,
     });
 
     const hasChanges = useMemo(() => {
-      const initialTitle = actionToEdit?.title || "";
+      // Define the "Empty State" check for New Actions
+      const isNewAction = !actionToEdit;
+      const isBaseEmpty = !title.trim() && !note.trim();
+
+      // If it's a new draft and nothing has been typed yet, don't trigger the guard
+      // regardless of other setting changes (Energy, Intention, etc.)
+      if (isNewAction && isBaseEmpty) return false;
+
+      const initialTitle = actionToEdit?.title || DEFAULT_CONFIG.TITLE;
       const initialNote = actionToEdit?.note || "";
-      const initialIntention = actionToEdit?.intention || "want";
-      const initialEnergy = actionToEdit?.energy || "medium";
+      const initialIntention = actionToEdit?.intention || DEFAULT_CONFIG.INTENTION;
+      const initialEnergy = actionToEdit?.energy || DEFAULT_CONFIG.ENERGY;
       const initialImportant = actionToEdit?.important || false;
-      const initialDurationMin = actionToEdit?.duration?.[0] ?? 15;
-      const initialDurationMax = actionToEdit?.duration?.[1] ?? 30;
-      const initialScheduledDate =
-        actionToEdit?.scheduledDate || initialDate || new Date().toLocaleDateString("en-CA");
+      const initialDurationMin = actionToEdit?.duration?.[0] ?? DEFAULT_CONFIG.DURATION[0];
+      const initialDurationMax = actionToEdit?.duration?.[1] ?? DEFAULT_CONFIG.DURATION[1];
+      const initialScheduledDate = actionToEdit?.scheduledDate || initialDate || getTodayString();
       const initialStartTime = actionToEdit?.startTime || "";
       const initialEndTime = actionToEdit?.endTime || "";
+      const initialTimezone =
+        actionToEdit?.timezone || Intl.DateTimeFormat().resolvedOptions().timeZone;
 
       return (
         title.trim() !== initialTitle ||
@@ -301,7 +295,8 @@ export const ActionInput = forwardRef<ActionInputHandle, ActionInputProps>(
         (duration[1] ?? duration[0]) !== initialDurationMax ||
         scheduledDate !== initialScheduledDate ||
         startTime !== initialStartTime ||
-        endTime !== initialEndTime
+        endTime !== initialEndTime ||
+        timezone !== initialTimezone
       );
     }, [
       title,
@@ -313,6 +308,7 @@ export const ActionInput = forwardRef<ActionInputHandle, ActionInputProps>(
       scheduledDate,
       startTime,
       endTime,
+      timezone,
       actionToEdit,
       initialDate,
     ]);
@@ -337,13 +333,22 @@ export const ActionInput = forwardRef<ActionInputHandle, ActionInputProps>(
 
       setIsLoading(true);
       try {
+        let finalDuration = duration;
+        if (startTime && endTime) {
+          const startTotal = timeToMinutes(startTime);
+          let endTotal = timeToMinutes(endTime);
+          if (endTotal < startTotal) endTotal += TIME.MINUTES_IN_DAY;
+          const diff = endTotal - startTotal;
+          finalDuration = [diff, diff];
+        }
+
         const payload = {
           title: title.trim(),
           note: note.trim(),
           intention,
           important: isImportant,
           energy,
-          duration: [duration[0], duration[1] ?? duration[0]] as [number, number],
+          duration: [finalDuration[0], finalDuration[1] ?? finalDuration[0]] as [number, number],
           scheduledDate,
           startTime: startTime || undefined,
           endTime: endTime || undefined,
@@ -380,8 +385,7 @@ export const ActionInput = forwardRef<ActionInputHandle, ActionInputProps>(
         <form onSubmit={handleSubmit} className="flex flex-col">
           {/* Input Section */}
           <div className="p-4 sm:p-5 flex flex-col gap-2">
-            {/* Recent Configs */}
-            {recentConfigs.length > 0 && (
+            {showRecentConfigs && recentConfigs.length > 0 && (
               <div className="flex flex-wrap gap-2 mb-3">
                 {recentConfigs.map((config, idx) => (
                   <Button
@@ -390,9 +394,9 @@ export const ActionInput = forwardRef<ActionInputHandle, ActionInputProps>(
                     variant="ghost"
                     size="sm"
                     onClick={() => {
-                      setDuration(config.duration || [15, 30]);
-                      setEnergy(config.energy || "medium");
-                      setIntention(config.intention || "want");
+                      handleDurationChange(config.duration || DEFAULT_CONFIG.DURATION);
+                      setEnergy((config.energy as EnergyType) || ENERGY_LEVELS.MEDIUM);
+                      setIntention((config.intention as IntentionType) || INTENTIONS.WANT);
                       setIsImportant(config.important || false);
                     }}
                     className="h-7 px-2.5 rounded-lg bg-primary/5 hover:bg-primary/10 text-[11px] font-bold text-primary/70 transition-all border border-primary/10 active:scale-95"
@@ -439,7 +443,6 @@ export const ActionInput = forwardRef<ActionInputHandle, ActionInputProps>(
                 size="icon"
                 className="size-9 rounded-xl text-muted-foreground/50 hover:text-primary hover:bg-primary/10 transition-all active:scale-95"
               >
-                {/* TODO: Make it work with device micro */}
                 <AudioLines className="size-5" />
               </Button>
             </div>
@@ -449,79 +452,23 @@ export const ActionInput = forwardRef<ActionInputHandle, ActionInputProps>(
           <div className="px-4 sm:px-5 pb-5 mt-5 flex flex-wrap gap-2 sm:gap-2.5 items-center">
             <ActionSelector
               icon={<Clock className="size-3.5 text-blue-500/70" />}
-              label={
-                !duration[1] || duration[0] === duration[1]
-                  ? `${duration[0]} mins`
-                  : duration[0] === 60
-                    ? "1 hr+"
-                    : `${duration[0]} - ${duration[1]} mins`
-              }
-              options={[
-                {
-                  label: "<15 mins",
-                  value: [0, 15] as [number, number],
-                  icon: <Clock className="size-4 text-muted-foreground" />,
-                },
-                {
-                  label: "15 mins",
-                  value: [15, 15] as [number, number],
-                  icon: <Clock className="size-4 text-muted-foreground" />,
-                },
-                {
-                  label: "15 - 30 mins",
-                  value: [15, 30] as [number, number],
-                  icon: <Clock className="size-4 text-muted-foreground" />,
-                },
-                {
-                  label: "30 - 60 mins",
-                  value: [30, 60] as [number, number],
-                  icon: <Clock className="size-4 text-muted-foreground" />,
-                },
-                {
-                  label: "1 hour+",
-                  value: [60, 120] as [number, number],
-                  icon: <Clock className="size-4 text-muted-foreground" />,
-                },
-              ]}
-              onSelect={(val) => setDuration(val as [number, number | null])}
+              label={formatDuration(duration[0], duration[1])}
+              options={DURATION_OPTIONS.map((opt) => ({
+                ...opt,
+                icon: <Clock className="size-4 text-muted-foreground" />,
+              }))}
+              onSelect={(val) => handleDurationChange(val as [number, number | null])}
               value={duration}
               contentClassName="w-[280px]"
             >
-              <DurationInputs value={duration} onChange={setDuration} />
+              <DurationInputs value={duration} onChange={handleDurationChange} />
             </ActionSelector>
 
             <ActionSelector
-              icon={
-                energy === "high" ? (
-                  <BatteryFull className="size-3.5 text-red-500" />
-                ) : energy === "medium" ? (
-                  <BatteryMedium className="size-3.5 text-yellow-500" />
-                ) : (
-                  <BatteryLow className="size-3.5 text-green-500" />
-                )
-              }
-              label={`${energy} energy`}
-              options={[
-                {
-                  label: "Low energy",
-                  value: "low",
-                  icon: <BatteryLow className="size-4" />,
-                  className: "text-green-500",
-                },
-                {
-                  label: "Medium energy",
-                  value: "medium",
-                  icon: <BatteryMedium className="size-4" />,
-                  className: "text-yellow-500",
-                },
-                {
-                  label: "High energy",
-                  value: "high",
-                  icon: <BatteryFull className="size-4" />,
-                  className: "text-red-500",
-                },
-              ]}
-              onSelect={setEnergy}
+              icon={<EnergyIcon className={cn("size-3.5", energyOption.color)} />}
+              label={energyOption.label}
+              options={energyOptionsWithIcons}
+              onSelect={setEnergy as (v: unknown) => void}
               value={energy}
             />
 
@@ -542,7 +489,7 @@ export const ActionInput = forwardRef<ActionInputHandle, ActionInputProps>(
                   if (val === "custom") {
                     // TODO: open calendar picker
                   } else {
-                    setScheduledDate(val);
+                    setScheduledDate(val as string);
                   }
                 }}
                 value={scheduledDate}
@@ -563,16 +510,12 @@ export const ActionInput = forwardRef<ActionInputHandle, ActionInputProps>(
               </ActionSelector>
 
               <ActionSelector
-                label={startTime ? formatTime12h(startTime) : "Time"}
+                label={startTime ? formatTime(startTime, timeFormat) : "Time"}
                 options={timeOptions}
                 scrollTargetValue={getNearestTimeValue()}
                 onSelect={(val) => {
-                  handleStartTimeChange(val);
-                  if (val && endTime && val > endTime) {
-                    setIsTimeInvalid(true);
-                  } else {
-                    setIsTimeInvalid(false);
-                  }
+                  handleStartTimeChange(val as string);
+                  setIsTimeInvalid(false);
                 }}
                 value={startTime}
                 align="center"
@@ -602,9 +545,11 @@ export const ActionInput = forwardRef<ActionInputHandle, ActionInputProps>(
                       variant="ghost"
                       size="sm"
                       onClick={() => {
+                        isCalculatingRef.current = true;
                         setStartTime("");
                         setEndTime("");
                         setIsTimeInvalid(false);
+                        setTimeout(() => (isCalculatingRef.current = false), 0);
                       }}
                       className="w-full text-[10px] uppercase font-bold tracking-widest text-red-500 hover:text-red-600 hover:bg-red-500/10 h-7"
                     >
@@ -618,16 +563,20 @@ export const ActionInput = forwardRef<ActionInputHandle, ActionInputProps>(
                 <>
                   <span className="text-muted-foreground/50 px-0.5 font-medium">-</span>
                   <ActionSelector
-                    label={endTime ? formatTime12h(endTime) : "End"}
+                    label={
+                      endTime ? (
+                        <span className="flex items-center gap-1">
+                          {formatTime(endTime, timeFormat)}
+                          <NextDayBadge startTime={startTime} endTime={endTime} />
+                        </span>
+                      ) : (
+                        "End"
+                      )
+                    }
                     options={timeOptions}
                     scrollTargetValue={getNearestTimeValue()}
                     onSelect={(val) => {
-                      setEndTime(val);
-                      if (startTime && val < startTime) {
-                        setIsTimeInvalid(true);
-                      } else {
-                        setIsTimeInvalid(false);
-                      }
+                      handleEndTimeChange(val as string);
                     }}
                     value={endTime}
                     align="center"
@@ -645,7 +594,7 @@ export const ActionInput = forwardRef<ActionInputHandle, ActionInputProps>(
                           if (e.key === "Enter") {
                             const parsed = parseManualTime(e.currentTarget.value);
                             if (parsed) {
-                              setEndTime(parsed);
+                              handleEndTimeChange(parsed);
                               e.currentTarget.value = "";
                             }
                           }
@@ -659,19 +608,17 @@ export const ActionInput = forwardRef<ActionInputHandle, ActionInputProps>(
 
               <ActionSelector
                 label={timezone.split("/").pop()?.replace("_", " ") || timezone}
-                options={allTimezones
-                  .filter((tz: string) => tz.toLowerCase().includes(timezoneSearch.toLowerCase()))
-                  .slice(0, 50) // Limit for performance
-                  .map((tz: string) => ({
-                    label: tz.replace("_", " "),
-                    value: tz,
-                  }))}
+                options={filteredTimezones.map((tz: string) => ({
+                  label: tz.replace("_", " "),
+                  value: tz,
+                }))}
                 onSelect={(val) => {
-                  setTimezone(val);
+                  setTimezone(val as string);
                   setTimezoneSearch("");
                 }}
                 value={timezone}
                 align="end"
+                childrenPosition="top"
                 triggerClassName="bg-muted/30 border-none hover:bg-muted/50 rounded-md px-3 h-8 shadow-none text-muted-foreground/60 text-[11px]"
                 contentClassName="max-h-[300px] overflow-y-auto w-[220px]"
                 title="Scheduling Timezone"
@@ -700,31 +647,20 @@ export const ActionInput = forwardRef<ActionInputHandle, ActionInputProps>(
                 icon={
                   <div
                     className={cn(
-                      "size-5 rounded-md flex items-center justify-center",
-                      intention === "must" ? "bg-orange-500/10" : "bg-pink-500/10"
+                      "size-5 rounded-md flex items-center justify-center border",
+                      intentionConfig.bg
                     )}
                   >
-                    {intention === "must" ? (
-                      <AlertCircle className="size-3.5 text-orange-500" />
+                    {intention === INTENTIONS.MUST ? (
+                      <AlertCircle className={cn("size-3.5", intentionConfig.color)} />
                     ) : (
-                      <Heart className="size-3.5 text-pink-500" />
+                      <Heart className={cn("size-3.5", intentionConfig.color)} />
                     )}
                   </div>
                 }
-                label={intention === "must" ? "Must do" : "Want to do"}
-                options={[
-                  {
-                    label: "Want to do",
-                    value: "want",
-                    icon: <Heart className="size-4 text-pink-500" />,
-                  },
-                  {
-                    label: "Must do",
-                    value: "must",
-                    icon: <AlertCircle className="size-4 text-orange-500" />,
-                  },
-                ]}
-                onSelect={setIntention}
+                label={intentionConfig.label}
+                options={intentionOptionsWithIcons}
+                onSelect={setIntention as (v: unknown) => void}
                 value={intention}
                 triggerClassName="h-9 px-2 sm:px-3 rounded-xl hover:bg-muted/50 font-bold text-muted-foreground/70 hover:text-foreground border-none"
               />
@@ -735,31 +671,22 @@ export const ActionInput = forwardRef<ActionInputHandle, ActionInputProps>(
                   <div
                     className={cn(
                       "size-5 rounded-md flex items-center justify-center",
-                      isImportant ? "bg-amber-500/10" : "bg-muted/30"
+                      isImportant ? IMPORTANT_CONFIG.active.bg : IMPORTANT_CONFIG.inactive.bg
                     )}
                   >
                     <Star
                       className={cn(
                         "size-3.5 mb-0.5",
-                        isImportant ? "text-amber-500 fill-amber-500" : "text-muted-foreground/40"
+                        isImportant
+                          ? cn(IMPORTANT_CONFIG.active.color, IMPORTANT_CONFIG.active.fill)
+                          : IMPORTANT_CONFIG.inactive.color
                       )}
                     />
                   </div>
                 }
                 label={isImportant ? "Important" : ""}
-                options={[
-                  {
-                    label: "Regular",
-                    value: false,
-                    icon: <Star className="size-4 text-muted-foreground/40" />,
-                  },
-                  {
-                    label: "Important",
-                    value: true,
-                    icon: <Star className="size-4 text-amber-500 fill-amber-500" />,
-                  },
-                ]}
-                onSelect={setIsImportant}
+                options={importantOptionsWithIcons}
+                onSelect={setIsImportant as (v: unknown) => void}
                 value={isImportant}
                 triggerClassName="h-9 px-2 sm:px-3 rounded-xl hover:bg-muted/50 font-bold text-muted-foreground/70 hover:text-foreground border-none"
               />
@@ -788,37 +715,11 @@ export const ActionInput = forwardRef<ActionInputHandle, ActionInputProps>(
           </div>
         </form>
 
-        <Dialog open={showConfirmDialog} onOpenChange={setShowConfirmDialog}>
-          <DialogContent
-            showCloseButton={false}
-            className="max-w-100 p-6 bg-popover border border-border/50 shadow-2xl rounded-xl"
-          >
-            <DialogHeader className="gap-2">
-              <DialogTitle className="text-[17px] font-bold tracking-tight text-foreground">
-                Discard unsaved changes?
-              </DialogTitle>
-              <DialogDescription className="text-[14px] text-muted-foreground leading-relaxed font-medium">
-                Your unsaved changes will be discarded.
-              </DialogDescription>
-            </DialogHeader>
-            <DialogFooter className="flex flex-row justify-end gap-3 mt-6 bg-transparent border-none p-0 mx-0 mb-0">
-              <Button
-                variant="secondary"
-                onClick={() => setShowConfirmDialog(false)}
-                className="h-9 px-4 rounded-lg font-bold transition-all active:scale-95 border-none"
-              >
-                Cancel
-              </Button>
-              <Button
-                variant="default"
-                onClick={handleConfirmDiscard}
-                className="h-9 px-4 rounded-lg bg-destructive hover:bg-destructive/90 text-destructive-foreground font-bold transition-all active:scale-95 border-none"
-              >
-                Discard
-              </Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
+        <DiscardDialog
+          open={showConfirmDialog}
+          onOpenChange={setShowConfirmDialog}
+          onConfirm={handleConfirmDiscard}
+        />
       </div>
     );
   }
