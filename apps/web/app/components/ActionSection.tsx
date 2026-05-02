@@ -9,7 +9,7 @@ import { SortableContext, verticalListSortingStrategy } from "@dnd-kit/sortable"
 import { useDroppable } from "@dnd-kit/core";
 import { ACTION_STATUS } from "@/config/constants";
 
-interface ActionListProps {
+interface ActionSectionProps {
   id: string;
   sectionTitle: string;
   actions: Action[];
@@ -29,7 +29,7 @@ export function ActionSection({
   onAbandon,
   onEdit,
   sectionDate,
-}: ActionListProps) {
+}: ActionSectionProps) {
   const [isAdding, setIsAdding] = useState(false);
   const { setNodeRef: setSectionRef, isOver } = useDroppable({
     id: `section-${sectionDate}`,
