@@ -210,6 +210,8 @@ export async function rebuildSnapshots() {
     );
   }
 }
+// TODO: Add function that will allow to create configs for actions, so user can set 4 hours or something like that, instead of just using defaults or recents or writing custom duration every time.
+
 // TODO: Create table for recent configs, or use settings table instead. It should help to avoid unnecessary reads from events table.
 export async function getRecentConfigs(): Promise<ActionPayload[]> {
   const result = await db.query(
