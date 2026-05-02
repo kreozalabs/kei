@@ -11,6 +11,7 @@ import {
   activateAction,
   abandonAction,
 } from "@/db/actions";
+import { useCurrentDay } from "@/hooks/useCurrentDay";
 import { Button } from "@kreozalabs/ui";
 import { LockIcon, UnlockIcon, Loader2Icon } from "lucide-react";
 import type { Action } from "@/types/actions";
@@ -35,6 +36,12 @@ import { ACTION_STATUS } from "@/config/constants";
 // TODO: HOW DOES IT WORK IF Session is kept open for long time, and the data has already changed in db via another tab or device?
 // TODO: MAYBE Make it refresh like API request that refreshes with a polling mechanism on user interval. Since backend development will be beneficial, it will be quite efficient if there is one funciton that fetches data depending on internet connection, either from the local db or the backend, and handles syncing of db between local and cloud.
 // TODO: How does update, add and delete work? Do they refetch everything ? How is stale data handled?
+// NOTE: It should work in following way:
+// 1. User opens the app, and the data is fetched from the local db, first, so that user sees the data immediately. In the background, app checks if there are any other devices or if cloud is connected. If yes, it checks for data.
+// 2. User makes some changes to the data, and the changes are written to the local db and queued for sync. Other devices see the change and update its db. Centralized db is written on access, right after any changes are made to the local db if connection is possible.
+// 3. This process should happen in the background, without interrupting the user.
+// 4. This should also work when the user is offline, but the app should notify the user when the data is out of sync.
+// Changes should be automatically reflected in all tabs and devices as long as app is active, even if the tab is in the background. If app is closed, it does not do anything, unless told to do so.
 
 const getTodayString = () => new Date().toLocaleDateString("en-CA");
 
@@ -129,13 +136,37 @@ export default function Dashboard() {
     isTodayLocked,
   ]);
 
-  // FIXME: IT IS INEFFICIENT TO QUERY ALL ACTIONS, especially since we only need to display a subset of them.
-  // TODO: CAN WE JUST QUERY FOR THE ACTIONS WE NEED, IE. OVERDUE AND NEXT 30 DAYS?
-  const { data: allActions = [] } = useQuery({
-    queryKey: ["actions"],
-    queryFn: getActions,
+  const todayStr = useCurrentDay();
+
+  const startDate = isTodayLocked ? todayStr : selectedDate;
+  const endDate = useMemo(() => {
+    if (isTodayLocked) return todayStr;
+    const d = new Date(selectedDate + "T12:00:00");
+    d.setDate(d.getDate() + 30);
+    return d.toLocaleDateString("en-CA");
+  }, [isTodayLocked, selectedDate, todayStr]);
+
+  const { data: activeActions = [] } = useQuery({
+    queryKey: ["actions", { status: "active" }],
+    queryFn: () => getActions({ status: [ACTION_STATUS.ACTIVE as any] }),
     enabled: isDbReady,
   });
+
+  const { data: completedActions = [] } = useQuery({
+    queryKey: ["actions", { status: "completed", startDate, endDate }],
+    queryFn: () =>
+      getActions({
+        status: [ACTION_STATUS.COMPLETED as any],
+        startDate,
+        endDate,
+      }),
+    enabled: isDbReady,
+  });
+
+  const allActions = useMemo(
+    () => [...activeActions, ...completedActions],
+    [activeActions, completedActions]
+  );
 
   const handleComplete = async (action: Action) => {
     if (action.status === ACTION_STATUS.COMPLETED) {
@@ -156,13 +187,8 @@ export default function Dashboard() {
     setIsDialogOpen(true);
   };
 
-  const todayStr = getTodayString();
-
   const { overdueActions, daySections } = useMemo(() => {
-    const visibleActions = allActions.filter(
-      (a) => a.status === ACTION_STATUS.ACTIVE || a.status === ACTION_STATUS.COMPLETED
-    );
-    const todayStr = getTodayString();
+    const visibleActions = allActions;
 
     const sortFn = (a: Action, b: Action) => {
       // Completed items always go to the bottom

@@ -13,6 +13,8 @@ import { persistEvent } from "./events";
 
 const getTodayString = () => new Date().toLocaleDateString("en-CA"); // YYYY-MM-DD local time
 
+const channel = typeof window !== "undefined" ? new BroadcastChannel("kei_db_sync") : null;
+
 /**
  * Reconstructs or updates an Action state based on an event.
  */
@@ -120,11 +122,49 @@ async function pushEvent<T>(actionId: string, type: string, payload: T) {
     ]
   );
 
+  if (channel) {
+    channel.postMessage({ type: "DB_UPDATED" });
+  }
+
   return event;
 }
 
-export async function getActions(): Promise<Action[]> {
-  const result = await db.query(`SELECT * FROM actions_snapshot ORDER BY sort_order DESC`);
+export async function getActions(filters?: {
+  startDate?: string;
+  endDate?: string;
+  status?: ActionStatus[];
+}): Promise<Action[]> {
+  let query = `SELECT * FROM actions_snapshot`;
+  const params: any[] = [];
+  const whereClauses: string[] = [];
+
+  if (filters?.startDate) {
+    params.push(filters.startDate);
+    whereClauses.push(`scheduled_date >= $${params.length}`);
+  }
+
+  if (filters?.endDate) {
+    params.push(filters.endDate);
+    whereClauses.push(`scheduled_date <= $${params.length}`);
+  }
+
+  if (filters?.status && filters.status.length > 0) {
+    const statusPlaceholders = filters.status
+      .map((_, i) => {
+        params.push(filters.status![i]);
+        return `$${params.length}`;
+      })
+      .join(", ");
+    whereClauses.push(`status IN (${statusPlaceholders})`);
+  }
+
+  if (whereClauses.length > 0) {
+    query += ` WHERE ` + whereClauses.join(" AND ");
+  }
+
+  query += ` ORDER BY sort_order DESC`;
+
+  const result = await db.query(query, params);
   return result.rows.map((row: any) => ({
     ...row,
     scheduledDate: row.scheduled_date,
