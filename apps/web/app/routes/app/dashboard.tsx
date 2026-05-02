@@ -12,6 +12,13 @@ import {
   abandonAction,
 } from "@/db/actions";
 import { useCurrentDay } from "@/hooks/useCurrentDay";
+import {
+  getTodayString,
+  formatDate,
+  formatShortDate,
+  formatFullWeekday,
+  formatShortWeekday,
+} from "@/utils/time";
 import { Button } from "@kreozalabs/ui";
 import { LockIcon, UnlockIcon, Loader2Icon } from "lucide-react";
 import type { Action } from "@/types/actions";
@@ -43,8 +50,6 @@ import { ACTION_STATUS } from "@/config/constants";
 // 4. This should also work when the user is offline, but the app should notify the user when the data is out of sync.
 // Changes should be automatically reflected in all tabs and devices as long as app is active, even if the tab is in the background. If app is closed, it does not do anything, unless told to do so.
 
-const getTodayString = () => new Date().toLocaleDateString("en-CA");
-
 export default function Dashboard() {
   const [isDbReady, setIsDbReady] = useState(false);
   const queryClient = useQueryClient();
@@ -58,6 +63,7 @@ export default function Dashboard() {
     return true; // NOTE: Default to locked
   });
 
+  const todayStr = useCurrentDay();
   const [selectedDate, setSelectedDate] = useState(getTodayString());
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [dialogPreDate, setDialogPreDate] = useState<string | null>(null);
@@ -85,11 +91,9 @@ export default function Dashboard() {
   useEffect(() => {
     setTitle("Timeline");
     setSubtitle(
-      new Date().toLocaleDateString("en-US", {
-        weekday: "short",
-        month: "short",
-        day: "numeric",
-      })
+      formatShortWeekday(new Date(todayStr + "T12:00:00")) +
+        ", " +
+        formatShortDate(new Date(todayStr + "T12:00:00"))
     );
 
     setHeaderActions({
@@ -131,19 +135,18 @@ export default function Dashboard() {
     setHeaderActions,
     actionToEdit,
     isDialogOpen,
+    isTodayLocked,
+    todayStr,
     selectedDate,
     dialogPreDate,
-    isTodayLocked,
   ]);
-
-  const todayStr = useCurrentDay();
 
   const startDate = isTodayLocked ? todayStr : selectedDate;
   const endDate = useMemo(() => {
     if (isTodayLocked) return todayStr;
     const d = new Date(selectedDate + "T12:00:00");
     d.setDate(d.getDate() + 30);
-    return d.toLocaleDateString("en-CA");
+    return formatDate(d);
   }, [isTodayLocked, selectedDate, todayStr]);
 
   const { data: activeActions = [] } = useQuery({
@@ -219,7 +222,7 @@ export default function Dashboard() {
 
       sections.push({
         id: todayStr,
-        title: `${new Date(todayStr + "T12:00:00").toLocaleDateString("en-US", { day: "numeric", month: "short" })} ‧ Today ‧ ${new Date(todayStr + "T12:00:00").toLocaleDateString("en-US", { weekday: "long" })}`,
+        title: `${formatShortDate(new Date(todayStr + "T12:00:00"))} ‧ Today ‧ ${formatFullWeekday(new Date(todayStr + "T12:00:00"))}`,
         date: todayStr,
         actions: actionsForDay,
       });
@@ -230,24 +233,21 @@ export default function Dashboard() {
       for (let i = 0; i < 30; i++) {
         const d = new Date(baseDate);
         d.setDate(d.getDate() + i);
-        const dateStr = d.toLocaleDateString("en-CA");
+        const dateStr = formatDate(d);
 
         const actionsForDay = visibleActions
           .filter((a) => a.scheduledDate === dateStr)
           .sort(sortFn);
 
-        let title = d.toLocaleDateString("en-US", { day: "numeric", month: "short" });
+        let title = formatShortDate(d);
         const isToday = dateStr === todayStr;
         const isTomorrow =
-          dateStr ===
-          new Date(new Date(todayStr + "T12:00:00").getTime() + 86400000).toLocaleDateString(
-            "en-CA"
-          );
+          dateStr === formatDate(new Date(new Date(todayStr + "T12:00:00").getTime() + 86400000));
 
         if (isToday) title += " ‧ Today";
         else if (isTomorrow) title += " ‧ Tomorrow";
 
-        title += ` ‧ ${d.toLocaleDateString("en-US", { weekday: "long" })}`;
+        title += ` ‧ ${formatFullWeekday(d)}`;
 
         sections.push({
           id: dateStr,
@@ -259,7 +259,7 @@ export default function Dashboard() {
     }
 
     return { overdueActions: overdue, daySections: sections };
-  }, [allActions, selectedDate, isTodayLocked]);
+  }, [allActions, selectedDate, isTodayLocked, todayStr]);
 
   const handleDragStart = (event: DragStartEvent) => {
     setActiveId(event.active.id as string);

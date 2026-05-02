@@ -10,8 +10,7 @@ import {
   DEFAULT_CONFIG,
 } from "../config/constants";
 import { persistEvent } from "./events";
-
-const getTodayString = () => new Date().toLocaleDateString("en-CA"); // YYYY-MM-DD local time
+import { getTodayString } from "../utils/time";
 
 const channel = typeof window !== "undefined" ? new BroadcastChannel("kei_db_sync") : null;
 

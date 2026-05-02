@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 
-const getTodayString = () => new Date().toLocaleDateString("en-CA");
+import { getTodayString } from "@/utils/time";
 
 export function useCurrentDay() {
   const [today, setToday] = useState(getTodayString);

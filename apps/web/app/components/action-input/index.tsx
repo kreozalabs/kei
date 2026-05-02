@@ -22,6 +22,7 @@ import {
   timeToMinutes,
   minutesToTime,
   getTodayString,
+  getTomorrowString,
   formatGoogleDate,
   getTimeOptions,
   parseManualTime,
@@ -478,11 +479,11 @@ export const ActionInput = forwardRef<ActionInputHandle, ActionInputProps>(
                 options={[
                   {
                     label: "Today",
-                    value: new Date().toLocaleDateString("en-CA"),
+                    value: getTodayString(),
                   },
                   {
                     label: "Tomorrow",
-                    value: new Date(Date.now() + 86400000).toLocaleDateString("en-CA"),
+                    value: getTomorrowString(),
                   },
                 ]}
                 onSelect={(val) => {

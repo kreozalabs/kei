@@ -13,7 +13,10 @@ export const minutesToTime = (totalMinutes: number): string => {
   return `${h.toString().padStart(2, "0")}:${m.toString().padStart(2, "0")}`;
 };
 
-export const formatTime = (time24: string, format: (typeof TIME_FORMATS)[keyof typeof TIME_FORMATS]) => {
+export const formatTime = (
+  time24: string,
+  format: (typeof TIME_FORMATS)[keyof typeof TIME_FORMATS]
+) => {
   if (!time24) return "";
   if (format === TIME_FORMATS.H24) return time24;
   const [h, m] = time24.split(":");
@@ -28,7 +31,13 @@ export const isNextDay = (startTime: string, endTime: string) => {
   return timeToMinutes(endTime) < timeToMinutes(startTime);
 };
 
-export const getTodayString = () => new Date().toLocaleDateString("en-CA");
+export const formatDate = (d: Date) => d.toLocaleDateString("en-CA");
+export const getTodayString = () => formatDate(new Date());
+export const getTomorrowString = () => {
+  const d = new Date();
+  d.setDate(d.getDate() + 1);
+  return formatDate(d);
+};
 
 export const formatGoogleDate = (dateStr: string) => {
   if (!dateStr) return "Date";
@@ -36,6 +45,18 @@ export const formatGoogleDate = (dateStr: string) => {
   const d = new Date(dateStr + "T12:00:00");
   return d.toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" });
 };
+
+export const formatShortDate = (d: Date) =>
+  d.toLocaleDateString("en-US", { day: "numeric", month: "short" });
+
+export const formatFullWeekday = (d: Date) => d.toLocaleDateString("en-US", { weekday: "long" });
+
+export const formatShortWeekday = (d: Date) => d.toLocaleDateString("en-US", { weekday: "short" });
+
+export const formatShortMonth = (d: Date) => d.toLocaleDateString("en-US", { month: "short" });
+
+export const formatMonthYear = (d: Date) =>
+  d.toLocaleDateString("en-US", { month: "long", year: "numeric" });
 
 export const getTimeOptions = (format: (typeof TIME_FORMATS)[keyof typeof TIME_FORMATS]) =>
   Array.from({ length: 96 }).map((_, i) => {
