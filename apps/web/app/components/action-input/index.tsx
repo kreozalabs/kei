@@ -365,6 +365,7 @@ export const ActionInput = forwardRef<ActionInputHandle, ActionInputProps>(
         setTitle("");
         setNote("");
         queryClient.invalidateQueries({ queryKey: ["actions"] });
+        queryClient.invalidateQueries({ queryKey: ["recent-configs"] });
         onSuccess?.();
       } catch (error) {
         console.error("Failed to save action:", error);

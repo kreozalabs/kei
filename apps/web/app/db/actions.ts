@@ -122,7 +122,7 @@ async function pushEvent<T>(actionId: string, type: string, payload: T) {
   );
 
   if (channel) {
-    channel.postMessage({ type: "DB_UPDATED" });
+    channel.postMessage({ type: "DB_UPDATED", entity: "actions" });
   }
 
   return event;
