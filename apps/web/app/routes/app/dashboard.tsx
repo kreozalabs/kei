@@ -11,9 +11,17 @@ import {
   activateAction,
   abandonAction,
 } from "@/db/actions";
+import { useCurrentDay } from "@/hooks/useCurrentDay";
+import {
+  getTodayString,
+  formatDate,
+  formatShortDate,
+  formatFullWeekday,
+  formatShortWeekday,
+} from "@/utils/time";
 import { Button } from "@kreozalabs/ui";
 import { LockIcon, UnlockIcon, Loader2Icon } from "lucide-react";
-import type { Action } from "@/types/events";
+import type { Action, ActionStatus } from "@/types/actions";
 import { ActionSection } from "@/components/ActionSection";
 import { ActionItem } from "@/components/ActionItem";
 import { ActionInputDialog } from "@/components/ActionInputDialog";
@@ -32,8 +40,6 @@ import {
 } from "@dnd-kit/core";
 import { ACTION_STATUS } from "@/config/constants";
 
-const getTodayString = () => new Date().toLocaleDateString("en-CA");
-
 export default function Dashboard() {
   const [isDbReady, setIsDbReady] = useState(false);
   const queryClient = useQueryClient();
@@ -43,10 +49,11 @@ export default function Dashboard() {
       if (stored !== null) return stored === "true";
     }
 
-    // TODO: Allow user to set default state for locked.
+    // TODO: Allow user to set default state for locked, in settings, but session storage device within session, while settings defines initial state across devices/sessions.
     return true; // NOTE: Default to locked
   });
 
+  const todayStr = useCurrentDay();
   const [selectedDate, setSelectedDate] = useState(getTodayString());
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [dialogPreDate, setDialogPreDate] = useState<string | null>(null);
@@ -74,11 +81,9 @@ export default function Dashboard() {
   useEffect(() => {
     setTitle("Timeline");
     setSubtitle(
-      new Date().toLocaleDateString("en-US", {
-        weekday: "short",
-        month: "short",
-        day: "numeric",
-      })
+      formatShortWeekday(new Date(todayStr + "T12:00:00")) +
+        ", " +
+        formatShortDate(new Date(todayStr + "T12:00:00"))
     );
 
     setHeaderActions({
@@ -120,16 +125,41 @@ export default function Dashboard() {
     setHeaderActions,
     actionToEdit,
     isDialogOpen,
+    isTodayLocked,
+    todayStr,
     selectedDate,
     dialogPreDate,
-    isTodayLocked,
   ]);
 
-  const { data: allActions = [] } = useQuery({
-    queryKey: ["actions"],
-    queryFn: getActions,
+  const startDate = isTodayLocked ? todayStr : selectedDate;
+  const endDate = useMemo(() => {
+    if (isTodayLocked) return todayStr;
+    const d = new Date(selectedDate + "T12:00:00");
+    d.setDate(d.getDate() + 30);
+    return formatDate(d);
+  }, [isTodayLocked, selectedDate, todayStr]);
+
+  const { data: activeActions = [] } = useQuery({
+    queryKey: ["actions", { status: "active" }],
+    queryFn: () => getActions({ status: [ACTION_STATUS.ACTIVE as ActionStatus] }),
     enabled: isDbReady,
   });
+
+  const { data: completedActions = [] } = useQuery({
+    queryKey: ["actions", { status: "completed", startDate, endDate }],
+    queryFn: () =>
+      getActions({
+        status: [ACTION_STATUS.COMPLETED as ActionStatus],
+        startDate,
+        endDate,
+      }),
+    enabled: isDbReady,
+  });
+
+  const allActions = useMemo(
+    () => [...activeActions, ...completedActions],
+    [activeActions, completedActions]
+  );
 
   const handleComplete = async (action: Action) => {
     if (action.status === ACTION_STATUS.COMPLETED) {
@@ -150,13 +180,8 @@ export default function Dashboard() {
     setIsDialogOpen(true);
   };
 
-  const todayStr = getTodayString();
-
   const { overdueActions, daySections } = useMemo(() => {
-    const visibleActions = allActions.filter(
-      (a) => a.status === ACTION_STATUS.ACTIVE || a.status === ACTION_STATUS.COMPLETED
-    );
-    const todayStr = getTodayString();
+    const visibleActions = allActions;
 
     const sortFn = (a: Action, b: Action) => {
       // Completed items always go to the bottom
@@ -187,7 +212,7 @@ export default function Dashboard() {
 
       sections.push({
         id: todayStr,
-        title: `${new Date(todayStr + "T12:00:00").toLocaleDateString("en-US", { day: "numeric", month: "short" })} ‧ Today ‧ ${new Date(todayStr + "T12:00:00").toLocaleDateString("en-US", { weekday: "long" })}`,
+        title: `${formatShortDate(new Date(todayStr + "T12:00:00"))} ‧ Today ‧ ${formatFullWeekday(new Date(todayStr + "T12:00:00"))}`,
         date: todayStr,
         actions: actionsForDay,
       });
@@ -198,24 +223,21 @@ export default function Dashboard() {
       for (let i = 0; i < 30; i++) {
         const d = new Date(baseDate);
         d.setDate(d.getDate() + i);
-        const dateStr = d.toLocaleDateString("en-CA");
+        const dateStr = formatDate(d);
 
         const actionsForDay = visibleActions
           .filter((a) => a.scheduledDate === dateStr)
           .sort(sortFn);
 
-        let title = d.toLocaleDateString("en-US", { day: "numeric", month: "short" });
+        let title = formatShortDate(d);
         const isToday = dateStr === todayStr;
         const isTomorrow =
-          dateStr ===
-          new Date(new Date(todayStr + "T12:00:00").getTime() + 86400000).toLocaleDateString(
-            "en-CA"
-          );
+          dateStr === formatDate(new Date(new Date(todayStr + "T12:00:00").getTime() + 86400000));
 
         if (isToday) title += " ‧ Today";
         else if (isTomorrow) title += " ‧ Tomorrow";
 
-        title += ` ‧ ${d.toLocaleDateString("en-US", { weekday: "long" })}`;
+        title += ` ‧ ${formatFullWeekday(d)}`;
 
         sections.push({
           id: dateStr,
@@ -227,7 +249,7 @@ export default function Dashboard() {
     }
 
     return { overdueActions: overdue, daySections: sections };
-  }, [allActions, selectedDate, isTodayLocked]);
+  }, [allActions, selectedDate, isTodayLocked, todayStr]);
 
   const handleDragStart = (event: DragStartEvent) => {
     setActiveId(event.active.id as string);

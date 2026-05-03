@@ -13,7 +13,7 @@ import { Input, Button, Textarea, cn } from "@kreozalabs/ui";
 import { ActionSelector } from "../ActionSelector";
 import { NextDayBadge } from "../NextDayBadge";
 import { addAction, updateAction, getRecentConfigs } from "../../db/actions";
-import type { Action, EnergyType, IntentionType } from "../../types/events";
+import type { Action, EnergyType, IntentionType } from "../../types/actions";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useDiscardGuard } from "../../hooks/useDiscardGuard";
 import { useTheme } from "../../providers/ThemeContext";
@@ -22,6 +22,7 @@ import {
   timeToMinutes,
   minutesToTime,
   getTodayString,
+  getTomorrowString,
   formatGoogleDate,
   getTimeOptions,
   parseManualTime,
@@ -364,6 +365,7 @@ export const ActionInput = forwardRef<ActionInputHandle, ActionInputProps>(
         setTitle("");
         setNote("");
         queryClient.invalidateQueries({ queryKey: ["actions"] });
+        queryClient.invalidateQueries({ queryKey: ["recent-configs"] });
         onSuccess?.();
       } catch (error) {
         console.error("Failed to save action:", error);
@@ -478,11 +480,11 @@ export const ActionInput = forwardRef<ActionInputHandle, ActionInputProps>(
                 options={[
                   {
                     label: "Today",
-                    value: new Date().toLocaleDateString("en-CA"),
+                    value: getTodayString(),
                   },
                   {
                     label: "Tomorrow",
-                    value: new Date(Date.now() + 86400000).toLocaleDateString("en-CA"),
+                    value: getTomorrowString(),
                   },
                 ]}
                 onSelect={(val) => {

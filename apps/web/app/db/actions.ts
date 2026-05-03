@@ -1,6 +1,7 @@
 import { db } from "./index";
 import { v7 as uuidv7 } from "uuid";
-import type { Action, Event, ActionPayload } from "../types/events";
+import type { Event } from "../types/events";
+import type { Action, ActionPayload, ActionStatus } from "../types/actions";
 import {
   EVENT_TYPES,
   ENERGY_LEVELS,
@@ -8,142 +9,249 @@ import {
   ACTION_STATUS,
   DEFAULT_CONFIG,
 } from "../config/constants";
+import { persistEvent } from "./events";
+import { getTodayString } from "../utils/time";
 
-const getTodayString = () => new Date().toLocaleDateString("en-CA"); // YYYY-MM-DD local time
+const channel = typeof window !== "undefined" ? new BroadcastChannel("kei_db_sync") : null;
 
-export async function getActions(): Promise<Action[]> {
-  const result = await db.query(`SELECT * FROM events ORDER BY timestamp ASC`);
-  const events = result.rows as Event<ActionPayload>[];
+/**
+ * Reconstructs or updates an Action state based on an event.
+ */
+function applyEventToAction(action: Action | null, event: Event<any>): Action {
+  const { type, payload, timestamp, id: actionId } = event;
 
-  const actionsMap = new Map<string, Action>();
+  if (type === EVENT_TYPES.ACTION_INTENDED) {
+    return {
+      id: actionId,
+      title: payload.title || DEFAULT_CONFIG.TITLE,
+      note: payload.note,
+      intention: payload.intention || INTENTIONS.WANT,
+      important: payload.important || false,
+      energy: payload.energy || ENERGY_LEVELS.MEDIUM,
+      duration: payload.duration,
+      scheduledDate: payload.scheduledDate || getTodayString(),
+      startTime: payload.startTime,
+      endTime: payload.endTime,
+      timezone: payload.timezone,
+      status: ACTION_STATUS.ACTIVE,
+      createdAt: timestamp,
+      sortOrder: payload.sortOrder ?? timestamp,
+    };
+  }
 
-  for (const event of events) {
-    const actionId = event.id; // Now event.id is our entity id
-    if (event.type === EVENT_TYPES.ACTION_INTENDED) {
-      const { startTime, endTime } = event.payload;
+  if (!action) {
+    throw new Error(`Cannot apply event ${type} to non-existent action ${actionId}`);
+  }
 
-      actionsMap.set(actionId, {
-        id: actionId,
-        title: event.payload.title || DEFAULT_CONFIG.TITLE,
-        note: event.payload.note,
-        intention: event.payload.intention || INTENTIONS.WANT,
-        important: event.payload.important || false,
-        energy: event.payload.energy || ENERGY_LEVELS.MEDIUM,
-        duration: event.payload.duration,
-        scheduledDate: event.payload.scheduledDate || getTodayString(),
-        startTime,
-        endTime,
-        status: ACTION_STATUS.ACTIVE,
-        createdAt: event.timestamp,
-        sortOrder: event.payload.sortOrder ?? event.timestamp,
-      });
-    } else if (event.type === EVENT_TYPES.ACTION_UPDATED) {
-      const existing = actionsMap.get(actionId);
-      if (existing) {
-        const merged = { ...existing, ...event.payload };
-        actionsMap.set(actionId, merged);
-      }
-    } else if (event.type === EVENT_TYPES.ACTION_COMPLETED) {
-      const existing = actionsMap.get(actionId);
-      if (existing) {
-        existing.status = ACTION_STATUS.COMPLETED;
-      }
-    } else if (event.type === EVENT_TYPES.ACTION_ACTIVATED) {
-      const existing = actionsMap.get(actionId);
-      if (existing) {
-        existing.status = ACTION_STATUS.ACTIVE;
-      }
-    } else if (event.type === EVENT_TYPES.ACTION_ABANDONED) {
-      const existing = actionsMap.get(actionId);
-      if (existing) {
-        existing.status = ACTION_STATUS.ABANDONED;
-      }
+  switch (type) {
+    case EVENT_TYPES.ACTION_UPDATED:
+      return { ...action, ...payload };
+    case EVENT_TYPES.ACTION_COMPLETED:
+      return { ...action, status: ACTION_STATUS.COMPLETED as ActionStatus };
+    case EVENT_TYPES.ACTION_ACTIVATED:
+      return { ...action, status: ACTION_STATUS.ACTIVE as ActionStatus };
+    case EVENT_TYPES.ACTION_ABANDONED:
+      return { ...action, status: ACTION_STATUS.ABANDONED as ActionStatus };
+    default:
+      return action;
+  }
+}
+
+/**
+ * Persists an event and updates the corresponding action snapshot.
+ */
+async function pushEvent<T>(actionId: string, type: string, payload: T) {
+  // 1. Store the event using the central persistence
+  const event = await persistEvent(actionId, type, payload);
+
+  // 2. Update the snapshot
+  // We fetch existing snapshot if it's an update, or start fresh if it's a creation
+  let currentAction: Action | null = null;
+  if (type !== EVENT_TYPES.ACTION_INTENDED) {
+    const result = await db.query("SELECT * FROM actions_snapshot WHERE id = $1", [actionId]);
+    if (result.rows.length > 0) {
+      const row = result.rows[0] as any;
+      currentAction = {
+        ...row,
+        scheduledDate: row.scheduled_date,
+        startTime: row.start_time,
+        endTime: row.end_time,
+        createdAt: Number(row.created_at),
+        sortOrder: Number(row.sort_order),
+        duration: typeof row.duration === "string" ? JSON.parse(row.duration) : row.duration,
+      } as Action;
     }
   }
 
-  return Array.from(actionsMap.values()).sort((a, b) => b.sortOrder - a.sortOrder);
+  const updatedAction = applyEventToAction(currentAction, event);
+
+  await db.query(
+    `INSERT INTO actions_snapshot (
+      id, title, note, intention, important, energy, duration, 
+      scheduled_date, start_time, end_time, timezone, status, created_at, sort_order
+    ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)
+    ON CONFLICT (id) DO UPDATE SET
+      title = EXCLUDED.title,
+      note = EXCLUDED.note,
+      intention = EXCLUDED.intention,
+      important = EXCLUDED.important,
+      energy = EXCLUDED.energy,
+      duration = EXCLUDED.duration,
+      scheduled_date = EXCLUDED.scheduled_date,
+      start_time = EXCLUDED.start_time,
+      end_time = EXCLUDED.end_time,
+      timezone = EXCLUDED.timezone,
+      status = EXCLUDED.status,
+      sort_order = EXCLUDED.sort_order`,
+    [
+      updatedAction.id,
+      updatedAction.title,
+      updatedAction.note,
+      updatedAction.intention,
+      updatedAction.important,
+      updatedAction.energy,
+      JSON.stringify(updatedAction.duration),
+      updatedAction.scheduledDate,
+      updatedAction.startTime,
+      updatedAction.endTime,
+      updatedAction.timezone,
+      updatedAction.status,
+      updatedAction.createdAt,
+      updatedAction.sortOrder,
+    ]
+  );
+
+  if (channel) {
+    channel.postMessage({ type: "DB_UPDATED", entity: "actions" });
+  }
+
+  return event;
+}
+
+export async function getActions(filters?: {
+  startDate?: string;
+  endDate?: string;
+  status?: ActionStatus[];
+}): Promise<Action[]> {
+  let query = `SELECT * FROM actions_snapshot`;
+  const params: any[] = [];
+  const whereClauses: string[] = [];
+
+  if (filters?.startDate) {
+    params.push(filters.startDate);
+    whereClauses.push(`scheduled_date >= $${params.length}`);
+  }
+
+  if (filters?.endDate) {
+    params.push(filters.endDate);
+    whereClauses.push(`scheduled_date <= $${params.length}`);
+  }
+
+  if (filters?.status && filters.status.length > 0) {
+    const statusPlaceholders = filters.status
+      .map((_, i) => {
+        params.push(filters.status![i]);
+        return `$${params.length}`;
+      })
+      .join(", ");
+    whereClauses.push(`status IN (${statusPlaceholders})`);
+  }
+
+  if (whereClauses.length > 0) {
+    query += ` WHERE ` + whereClauses.join(" AND ");
+  }
+
+  query += ` ORDER BY sort_order DESC`;
+
+  const result = await db.query(query, params);
+  return result.rows.map((row: any) => ({
+    ...row,
+    scheduledDate: row.scheduled_date,
+    startTime: row.start_time,
+    endTime: row.end_time,
+    createdAt: Number(row.created_at),
+    sortOrder: Number(row.sort_order),
+    duration: typeof row.duration === "string" ? JSON.parse(row.duration) : row.duration,
+  })) as Action[];
 }
 
 export async function addAction(payload: ActionPayload) {
   const actionId = uuidv7();
-  const event: Event<ActionPayload> = {
-    eventId: uuidv7(),
-    id: actionId,
-    type: EVENT_TYPES.ACTION_INTENDED,
-    timestamp: Date.now(),
-    payload: {
-      ...payload,
-      scheduledDate: payload.scheduledDate || getTodayString(),
-      sortOrder: payload.sortOrder ?? Date.now(),
-    } as ActionPayload,
-  };
-
-  await db.query(
-    "INSERT INTO events (event_id, id, type, timestamp, payload) VALUES ($1, $2, $3, $4, $5)",
-    [event.eventId, event.id, event.type, event.timestamp, JSON.stringify(event.payload)]
-  );
+  await pushEvent(actionId, EVENT_TYPES.ACTION_INTENDED, {
+    ...payload,
+    scheduledDate: payload.scheduledDate || getTodayString(),
+    sortOrder: payload.sortOrder ?? Date.now(),
+  });
   return actionId;
 }
 
 export async function updateAction(id: string, payload: Partial<ActionPayload>) {
-  const event: Event<Partial<ActionPayload>> = {
-    eventId: uuidv7(),
-    id,
-    type: EVENT_TYPES.ACTION_UPDATED,
-    timestamp: Date.now(),
-    payload,
-  };
-
-  await db.query(
-    "INSERT INTO events (event_id, id, type, timestamp, payload) VALUES ($1, $2, $3, $4, $5)",
-    [event.eventId, event.id, event.type, event.timestamp, JSON.stringify(event.payload)]
-  );
+  await pushEvent(id, EVENT_TYPES.ACTION_UPDATED, payload);
 }
 
 export async function completeAction(id: string) {
-  const event = {
-    eventId: uuidv7(),
-    id,
-    type: EVENT_TYPES.ACTION_COMPLETED,
-    timestamp: Date.now(),
-    payload: {},
-  };
-
-  await db.query(
-    "INSERT INTO events (event_id, id, type, timestamp, payload) VALUES ($1, $2, $3, $4, $5)",
-    [event.eventId, event.id, event.type, event.timestamp, JSON.stringify(event.payload)]
-  );
+  await pushEvent(id, EVENT_TYPES.ACTION_COMPLETED, {});
 }
 
 export async function activateAction(id: string) {
-  const event = {
-    eventId: uuidv7(),
-    id,
-    type: EVENT_TYPES.ACTION_ACTIVATED,
-    timestamp: Date.now(),
-    payload: {},
-  };
-
-  await db.query(
-    "INSERT INTO events (event_id, id, type, timestamp, payload) VALUES ($1, $2, $3, $4, $5)",
-    [event.eventId, event.id, event.type, event.timestamp, JSON.stringify(event.payload)]
-  );
+  await pushEvent(id, EVENT_TYPES.ACTION_ACTIVATED, {});
 }
 
 export async function abandonAction(id: string) {
-  const event = {
-    eventId: uuidv7(),
-    id,
-    type: EVENT_TYPES.ACTION_ABANDONED,
-    timestamp: Date.now(),
-    payload: {},
-  };
-
-  await db.query(
-    "INSERT INTO events (event_id, id, type, timestamp, payload) VALUES ($1, $2, $3, $4, $5)",
-    [event.eventId, event.id, event.type, event.timestamp, JSON.stringify(event.payload)]
-  );
+  await pushEvent(id, EVENT_TYPES.ACTION_ABANDONED, {});
 }
+
+/**
+ * Rebuilds the entire actions_snapshot table from the events log.
+ * Useful for migrations or when the derivation logic changes.
+ */
+export async function rebuildSnapshots() {
+  const result = await db.query(`SELECT * FROM events ORDER BY timestamp ASC`);
+  const events = result.rows as Event<any>[];
+
+  const actionsMap = new Map<string, Action>();
+
+  for (const event of events) {
+    const actionId = event.id;
+    const existing = actionsMap.get(actionId) || null;
+    try {
+      const updated = applyEventToAction(existing, event);
+      actionsMap.set(actionId, updated);
+    } catch (e) {
+      console.warn(`Skipping event during rebuild: ${e}`);
+    }
+  }
+
+  await db.query("DELETE FROM actions_snapshot");
+
+  for (const action of actionsMap.values()) {
+    await db.query(
+      `INSERT INTO actions_snapshot (
+        id, title, note, intention, important, energy, duration, 
+        scheduled_date, start_time, end_time, timezone, status, created_at, sort_order
+      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)`,
+      [
+        action.id,
+        action.title,
+        action.note,
+        action.intention,
+        action.important,
+        action.energy,
+        JSON.stringify(action.duration),
+        action.scheduledDate,
+        action.startTime,
+        action.endTime,
+        action.timezone,
+        action.status,
+        action.createdAt,
+        action.sortOrder,
+      ]
+    );
+  }
+}
+// TODO: Add function that will allow to create configs for actions, so user can set 4 hours or something like that, instead of just using defaults or recents or writing custom duration every time.
+
+// TODO: Create table for recent configs, or use settings table instead. It should help to avoid unnecessary reads from events table.
 export async function getRecentConfigs(): Promise<ActionPayload[]> {
   const result = await db.query(
     `SELECT payload FROM events WHERE type = '${EVENT_TYPES.ACTION_INTENDED}' ORDER BY timestamp DESC LIMIT 30`

@@ -1,5 +1,5 @@
 import { Button, cn } from "@kreozalabs/ui";
-import type { Action } from "../types/events";
+import type { Action } from "../types/actions";
 import { ActionItem } from "./ActionItem";
 import { useState, useEffect } from "react";
 import { ChevronDownIcon, PlusIcon } from "lucide-react";
@@ -9,7 +9,7 @@ import { SortableContext, verticalListSortingStrategy } from "@dnd-kit/sortable"
 import { useDroppable } from "@dnd-kit/core";
 import { ACTION_STATUS } from "@/config/constants";
 
-interface ActionListProps {
+interface ActionSectionProps {
   id: string;
   sectionTitle: string;
   actions: Action[];
@@ -29,7 +29,7 @@ export function ActionSection({
   onAbandon,
   onEdit,
   sectionDate,
-}: ActionListProps) {
+}: ActionSectionProps) {
   const [isAdding, setIsAdding] = useState(false);
   const { setNodeRef: setSectionRef, isOver } = useDroppable({
     id: `section-${sectionDate}`,

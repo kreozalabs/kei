@@ -10,6 +10,7 @@ import { AppHeader, HeaderSearch, HeaderNewAction, HeaderMore } from "./AppHeade
 import { MobileNav } from "./MobileNav";
 import { ErrorPage } from "../ErrorPage";
 import { ActionInputDialog } from "../ActionInputDialog";
+import { SyncListener } from "../SyncListener";
 
 export interface AppLayoutContext {
   setTitle: (title: string) => void;
@@ -200,6 +201,9 @@ export function AppLayout({ error }: { error?: unknown }) {
 
         {/* Global Action Input Dialog */}
         <ActionInputDialog open={isActionInputOpen} onOpenChange={setIsActionInputOpen} />
+
+        {/* Global Sync Listener */}
+        <SyncListener />
       </main>
     </div>
   );

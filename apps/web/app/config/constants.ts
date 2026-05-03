@@ -95,3 +95,8 @@ export const DURATION_OPTIONS = [
   { label: "30 - 60 mins", value: [30, 60] as [number, number] },
   { label: "1 - 2 hours", value: [60, 120] as [number, number] },
 ];
+
+export const DEFAULT_SETTINGS = {
+  min_daily_actions: 3,
+  max_daily_actions: 6,
+};

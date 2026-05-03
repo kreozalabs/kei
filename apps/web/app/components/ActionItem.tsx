@@ -1,4 +1,4 @@
-import type { Action, ActionStatus } from "../types/events";
+import type { Action, ActionStatus } from "../types/actions";
 import { Button, cn } from "@kreozalabs/ui";
 import {
   Trash2Icon,
@@ -26,7 +26,8 @@ import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { NextDayBadge } from "./NextDayBadge";
 import { useTheme } from "../providers/ThemeContext";
-import { formatTime, getTodayString } from "../utils/time";
+import { formatTime } from "../utils/time";
+import { useCurrentDay } from "../hooks/useCurrentDay";
 import {
   ACTION_STATUS,
   ENERGY_LEVELS,
@@ -59,7 +60,7 @@ export function ActionItem({ action, type, onComplete, onAbandon, onEdit }: Acti
   const energyConfig = ENERGY_OPTIONS.find((opt) => opt.value === action.energy?.toLowerCase());
   const intentionConfig =
     INTENTION_OPTIONS.find((opt) => opt.value === action.intention) || INTENTION_OPTIONS[0];
-  const todayString = getTodayString();
+  const todayString = useCurrentDay();
   const isOverdue = action.scheduledDate < todayString;
 
   return (

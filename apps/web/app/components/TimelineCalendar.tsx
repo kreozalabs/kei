@@ -9,6 +9,8 @@ import {
   DropdownMenuSeparator,
 } from "@kreozalabs/ui";
 import { ChevronLeftIcon, ChevronRightIcon, ChevronDownIcon } from "lucide-react";
+import { useCurrentDay } from "@/hooks/useCurrentDay";
+import { formatDate, formatShortWeekday, formatShortMonth, formatMonthYear } from "@/utils/time";
 
 interface TimelineCalendarProps {
   selectedDate: string; // YYYY-MM-DD
@@ -20,6 +22,7 @@ export function TimelineCalendar({ selectedDate, onDateSelect }: TimelineCalenda
   const [isDragging, setIsDragging] = useState(false);
   const [startX, setStartX] = useState(0);
   const [scrollLeft, setScrollLeft] = useState(0);
+  const todayStr = useCurrentDay();
 
   // Track the year the user is currently "viewing" in the month picker
   const [pickerYear, setPickerYear] = useState(() =>
@@ -43,15 +46,15 @@ export function TimelineCalendar({ selectedDate, onDateSelect }: TimelineCalenda
       const d = new Date(centerDate);
       d.setDate(d.getDate() + i);
       result.push({
-        full: d.toLocaleDateString("en-CA"), // YYYY-MM-DD
+        full: formatDate(d), // YYYY-MM-DD
         dayNum: d.getDate(),
-        dayName: d.toLocaleDateString("en-US", { weekday: "short" }),
-        monthName: d.toLocaleDateString("en-US", { month: "short" }),
-        isToday: d.toLocaleDateString("en-CA") === new Date().toLocaleDateString("en-CA"),
+        dayName: formatShortWeekday(d),
+        monthName: formatShortMonth(d),
+        isToday: formatDate(d) === todayStr,
       });
     }
     return result;
-  }, [selectedDate]);
+  }, [selectedDate, todayStr]);
 
   // Handle auto-centering of selected date
   useEffect(() => {
@@ -72,7 +75,7 @@ export function TimelineCalendar({ selectedDate, onDateSelect }: TimelineCalenda
 
   const currentMonthYear = useMemo(() => {
     const d = new Date(selectedDate + "T12:00:00");
-    return d.toLocaleDateString("en-US", { month: "long", year: "numeric" });
+    return formatMonthYear(d);
   }, [selectedDate]);
 
   const months = [
@@ -115,19 +118,19 @@ export function TimelineCalendar({ selectedDate, onDateSelect }: TimelineCalenda
   };
 
   const handleToday = () => {
-    onDateSelect(new Date().toLocaleDateString("en-CA"));
+    onDateSelect(todayStr);
   };
 
   const shiftDate = (offset: number) => {
     const d = new Date(selectedDate + "T12:00:00");
     d.setDate(d.getDate() + offset);
-    onDateSelect(d.toLocaleDateString("en-CA"));
+    onDateSelect(formatDate(d));
   };
 
   const handleMonthSelect = (monthIndex: number) => {
     // Jump to the 1st of that month in the current pickerYear
     const d = new Date(pickerYear, monthIndex, 1, 12, 0, 0);
-    onDateSelect(d.toLocaleDateString("en-CA"));
+    onDateSelect(formatDate(d));
   };
 
   return (

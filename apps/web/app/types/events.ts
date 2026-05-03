@@ -6,45 +6,14 @@ export type EventType =
   | "ACTION_ABANDONED"
   | "TRANSITION_STARTED";
 
-export type EnergyType = "low" | "medium" | "high";
-export type IntentionType = "must" | "want";
-export type ActionStatus = "active" | "completed" | "abandoned";
-
+// Events are the immutable source of truth for the application.
+// Every state change is recorded as an event, allowing for a complete audit trail
+// and the ability to reconstruct the state of any entity (e.g., an Action)
+// at any point in time by replaying its history.
 export interface Event<T = unknown> {
-  eventId: string;
-  id: string; // The action/entity ID
+  eventId: string; // Unique identifier for this specific event
+  id: string; // The entity ID (e.g., actionId) this event refers to
   type: EventType;
   timestamp: number;
-  payload: T;
-}
-
-export interface ActionPayload {
-  title?: string;
-  note?: string;
-  intention?: IntentionType;
-  energy?: EnergyType;
-  duration?: [number, number]; // [min, max] in minutes
-  important?: boolean;
-  scheduledDate?: string; // YYYY-MM-DD
-  startTime?: string | null; // HH:mm
-  endTime?: string | null; // HH:mm
-  timezone?: string;
-  sortOrder?: number;
-}
-
-export interface Action {
-  id: string;
-  title: string;
-  note?: string;
-  intention: IntentionType;
-  important: boolean;
-  energy: EnergyType;
-  duration?: [number, number];
-  scheduledDate: string; // YYYY-MM-DD
-  startTime?: string | null;
-  endTime?: string | null;
-  timezone?: string;
-  status: ActionStatus;
-  createdAt: number;
-  sortOrder: number;
+  payload: T; // Data associated with this state change
 }
