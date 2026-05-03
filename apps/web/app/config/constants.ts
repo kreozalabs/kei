@@ -96,7 +96,33 @@ export const DURATION_OPTIONS = [
   { label: "1 - 2 hours", value: [60, 120] as [number, number] },
 ];
 
+export const MAJOR_TIMEZONES = [
+  "UTC",
+  "America/New_York",
+  "America/Chicago",
+  "America/Denver",
+  "America/Los_Angeles",
+  "Europe/London",
+  "Europe/Paris",
+  "Europe/Berlin",
+  "Asia/Tokyo",
+  "Asia/Shanghai",
+  "Asia/Dubai",
+  "Australia/Sydney",
+];
+
 export const DEFAULT_SETTINGS = {
   min_daily_actions: 3,
   max_daily_actions: 6,
+  min_max_actions_enabled: true,
+  section_expanded: true,
+  theme: "system" as const,
+  accent: "rose" as const,
+  today_locked: true,
+  time_format: TIME_FORMATS.H24,
+  timezone: "auto",
+  recent_configs_enabled: true,
+  recent_configs_size: 5,
+  duration_options: DURATION_OPTIONS,
+  timezone_options: MAJOR_TIMEZONES,
 };

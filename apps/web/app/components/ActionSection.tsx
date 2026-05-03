@@ -7,7 +7,7 @@ import { ActionInput } from "./action-input";
 
 import { SortableContext, verticalListSortingStrategy } from "@dnd-kit/sortable";
 import { useDroppable } from "@dnd-kit/core";
-import { ACTION_STATUS } from "@/config/constants";
+import { ACTION_STATUS, DEFAULT_SETTINGS } from "@/config/constants";
 
 interface ActionSectionProps {
   id: string;
@@ -45,7 +45,7 @@ export function ActionSection({
       const stored = window.sessionStorage.getItem(`kei-section-expanded-${id}`);
       if (stored !== null) return stored === "true";
     }
-    return true; // NOTE: Default to expanded
+    return DEFAULT_SETTINGS.section_expanded;
   });
 
   useEffect(() => {

@@ -37,16 +37,13 @@ import {
   INTENTION_OPTIONS,
   DURATION_OPTIONS,
   IMPORTANT_CONFIG,
+  MAJOR_TIMEZONES,
 } from "../../config/constants";
 import { DurationInputs } from "./DurationInputs";
 import { DiscardDialog } from "./DiscardDialog";
 
 // TODO: Somehow we should allow user to move between input fields, so it is frictionless and requires less effort. Maybe enter, or arrows?
 // TODO: NOT RELATED TO THIS COMPONENT, BUT IT IS BACKUP LOGIC. Allow user to import and export data.
-// TODO: Create settings to allow user to set custom default values for the input fields. So that if user does a lot of 150 minutes tasks, he does not need to reenter it over again.
-// TODO: Use config file instead of in line hard-coded settings, which should allow us to create custom settings with ease.
-// TODO: Show recent timezones at the top of the timezone dropdown,
-// TODO: Allow to set default timezone, used in the app, in settings.
 
 export interface ActionInputProps {
   onSuccess?: () => void;
@@ -110,34 +107,19 @@ export const ActionInput = forwardRef<ActionInputHandle, ActionInputProps>(
 
     const sortedTimezones = useMemo(() => {
       const local = Intl.DateTimeFormat().resolvedOptions().timeZone;
-      // TODO: This list is hardcoded. We should use a config file to set the default timezones, including a list of "major" timezones.
-      const major = [
-        "UTC",
-        "America/New_York",
-        "America/Chicago",
-        "America/Denver",
-        "America/Los_Angeles",
-        "Europe/London",
-        "Europe/Paris",
-        "Europe/Berlin",
-        "Asia/Tokyo",
-        "Asia/Shanghai",
-        "Asia/Dubai",
-        "Australia/Sydney",
+      const others = allTimezones.filter((tz) => tz !== local && !MAJOR_TIMEZONES.includes(tz));
+
+      return [
+        local,
+        ...MAJOR_TIMEZONES.filter((m) => allTimezones.includes(m) && m !== local),
+        ...others,
       ];
-
-      // Filter out local and major from the main list to avoid duplicates
-      const others = allTimezones.filter((tz) => tz !== local && !major.includes(tz));
-
-      return [local, ...major.filter((m) => allTimezones.includes(m) && m !== local), ...others];
     }, []);
 
     const filteredTimezones = useMemo(() => {
       const search = timezoneSearch.toLowerCase().trim();
-      if (!search) return sortedTimezones.slice(0, 15);
+      if (!search) return sortedTimezones.slice(0, MAJOR_TIMEZONES.length);
 
-      // When searching, we might want to show more than 50 if there are many matches,
-      // but let's keep a reasonable limit for performance.
       return sortedTimezones.filter((tz) => tz.toLowerCase().includes(search)).slice(0, 100);
     }, [timezoneSearch, sortedTimezones]);
 

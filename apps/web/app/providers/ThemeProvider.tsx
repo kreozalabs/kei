@@ -1,7 +1,8 @@
 import * as React from "react";
 import { useEffect, useState } from "react";
-import { type Theme, type Accent, type TimeFormat, ThemeProviderContext } from "./ThemeContext";
-import { TIME_FORMATS } from "../config/constants";
+import { ThemeProviderContext } from "./ThemeContext";
+import type { Theme, Accent, TimeFormat } from "../types/settings";
+import { DEFAULT_SETTINGS } from "../config/constants";
 
 interface ThemeProviderProps {
   children: React.ReactNode;
@@ -15,8 +16,8 @@ interface ThemeProviderProps {
 
 export function ThemeProvider({
   children,
-  defaultTheme = "system",
-  defaultAccent = "rose",
+  defaultTheme = DEFAULT_SETTINGS.theme,
+  defaultAccent = DEFAULT_SETTINGS.accent as Accent,
   storageKey = "kei-ui-theme",
   accentStorageKey = "kei-ui-accent",
   timeFormatStorageKey = "kei-ui-time-format",
@@ -34,14 +35,16 @@ export function ThemeProvider({
   });
 
   const [timeFormat, setTimeFormat] = useState<TimeFormat>(() => {
-    if (typeof window === "undefined") return TIME_FORMATS.H12;
-    return (localStorage.getItem(timeFormatStorageKey) as TimeFormat) || TIME_FORMATS.H12;
+    if (typeof window === "undefined") return DEFAULT_SETTINGS.time_format;
+    return (
+      (localStorage.getItem(timeFormatStorageKey) as TimeFormat) || DEFAULT_SETTINGS.time_format
+    );
   });
 
   const [showRecentConfigs, setShowRecentConfigs] = useState<boolean>(() => {
-    if (typeof window === "undefined") return true;
+    if (typeof window === "undefined") return DEFAULT_SETTINGS.recent_configs_enabled;
     const stored = localStorage.getItem(showRecentConfigsStorageKey);
-    return stored === null ? true : stored === "true";
+    return stored === null ? DEFAULT_SETTINGS.recent_configs_enabled : stored === "true";
   });
 
   useEffect(() => {

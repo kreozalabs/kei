@@ -38,7 +38,7 @@ import {
   type DragStartEvent,
   type DragOverEvent,
 } from "@dnd-kit/core";
-import { ACTION_STATUS } from "@/config/constants";
+import { ACTION_STATUS, DEFAULT_SETTINGS } from "@/config/constants";
 
 export default function Dashboard() {
   const [isDbReady, setIsDbReady] = useState(false);
@@ -50,7 +50,7 @@ export default function Dashboard() {
     }
 
     // TODO: Allow user to set default state for locked, in settings, but session storage device within session, while settings defines initial state across devices/sessions.
-    return true; // NOTE: Default to locked
+    return DEFAULT_SETTINGS.today_locked;
   });
 
   const todayStr = useCurrentDay();
