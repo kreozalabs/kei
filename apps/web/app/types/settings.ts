@@ -16,6 +16,7 @@ export interface Settings {
   timezone: string;
   subtle_on_idle: boolean;
   language: string;
+  remember_layout_on_refresh: boolean;
   action_duration_options: { label: string; value: [number, number] }[];
   action_timezone_options: string[];
 }

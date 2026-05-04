@@ -124,6 +124,7 @@ export const DEFAULT_SETTINGS = {
   timezone: "auto",
   subtle_on_idle: true,
   language: "auto",
+  remember_layout_on_refresh: true,
   action_duration_options: DURATION_OPTIONS,
   action_timezone_options: MAJOR_TIMEZONES,
 };

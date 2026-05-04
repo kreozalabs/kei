@@ -38,9 +38,11 @@ import {
   type DragStartEvent,
   type DragOverEvent,
 } from "@dnd-kit/core";
-import { ACTION_STATUS, DEFAULT_SETTINGS, STORAGE_KEYS } from "@/config/constants";
+import { useSettings } from "@/providers/SettingsContext";
+import { STORAGE_KEYS } from "@/config/constants";
 
 export default function Dashboard() {
+  const { settings } = useSettings();
   const [isDbReady, setIsDbReady] = useState(false);
   const queryClient = useQueryClient();
   const [isTodayLocked, setIsTodayLocked] = useState(() => {
@@ -49,8 +51,7 @@ export default function Dashboard() {
       if (stored !== null) return stored === "true";
     }
 
-    // TODO: Allow user to set default state for locked, in settings, but session storage device within session, while settings defines initial state across devices/sessions.
-    return DEFAULT_SETTINGS.today_locked;
+    return settings.today_locked;
   });
 
   const todayStr = useCurrentDay();
