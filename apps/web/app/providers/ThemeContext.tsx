@@ -1,35 +1,37 @@
 import { createContext, useContext } from "react";
 import { DEFAULT_SETTINGS } from "../config/constants";
-import type { Theme, Accent, TimeFormat } from "../types/settings";
+import type { Settings } from "../types/settings";
 
-export interface ThemeProviderState {
-  theme: Theme;
-  accent: Accent;
-  timeFormat: TimeFormat;
-  showRecentConfigs: boolean;
-  setTheme: (theme: Theme) => void;
-  setAccent: (accent: Accent) => void;
-  setTimeFormat: (format: TimeFormat) => void;
-  setShowRecentConfigs: (show: boolean) => void;
+export interface SettingsProviderState {
+  settings: Settings;
+  updateSetting: <K extends keyof Settings>(key: K, value: Settings[K]) => void;
+  // Aliases for backward compatibility
+  theme: Settings["theme"];
+  accent: Settings["accent"];
+  timeFormat: Settings["time_format"];
+  setTheme: (theme: Settings["theme"]) => void;
+  setAccent: (accent: Settings["accent"]) => void;
+  setTimeFormat: (format: Settings["time_format"]) => void;
 }
 
-export const initialState: ThemeProviderState = {
+export const initialState: SettingsProviderState = {
+  settings: DEFAULT_SETTINGS,
+  updateSetting: () => null,
   theme: DEFAULT_SETTINGS.theme,
-  accent: DEFAULT_SETTINGS.accent as Accent,
-  timeFormat: DEFAULT_SETTINGS.time_format as TimeFormat,
-  showRecentConfigs: DEFAULT_SETTINGS.recent_configs_enabled,
+  accent: DEFAULT_SETTINGS.accent,
+  timeFormat: DEFAULT_SETTINGS.time_format,
   setTheme: () => null,
   setAccent: () => null,
   setTimeFormat: () => null,
-  setShowRecentConfigs: () => null,
 };
 
-export const ThemeProviderContext = createContext<ThemeProviderState>(initialState);
+export const SettingsProviderContext = createContext<SettingsProviderState>(initialState);
 
-export const useTheme = () => {
-  const context = useContext(ThemeProviderContext);
-
-  if (context === undefined) throw new Error("useTheme must be used within a ThemeProvider");
-
+export const useSettings = () => {
+  const context = useContext(SettingsProviderContext);
+  if (context === undefined) throw new Error("useSettings must be used within a SettingsProvider");
   return context;
 };
+
+// Alias for backward compatibility
+export const useTheme = useSettings;

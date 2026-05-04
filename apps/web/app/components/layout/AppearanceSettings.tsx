@@ -1,6 +1,6 @@
 import { MoonIcon, SunIcon, LaptopIcon } from "lucide-react";
 import { Button, cn } from "@kreozalabs/ui";
-import { useTheme } from "../../providers/ThemeContext";
+import { useSettings } from "../../providers/ThemeContext";
 import type { Accent, Theme } from "../../types/settings";
 import { TIME_FORMATS } from "../../config/constants";
 
@@ -15,7 +15,7 @@ const ACCENTS: { name: Accent; color: string; hover: string }[] = [
 ];
 
 export function AppearanceSettings() {
-  const { theme, setTheme, accent, setAccent, timeFormat, setTimeFormat, showRecentConfigs, setShowRecentConfigs } = useTheme();
+  const { settings, updateSetting, theme, setAccent, timeFormat, setTimeFormat } = useSettings();
 
   return (
     <div className="space-y-8">
@@ -33,7 +33,7 @@ export function AppearanceSettings() {
                 "size-5 p-0 min-w-0 border-none transition-all hover:scale-110 active:scale-95",
                 a.color,
                 a.hover,
-                accent === a.name
+                settings.accent === a.name
                   ? "ring-2 ring-ring ring-offset-2 ring-offset-background scale-110"
                   : "opacity-80 hover:opacity-100"
               )}
@@ -56,7 +56,7 @@ export function AppearanceSettings() {
               key={t}
               variant="ghost"
               size="sm"
-              onClick={() => setTheme(t)}
+              onClick={() => updateSetting("theme", t)}
               className={cn(
                 "flex flex-row items-center justify-center h-8 rounded-lg text-[12px] font-medium transition-all gap-1.5 border-none",
                 theme === t
@@ -100,25 +100,25 @@ export function AppearanceSettings() {
       <div className="space-y-3">
         <div className="flex items-center justify-between px-2">
           <h4 className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground/50">
-            Recent Configs
+            Distraction-Free Mode
           </h4>
           <span className="text-[10px] text-muted-foreground/40 font-medium">
-            Quick action presets
+            Hide header when idle
           </span>
         </div>
         <div className="flex items-center gap-1.5 p-1 bg-muted/40 rounded-xl">
           {[
-            { label: "Show", value: true },
-            { label: "Hide", value: false },
+            { label: "On", value: true },
+            { label: "Off", value: false },
           ].map((opt) => (
             <Button
               key={opt.label}
               variant="ghost"
               size="sm"
-              onClick={() => setShowRecentConfigs(opt.value)}
+              onClick={() => updateSetting("distraction_free_mode", opt.value)}
               className={cn(
                 "flex-1 flex flex-row items-center justify-center h-8 rounded-lg text-[12px] font-medium transition-all border-none",
-                showRecentConfigs === opt.value
+                settings.distraction_free_mode === opt.value
                   ? "bg-background text-foreground shadow-sm hover:bg-background"
                   : "text-muted-foreground hover:text-foreground hover:bg-muted/80"
               )}
@@ -128,6 +128,36 @@ export function AppearanceSettings() {
           ))}
         </div>
       </div>
+
+      <div className="space-y-3">
+        <div className="flex items-center justify-between px-2">
+          <h4 className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground/50">
+            Language
+          </h4>
+        </div>
+        <div className="flex items-center gap-1.5 p-1 bg-muted/40 rounded-xl">
+          {[
+            { label: "Auto", value: "auto" },
+            { label: "English", value: "en" },
+          ].map((opt) => (
+            <Button
+              key={opt.label}
+              variant="ghost"
+              size="sm"
+              onClick={() => updateSetting("language", opt.value)}
+              className={cn(
+                "flex-1 flex flex-row items-center justify-center h-8 rounded-lg text-[12px] font-medium transition-all border-none",
+                settings.language === opt.value
+                  ? "bg-background text-foreground shadow-sm hover:bg-background"
+                  : "text-muted-foreground hover:text-foreground hover:bg-muted/80"
+              )}
+            >
+              <span>{opt.label}</span>
+            </Button>
+          ))}
+        </div>
+      </div>
+      
     </div>
   );
 }

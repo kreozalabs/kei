@@ -12,9 +12,9 @@ import {
 import { Input, Button, Textarea, cn } from "@kreozalabs/ui";
 import { ActionSelector } from "../ActionSelector";
 import { NextDayBadge } from "../NextDayBadge";
-import { addAction, updateAction, getRecentConfigs } from "../../db/actions";
+import { addAction, updateAction } from "../../db/actions";
 import type { Action, EnergyType, IntentionType } from "../../types/actions";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQueryClient } from "@tanstack/react-query";
 import { useDiscardGuard } from "../../hooks/useDiscardGuard";
 import { useTheme } from "../../providers/ThemeContext";
 import {
@@ -35,9 +35,7 @@ import {
   TIME,
   ENERGY_OPTIONS,
   INTENTION_OPTIONS,
-  DURATION_OPTIONS,
   IMPORTANT_CONFIG,
-  MAJOR_TIMEZONES,
 } from "../../config/constants";
 import { DurationInputs } from "./DurationInputs";
 import { DiscardDialog } from "./DiscardDialog";
@@ -99,7 +97,7 @@ export const ActionInput = forwardRef<ActionInputHandle, ActionInputProps>(
     const [isTimeInvalid, setIsTimeInvalid] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
     const queryClient = useQueryClient();
-    const { timeFormat, showRecentConfigs } = useTheme();
+    const { timeFormat, settings } = useTheme();
     const titleInputRef = useRef<HTMLInputElement>(null);
 
     const timeOptions = useMemo(() => getTimeOptions(timeFormat), [timeFormat]);
@@ -107,21 +105,21 @@ export const ActionInput = forwardRef<ActionInputHandle, ActionInputProps>(
 
     const sortedTimezones = useMemo(() => {
       const local = Intl.DateTimeFormat().resolvedOptions().timeZone;
-      const others = allTimezones.filter((tz) => tz !== local && !MAJOR_TIMEZONES.includes(tz));
+      const others = allTimezones.filter((tz) => tz !== local && !settings.action_timezone_options.includes(tz));
 
       return [
         local,
-        ...MAJOR_TIMEZONES.filter((m) => allTimezones.includes(m) && m !== local),
+        ...settings.action_timezone_options.filter((m) => allTimezones.includes(m) && m !== local),
         ...others,
       ];
-    }, []);
+    }, [settings.action_timezone_options]);
 
     const filteredTimezones = useMemo(() => {
       const search = timezoneSearch.toLowerCase().trim();
-      if (!search) return sortedTimezones.slice(0, MAJOR_TIMEZONES.length);
+      if (!search) return sortedTimezones.slice(0, settings.action_timezone_options.length);
 
       return sortedTimezones.filter((tz) => tz.toLowerCase().includes(search)).slice(0, 100);
-    }, [timezoneSearch, sortedTimezones]);
+    }, [timezoneSearch, sortedTimezones, settings.action_timezone_options]);
 
     const energyOptionsWithIcons = useMemo(
       () =>
@@ -240,11 +238,7 @@ export const ActionInput = forwardRef<ActionInputHandle, ActionInputProps>(
       }
     };
 
-    const { data: recentConfigs = [] } = useQuery({
-      queryKey: ["recent-configs"],
-      queryFn: getRecentConfigs,
-      enabled: showRecentConfigs,
-    });
+
 
     const hasChanges = useMemo(() => {
       // Define the "Empty State" check for New Actions
@@ -347,7 +341,6 @@ export const ActionInput = forwardRef<ActionInputHandle, ActionInputProps>(
         setTitle("");
         setNote("");
         queryClient.invalidateQueries({ queryKey: ["actions"] });
-        queryClient.invalidateQueries({ queryKey: ["recent-configs"] });
         onSuccess?.();
       } catch (error) {
         console.error("Failed to save action:", error);
@@ -369,33 +362,7 @@ export const ActionInput = forwardRef<ActionInputHandle, ActionInputProps>(
         <form onSubmit={handleSubmit} className="flex flex-col">
           {/* Input Section */}
           <div className="p-4 sm:p-5 flex flex-col gap-2">
-            {showRecentConfigs && recentConfigs.length > 0 && (
-              <div className="flex flex-wrap gap-2 mb-3">
-                {recentConfigs.map((config, idx) => (
-                  <Button
-                    key={idx}
-                    type="button"
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => {
-                      handleDurationChange(config.duration || DEFAULT_CONFIG.DURATION);
-                      setEnergy((config.energy as EnergyType) || ENERGY_LEVELS.MEDIUM);
-                      setIntention((config.intention as IntentionType) || INTENTIONS.WANT);
-                      setIsImportant(config.important || false);
-                    }}
-                    className="h-7 px-2.5 rounded-lg bg-primary/5 hover:bg-primary/10 text-[11px] font-bold text-primary/70 transition-all border border-primary/10 active:scale-95"
-                  >
-                    {config.duration?.[0] === config.duration?.[1] || !config.duration?.[1]
-                      ? `${config.duration?.[0]}m`
-                      : `${config.duration?.[0]}-${config.duration?.[1]}m`}
-                    <span className="mx-1 opacity-30">·</span>
-                    {config.energy}
-                    <span className="mx-1 opacity-30">·</span>
-                    {config.intention}
-                  </Button>
-                ))}
-              </div>
-            )}
+
 
             <div className="flex items-start justify-between gap-2 sm:gap-4">
               <div className="flex-1 flex flex-col gap-4">
@@ -437,7 +404,7 @@ export const ActionInput = forwardRef<ActionInputHandle, ActionInputProps>(
             <ActionSelector
               icon={<Clock className="size-3.5 text-blue-500/70" />}
               label={formatDuration(duration[0], duration[1])}
-              options={DURATION_OPTIONS.map((opt) => ({
+              options={settings.action_duration_options.map((opt) => ({
                 ...opt,
                 icon: <Clock className="size-4 text-muted-foreground" />,
               }))}

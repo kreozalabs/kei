@@ -1,51 +1,81 @@
 import * as React from "react";
 import { useEffect, useState } from "react";
-import { ThemeProviderContext } from "./ThemeContext";
-import type { Theme, Accent, TimeFormat } from "../types/settings";
+import { SettingsProviderContext } from "./ThemeContext";
+import type { Settings } from "../types/settings";
 import { DEFAULT_SETTINGS } from "../config/constants";
+import { getSetting, setSetting } from "../db/settings";
+import { initPromise } from "../db";
 
 interface ThemeProviderProps {
   children: React.ReactNode;
-  defaultTheme?: Theme;
-  defaultAccent?: Accent;
   storageKey?: string;
-  accentStorageKey?: string;
-  timeFormatStorageKey?: string;
-  showRecentConfigsStorageKey?: string;
 }
 
 export function ThemeProvider({
   children,
-  defaultTheme = DEFAULT_SETTINGS.theme,
-  defaultAccent = DEFAULT_SETTINGS.accent as Accent,
-  storageKey = "kei-ui-theme",
-  accentStorageKey = "kei-ui-accent",
-  timeFormatStorageKey = "kei-ui-time-format",
-  showRecentConfigsStorageKey = "kei-ui-show-recent-configs",
+  storageKey = "kei-ui-settings",
   ...props
 }: ThemeProviderProps) {
-  const [theme, setTheme] = useState<Theme>(() => {
-    if (typeof window === "undefined") return defaultTheme;
-    return (localStorage.getItem(storageKey) as Theme) || defaultTheme;
+  const [settings, setSettingsState] = useState<Settings>(() => {
+    if (typeof window === "undefined") return DEFAULT_SETTINGS;
+    try {
+      const stored = localStorage.getItem(storageKey);
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        if (parsed && typeof parsed === "object" && !Array.isArray(parsed)) {
+          return { ...DEFAULT_SETTINGS, ...parsed };
+        }
+      }
+    } catch (e) {
+      // Legacy or invalid data, fallback to defaults
+    }
+    return DEFAULT_SETTINGS;
   });
 
-  const [accent, setAccent] = useState<Accent>(() => {
-    if (typeof window === "undefined") return defaultAccent;
-    return (localStorage.getItem(accentStorageKey) as Accent) || defaultAccent;
-  });
+  const updateSetting = <K extends keyof Settings>(key: K, value: Settings[K]) => {
+    const newSettings = { ...settings, [key]: value };
+    // 1. Update React state immediately
+    setSettingsState(newSettings);
+    // 2. Update local storage for fast next-load
+    localStorage.setItem(storageKey, JSON.stringify(newSettings));
+    // 3. Persist to DB (fires SETTING_UPDATED event and DB_UPDATED broadcast)
+    initPromise.then(() => setSetting(key, value));
+  };
 
-  const [timeFormat, setTimeFormat] = useState<TimeFormat>(() => {
-    if (typeof window === "undefined") return DEFAULT_SETTINGS.time_format;
-    return (
-      (localStorage.getItem(timeFormatStorageKey) as TimeFormat) || DEFAULT_SETTINGS.time_format
-    );
-  });
+  useEffect(() => {
+    // On mount, load latest from DB
+    const loadFromDb = async () => {
+      await initPromise;
+      let hasChanges = false;
+      const latestSettings = { ...settings };
+      for (const key of Object.keys(DEFAULT_SETTINGS) as (keyof Settings)[]) {
+        const dbValue = await getSetting(key);
+        if (dbValue !== null && JSON.stringify(dbValue) !== JSON.stringify(latestSettings[key])) {
+          latestSettings[key] = dbValue as any;
+          hasChanges = true;
+        }
+      }
+      if (hasChanges) {
+        setSettingsState(latestSettings);
+        localStorage.setItem(storageKey, JSON.stringify(latestSettings));
+      }
+    };
+    loadFromDb();
 
-  const [showRecentConfigs, setShowRecentConfigs] = useState<boolean>(() => {
-    if (typeof window === "undefined") return DEFAULT_SETTINGS.recent_configs_enabled;
-    const stored = localStorage.getItem(showRecentConfigsStorageKey);
-    return stored === null ? DEFAULT_SETTINGS.recent_configs_enabled : stored === "true";
-  });
+    // Listen to broadcast channel for changes in other tabs
+    const channel = new BroadcastChannel("kei_db_sync");
+    const handleMessage = (e: MessageEvent) => {
+      if (e.data && e.data.type === "DB_UPDATED" && e.data.entity === "settings") {
+        loadFromDb();
+      }
+    };
+    channel.addEventListener("message", handleMessage);
+    return () => {
+      channel.removeEventListener("message", handleMessage);
+      channel.close();
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   useEffect(() => {
     const root = window.document.documentElement;
@@ -53,26 +83,26 @@ export function ThemeProvider({
     const applyTheme = () => {
       root.classList.remove("light", "dark");
 
-      if (theme === "system") {
+      if (settings.theme === "system") {
         const systemTheme = window.matchMedia("(prefers-color-scheme: dark)").matches
           ? "dark"
           : "light";
         root.classList.add(systemTheme);
       } else {
-        root.classList.add(theme);
+        root.classList.add(settings.theme);
       }
     };
 
     applyTheme();
 
-    if (theme === "system") {
+    if (settings.theme === "system") {
       const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
       const handleSystemChange = () => applyTheme();
 
       mediaQuery.addEventListener("change", handleSystemChange);
       return () => mediaQuery.removeEventListener("change", handleSystemChange);
     }
-  }, [theme]);
+  }, [settings.theme]);
 
   useEffect(() => {
     const root = window.document.documentElement;
@@ -82,35 +112,23 @@ export function ThemeProvider({
     root.className = classes.join(" ").trim();
 
     // Add new accent class
-    root.classList.add(`theme-${accent}`);
-  }, [accent]);
+    root.classList.add(`theme-${settings.accent}`);
+  }, [settings.accent]);
 
   const value = {
-    theme,
-    accent,
-    timeFormat,
-    showRecentConfigs,
-    setTheme: (theme: Theme) => {
-      localStorage.setItem(storageKey, theme);
-      setTheme(theme);
-    },
-    setAccent: (accent: Accent) => {
-      localStorage.setItem(accentStorageKey, accent);
-      setAccent(accent);
-    },
-    setTimeFormat: (format: TimeFormat) => {
-      localStorage.setItem(timeFormatStorageKey, format);
-      setTimeFormat(format);
-    },
-    setShowRecentConfigs: (show: boolean) => {
-      localStorage.setItem(showRecentConfigsStorageKey, String(show));
-      setShowRecentConfigs(show);
-    },
+    settings,
+    updateSetting,
+    theme: settings.theme,
+    accent: settings.accent,
+    timeFormat: settings.time_format,
+    setTheme: (theme: Settings["theme"]) => updateSetting("theme", theme),
+    setAccent: (accent: Settings["accent"]) => updateSetting("accent", accent),
+    setTimeFormat: (format: Settings["time_format"]) => updateSetting("time_format", format),
   };
 
   return (
-    <ThemeProviderContext.Provider {...props} value={value}>
+    <SettingsProviderContext.Provider {...props} value={value}>
       {children}
-    </ThemeProviderContext.Provider>
+    </SettingsProviderContext.Provider>
   );
 }

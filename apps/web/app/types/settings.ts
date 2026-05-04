@@ -14,10 +14,10 @@ export interface Settings {
   today_locked: boolean;
   time_format: TimeFormat;
   timezone: string;
-  recent_configs_enabled: boolean;
-  recent_configs_size: number;
-  duration_options: any; // FIXME: WHAT TYPE?
-  timezone_options: any; // FIXME: WHAT TYPE?
+  distraction_free_mode: boolean;
+  language: string;
+  action_duration_options: { label: string; value: [number, number] }[];
+  action_timezone_options: string[];
 }
 
 export type SettingKey = keyof Settings;

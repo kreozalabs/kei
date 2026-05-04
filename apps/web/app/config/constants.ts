@@ -4,6 +4,7 @@ export const EVENT_TYPES = {
   ACTION_COMPLETED: "ACTION_COMPLETED",
   ACTION_ACTIVATED: "ACTION_ACTIVATED",
   ACTION_ABANDONED: "ACTION_ABANDONED",
+  SETTING_UPDATED: "SETTING_UPDATED",
 } as const;
 
 export const ENERGY_LEVELS = {
@@ -121,8 +122,8 @@ export const DEFAULT_SETTINGS = {
   today_locked: true,
   time_format: TIME_FORMATS.H24,
   timezone: "auto",
-  recent_configs_enabled: true,
-  recent_configs_size: 5,
-  duration_options: DURATION_OPTIONS,
-  timezone_options: MAJOR_TIMEZONES,
+  distraction_free_mode: true,
+  language: "auto",
+  action_duration_options: DURATION_OPTIONS,
+  action_timezone_options: MAJOR_TIMEZONES,
 };

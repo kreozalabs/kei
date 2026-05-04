@@ -71,6 +71,14 @@ async function pushEvent<T>(actionId: string, type: string, payload: T) {
     const result = await db.query("SELECT * FROM actions_snapshot WHERE id = $1", [actionId]);
     if (result.rows.length > 0) {
       const row = result.rows[0] as any;
+      const parseDuration = (val: any) => {
+        if (typeof val !== "string") return val;
+        try {
+          return JSON.parse(val);
+        } catch (e) {
+          return null;
+        }
+      };
       currentAction = {
         ...row,
         scheduledDate: row.scheduled_date,
@@ -78,7 +86,7 @@ async function pushEvent<T>(actionId: string, type: string, payload: T) {
         endTime: row.end_time,
         createdAt: Number(row.created_at),
         sortOrder: Number(row.sort_order),
-        duration: typeof row.duration === "string" ? JSON.parse(row.duration) : row.duration,
+        duration: parseDuration(row.duration),
       } as Action;
     }
   }
@@ -164,15 +172,25 @@ export async function getActions(filters?: {
   query += ` ORDER BY sort_order DESC`;
 
   const result = await db.query(query, params);
-  return result.rows.map((row: any) => ({
-    ...row,
-    scheduledDate: row.scheduled_date,
-    startTime: row.start_time,
-    endTime: row.end_time,
-    createdAt: Number(row.created_at),
-    sortOrder: Number(row.sort_order),
-    duration: typeof row.duration === "string" ? JSON.parse(row.duration) : row.duration,
-  })) as Action[];
+  return result.rows.map((row: any) => {
+    const parseDuration = (val: any) => {
+      if (typeof val !== "string") return val;
+      try {
+        return JSON.parse(val);
+      } catch (e) {
+        return null;
+      }
+    };
+    return {
+      ...row,
+      scheduledDate: row.scheduled_date,
+      startTime: row.start_time,
+      endTime: row.end_time,
+      createdAt: Number(row.created_at),
+      sortOrder: Number(row.sort_order),
+      duration: parseDuration(row.duration),
+    };
+  }) as Action[];
 }
 
 export async function addAction(payload: ActionPayload) {
@@ -248,63 +266,4 @@ export async function rebuildSnapshots() {
       ]
     );
   }
-}
-// TODO: Add function that will allow to create configs for actions, so user can set 4 hours or something like that, instead of just using defaults or recents or writing custom duration every time.
-
-// TODO: Create table for recent configs, or use settings table instead. It should help to avoid unnecessary reads from events table.
-export async function getRecentConfigs(): Promise<ActionPayload[]> {
-  const result = await db.query(
-    `SELECT payload FROM events WHERE type = '${EVENT_TYPES.ACTION_INTENDED}' ORDER BY timestamp DESC LIMIT 30`
-  );
-  const payloads = (result.rows as { payload: string | object }[]).map((r) =>
-    typeof r.payload === "string" ? JSON.parse(r.payload) : r.payload
-  ) as ActionPayload[];
-
-  const configs: ActionPayload[] = [];
-  const seen = new Set<string>();
-
-  for (const payload of payloads) {
-    const configKey = JSON.stringify({
-      intention: payload.intention || INTENTIONS.WANT,
-      energy: payload.energy || ENERGY_LEVELS.MEDIUM,
-      duration: payload.duration,
-      important: payload.important || false,
-    });
-
-    if (!seen.has(configKey)) {
-      seen.add(configKey);
-      configs.push({
-        intention: payload.intention || INTENTIONS.WANT,
-        energy: payload.energy || ENERGY_LEVELS.MEDIUM,
-        duration: payload.duration,
-        important: payload.important || false,
-      });
-    }
-    if (configs.length >= 4) break;
-  }
-
-  return configs;
-}
-
-export async function getLastKnownTime(
-  id: string
-): Promise<{ startTime: string; endTime?: string | null } | null> {
-  const result = await db.query(
-    `SELECT payload FROM events WHERE id = $1 AND (type = '${EVENT_TYPES.ACTION_INTENDED}' OR type = '${EVENT_TYPES.ACTION_UPDATED}') ORDER BY timestamp DESC`,
-    [id]
-  );
-
-  for (const row of result.rows as { payload: string | object }[]) {
-    const payload = (
-      typeof row.payload === "string" ? JSON.parse(row.payload) : row.payload
-    ) as Partial<ActionPayload>;
-    // Check if this payload has startTime defined and not null/empty string
-    if (payload.startTime) {
-      return {
-        startTime: payload.startTime,
-        endTime: payload.endTime,
-      };
-    }
-  }
-  return null;
 }

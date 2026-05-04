@@ -1,9 +1,8 @@
 import { forwardRef } from "react";
 import { PlusIcon, SearchIcon, MoreVerticalIcon } from "lucide-react";
 import { Button, cn } from "@kreozalabs/ui";
+import { useSettings } from "@/providers/ThemeContext";
 import { useSubtleOnIdle } from "@/hooks/useSubtleOnIdle";
-import { ThemeToggle } from "../ThemeToggle";
-import { AccentPicker } from "../AccentPicker";
 
 export interface AppHeaderProps {
   title: string;
@@ -14,10 +13,12 @@ export interface AppHeaderProps {
 }
 
 export function AppHeader({ title, subtitle, left, center, right }: AppHeaderProps) {
+  const { settings } = useSettings();
   const { isSubtle, show, hide } = useSubtleOnIdle({
     initialDelay: 3000,
     idleDelay: 2000,
     disableOnMobile: true,
+    disabled: !settings.distraction_free_mode,
   });
 
   return (
@@ -118,11 +119,3 @@ export function HeaderMore({ onClick }: { onClick?: () => void }) {
   );
 }
 
-export function HeaderAppearance() {
-  return (
-    <div className="flex items-center gap-1">
-      <AccentPicker />
-      <ThemeToggle />
-    </div>
-  );
-}

@@ -1,14 +1,18 @@
 import { DEFAULT_SETTINGS } from "@/config/constants";
 import { PGliteWorker } from "@electric-sql/pglite/worker";
 
-export const db = new PGliteWorker(
-  new Worker(new URL("./worker.ts", import.meta.url), {
-    type: "module",
-  })
-);
+export const db =
+  typeof window !== "undefined"
+    ? new PGliteWorker(
+        new Worker(new URL("./worker.ts", import.meta.url), {
+          type: "module",
+        })
+      )
+    : (null as any);
 
 // Initialize some tables if needed
 async function runMigrations() {
+  if (!db) return;
   try {
     const tableInfo = await db.query(`
       SELECT column_name 
@@ -47,6 +51,7 @@ async function runMigrations() {
 }
 
 async function ensureSchema() {
+  if (!db) return;
   await db.exec(`
     CREATE TABLE IF NOT EXISTS events (
       event_id UUID PRIMARY KEY,
@@ -86,6 +91,7 @@ async function ensureDefaults() {
 }
 
 async function ensureSnapshots() {
+  if (!db) return;
   // Check if snapshots table is empty but we have events
   const snapshotExists = await db.query("SELECT 1 FROM actions_snapshot LIMIT 1");
   const eventsExist = await db.query("SELECT 1 FROM events LIMIT 1");
@@ -99,6 +105,7 @@ async function ensureSnapshots() {
 }
 
 export const initDb = async () => {
+  if (typeof window === "undefined") return;
   await runMigrations();
   await ensureSchema();
   await ensureDefaults();
@@ -106,4 +113,4 @@ export const initDb = async () => {
 };
 
 // Start initialization immediately
-export const initPromise = initDb();
+export const initPromise = typeof window !== "undefined" ? initDb() : Promise.resolve();
