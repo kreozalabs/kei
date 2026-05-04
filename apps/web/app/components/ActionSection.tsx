@@ -7,7 +7,7 @@ import { ActionInput } from "./action-input";
 
 import { SortableContext, verticalListSortingStrategy } from "@dnd-kit/sortable";
 import { useDroppable } from "@dnd-kit/core";
-import { ACTION_STATUS, DEFAULT_SETTINGS } from "@/config/constants";
+import { ACTION_STATUS, DEFAULT_SETTINGS, STORAGE_KEYS } from "@/config/constants";
 
 interface ActionSectionProps {
   id: string;
@@ -42,14 +42,14 @@ export function ActionSection({
   // TODO: Allow user to set settings if he wants to save state at all.
   const [isExpanded, setIsExpanded] = useState(() => {
     if (typeof window !== "undefined") {
-      const stored = window.sessionStorage.getItem(`kei-section-expanded-${id}`);
+      const stored = window.sessionStorage.getItem(STORAGE_KEYS.SESSION.SECTION_EXPANDED(id));
       if (stored !== null) return stored === "true";
     }
     return DEFAULT_SETTINGS.section_expanded;
   });
 
   useEffect(() => {
-    window.sessionStorage.setItem(`kei-section-expanded-${id}`, String(isExpanded));
+    window.sessionStorage.setItem(STORAGE_KEYS.SESSION.SECTION_EXPANDED(id), String(isExpanded));
   }, [id, isExpanded]);
 
   const showContent = isTodayLocked ? true : isExpanded;

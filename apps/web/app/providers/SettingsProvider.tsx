@@ -1,8 +1,8 @@
 import * as React from "react";
 import { useEffect, useState } from "react";
-import { SettingsProviderContext } from "./ThemeContext";
+import { SettingsProviderContext } from "./SettingsContext";
 import type { Settings } from "../types/settings";
-import { DEFAULT_SETTINGS } from "../config/constants";
+import { DEFAULT_SETTINGS, STORAGE_KEYS } from "../config/constants";
 import { getSetting, setSetting } from "../db/settings";
 import { initPromise } from "../db";
 
@@ -11,9 +11,9 @@ interface ThemeProviderProps {
   storageKey?: string;
 }
 
-export function ThemeProvider({
+export function SettingsProvider({
   children,
-  storageKey = "kei-ui-settings",
+  storageKey = STORAGE_KEYS.SETTINGS,
   ...props
 }: ThemeProviderProps) {
   const [settings, setSettingsState] = useState<Settings>(() => {
@@ -81,6 +81,7 @@ export function ThemeProvider({
     const root = window.document.documentElement;
 
     const applyTheme = () => {
+      root.classList.add("disable-transitions");
       root.classList.remove("light", "dark");
 
       if (settings.theme === "system") {
@@ -91,6 +92,11 @@ export function ThemeProvider({
       } else {
         root.classList.add(settings.theme);
       }
+
+      // Allow browser to apply the theme without transition, then re-enable
+      setTimeout(() => {
+        root.classList.remove("disable-transitions");
+      }, 50); // Small delay to ensure styles are painted
     };
 
     applyTheme();
@@ -107,23 +113,23 @@ export function ThemeProvider({
   useEffect(() => {
     const root = window.document.documentElement;
 
+    root.classList.add("disable-transitions");
+
     // Remove all theme-* classes
     const classes = root.className.split(" ").filter((c) => !c.startsWith("theme-"));
     root.className = classes.join(" ").trim();
 
     // Add new accent class
     root.classList.add(`theme-${settings.accent}`);
+
+    setTimeout(() => {
+      root.classList.remove("disable-transitions");
+    }, 50);
   }, [settings.accent]);
 
   const value = {
     settings,
     updateSetting,
-    theme: settings.theme,
-    accent: settings.accent,
-    timeFormat: settings.time_format,
-    setTheme: (theme: Settings["theme"]) => updateSetting("theme", theme),
-    setAccent: (accent: Settings["accent"]) => updateSetting("accent", accent),
-    setTimeFormat: (format: Settings["time_format"]) => updateSetting("time_format", format),
   };
 
   return (

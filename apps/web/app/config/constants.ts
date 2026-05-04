@@ -122,8 +122,42 @@ export const DEFAULT_SETTINGS = {
   today_locked: true,
   time_format: TIME_FORMATS.H24,
   timezone: "auto",
-  distraction_free_mode: true,
+  subtle_on_idle: true,
   language: "auto",
   action_duration_options: DURATION_OPTIONS,
   action_timezone_options: MAJOR_TIMEZONES,
 };
+
+export const STORAGE_KEYS = {
+  SETTINGS: "kei-ui-settings",
+  SESSION: {
+    SECTION_EXPANDED: (id: string) => `kei-section-expanded-${id}`,
+    TIMELINE_LOCKED: "kei-dashboard-timeline-locked",
+  },
+} as const;
+
+export const THEMES = {
+  LIGHT: "light",
+  DARK: "dark",
+  SYSTEM: "system",
+} as const;
+
+export const LANGUAGES = {
+  AUTO: "auto",
+  EN: "en",
+  // DE: "de",
+  // ES: "es",
+  // RU: "ru",
+} as const;
+
+import type { Accent } from "../types/settings";
+
+export const ACCENTS: { name: Accent; color: string; hover: string }[] = [
+  { name: "blue", color: "bg-[#1e60f2]", hover: "hover:bg-[#1e60f2]" },
+  { name: "indigo", color: "bg-[#818cf8]", hover: "hover:bg-[#818cf8]" },
+  { name: "violet", color: "bg-[#a78bfa]", hover: "hover:bg-[#a78bfa]" },
+  { name: "emerald", color: "bg-[#10b981]", hover: "hover:bg-[#10b981]" },
+  { name: "rose", color: "bg-[#f43f5e]", hover: "hover:bg-[#f43f5e]" },
+  { name: "amber", color: "bg-[#f59e0b]", hover: "hover:bg-[#f59e0b]" },
+  { name: "forest", color: "bg-[#22c55e]", hover: "hover:bg-[#22c55e]" },
+];

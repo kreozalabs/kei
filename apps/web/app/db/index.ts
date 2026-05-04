@@ -99,7 +99,9 @@ async function ensureSnapshots() {
   if (snapshotExists.rows.length === 0 && eventsExist.rows.length > 0) {
     console.log("Snapshots table is empty. Rebuilding from event log...");
     const { rebuildSnapshots } = await import("./actions");
+    const { rebuildSettings } = await import("./settings");
     await rebuildSnapshots();
+    await rebuildSettings();
     console.log("Snapshots rebuild complete.");
   }
 }

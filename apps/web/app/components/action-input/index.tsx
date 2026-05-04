@@ -16,7 +16,7 @@ import { addAction, updateAction } from "../../db/actions";
 import type { Action, EnergyType, IntentionType } from "../../types/actions";
 import { useQueryClient } from "@tanstack/react-query";
 import { useDiscardGuard } from "../../hooks/useDiscardGuard";
-import { useTheme } from "../../providers/ThemeContext";
+import { useSettings } from "../../providers/SettingsContext";
 import {
   formatTime,
   timeToMinutes,
@@ -97,7 +97,8 @@ export const ActionInput = forwardRef<ActionInputHandle, ActionInputProps>(
     const [isTimeInvalid, setIsTimeInvalid] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
     const queryClient = useQueryClient();
-    const { timeFormat, settings } = useTheme();
+    const { settings } = useSettings();
+    const timeFormat = settings.time_format;
     const titleInputRef = useRef<HTMLInputElement>(null);
 
     const timeOptions = useMemo(() => getTimeOptions(timeFormat), [timeFormat]);
@@ -105,7 +106,9 @@ export const ActionInput = forwardRef<ActionInputHandle, ActionInputProps>(
 
     const sortedTimezones = useMemo(() => {
       const local = Intl.DateTimeFormat().resolvedOptions().timeZone;
-      const others = allTimezones.filter((tz) => tz !== local && !settings.action_timezone_options.includes(tz));
+      const others = allTimezones.filter(
+        (tz) => tz !== local && !settings.action_timezone_options.includes(tz)
+      );
 
       return [
         local,
@@ -238,8 +241,6 @@ export const ActionInput = forwardRef<ActionInputHandle, ActionInputProps>(
       }
     };
 
-
-
     const hasChanges = useMemo(() => {
       // Define the "Empty State" check for New Actions
       const isNewAction = !actionToEdit;
@@ -362,8 +363,6 @@ export const ActionInput = forwardRef<ActionInputHandle, ActionInputProps>(
         <form onSubmit={handleSubmit} className="flex flex-col">
           {/* Input Section */}
           <div className="p-4 sm:p-5 flex flex-col gap-2">
-
-
             <div className="flex items-start justify-between gap-2 sm:gap-4">
               <div className="flex-1 flex flex-col gap-4">
                 <Input

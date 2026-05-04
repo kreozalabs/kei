@@ -9,6 +9,11 @@ body {
   touch-action: manipulation;
 }
 
+.disable-transitions,
+.disable-transitions * {
+  transition: none !important;
+}
+
 /* Responsive Typography Variables */
 :root {
   --text-3xl-val: 2.75rem;

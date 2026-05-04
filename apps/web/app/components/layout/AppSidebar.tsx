@@ -6,6 +6,7 @@ import { Logo as KreozaLogo } from "@kreozalabs/icons";
 import { navGroups } from "@/config/navigation";
 import { FullscreenToggle } from "../FullscreenToggle";
 import { SettingsIcon } from "lucide-react";
+import { useSettings } from "@/providers/SettingsContext";
 
 export interface AppSidebarProps {
   isOpen?: boolean;
@@ -13,6 +14,7 @@ export interface AppSidebarProps {
 }
 
 export function AppSidebar({ isOpen = true, onToggle }: AppSidebarProps) {
+  const { settings } = useSettings();
   return (
     <aside
       className={cn(
@@ -28,13 +30,17 @@ export function AppSidebar({ isOpen = true, onToggle }: AppSidebarProps) {
       >
         <div
           className={cn(
-            "flex items-end justify-between px-6 md:px-8 pt-4 md:pt-6 pb-2 md:pb-2 shrink-0 border-b border-border/80 mb-2 animate-in fade-in slide-in-from-top-2 duration-700"
+            "flex items-end justify-between px-6 md:px-8 pt-4 md:pt-6 pb-2 md:pb-2 shrink-0 border-b border-border/80 mb-2 animate-in fade-in slide-in-from-top-2 [animation-duration:700ms]"
           )}
         >
           <div className="flex items-center justify-between w-full h-12">
             <SidebarToggle onClick={onToggle} />
-            {/* FIXME: Do we need to add subtleonidle settings off? */}
-            <div className="flex items-center gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
+            <div
+              className={cn(
+                "flex items-center gap-1.5 transition-opacity",
+                settings.subtle_on_idle ? "opacity-0 group-hover:opacity-100" : "opacity-100"
+              )}
+            >
               <FullscreenToggle
                 size="icon"
                 className="size-8 rounded-lg hover:bg-muted/80 border-none text-muted-foreground/40 hover:text-foreground transition-all active:scale-90"

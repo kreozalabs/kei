@@ -1,7 +1,7 @@
 import { useEffect } from "react";
 import { useOutletContext } from "react-router";
 import type { AppLayoutContext } from "@/components/layout/AppLayout";
-import { AppearanceSettings } from "@/components/layout/AppearanceSettings";
+import { GeneralSettings } from "@/components/settings/GeneralSettings";
 
 export default function Settings() {
   const { setTitle, setSubtitle, setHeaderActions } = useOutletContext<AppLayoutContext>();
@@ -29,7 +29,7 @@ export default function Settings() {
         <div className="bg-card/50 border border-border/40 rounded-4xl p-8 space-y-8 overflow-hidden relative group">
           <div className="relative">
             <h3 className="text-lg font-bold tracking-tight mb-8">Personalization</h3>
-            <AppearanceSettings />
+            <GeneralSettings />
           </div>
         </div>
       </div>

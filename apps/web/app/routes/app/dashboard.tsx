@@ -38,14 +38,14 @@ import {
   type DragStartEvent,
   type DragOverEvent,
 } from "@dnd-kit/core";
-import { ACTION_STATUS, DEFAULT_SETTINGS } from "@/config/constants";
+import { ACTION_STATUS, DEFAULT_SETTINGS, STORAGE_KEYS } from "@/config/constants";
 
 export default function Dashboard() {
   const [isDbReady, setIsDbReady] = useState(false);
   const queryClient = useQueryClient();
   const [isTodayLocked, setIsTodayLocked] = useState(() => {
     if (typeof window !== "undefined") {
-      const stored = window.sessionStorage.getItem("kei-dashboard-timeline-locked");
+      const stored = window.sessionStorage.getItem(STORAGE_KEYS.SESSION.TIMELINE_LOCKED);
       if (stored !== null) return stored === "true";
     }
 
@@ -69,7 +69,7 @@ export default function Dashboard() {
   );
 
   useEffect(() => {
-    window.sessionStorage.setItem("kei-dashboard-timeline-locked", String(isTodayLocked));
+    window.sessionStorage.setItem(STORAGE_KEYS.SESSION.TIMELINE_LOCKED, String(isTodayLocked));
   }, [isTodayLocked]);
 
   const { setTitle, setSubtitle, setHeaderActions } = useOutletContext<AppLayoutContext>();

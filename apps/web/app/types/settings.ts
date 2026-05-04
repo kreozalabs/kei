@@ -14,7 +14,7 @@ export interface Settings {
   today_locked: boolean;
   time_format: TimeFormat;
   timezone: string;
-  distraction_free_mode: boolean;
+  subtle_on_idle: boolean;
   language: string;
   action_duration_options: { label: string; value: [number, number] }[];
   action_timezone_options: string[];

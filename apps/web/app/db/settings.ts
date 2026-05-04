@@ -40,3 +40,20 @@ export async function initDefaultSettings(defaults: Record<string, any>) {
     );
   }
 }
+
+export async function rebuildSettings() {
+  await db.query("DELETE FROM settings");
+  const result = await db.query(
+    "SELECT payload FROM events WHERE type = $1 ORDER BY timestamp ASC",
+    [EVENT_TYPES.SETTING_UPDATED]
+  );
+  for (const row of result.rows as any[]) {
+    const payload = typeof row.payload === "string" ? JSON.parse(row.payload) : row.payload;
+    if (payload.key && payload.value !== undefined) {
+      await db.query(
+        "INSERT INTO settings (key, value) VALUES ($1, $2) ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value",
+        [payload.key, JSON.stringify(payload.value)]
+      );
+    }
+  }
+}

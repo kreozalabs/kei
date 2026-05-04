@@ -1,7 +1,7 @@
 import { forwardRef } from "react";
 import { PlusIcon, SearchIcon, MoreVerticalIcon } from "lucide-react";
 import { Button, cn } from "@kreozalabs/ui";
-import { useSettings } from "@/providers/ThemeContext";
+import { useSettings } from "@/providers/SettingsContext";
 import { useSubtleOnIdle } from "@/hooks/useSubtleOnIdle";
 
 export interface AppHeaderProps {
@@ -18,19 +18,19 @@ export function AppHeader({ title, subtitle, left, center, right }: AppHeaderPro
     initialDelay: 3000,
     idleDelay: 2000,
     disableOnMobile: true,
-    disabled: !settings.distraction_free_mode,
+    disabled: !settings.subtle_on_idle,
   });
 
   return (
     <header
-      className="shrink-0 z-40 w-full pt-2 md:pt-4 pb-1 md:pb-6 px-6 md:px-8 sticky top-0 bg-background/95 backdrop-blur-xl border-b border-border/40 md:border-none transition-all"
+      className="shrink-0 z-40 w-full pt-2 md:pt-4 pb-1 md:pb-6 px-6 md:px-8 sticky top-0 bg-background/95 backdrop-blur-xl border-b border-border/40 md:border-none"
       onMouseEnter={show}
       onMouseMove={show}
       onMouseLeave={hide}
     >
       <div
         className={cn(
-          "flex w-full gap-4 transition-all duration-1000 ease-in-out cursor-default",
+          "flex w-full gap-4 transition-[opacity,transform] duration-1000 ease-in-out cursor-default",
           isSubtle ? "opacity-20 translate-y-0.5" : "opacity-100"
         )}
       >
