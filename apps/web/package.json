@@ -16,7 +16,6 @@
     "@electric-sql/pglite": "^0.4.3",
     "@icons-pack/react-simple-icons": "^13.13.0",
     "@kreozalabs/icons": "workspace:*",
-    "@kreozalabs/styles": "workspace:*",
     "@kreozalabs/ui": "workspace:*",
     "@react-router/node": "^7.14.0",
     "@tanstack/react-query": "^5.96.2",
