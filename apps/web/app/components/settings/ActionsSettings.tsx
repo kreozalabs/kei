@@ -12,7 +12,7 @@ import {
 } from "@kreozalabs/ui";
 import { useSettings } from "../../providers/SettingsContext";
 import { ENERGY_OPTIONS, INTENTION_OPTIONS } from "../../config/constants";
-
+// FIXME: At some point, settings seem to be overwritten. What causes it?
 const allTimezones = (
   Intl as typeof Intl & { supportedValuesOf?: (key: string) => string[] }
 ).supportedValuesOf?.("timeZone") || ["UTC"];
@@ -70,7 +70,9 @@ export function ActionsSettings() {
     const search = tzSearch.toLowerCase().trim();
     if (!search) return [];
     return allTimezones
-      .filter((tz) => tz.toLowerCase().includes(search) && !settings.action_timezone_options.includes(tz))
+      .filter(
+        (tz) => tz.toLowerCase().includes(search) && !settings.action_timezone_options.includes(tz)
+      )
       .slice(0, 10);
   }, [tzSearch, settings.action_timezone_options]);
 
@@ -87,7 +89,10 @@ export function ActionsSettings() {
     updateSetting("action_duration_options", newPresets);
   };
 
-  const updateDurationPreset = (index: number, updates: Partial<{ label: string; value: [number, number] }>) => {
+  const updateDurationPreset = (
+    index: number,
+    updates: Partial<{ label: string; value: [number, number] }>
+  ) => {
     const newPresets = settings.action_duration_options.map((p, i) => {
       if (i === index) {
         const updated = { ...p, ...updates };
@@ -140,9 +145,7 @@ export function ActionsSettings() {
               <SelectContent>
                 {ENERGY_OPTIONS.map((opt) => (
                   <SelectItem key={opt.value} value={opt.value}>
-                    <span className={cn("flex items-center gap-2", opt.color)}>
-                      {opt.label}
-                    </span>
+                    <span className={cn("flex items-center gap-2", opt.color)}>{opt.label}</span>
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -162,9 +165,7 @@ export function ActionsSettings() {
               <SelectContent>
                 {INTENTION_OPTIONS.map((opt) => (
                   <SelectItem key={opt.value} value={opt.value}>
-                    <span className={cn("flex items-center gap-2", opt.color)}>
-                      {opt.label}
-                    </span>
+                    <span className={cn("flex items-center gap-2", opt.color)}>{opt.label}</span>
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -173,6 +174,7 @@ export function ActionsSettings() {
         </div>
       </div>
 
+      {/* TODO: Make use of it or remove */}
       {/* Daily Action Limits */}
       <div className="space-y-4">
         <div className="flex items-center justify-between px-2">
@@ -180,7 +182,7 @@ export function ActionsSettings() {
             Daily Action Limits
           </h4>
           <span className="text-[10px] text-muted-foreground/40 font-medium">
-            TODO: usage of these limits
+            NOTE: This is under development
           </span>
         </div>
         <div className="flex items-center gap-1.5 p-1 bg-muted/40 rounded-xl">
@@ -226,6 +228,7 @@ export function ActionsSettings() {
           <h4 className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground/50">
             Duration Presets
           </h4>
+          {/* TODO: Add input dialog, so user configures label together with value, not after some default was created. */}
           <Button
             variant="ghost"
             size="sm"
@@ -246,18 +249,28 @@ export function ActionsSettings() {
                 <Input
                   value={preset.label}
                   onChange={(e) => updateDurationPreset(idx, { label: e.target.value })}
-                  placeholder={preset.value[0] === preset.value[1] ? `${preset.value[0]}m` : `${preset.value[0]}-${preset.value[1]}m`}
+                  placeholder={
+                    preset.value[0] === preset.value[1]
+                      ? `${preset.value[0]}m`
+                      : `${preset.value[0]}-${preset.value[1]}m`
+                  }
                   className="h-7 text-xs font-bold bg-transparent border-none p-0 focus-visible:ring-0 placeholder:italic"
                 />
                 <div className="flex items-center gap-4">
                   <div className="flex flex-col gap-1 flex-1">
-                    <span className="text-[9px] uppercase font-bold text-muted-foreground/40">Min (m)</span>
+                    <span className="text-[9px] uppercase font-bold text-muted-foreground/40">
+                      Min (m)
+                    </span>
                     <div className="flex items-center gap-1">
                       <Button
                         variant="ghost"
                         size="icon"
                         className="size-5 rounded-md hover:bg-background shadow-sm border border-border/40"
-                        onClick={() => updateDurationPreset(idx, { value: [Math.max(0, preset.value[0] - 5), preset.value[1]] })}
+                        onClick={() =>
+                          updateDurationPreset(idx, {
+                            value: [Math.max(0, preset.value[0] - 5), preset.value[1]],
+                          })
+                        }
                       >
                         <Minus className="size-2.5" />
                       </Button>
@@ -266,20 +279,36 @@ export function ActionsSettings() {
                         variant="ghost"
                         size="icon"
                         className="size-5 rounded-md hover:bg-background shadow-sm border border-border/40"
-                        onClick={() => updateDurationPreset(idx, { value: [preset.value[0] + 5, Math.max(preset.value[0] + 5, preset.value[1])] })}
+                        onClick={() =>
+                          updateDurationPreset(idx, {
+                            value: [
+                              preset.value[0] + 5,
+                              Math.max(preset.value[0] + 5, preset.value[1]),
+                            ],
+                          })
+                        }
                       >
                         <Plus className="size-2.5" />
                       </Button>
                     </div>
                   </div>
                   <div className="flex flex-col gap-1 flex-1">
-                    <span className="text-[9px] uppercase font-bold text-muted-foreground/40">Max (m)</span>
+                    <span className="text-[9px] uppercase font-bold text-muted-foreground/40">
+                      Max (m)
+                    </span>
                     <div className="flex items-center gap-1">
                       <Button
                         variant="ghost"
                         size="icon"
                         className="size-5 rounded-md hover:bg-background shadow-sm border border-border/40"
-                        onClick={() => updateDurationPreset(idx, { value: [preset.value[0], Math.max(preset.value[0], preset.value[1] - 5)] })}
+                        onClick={() =>
+                          updateDurationPreset(idx, {
+                            value: [
+                              preset.value[0],
+                              Math.max(preset.value[0], preset.value[1] - 5),
+                            ],
+                          })
+                        }
                       >
                         <Minus className="size-2.5" />
                       </Button>
@@ -288,7 +317,11 @@ export function ActionsSettings() {
                         variant="ghost"
                         size="icon"
                         className="size-5 rounded-md hover:bg-background shadow-sm border border-border/40"
-                        onClick={() => updateDurationPreset(idx, { value: [preset.value[0], preset.value[1] + 5] })}
+                        onClick={() =>
+                          updateDurationPreset(idx, {
+                            value: [preset.value[0], preset.value[1] + 5],
+                          })
+                        }
                       >
                         <Plus className="size-2.5" />
                       </Button>
@@ -338,6 +371,7 @@ export function ActionsSettings() {
               </div>
             ))}
           </div>
+          {/* FIXME: When user searches timezone, it has limited space down, so it looks like it does not fit ! */}
           <div className="relative">
             <div className="relative">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-3.5 text-muted-foreground/40" />
