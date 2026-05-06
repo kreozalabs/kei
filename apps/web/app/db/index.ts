@@ -31,7 +31,7 @@ async function runMigrations() {
           ALTER TABLE events RENAME TO events_old;
           CREATE TABLE events (
             event_id UUID PRIMARY KEY,
-            id UUID NOT NULL,
+            id TEXT NOT NULL,
             type TEXT NOT NULL,
             timestamp BIGINT NOT NULL,
             payload JSONB NOT NULL
@@ -55,7 +55,7 @@ async function ensureSchema() {
   await db.exec(`
     CREATE TABLE IF NOT EXISTS events (
       event_id UUID PRIMARY KEY,
-      id UUID NOT NULL,
+      id TEXT NOT NULL,
       type TEXT NOT NULL,
       timestamp BIGINT NOT NULL,
       payload JSONB NOT NULL

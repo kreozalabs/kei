@@ -1,7 +1,7 @@
 import { db } from "./index";
 import type { SettingKey } from "../types/settings";
 import { persistEvent } from "./events";
-import { EVENT_TYPES } from "../config/constants";
+import { EVENT_TYPES, GLOBAL_SETTINGS_ID } from "../config/constants";
 
 const channel = typeof window !== "undefined" ? new BroadcastChannel("kei_db_sync") : null;
 
@@ -19,7 +19,7 @@ export async function getSetting<T>(key: SettingKey): Promise<T | null> {
 
 export async function setSetting(key: SettingKey, value: any) {
   // 1. Persist the event globally
-  await persistEvent("global_settings", EVENT_TYPES.SETTING_UPDATED, { key, value });
+  await persistEvent(GLOBAL_SETTINGS_ID, EVENT_TYPES.SETTING_UPDATED, { key, value });
 
   // 2. Update the materialized view
   await db.query(
