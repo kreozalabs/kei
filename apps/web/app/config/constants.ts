@@ -127,7 +127,10 @@ export const DEFAULT_SETTINGS = {
   remember_layout_on_refresh: true,
   action_duration_options: DURATION_OPTIONS,
   action_timezone_options: MAJOR_TIMEZONES,
+  default_energy: ENERGY_LEVELS.MEDIUM,
+  default_intention: INTENTIONS.WANT,
 };
+
 
 export const STORAGE_KEYS = {
   SETTINGS: "kei-ui-settings",

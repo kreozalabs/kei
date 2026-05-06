@@ -1,7 +1,9 @@
 import { useEffect } from "react";
 import { useOutletContext } from "react-router";
 import type { AppLayoutContext } from "@/components/layout/AppLayout";
-import { GeneralSettings } from "@/components/settings/GeneralSettings";
+import { PersonalizationSettings } from "@/components/settings/PersonalizationSettings";
+import { BehaviorSettings } from "@/components/settings/BehaviorSettings";
+import { ActionsSettings } from "@/components/settings/ActionsSettings";
 
 export default function Settings() {
   const { setTitle, setSubtitle, setHeaderActions } = useOutletContext<AppLayoutContext>();
@@ -25,16 +27,29 @@ export default function Settings() {
         </p>
       </div>
 
-      <div className="grid grid-cols-1 gap-8">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
         <div className="bg-card/50 border border-border/40 rounded-4xl p-8 space-y-8 overflow-hidden relative group">
           <div className="relative">
             <h3 className="text-lg font-bold tracking-tight mb-8">Personalization</h3>
-            <GeneralSettings />
+            <PersonalizationSettings />
+          </div>
+        </div>
+
+        <div className="bg-card/50 border border-border/40 rounded-4xl p-8 space-y-8 overflow-hidden relative group">
+          <div className="relative">
+            <h3 className="text-lg font-bold tracking-tight mb-8">Behavior</h3>
+            <BehaviorSettings />
+          </div>
+        </div>
+
+        <div className="lg:col-span-2 bg-card/50 border border-border/40 rounded-4xl p-8 space-y-8 overflow-hidden relative group">
+          <div className="relative">
+            <h3 className="text-lg font-bold tracking-tight mb-8">Actions Configuration</h3>
+            <ActionsSettings />
           </div>
         </div>
       </div>
-
-      {/* Other settings sections can be added here later */}
     </div>
   );
 }
+

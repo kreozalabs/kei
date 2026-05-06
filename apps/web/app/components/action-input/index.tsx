@@ -71,34 +71,41 @@ const getNearestTimeValue = () => {
 
 export const ActionInput = forwardRef<ActionInputHandle, ActionInputProps>(
   ({ onSuccess, onCancel, initialDate, className, variant = "inline", actionToEdit }, ref) => {
+    const { settings } = useSettings();
+    const queryClient = useQueryClient();
+
     const [title, setTitle] = useState(actionToEdit?.title || DEFAULT_CONFIG.TITLE);
     const [note, setNote] = useState(actionToEdit?.note || "");
     const [intention, setIntention] = useState<IntentionType>(
-      actionToEdit?.intention || (DEFAULT_CONFIG.INTENTION as IntentionType)
+      actionToEdit?.intention || (settings.default_intention as IntentionType)
     );
     const [isImportant, setIsImportant] = useState(actionToEdit?.important || false);
     const [energy, setEnergy] = useState<EnergyType>(
-      actionToEdit?.energy || (DEFAULT_CONFIG.ENERGY as EnergyType)
+      actionToEdit?.energy || (settings.default_energy as EnergyType)
     );
-    const [duration, setDuration] = useState<[number, number | null]>(
-      actionToEdit?.duration
-        ? [actionToEdit.duration[0], actionToEdit.duration[1]]
-        : DEFAULT_CONFIG.DURATION
-    );
+
+    const [duration, setDuration] = useState<[number, number | null]>(() => {
+      if (actionToEdit?.duration) return [actionToEdit.duration[0], actionToEdit.duration[1]];
+      
+      // Use the first duration preset if available, otherwise fallback to hardcoded default
+      const firstPreset = settings.action_duration_options[0];
+      return firstPreset ? firstPreset.value : DEFAULT_CONFIG.DURATION;
+    });
     const [scheduledDate, setScheduledDate] = useState(
       actionToEdit?.scheduledDate || initialDate || getTodayString()
     );
     const [startTime, setStartTime] = useState<string>(actionToEdit?.startTime || "");
     const [endTime, setEndTime] = useState<string>(actionToEdit?.endTime || "");
     const [timezone, setTimezone] = useState<string>(
-      actionToEdit?.timezone || Intl.DateTimeFormat().resolvedOptions().timeZone
+      actionToEdit?.timezone || 
+      (settings.timezone === "auto" ? Intl.DateTimeFormat().resolvedOptions().timeZone : settings.timezone)
     );
+
     const [timezoneSearch, setTimezoneSearch] = useState("");
     const [isTimeInvalid, setIsTimeInvalid] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
-    const queryClient = useQueryClient();
-    const { settings } = useSettings();
     const timeFormat = settings.time_format;
+
     const titleInputRef = useRef<HTMLInputElement>(null);
 
     const timeOptions = useMemo(() => getTimeOptions(timeFormat), [timeFormat]);

@@ -39,6 +39,8 @@ export function ActionInputDialog({
       {trigger && <DialogTrigger asChild>{trigger}</DialogTrigger>}
       <DialogContent
         className="w-[calc(100%-1.5rem)] sm:max-w-xl p-0 bg-background/60 backdrop-blur-3xl border border-border/20 shadow-2xl ring-0 gap-0 rounded-4xl sm:rounded-3xl"
+
+
         showCloseButton={false}
         onPointerDownOutside={handleCloseAttempt}
         onEscapeKeyDown={handleCloseAttempt}

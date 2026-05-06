@@ -19,6 +19,9 @@ export interface Settings {
   remember_layout_on_refresh: boolean;
   action_duration_options: { label: string; value: [number, number] }[];
   action_timezone_options: string[];
+  default_energy: string;
+  default_intention: string;
 }
+
 
 export type SettingKey = keyof Settings;
