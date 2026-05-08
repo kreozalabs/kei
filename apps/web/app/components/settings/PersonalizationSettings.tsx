@@ -26,7 +26,6 @@ export function PersonalizationSettings() {
             <Button
               key={a.name}
               variant="ghost"
-              rounded="full"
               className={cn(
                 "size-5 p-0 min-w-0 border-none transition-transform hover:scale-110 active:scale-95",
                 a.color,

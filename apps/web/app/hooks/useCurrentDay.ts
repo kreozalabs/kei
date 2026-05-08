@@ -6,7 +6,7 @@ export function useCurrentDay() {
   const [today, setToday] = useState(getTodayString);
 
   useEffect(() => {
-    let timeoutId: NodeJS.Timeout;
+    let timeoutId: ReturnType<typeof setTimeout>;
 
     const scheduleUpdate = () => {
       const now = new Date();

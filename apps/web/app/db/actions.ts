@@ -251,30 +251,42 @@ export async function rebuildActions() {
 
   await db.query("DELETE FROM actions");
 
-  for (const action of actionsMap.values()) {
-    if (!action) continue;
+  const actions = Array.from(actionsMap.values()).filter(Boolean);
+  if (actions.length === 0) return;
 
-    await db.query(
-      `INSERT INTO actions (
-        id, title, note, intention, important, energy, duration, 
-        scheduled_date, start_time, end_time, timezone, status, created_at, sort_order
-      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)`,
-      [
-        action.id,
-        action.title,
-        action.note,
-        action.intention,
-        action.important,
-        action.energy,
-        JSON.stringify(action.duration),
-        action.scheduledDate,
-        action.startTime,
-        action.endTime,
-        action.timezone,
-        action.status,
-        action.createdAt,
-        action.sortOrder,
-      ]
+  // Batch insert all actions
+  const valueStrings: string[] = [];
+  const values: any[] = [];
+  let paramIdx = 1;
+
+  for (const action of actions) {
+    valueStrings.push(
+      `($${paramIdx++}, $${paramIdx++}, $${paramIdx++}, $${paramIdx++}, $${paramIdx++}, $${paramIdx++}, $${paramIdx++}, $${paramIdx++}, $${paramIdx++}, $${paramIdx++}, $${paramIdx++}, $${paramIdx++}, $${paramIdx++}, $${paramIdx++})`
+    );
+    values.push(
+      action.id,
+      action.title,
+      action.note,
+      action.intention,
+      action.important,
+      action.energy,
+      JSON.stringify(action.duration),
+      action.scheduledDate,
+      action.startTime,
+      action.endTime,
+      action.timezone,
+      action.status,
+      action.createdAt,
+      action.sortOrder
     );
   }
+
+  const insertQuery = `
+    INSERT INTO actions (
+      id, title, note, intention, important, energy, duration, 
+      scheduled_date, start_time, end_time, timezone, status, created_at, sort_order
+    ) VALUES ${valueStrings.join(", ")}
+  `;
+
+  await db.query(insertQuery, values);
 }

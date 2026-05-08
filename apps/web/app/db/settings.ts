@@ -9,7 +9,7 @@ export async function getSetting<T>(key: SettingKey): Promise<T | null> {
   const result = await db.query("SELECT value FROM settings WHERE key = $1", [key]);
   if (result.rows.length === 0) return null;
   const value = (result.rows[0] as { value: unknown }).value;
-  if (typeof value !== "string") return value;
+  if (typeof value !== "string") return value as T;
   try {
     return JSON.parse(value);
   } catch {
@@ -33,12 +33,25 @@ export async function setSetting(key: SettingKey, value: unknown) {
 }
 
 export async function initDefaultSettings(defaults: Record<string, unknown>) {
-  for (const [key, value] of Object.entries(defaults)) {
-    await db.query(
-      "INSERT INTO settings (key, value) VALUES ($1, $2) ON CONFLICT (key) DO NOTHING",
-      [key, JSON.stringify(value)]
-    );
+  const entries = Object.entries(defaults);
+  if (entries.length === 0) return;
+
+  const valueStrings: string[] = [];
+  const values: any[] = [];
+  let paramIdx = 1;
+
+  for (const [key, value] of entries) {
+    valueStrings.push(`($${paramIdx++}, $${paramIdx++})`);
+    values.push(key, JSON.stringify(value));
   }
+
+  const insertQuery = `
+    INSERT INTO settings (key, value) 
+    VALUES ${valueStrings.join(", ")} 
+    ON CONFLICT (key) DO NOTHING
+  `;
+
+  await db.query(insertQuery, values);
 }
 
 export async function rebuildSettings() {
@@ -47,13 +60,33 @@ export async function rebuildSettings() {
     "SELECT payload FROM events WHERE type = $1 ORDER BY timestamp ASC",
     [EVENT_TYPES.SETTING_UPDATED]
   );
-  for (const row of result.rows as { payload: string | Record<string, unknown> }[]) {
+  const rows = result.rows as { payload: string | Record<string, unknown> }[];
+  if (rows.length === 0) return;
+
+  const finalSettings = new Map<string, any>();
+  for (const row of rows) {
     const payload = typeof row.payload === "string" ? JSON.parse(row.payload) : row.payload;
     if (payload.key && payload.value !== undefined) {
-      await db.query(
-        "INSERT INTO settings (key, value) VALUES ($1, $2) ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value",
-        [payload.key, JSON.stringify(payload.value)]
-      );
+      finalSettings.set(payload.key, payload.value);
     }
   }
+
+  if (finalSettings.size === 0) return;
+
+  const valueStrings: string[] = [];
+  const values: any[] = [];
+  let paramIdx = 1;
+
+  for (const [key, value] of finalSettings.entries()) {
+    valueStrings.push(`($${paramIdx++}, $${paramIdx++})`);
+    values.push(key, JSON.stringify(value));
+  }
+
+  const insertQuery = `
+    INSERT INTO settings (key, value) 
+    VALUES ${valueStrings.join(", ")}
+    ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value
+  `;
+
+  await db.query(insertQuery, values);
 }
