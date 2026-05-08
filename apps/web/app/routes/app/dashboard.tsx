@@ -431,7 +431,6 @@ export default function Dashboard() {
         {!isTodayLocked && (
           <TimelineCalendar selectedDate={selectedDate} onDateSelect={setSelectedDate} />
         )}
-
         {overdueActions.length > 0 && !isTodayLocked && selectedDate <= todayStr && (
           <ActionSection
             id="overdue"
@@ -442,6 +441,7 @@ export default function Dashboard() {
             onAbandon={handleAbandon}
             onEdit={handleEdit}
             sectionDate={todayStr}
+            defaultExpanded={settings.show_overdue}
           />
         )}
 

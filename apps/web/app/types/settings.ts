@@ -21,6 +21,7 @@ export interface Settings {
   action_timezone_options: string[];
   default_energy: string;
   default_intention: string;
+  show_overdue: boolean;
 }
 
 

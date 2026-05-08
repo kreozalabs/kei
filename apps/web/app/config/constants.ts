@@ -131,6 +131,7 @@ export const DEFAULT_SETTINGS = {
   action_timezone_options: MAJOR_TIMEZONES,
   default_energy: ENERGY_LEVELS.MEDIUM,
   default_intention: INTENTIONS.WANT,
+  show_overdue: false,
 };
 
 
