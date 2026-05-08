@@ -224,7 +224,9 @@ export async function abandonAction(id: string) {
  * Useful for migrations or when the derivation logic changes.
  */
 export async function rebuildSnapshots() {
-  const result = await db.query(`SELECT * FROM events ORDER BY timestamp ASC`);
+  const result = await db.query(
+    `SELECT * FROM events WHERE type LIKE 'ACTION_%' ORDER BY timestamp ASC`
+  );
   const events = result.rows as Event<any>[];
 
   const actionsMap = new Map<string, Action>();
@@ -234,7 +236,9 @@ export async function rebuildSnapshots() {
     const existing = actionsMap.get(actionId) || null;
     try {
       const updated = applyEventToAction(existing, event);
-      actionsMap.set(actionId, updated);
+      if (updated) {
+        actionsMap.set(actionId, updated);
+      }
     } catch (e) {
       console.warn(`Skipping event during rebuild: ${e}`);
     }
@@ -243,6 +247,8 @@ export async function rebuildSnapshots() {
   await db.query("DELETE FROM actions_snapshot");
 
   for (const action of actionsMap.values()) {
+    if (!action) continue;
+
     await db.query(
       `INSERT INTO actions_snapshot (
         id, title, note, intention, important, energy, duration, 

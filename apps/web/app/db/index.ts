@@ -37,7 +37,7 @@ async function runMigrations() {
             payload JSONB NOT NULL
           );
           INSERT INTO events (event_id, id, type, timestamp, payload)
-          SELECT id, id, type, timestamp, payload FROM events_old;
+          SELECT gen_random_uuid(), id, type, timestamp, payload FROM events_old;
           DROP TABLE events_old;
           CREATE INDEX idx_events_id ON events(id);
           CREATE INDEX idx_events_timestamp ON events(timestamp);
@@ -67,7 +67,7 @@ async function ensureSchema() {
     );
 
     CREATE TABLE IF NOT EXISTS actions_snapshot (
-      id UUID PRIMARY KEY,
+      id TEXT PRIMARY KEY,
       title TEXT NOT NULL,
       note TEXT,
       intention TEXT NOT NULL,
@@ -100,7 +100,7 @@ async function ensureSnapshots() {
     console.log("Snapshots table is empty. Rebuilding from event log...");
     const { rebuildSnapshots } = await import("./actions");
     const { rebuildSettings } = await import("./settings");
-    await rebuildSnapshots();
+    await rebuildSnapshots(); // FIXME: Why call it snapshot and not just actions?
     await rebuildSettings();
     console.log("Snapshots rebuild complete.");
   }

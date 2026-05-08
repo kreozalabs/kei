@@ -21,7 +21,7 @@ import {
 } from "@/utils/time";
 import { Button } from "@kreozalabs/ui";
 import { LockIcon, UnlockIcon, Loader2Icon } from "lucide-react";
-import type { Action, ActionStatus } from "@/types/actions";
+import type { Action } from "@/types/actions";
 import { ActionSection } from "@/components/ActionSection";
 import { ActionItem } from "@/components/ActionItem";
 import { ActionInputDialog } from "@/components/ActionInputDialog";
@@ -39,7 +39,7 @@ import {
   type DragOverEvent,
 } from "@dnd-kit/core";
 import { useSettings } from "@/providers/SettingsContext";
-import { STORAGE_KEYS } from "@/config/constants";
+import { STORAGE_KEYS, ACTION_STATUS } from "@/config/constants";
 
 export default function Dashboard() {
   const { settings } = useSettings();
@@ -76,7 +76,14 @@ export default function Dashboard() {
   const { setTitle, setSubtitle, setHeaderActions } = useOutletContext<AppLayoutContext>();
 
   useEffect(() => {
-    initPromise.then(() => setIsDbReady(true));
+    initPromise
+      .then(() => setIsDbReady(true))
+      .catch((err) => {
+        console.error("Critical: DB Initialization failed", err);
+        // We still set it to true so the UI doesn't stay in a permanent loading state
+        // and can try to render whatever it can from the DB
+        setIsDbReady(true);
+      });
   }, []);
 
   useEffect(() => {
@@ -141,16 +148,16 @@ export default function Dashboard() {
   }, [isTodayLocked, selectedDate, todayStr]);
 
   const { data: activeActions = [] } = useQuery({
-    queryKey: ["actions", { status: "active" }],
-    queryFn: () => getActions({ status: [ACTION_STATUS.ACTIVE as ActionStatus] }),
+    queryKey: ["actions", { status: ACTION_STATUS.ACTIVE, endDate }],
+    queryFn: () => getActions({ status: [ACTION_STATUS.ACTIVE], endDate }),
     enabled: isDbReady,
   });
 
   const { data: completedActions = [] } = useQuery({
-    queryKey: ["actions", { status: "completed", startDate, endDate }],
+    queryKey: ["actions", { status: ACTION_STATUS.COMPLETED, startDate, endDate }],
     queryFn: () =>
       getActions({
-        status: [ACTION_STATUS.COMPLETED as ActionStatus],
+        status: [ACTION_STATUS.COMPLETED],
         startDate,
         endDate,
       }),
