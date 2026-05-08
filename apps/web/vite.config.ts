@@ -2,6 +2,7 @@ import { defineConfig } from 'vite'
 import { reactRouter } from '@react-router/dev/vite'
 import tailwindcss from '@tailwindcss/vite'
 import { VitePWA } from 'vite-plugin-pwa'
+import checker from 'vite-plugin-checker'
 import path from 'path'
 
 export default defineConfig({
@@ -37,6 +38,9 @@ export default defineConfig({
       devOptions: {
         enabled: true,
       },
+    }),
+    checker({
+      typescript: true,
     }),
   ],
   resolve: {
