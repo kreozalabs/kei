@@ -26,7 +26,7 @@ export function SettingsProvider({
           return { ...DEFAULT_SETTINGS, ...parsed };
         }
       }
-    } catch (e) {
+    } catch {
       // Legacy or invalid data, fallback to defaults
     }
     return DEFAULT_SETTINGS;
@@ -51,7 +51,7 @@ export function SettingsProvider({
       for (const key of Object.keys(DEFAULT_SETTINGS) as (keyof Settings)[]) {
         const dbValue = await getSetting(key);
         if (dbValue !== null && JSON.stringify(dbValue) !== JSON.stringify(latestSettings[key])) {
-          latestSettings[key] = dbValue as any;
+          latestSettings[key] = dbValue as never;
           hasChanges = true;
         }
       }

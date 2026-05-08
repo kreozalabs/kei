@@ -8,7 +8,7 @@ export const db =
           type: "module",
         })
       )
-    : (null as any);
+    : (null as unknown as PGliteWorker);
 
 // Initialize some tables if needed
 async function runMigrations() {
@@ -66,7 +66,7 @@ async function ensureSchema() {
       value JSONB NOT NULL
     );
 
-    CREATE TABLE IF NOT EXISTS actions_snapshot (
+    CREATE TABLE IF NOT EXISTS actions (
       id TEXT PRIMARY KEY,
       title TEXT NOT NULL,
       note TEXT,
@@ -90,19 +90,19 @@ async function ensureDefaults() {
   await initDefaultSettings(DEFAULT_SETTINGS);
 }
 
-async function ensureSnapshots() {
+async function ensureDerivedData() {
   if (!db) return;
-  // Check if snapshots table is empty but we have events
-  const snapshotExists = await db.query("SELECT 1 FROM actions_snapshot LIMIT 1");
+  // Check if actions table is empty but we have events
+  const actionsExist = await db.query("SELECT 1 FROM actions LIMIT 1");
   const eventsExist = await db.query("SELECT 1 FROM events LIMIT 1");
 
-  if (snapshotExists.rows.length === 0 && eventsExist.rows.length > 0) {
-    console.log("Snapshots table is empty. Rebuilding from event log...");
-    const { rebuildSnapshots } = await import("./actions");
+  if (actionsExist.rows.length === 0 && eventsExist.rows.length > 0) {
+    console.log("Derived data tables are empty. Rebuilding from event log...");
+    const { rebuildActions } = await import("./actions");
     const { rebuildSettings } = await import("./settings");
-    await rebuildSnapshots(); // FIXME: Why call it snapshot and not just actions?
+    await rebuildActions();
     await rebuildSettings();
-    console.log("Snapshots rebuild complete.");
+    console.log("Derived data rebuild complete.");
   }
 }
 
@@ -111,7 +111,7 @@ export const initDb = async () => {
   await runMigrations();
   await ensureSchema();
   await ensureDefaults();
-  await ensureSnapshots();
+  await ensureDerivedData();
 };
 
 // Start initialization immediately

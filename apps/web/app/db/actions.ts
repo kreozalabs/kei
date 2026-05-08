@@ -17,7 +17,7 @@ const channel = typeof window !== "undefined" ? new BroadcastChannel("kei_db_syn
 /**
  * Reconstructs or updates an Action state based on an event.
  */
-function applyEventToAction(action: Action | null, event: Event<any>): Action {
+function applyEventToAction(action: Action | null, event: Event<ActionPayload>): Action {
   const { type, payload, timestamp, id: actionId } = event;
 
   if (type === EVENT_TYPES.ACTION_INTENDED) {
@@ -60,7 +60,7 @@ function applyEventToAction(action: Action | null, event: Event<any>): Action {
 /**
  * Persists an event and updates the corresponding action snapshot.
  */
-async function pushEvent<T>(actionId: string, type: string, payload: T) {
+async function pushEvent(actionId: string, type: string, payload: ActionPayload) {
   // 1. Store the event using the central persistence
   const event = await persistEvent(actionId, type, payload);
 
@@ -68,14 +68,20 @@ async function pushEvent<T>(actionId: string, type: string, payload: T) {
   // We fetch existing snapshot if it's an update, or start fresh if it's a creation
   let currentAction: Action | null = null;
   if (type !== EVENT_TYPES.ACTION_INTENDED) {
-    const result = await db.query("SELECT * FROM actions_snapshot WHERE id = $1", [actionId]);
+    const result = await db.query("SELECT * FROM actions WHERE id = $1", [actionId]);
     if (result.rows.length > 0) {
-      const row = result.rows[0] as any;
-      const parseDuration = (val: any) => {
+      const row = result.rows[0] as unknown as Action & {
+        scheduled_date: string;
+        start_time: string | null;
+        end_time: string | null;
+        created_at: string | number;
+        sort_order: string | number;
+      };
+      const parseDuration = (val: unknown) => {
         if (typeof val !== "string") return val;
         try {
           return JSON.parse(val);
-        } catch (e) {
+        } catch {
           return null;
         }
       };
@@ -94,7 +100,7 @@ async function pushEvent<T>(actionId: string, type: string, payload: T) {
   const updatedAction = applyEventToAction(currentAction, event);
 
   await db.query(
-    `INSERT INTO actions_snapshot (
+    `INSERT INTO actions (
       id, title, note, intention, important, energy, duration, 
       scheduled_date, start_time, end_time, timezone, status, created_at, sort_order
     ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)
@@ -141,8 +147,8 @@ export async function getActions(filters?: {
   endDate?: string;
   status?: ActionStatus[];
 }): Promise<Action[]> {
-  let query = `SELECT * FROM actions_snapshot`;
-  const params: any[] = [];
+  let query = `SELECT * FROM actions`;
+  const params: unknown[] = [];
   const whereClauses: string[] = [];
 
   if (filters?.startDate) {
@@ -169,28 +175,27 @@ export async function getActions(filters?: {
     query += ` WHERE ` + whereClauses.join(" AND ");
   }
 
-  query += ` ORDER BY sort_order DESC`;
-
   const result = await db.query(query, params);
-  return result.rows.map((row: any) => {
-    const parseDuration = (val: any) => {
+  return result.rows.map((row) => {
+    const r = row as Record<string, unknown>;
+    const parseDuration = (val: unknown) => {
       if (typeof val !== "string") return val;
       try {
         return JSON.parse(val);
-      } catch (e) {
+      } catch {
         return null;
       }
     };
     return {
-      ...row,
-      scheduledDate: row.scheduled_date,
-      startTime: row.start_time,
-      endTime: row.end_time,
-      createdAt: Number(row.created_at),
-      sortOrder: Number(row.sort_order),
-      duration: parseDuration(row.duration),
-    };
-  }) as Action[];
+      ...r,
+      scheduledDate: r.scheduled_date as string,
+      startTime: r.start_time as string | null,
+      endTime: r.end_time as string | null,
+      createdAt: Number(r.created_at),
+      sortOrder: Number(r.sort_order),
+      duration: parseDuration(r.duration),
+    } as unknown as Action;
+  });
 }
 
 export async function addAction(payload: ActionPayload) {
@@ -220,14 +225,14 @@ export async function abandonAction(id: string) {
 }
 
 /**
- * Rebuilds the entire actions_snapshot table from the events log.
+ * Rebuilds the entire actions table from the events log.
  * Useful for migrations or when the derivation logic changes.
  */
-export async function rebuildSnapshots() {
+export async function rebuildActions() {
   const result = await db.query(
     `SELECT * FROM events WHERE type LIKE 'ACTION_%' ORDER BY timestamp ASC`
   );
-  const events = result.rows as Event<any>[];
+  const events = result.rows as Event<ActionPayload>[];
 
   const actionsMap = new Map<string, Action>();
 
@@ -244,13 +249,13 @@ export async function rebuildSnapshots() {
     }
   }
 
-  await db.query("DELETE FROM actions_snapshot");
+  await db.query("DELETE FROM actions");
 
   for (const action of actionsMap.values()) {
     if (!action) continue;
 
     await db.query(
-      `INSERT INTO actions_snapshot (
+      `INSERT INTO actions (
         id, title, note, intention, important, energy, duration, 
         scheduled_date, start_time, end_time, timezone, status, created_at, sort_order
       ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)`,
