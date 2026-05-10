@@ -114,6 +114,14 @@ export const MAJOR_TIMEZONES = [
   "Australia/Sydney",
 ];
 
+export const ALL_TIMEZONES = (
+  Intl as typeof Intl & { supportedValuesOf?: (key: string) => string[] }
+).supportedValuesOf?.("timeZone") || ["UTC"];
+
+export const TIMEZONES = {
+  AUTO: "auto",
+} as const;
+
 export const DEFAULT_SETTINGS = {
   min_daily_actions: 3,
   max_daily_actions: 6,
@@ -167,4 +175,34 @@ export const ACCENTS: { name: Accent; color: string; hover: string }[] = [
   { name: "rose", color: "bg-[#f43f5e]", hover: "hover:bg-[#f43f5e]" },
   { name: "amber", color: "bg-[#f59e0b]", hover: "hover:bg-[#f59e0b]" },
   { name: "forest", color: "bg-[#22c55e]", hover: "hover:bg-[#22c55e]" },
+];
+
+export const LANGUAGE_OPTIONS = [
+  { label: "Auto", value: LANGUAGES.AUTO },
+  { label: "English", value: LANGUAGES.EN },
+];
+
+export const DISTRACTION_FREE_OPTIONS = [
+  { label: "On", value: true },
+  { label: "Off", value: false },
+];
+
+export const TIMELINE_VIEW_OPTIONS = [
+  { label: "Locked (Today)", value: true },
+  { label: "Unlocked (Full)", value: false },
+];
+
+export const SECTION_STATE_OPTIONS = [
+  { label: "Expanded", value: true },
+  { label: "Collapsed", value: false },
+];
+
+export const OVERDUE_ACTIONS_OPTIONS = [
+  { label: "Expanded", value: true },
+  { label: "Collapsed", value: false },
+];
+
+export const LAYOUT_PERSISTENCE_OPTIONS = [
+  { label: "On", value: true },
+  { label: "Off", value: false },
 ];

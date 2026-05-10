@@ -256,7 +256,7 @@ export async function rebuildActions() {
 
   // Batch insert all actions
   const valueStrings: string[] = [];
-  const values: any[] = [];
+  const values: unknown[] = [];
   let paramIdx = 1;
 
   for (const action of actions) {

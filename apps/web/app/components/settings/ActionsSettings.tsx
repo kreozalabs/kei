@@ -11,11 +11,8 @@ import {
   SelectValue,
 } from "@kreozalabs/ui";
 import { useSettings } from "../../providers/SettingsContext";
-import { ENERGY_OPTIONS, INTENTION_OPTIONS } from "../../config/constants";
+import { ENERGY_OPTIONS, INTENTION_OPTIONS, ALL_TIMEZONES } from "../../config/constants";
 // FIXME: At some point, settings seem to be overwritten. What causes it?
-const allTimezones = (
-  Intl as typeof Intl & { supportedValuesOf?: (key: string) => string[] }
-).supportedValuesOf?.("timeZone") || ["UTC"];
 
 function NumberStepper({
   value,
@@ -69,11 +66,9 @@ export function ActionsSettings() {
   const filteredTimezones = useMemo(() => {
     const search = tzSearch.toLowerCase().trim();
     if (!search) return [];
-    return allTimezones
-      .filter(
-        (tz) => tz.toLowerCase().includes(search) && !settings.action_timezone_options.includes(tz)
-      )
-      .slice(0, 10);
+    return ALL_TIMEZONES.filter(
+      (tz) => tz.toLowerCase().includes(search) && !settings.action_timezone_options.includes(tz)
+    ).slice(0, 50);
   }, [tzSearch, settings.action_timezone_options]);
 
   const addDurationPreset = () => {

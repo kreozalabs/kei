@@ -26,7 +26,7 @@ export default function Settings() {
           Customize how Kei looks and feels for you.
         </p>
       </div>
-
+      {/* TODO: Show only as one column for all screens instead of 2 */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
         <div className="bg-card/50 border border-border/40 rounded-4xl p-8 space-y-8 overflow-hidden relative group">
           <div className="relative">
@@ -52,4 +52,3 @@ export default function Settings() {
     </div>
   );
 }
-

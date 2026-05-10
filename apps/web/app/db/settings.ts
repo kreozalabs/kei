@@ -37,7 +37,7 @@ export async function initDefaultSettings(defaults: Record<string, unknown>) {
   if (entries.length === 0) return;
 
   const valueStrings: string[] = [];
-  const values: any[] = [];
+  const values: unknown[] = [];
   let paramIdx = 1;
 
   for (const [key, value] of entries) {
@@ -63,7 +63,7 @@ export async function rebuildSettings() {
   const rows = result.rows as { payload: string | Record<string, unknown> }[];
   if (rows.length === 0) return;
 
-  const finalSettings = new Map<string, any>();
+  const finalSettings = new Map<string, unknown>();
   for (const row of rows) {
     const payload = typeof row.payload === "string" ? JSON.parse(row.payload) : row.payload;
     if (payload.key && payload.value !== undefined) {
@@ -74,7 +74,7 @@ export async function rebuildSettings() {
   if (finalSettings.size === 0) return;
 
   const valueStrings: string[] = [];
-  const values: any[] = [];
+  const values: unknown[] = [];
   let paramIdx = 1;
 
   for (const [key, value] of finalSettings.entries()) {
