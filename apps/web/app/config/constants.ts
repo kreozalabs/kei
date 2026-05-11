@@ -123,9 +123,6 @@ export const TIMEZONES = {
 } as const;
 
 export const DEFAULT_SETTINGS = {
-  min_daily_actions: 3,
-  max_daily_actions: 6,
-  min_max_actions_enabled: true,
   section_expanded: true,
   theme: "system" as const,
   accent: "rose" as const,
@@ -141,7 +138,6 @@ export const DEFAULT_SETTINGS = {
   default_intention: INTENTIONS.WANT,
   show_overdue: false,
 };
-
 
 export const STORAGE_KEYS = {
   SETTINGS: "kei-ui-settings",

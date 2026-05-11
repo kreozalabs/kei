@@ -1,22 +1,7 @@
-import {
-  Button,
-  cn,
-  Popover,
-  PopoverTrigger,
-  PopoverContent,
-  Command,
-  CommandInput,
-  CommandList,
-  CommandEmpty,
-  CommandGroup,
-  CommandItem,
-} from "@kreozalabs/ui";
+import { Button, cn } from "@kreozalabs/ui";
 
 import { useSettings } from "../../providers/SettingsContext";
 import {
-  MAJOR_TIMEZONES,
-  ALL_TIMEZONES,
-  TIMEZONES,
   LANGUAGE_OPTIONS,
   DISTRACTION_FREE_OPTIONS,
   TIMELINE_VIEW_OPTIONS,
@@ -25,18 +10,17 @@ import {
   LAYOUT_PERSISTENCE_OPTIONS,
 } from "../../config/constants";
 import { useState } from "react";
-import { Check, ChevronsUpDown, MapPin, Globe } from "lucide-react";
+import { MapPin } from "lucide-react";
+import { TimezoneSelector } from "../TimezoneSelector";
 
 export function BehaviorSettings() {
   const { settings, updateSetting } = useSettings();
-  const [open, setOpen] = useState(false);
 
   const presets = settings.action_timezone_options || [];
 
   const handleDetect = () => {
     const detected = Intl.DateTimeFormat().resolvedOptions().timeZone;
     updateSetting("timezone", detected);
-    setOpen(false);
   };
 
   return (
@@ -57,116 +41,11 @@ export function BehaviorSettings() {
           </Button>
         </div>
         <div className="px-2">
-          <Popover open={open} onOpenChange={setOpen}>
-            <PopoverTrigger asChild>
-              <Button
-                variant="ghost"
-                role="combobox"
-                aria-expanded={open}
-                className="w-full justify-between h-9 bg-muted/20 border border-border/30 rounded-xl px-3 hover:bg-muted/30"
-              >
-                <span className="truncate">
-                  {settings.timezone === TIMEZONES.AUTO
-                    ? `Auto (${Intl.DateTimeFormat().resolvedOptions().timeZone.replace(/_/g, " ")})`
-                    : settings.timezone.replace(/_/g, " ")}
-                </span>
-                <ChevronsUpDown className="ml-2 size-4 shrink-0 opacity-50" />
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent className="w-[--radix-popover-trigger-width] p-0" align="start">
-              <Command>
-                <CommandInput placeholder="Search timezone..." />
-                <CommandList className="max-h-75">
-                  <CommandEmpty>No timezone found.</CommandEmpty>
-                  <CommandGroup heading="System">
-                    <CommandItem
-                      value={TIMEZONES.AUTO}
-                      onSelect={() => {
-                        updateSetting("timezone", TIMEZONES.AUTO);
-                        setOpen(false);
-                      }}
-                    >
-                      <Globe className="mr-2 size-4 opacity-50" />
-                      Auto (System Default)
-                      <Check
-                        className={cn(
-                          "ml-auto size-4",
-                          settings.timezone === TIMEZONES.AUTO ? "opacity-100" : "opacity-0"
-                        )}
-                      />
-                    </CommandItem>
-                  </CommandGroup>
-
-                  {presets.length > 0 && (
-                    <CommandGroup heading="Your Presets">
-                      {presets.map((tz) => (
-                        <CommandItem
-                          key={tz}
-                          value={tz}
-                          onSelect={() => {
-                            updateSetting("timezone", tz);
-                            setOpen(false);
-                          }}
-                        >
-                          {tz.replace(/_/g, " ")}
-                          <Check
-                            className={cn(
-                              "ml-auto size-4",
-                              settings.timezone === tz ? "opacity-100" : "opacity-0"
-                            )}
-                          />
-                        </CommandItem>
-                      ))}
-                    </CommandGroup>
-                  )}
-
-                  <CommandGroup heading="Common">
-                    {MAJOR_TIMEZONES.filter((tz) => !presets.includes(tz)).map((tz) => (
-                      <CommandItem
-                        key={tz}
-                        value={tz}
-                        onSelect={() => {
-                          updateSetting("timezone", tz);
-                          setOpen(false);
-                        }}
-                      >
-                        {tz.replace(/_/g, " ")}
-                        <Check
-                          className={cn(
-                            "ml-auto size-4",
-                            settings.timezone === tz ? "opacity-100" : "opacity-0"
-                          )}
-                        />
-                      </CommandItem>
-                    ))}
-                  </CommandGroup>
-
-                  <CommandGroup heading="All Timezones">
-                    {ALL_TIMEZONES.filter(
-                      (tz) => !MAJOR_TIMEZONES.includes(tz) && !presets.includes(tz)
-                    ).map((tz) => (
-                      <CommandItem
-                        key={tz}
-                        value={tz}
-                        onSelect={() => {
-                          updateSetting("timezone", tz);
-                          setOpen(false);
-                        }}
-                      >
-                        {tz.replace(/_/g, " ")}
-                        <Check
-                          className={cn(
-                            "ml-auto size-4",
-                            settings.timezone === tz ? "opacity-100" : "opacity-0"
-                          )}
-                        />
-                      </CommandItem>
-                    ))}
-                  </CommandGroup>
-                </CommandList>
-              </Command>
-            </PopoverContent>
-          </Popover>
+          <TimezoneSelector
+            value={settings.timezone}
+            onSelect={(tz) => updateSetting("timezone", tz)}
+            showAuto={true}
+          />
         </div>
       </div>
 

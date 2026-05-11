@@ -1,15 +1,14 @@
-import { useState, useRef, useEffect, useMemo, useImperativeHandle, forwardRef } from "react";
 import {
+  AlertCircle,
   AudioLines,
-  Clock,
-  BatteryMedium,
   BatteryFull,
   BatteryLow,
+  BatteryMedium,
+  ChevronsUpDown,
+  Clock,
   Heart,
-  AlertCircle,
   Star,
 } from "lucide-react";
-import { Input, Button, Textarea, cn } from "@kreozalabs/ui";
 import { ActionSelector } from "../ActionSelector";
 import { NextDayBadge } from "../NextDayBadge";
 import { addAction, updateAction } from "../../db/actions";
@@ -17,6 +16,7 @@ import type { Action, EnergyType, IntentionType } from "../../types/actions";
 import { useQueryClient } from "@tanstack/react-query";
 import { useDiscardGuard } from "../../hooks/useDiscardGuard";
 import { useSettings } from "../../providers/SettingsContext";
+import { TimezoneSelector } from "../TimezoneSelector";
 import {
   formatTime,
   timeToMinutes,
@@ -36,9 +36,12 @@ import {
   ENERGY_OPTIONS,
   INTENTION_OPTIONS,
   IMPORTANT_CONFIG,
+  TIMEZONES,
 } from "../../config/constants";
 import { DurationInputs } from "./DurationInputs";
 import { DiscardDialog } from "./DiscardDialog";
+import { forwardRef, useEffect, useImperativeHandle, useMemo, useRef, useState } from "react";
+import { Button, cn, Input, Textarea } from "@kreozalabs/ui";
 
 // TODO: Somehow we should allow user to move between input fields, so it is frictionless and requires less effort. Maybe enter, or arrows?
 // TODO: NOT RELATED TO THIS COMPONENT, BUT IT IS BACKUP LOGIC. Allow user to import and export data.
@@ -56,9 +59,7 @@ export interface ActionInputHandle {
   handleCancelAttempt: () => void;
 }
 
-const allTimezones = (
-  Intl as typeof Intl & { supportedValuesOf?: (key: string) => string[] }
-).supportedValuesOf?.("timeZone") || ["UTC", Intl.DateTimeFormat().resolvedOptions().timeZone];
+const localTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
 
 const getNearestTimeValue = () => {
   const now = new Date();
@@ -86,7 +87,7 @@ export const ActionInput = forwardRef<ActionInputHandle, ActionInputProps>(
 
     const [duration, setDuration] = useState<[number, number | null]>(() => {
       if (actionToEdit?.duration) return [actionToEdit.duration[0], actionToEdit.duration[1]];
-      
+
       // Use the first duration preset if available, otherwise fallback to hardcoded default
       const firstPreset = settings.action_duration_options[0];
       return firstPreset ? firstPreset.value : DEFAULT_CONFIG.DURATION;
@@ -97,11 +98,11 @@ export const ActionInput = forwardRef<ActionInputHandle, ActionInputProps>(
     const [startTime, setStartTime] = useState<string>(actionToEdit?.startTime || "");
     const [endTime, setEndTime] = useState<string>(actionToEdit?.endTime || "");
     const [timezone, setTimezone] = useState<string>(
-      actionToEdit?.timezone || 
-      (settings.timezone === "auto" ? Intl.DateTimeFormat().resolvedOptions().timeZone : settings.timezone)
+      actionToEdit?.timezone ||
+        (settings.timezone === TIMEZONES.AUTO ? localTimezone : settings.timezone)
     );
 
-    const [timezoneSearch, setTimezoneSearch] = useState("");
+    const [timezoneOpen, setTimezoneOpen] = useState(false);
     const [isTimeInvalid, setIsTimeInvalid] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
     const timeFormat = settings.time_format;
@@ -110,26 +111,6 @@ export const ActionInput = forwardRef<ActionInputHandle, ActionInputProps>(
 
     const timeOptions = useMemo(() => getTimeOptions(timeFormat), [timeFormat]);
     const energyOption = ENERGY_OPTIONS.find((opt) => opt.value === energy) || ENERGY_OPTIONS[1];
-
-    const sortedTimezones = useMemo(() => {
-      const local = Intl.DateTimeFormat().resolvedOptions().timeZone;
-      const others = allTimezones.filter(
-        (tz) => tz !== local && !settings.action_timezone_options.includes(tz)
-      );
-
-      return [
-        local,
-        ...settings.action_timezone_options.filter((m) => allTimezones.includes(m) && m !== local),
-        ...others,
-      ];
-    }, [settings.action_timezone_options]);
-
-    const filteredTimezones = useMemo(() => {
-      const search = timezoneSearch.toLowerCase().trim();
-      if (!search) return sortedTimezones.slice(0, settings.action_timezone_options.length);
-
-      return sortedTimezones.filter((tz) => tz.toLowerCase().includes(search)).slice(0, 100);
-    }, [timezoneSearch, sortedTimezones, settings.action_timezone_options]);
 
     const energyOptionsWithIcons = useMemo(
       () =>
@@ -563,36 +544,26 @@ export const ActionInput = forwardRef<ActionInputHandle, ActionInputProps>(
                 </>
               )}
 
-              <ActionSelector
-                label={timezone.split("/").pop()?.replace("_", " ") || timezone}
-                options={filteredTimezones.map((tz: string) => ({
-                  label: tz.replace("_", " "),
-                  value: tz,
-                }))}
-                onSelect={(val) => {
-                  setTimezone(val as string);
-                  setTimezoneSearch("");
-                }}
+              <TimezoneSelector
                 value={timezone}
+                onSelect={(tz) => setTimezone(tz)}
                 align="end"
-                childrenPosition="top"
-                triggerClassName="bg-muted/30 border-none hover:bg-muted/50 rounded-md px-3 h-8 shadow-none text-muted-foreground/60 text-[11px]"
-                contentClassName="max-h-[300px] overflow-y-auto w-[220px]"
-                title="Scheduling Timezone"
-              >
-                <div className="p-2 space-y-2">
-                  <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground/50 px-1">
-                    Search Timezone
-                  </p>
-                  <Input
-                    placeholder="Enter city or zone..."
-                    value={timezoneSearch}
-                    onChange={(e) => setTimezoneSearch(e.target.value)}
-                    className="h-8 text-[12px] bg-muted/30 border-none px-2 focus-visible:ring-1 focus-visible:ring-primary/20"
-                    onKeyDown={(e) => e.stopPropagation()}
-                  />
-                </div>
-              </ActionSelector>
+                trigger={
+                  <Button
+                    variant="ghost"
+                    role="combobox"
+                    aria-expanded={timezoneOpen}
+                    className="bg-muted/30 border-none hover:bg-muted/50 rounded-md px-3 h-8 shadow-none text-muted-foreground/60 text-[11px] justify-between gap-2"
+                  >
+                    <span className="truncate">
+                      {timezone.split("/").pop()?.replace("_", " ") || timezone}
+                    </span>
+                    <ChevronsUpDown className="size-3 shrink-0 opacity-50" />
+                  </Button>
+                }
+                open={timezoneOpen}
+                onOpenChange={setTimezoneOpen}
+              />
             </div>
           </div>
 

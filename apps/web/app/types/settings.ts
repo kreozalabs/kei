@@ -5,9 +5,6 @@ export type Accent = "blue" | "indigo" | "violet" | "emerald" | "rose" | "amber"
 export type TimeFormat = (typeof TIME_FORMATS)[keyof typeof TIME_FORMATS];
 
 export interface Settings {
-  min_daily_actions: number;
-  max_daily_actions: number;
-  min_max_actions_enabled: boolean;
   section_expanded: boolean;
   theme: Theme;
   accent: Accent;
@@ -23,6 +20,5 @@ export interface Settings {
   default_intention: string;
   show_overdue: boolean;
 }
-
 
 export type SettingKey = keyof Settings;
