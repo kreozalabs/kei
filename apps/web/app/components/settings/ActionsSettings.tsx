@@ -1,5 +1,14 @@
 import { useState } from "react";
-import { Plus, Minus, Trash2, Search, X, ChevronsUpDown } from "lucide-react";
+import {
+  Plus,
+  Minus,
+  Trash2,
+  Search,
+  X,
+  ChevronsUpDown,
+  ChevronUp,
+  ChevronDown,
+} from "lucide-react";
 import {
   Button,
   cn,
@@ -9,9 +18,19 @@ import {
   SelectItem,
   SelectTrigger,
   SelectValue,
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+  DialogFooter,
+  InputGroup,
+  InputGroupAddon,
+  InputGroupButton,
+  InputGroupInput,
 } from "@kreozalabs/ui";
 import { useSettings } from "../../providers/SettingsContext";
-import { ENERGY_OPTIONS, INTENTION_OPTIONS } from "../../config/constants";
+import { DEFAULT_CONFIG, ENERGY_OPTIONS, INTENTION_OPTIONS } from "../../config/constants";
 import { TimezoneSelector } from "../TimezoneSelector";
 // FIXME: At some point, settings seem to be overwritten. What causes it?
 
@@ -19,16 +38,39 @@ export function ActionsSettings() {
   const { settings, updateSetting } = useSettings();
   const [tzPopoverOpen, setTzPopoverOpen] = useState(false);
 
+  const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
+  const [newPreset, setNewPreset] = useState<{ label: string; value: [number, number] }>({
+    label: "",
+    value: DEFAULT_CONFIG.DURATION,
+  });
+
   const addDurationPreset = () => {
+    const finalLabel = newPreset.label.trim()
+      ? newPreset.label
+      : newPreset.value[0] === newPreset.value[1]
+        ? `${newPreset.value[0]}m`
+        : `${newPreset.value[0]}-${newPreset.value[1]}m`;
+
     const newPresets = [
       ...settings.action_duration_options,
-      { label: "15-30m", value: [15, 30] as [number, number] },
+      { label: finalLabel, value: newPreset.value },
     ];
     updateSetting("action_duration_options", newPresets);
+    setIsAddDialogOpen(false);
+    setNewPreset({ label: "", value: DEFAULT_CONFIG.DURATION });
   };
 
   const removeDurationPreset = (index: number) => {
     const newPresets = settings.action_duration_options.filter((_, i) => i !== index);
+    updateSetting("action_duration_options", newPresets);
+  };
+
+  const moveDurationPreset = (index: number, direction: "up" | "down") => {
+    const newPresets = [...settings.action_duration_options];
+    const targetIndex = direction === "up" ? index - 1 : index + 1;
+    if (targetIndex < 0 || targetIndex >= newPresets.length) return;
+
+    [newPresets[index], newPresets[targetIndex]] = [newPresets[targetIndex], newPresets[index]];
     updateSetting("action_duration_options", newPresets);
   };
 
@@ -123,118 +165,246 @@ export function ActionsSettings() {
       {/* Duration Presets */}
       <div className="space-y-4">
         <div className="flex items-center justify-between px-2">
-          <h4 className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground/50">
-            Duration Presets
-          </h4>
-          {/* TODO: Add input dialog, so user configures label together with value, not after some default was created. */}
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={addDurationPreset}
-            className="h-7 px-2 text-[10px] uppercase font-bold tracking-widest text-primary hover:bg-primary/10"
-          >
-            <Plus className="size-3 mr-1" />
-            Add Preset
-          </Button>
-        </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 px-2">
-          {settings.action_duration_options.map((preset, idx) => (
-            <div
-              key={idx}
-              className="flex items-center gap-3 p-3 bg-muted/20 rounded-2xl border border-border/30 group/preset"
-            >
-              <div className="flex-1 space-y-2">
-                <Input
-                  value={preset.label}
-                  onChange={(e) => updateDurationPreset(idx, { label: e.target.value })}
-                  placeholder={
-                    preset.value[0] === preset.value[1]
-                      ? `${preset.value[0]}m`
-                      : `${preset.value[0]}-${preset.value[1]}m`
-                  }
-                  className="h-7 text-xs font-bold bg-transparent border-none p-0 focus-visible:ring-0 placeholder:italic"
-                />
-                <div className="flex items-center gap-4">
-                  <div className="flex flex-col gap-1 flex-1">
-                    <span className="text-[9px] uppercase font-bold text-muted-foreground/40">
+          <div className="space-y-0.5">
+            <h4 className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground/50">
+              Duration Presets
+            </h4>
+            <p className="text-[9px] text-muted-foreground/30 font-medium">
+              Quickly pick duration when adding actions
+            </p>
+          </div>
+          <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
+            <DialogTrigger asChild>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-7 px-2 text-[10px] uppercase font-bold tracking-widest text-primary hover:bg-primary/10"
+              >
+                <Plus className="size-3 mr-1" />
+                Add Preset
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="sm:max-w-[320px]">
+              <DialogHeader>
+                <DialogTitle className="text-sm font-bold uppercase tracking-wider">
+                  New Duration Preset
+                </DialogTitle>
+              </DialogHeader>
+              <div className="space-y-4 py-4">
+                <div className="space-y-2">
+                  <label className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground/40 px-1">
+                    Label (Optional)
+                  </label>
+                  <Input
+                    value={newPreset.label}
+                    onChange={(e) => setNewPreset({ ...newPreset, label: e.target.value })}
+                    placeholder="e.short, long, break..."
+                    className="h-9 bg-muted/20 border-border/30 rounded-xl text-xs"
+                  />
+                </div>
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="space-y-2">
+                    <label className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground/40 px-1">
                       Min (m)
-                    </span>
-                    <div className="flex items-center gap-1">
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="size-5 rounded-md hover:bg-background shadow-sm border border-border/40"
+                    </label>
+                    <InputGroup className="h-9 bg-muted/20 border-border/30 rounded-xl">
+                      <InputGroupButton
                         onClick={() =>
-                          updateDurationPreset(idx, {
-                            value: [Math.max(0, preset.value[0] - 5), preset.value[1]],
+                          setNewPreset({
+                            ...newPreset,
+                            value: [Math.max(0, newPreset.value[0] - 5), newPreset.value[1]],
                           })
                         }
                       >
-                        <Minus className="size-2.5" />
-                      </Button>
-                      <span className="text-xs font-bold w-6 text-center">{preset.value[0]}</span>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="size-5 rounded-md hover:bg-background shadow-sm border border-border/40"
+                        <Minus className="size-3" />
+                      </InputGroupButton>
+                      <InputGroupInput
+                        type="number"
+                        value={newPreset.value[0]}
+                        onChange={(e) =>
+                          setNewPreset({
+                            ...newPreset,
+                            value: [parseInt(e.target.value) || 0, newPreset.value[1]],
+                          })
+                        }
+                        className="text-center font-bold text-xs"
+                      />
+                      <InputGroupButton
                         onClick={() =>
-                          updateDurationPreset(idx, {
+                          setNewPreset({
+                            ...newPreset,
                             value: [
-                              preset.value[0] + 5,
-                              Math.max(preset.value[0] + 5, preset.value[1]),
+                              newPreset.value[0] + 5,
+                              Math.max(newPreset.value[0] + 5, newPreset.value[1]),
                             ],
                           })
                         }
                       >
-                        <Plus className="size-2.5" />
-                      </Button>
-                    </div>
+                        <Plus className="size-3" />
+                      </InputGroupButton>
+                    </InputGroup>
                   </div>
-                  <div className="flex flex-col gap-1 flex-1">
-                    <span className="text-[9px] uppercase font-bold text-muted-foreground/40">
+                  <div className="space-y-2">
+                    <label className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground/40 px-1">
                       Max (m)
-                    </span>
-                    <div className="flex items-center gap-1">
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="size-5 rounded-md hover:bg-background shadow-sm border border-border/40"
+                    </label>
+                    <InputGroup className="h-9 bg-muted/20 border-border/30 rounded-xl">
+                      <InputGroupButton
                         onClick={() =>
-                          updateDurationPreset(idx, {
+                          setNewPreset({
+                            ...newPreset,
                             value: [
-                              preset.value[0],
-                              Math.max(preset.value[0], preset.value[1] - 5),
+                              newPreset.value[0],
+                              Math.max(newPreset.value[0], newPreset.value[1] - 5),
                             ],
                           })
                         }
                       >
-                        <Minus className="size-2.5" />
-                      </Button>
-                      <span className="text-xs font-bold w-6 text-center">{preset.value[1]}</span>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="size-5 rounded-md hover:bg-background shadow-sm border border-border/40"
+                        <Minus className="size-3" />
+                      </InputGroupButton>
+                      <InputGroupInput
+                        type="number"
+                        value={newPreset.value[1]}
+                        onChange={(e) =>
+                          setNewPreset({
+                            ...newPreset,
+                            value: [newPreset.value[0], parseInt(e.target.value) || 0],
+                          })
+                        }
+                        className="text-center font-bold text-xs"
+                      />
+                      <InputGroupButton
                         onClick={() =>
-                          updateDurationPreset(idx, {
-                            value: [preset.value[0], preset.value[1] + 5],
+                          setNewPreset({
+                            ...newPreset,
+                            value: [newPreset.value[0], newPreset.value[1] + 5],
                           })
                         }
                       >
-                        <Plus className="size-2.5" />
-                      </Button>
-                    </div>
+                        <Plus className="size-3" />
+                      </InputGroupButton>
+                    </InputGroup>
                   </div>
                 </div>
               </div>
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={() => removeDurationPreset(idx)}
-                className="size-8 text-muted-foreground/40 hover:text-destructive hover:bg-destructive/10 opacity-0 group-hover/preset:opacity-100 transition-opacity"
-              >
-                <Trash2 className="size-4" />
-              </Button>
+              <DialogFooter>
+                <Button onClick={addDurationPreset} className="w-full rounded-xl font-bold text-xs">
+                  Create Preset
+                </Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
+        </div>
+        <div className="flex flex-col gap-3 px-2">
+          {settings.action_duration_options.map((preset, idx) => (
+            <div
+              key={idx}
+              className="flex items-center gap-3 p-3 bg-muted/20 rounded-2xl border border-border/30 group/preset hover:border-primary/20 hover:bg-primary/2 transition-all"
+            >
+              <div className="flex-1 space-y-2.5">
+                <div className="flex items-center justify-between">
+                  <Input
+                    value={preset.label}
+                    onChange={(e) => updateDurationPreset(idx, { label: e.target.value })}
+                    placeholder={
+                      preset.value[0] === preset.value[1]
+                        ? `${preset.value[0]}m`
+                        : `${preset.value[0]}-${preset.value[1]}m`
+                    }
+                    className="h-6 text-xs font-bold bg-transparent border-none p-0 focus-visible:ring-0 placeholder:italic w-full"
+                  />
+                </div>
+                <div className="flex items-center gap-2">
+                  <InputGroup className="h-7 bg-background/50 border-border/30 rounded-lg flex-1">
+                    <InputGroupAddon className="text-[8px] font-bold uppercase tracking-tighter opacity-40 px-1.5">
+                      Min
+                    </InputGroupAddon>
+                    <InputGroupButton
+                      size="icon-xs"
+                      onClick={() =>
+                        updateDurationPreset(idx, {
+                          value: [Math.max(0, preset.value[0] - 5), preset.value[1]],
+                        })
+                      }
+                    >
+                      <Minus className="size-2" />
+                    </InputGroupButton>
+                    <span className="text-[10px] font-bold w-6 text-center tabular-nums">
+                      {preset.value[0]}
+                    </span>
+                    <InputGroupButton
+                      size="icon-xs"
+                      onClick={() =>
+                        updateDurationPreset(idx, {
+                          value: [
+                            preset.value[0] + 5,
+                            Math.max(preset.value[0] + 5, preset.value[1]),
+                          ],
+                        })
+                      }
+                    >
+                      <Plus className="size-2" />
+                    </InputGroupButton>
+                  </InputGroup>
+
+                  <InputGroup className="h-7 bg-background/50 border-border/30 rounded-lg flex-1">
+                    <InputGroupAddon className="text-[8px] font-bold uppercase tracking-tighter opacity-40 px-1.5">
+                      Max
+                    </InputGroupAddon>
+                    <InputGroupButton
+                      size="icon-xs"
+                      onClick={() =>
+                        updateDurationPreset(idx, {
+                          value: [preset.value[0], Math.max(preset.value[0], preset.value[1] - 5)],
+                        })
+                      }
+                    >
+                      <Minus className="size-2" />
+                    </InputGroupButton>
+                    <span className="text-[10px] font-bold w-6 text-center tabular-nums">
+                      {preset.value[1]}
+                    </span>
+                    <InputGroupButton
+                      size="icon-xs"
+                      onClick={() =>
+                        updateDurationPreset(idx, {
+                          value: [preset.value[0], preset.value[1] + 5],
+                        })
+                      }
+                    >
+                      <Plus className="size-2" />
+                    </InputGroupButton>
+                  </InputGroup>
+                </div>
+              </div>
+              <div className="flex flex-col items-center gap-0.5 opacity-50 group-hover/preset:opacity-100 transition-opacity">
+                <Button
+                  variant="ghost"
+                  size="icon-xs"
+                  onClick={() => moveDurationPreset(idx, "up")}
+                  disabled={idx === 0}
+                  className="size-6 text-muted-foreground/90 hover:text-primary hover:bg-primary/10 disabled:opacity-0"
+                >
+                  <ChevronUp className="size-3.5" />
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="icon-xs"
+                  onClick={() => removeDurationPreset(idx)}
+                  className="size-6 text-muted-foreground/40 hover:text-destructive hover:bg-destructive/10"
+                >
+                  <Trash2 className="size-3.5" />
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="icon-xs"
+                  onClick={() => moveDurationPreset(idx, "down")}
+                  disabled={idx === settings.action_duration_options.length - 1}
+                  className="size-6 text-muted-foreground/90 hover:text-primary hover:bg-primary/10 disabled:opacity-0"
+                >
+                  <ChevronDown className="size-3.5" />
+                </Button>
+              </div>
             </div>
           ))}
         </div>

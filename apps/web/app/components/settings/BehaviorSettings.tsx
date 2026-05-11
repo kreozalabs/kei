@@ -9,14 +9,11 @@ import {
   OVERDUE_ACTIONS_OPTIONS,
   LAYOUT_PERSISTENCE_OPTIONS,
 } from "../../config/constants";
-import { useState } from "react";
 import { MapPin } from "lucide-react";
 import { TimezoneSelector } from "../TimezoneSelector";
 
 export function BehaviorSettings() {
   const { settings, updateSetting } = useSettings();
-
-  const presets = settings.action_timezone_options || [];
 
   const handleDetect = () => {
     const detected = Intl.DateTimeFormat().resolvedOptions().timeZone;
