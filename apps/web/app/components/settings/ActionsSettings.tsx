@@ -32,7 +32,6 @@ import {
 import { useSettings } from "../../providers/SettingsContext";
 import { DEFAULT_CONFIG, ENERGY_OPTIONS, INTENTION_OPTIONS } from "../../config/constants";
 import { TimezoneSelector } from "../TimezoneSelector";
-// FIXME: At some point, settings seem to be overwritten. What causes it?
 
 export function ActionsSettings() {
   const { settings, updateSetting } = useSettings();
@@ -51,59 +50,62 @@ export function ActionsSettings() {
         ? `${newPreset.value[0]}m`
         : `${newPreset.value[0]}-${newPreset.value[1]}m`;
 
-    const newPresets = [
-      ...settings.action_duration_options,
+    updateSetting("action_duration_options", (prev) => [
+      ...prev,
       { label: finalLabel, value: newPreset.value },
-    ];
-    updateSetting("action_duration_options", newPresets);
+    ]);
     setIsAddDialogOpen(false);
     setNewPreset({ label: "", value: DEFAULT_CONFIG.DURATION });
   };
 
   const removeDurationPreset = (index: number) => {
-    const newPresets = settings.action_duration_options.filter((_, i) => i !== index);
-    updateSetting("action_duration_options", newPresets);
+    updateSetting("action_duration_options", (prev) => prev.filter((_, i) => i !== index));
   };
 
   const moveDurationPreset = (index: number, direction: "up" | "down") => {
-    const newPresets = [...settings.action_duration_options];
-    const targetIndex = direction === "up" ? index - 1 : index + 1;
-    if (targetIndex < 0 || targetIndex >= newPresets.length) return;
+    updateSetting("action_duration_options", (prev) => {
+      const newPresets = [...prev];
+      const targetIndex = direction === "up" ? index - 1 : index + 1;
+      if (targetIndex < 0 || targetIndex >= newPresets.length) return prev;
 
-    [newPresets[index], newPresets[targetIndex]] = [newPresets[targetIndex], newPresets[index]];
-    updateSetting("action_duration_options", newPresets);
+      [newPresets[index], newPresets[targetIndex]] = [newPresets[targetIndex], newPresets[index]];
+      return newPresets;
+    });
   };
 
   const updateDurationPreset = (
     index: number,
     updates: Partial<{ label: string; value: [number, number] }>
   ) => {
-    const newPresets = settings.action_duration_options.map((p, i) => {
-      if (i === index) {
-        const updated = { ...p, ...updates };
-        if (!updated.label.trim()) {
-          const [min, max] = updated.value;
-          updated.label = min === max ? `${min}m` : `${min}-${max}m`;
+    updateSetting("action_duration_options", (prev) =>
+      prev.map((p, i) => {
+        if (i === index) {
+          const updated = { ...p, ...updates };
+          if (!updated.label.trim()) {
+            const [min, max] = updated.value;
+            updated.label = min === max ? `${min}m` : `${min}-${max}m`;
+          }
+          return updated;
         }
-        return updated;
-      }
-      return p;
-    });
-    updateSetting("action_duration_options", newPresets);
+        return p;
+      })
+    );
   };
 
   const toggleTimezonePreset = (tz: string) => {
-    const isPreset = settings.action_timezone_options.includes(tz);
-    const newTimezones = isPreset
-      ? settings.action_timezone_options.filter((t) => t !== tz)
-      : [...settings.action_timezone_options, tz];
-    updateSetting("action_timezone_options", newTimezones);
-    if (!isPreset) setTzPopoverOpen(false);
+    updateSetting("action_timezone_options", (prev) => {
+      const isPreset = prev.includes(tz);
+      if (isPreset) {
+        return prev.filter((t) => t !== tz);
+      } else {
+        setTzPopoverOpen(false);
+        return [...prev, tz];
+      }
+    });
   };
 
   const removeTimezonePreset = (tz: string) => {
-    const newTimezones = settings.action_timezone_options.filter((t) => t !== tz);
-    updateSetting("action_timezone_options", newTimezones);
+    updateSetting("action_timezone_options", (prev) => prev.filter((t) => t !== tz));
   };
 
   return (

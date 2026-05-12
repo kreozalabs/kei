@@ -4,7 +4,10 @@ import type { Settings } from "../types/settings";
 
 export interface SettingsProviderState {
   settings: Settings;
-  updateSetting: <K extends keyof Settings>(key: K, value: Settings[K]) => void;
+  updateSetting: <K extends keyof Settings>(
+    key: K,
+    value: Settings[K] | ((prev: Settings[K]) => Settings[K])
+  ) => void;
 }
 
 export const initialState: SettingsProviderState = {

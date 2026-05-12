@@ -32,34 +32,61 @@ export function SettingsProvider({
     return DEFAULT_SETTINGS;
   });
 
-  const updateSetting = <K extends keyof Settings>(key: K, value: Settings[K]) => {
-    const newSettings = { ...settings, [key]: value };
-    // 1. Update React state immediately
-    setSettingsState(newSettings);
-    // 2. Update local storage for fast next-load
-    localStorage.setItem(storageKey, JSON.stringify(newSettings));
-    // 3. Persist to DB (fires SETTING_UPDATED event and DB_UPDATED broadcast)
-    initPromise.then(() => setSetting(key, value));
+  const updateSetting = <K extends keyof Settings>(
+    key: K,
+    valueOrFn: Settings[K] | ((prev: Settings[K]) => Settings[K])
+  ) => {
+    setSettingsState((prev) => {
+      const newValue =
+        typeof valueOrFn === "function"
+          ? (valueOrFn as (prev: Settings[K]) => Settings[K])(prev[key])
+          : valueOrFn;
+
+      const newSettings = { ...prev, [key]: newValue };
+      localStorage.setItem(storageKey, JSON.stringify(newSettings));
+
+      // Persist to DB asynchronously
+      initPromise.then(() => setSetting(key, newValue));
+
+      return newSettings;
+    });
   };
 
   useEffect(() => {
     // On mount, load latest from DB
     const loadFromDb = async () => {
       await initPromise;
-      let hasChanges = false;
-      const latestSettings = { ...settings };
+      const dbSettings: Partial<Settings> = {};
+
       for (const key of Object.keys(DEFAULT_SETTINGS) as (keyof Settings)[]) {
-        const dbValue = await getSetting(key);
-        if (dbValue !== null && JSON.stringify(dbValue) !== JSON.stringify(latestSettings[key])) {
-          latestSettings[key] = dbValue as never;
-          hasChanges = true;
+        const dbValue = await getSetting<Settings[typeof key]>(key);
+        if (dbValue !== null) {
+          dbSettings[key] = dbValue;
         }
       }
-      if (hasChanges) {
-        setSettingsState(latestSettings);
-        localStorage.setItem(storageKey, JSON.stringify(latestSettings));
-      }
+
+      setSettingsState((prev) => {
+        let hasChanges = false;
+        const newSettings = { ...prev };
+
+        for (const [key, value] of Object.entries(dbSettings) as [
+          keyof Settings,
+          Settings[keyof Settings],
+        ][]) {
+          if (JSON.stringify(value) !== JSON.stringify(prev[key])) {
+            newSettings[key] = value as never;
+            hasChanges = true;
+          }
+        }
+
+        if (hasChanges) {
+          localStorage.setItem(storageKey, JSON.stringify(newSettings));
+          return newSettings;
+        }
+        return prev;
+      });
     };
+
     loadFromDb();
 
     // Listen to broadcast channel for changes in other tabs
