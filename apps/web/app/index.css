@@ -1,4 +1,4 @@
-@import "@kreozalabs/styles/base.css";
+@import "@kreozalabs/ui/index.css";
 
 /* Local overrides */
 body {
@@ -7,6 +7,11 @@ body {
   overscroll-behavior: none;
   /* Eliminate the 300ms double-tap delay and accidental zooming */
   touch-action: manipulation;
+}
+
+.disable-transitions,
+.disable-transitions * {
+  transition: none !important;
 }
 
 /* Responsive Typography Variables */

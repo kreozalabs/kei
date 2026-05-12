@@ -10,7 +10,8 @@ import {
 
 import "./index.css";
 import { QueryProvider } from "./providers/QueryProvider";
-import { ThemeProvider } from "./providers/ThemeProvider";
+import { SettingsProvider } from "./providers/SettingsProvider";
+import { STORAGE_KEYS } from "./config/constants";
 import { ErrorPage } from "./components/ErrorPage";
 
 export function Layout({ children }: { children: React.ReactNode }) {
@@ -31,9 +32,9 @@ export function Layout({ children }: { children: React.ReactNode }) {
         <Links />
       </head>
       <body suppressHydrationWarning>
-        <ThemeProvider defaultTheme="system" storageKey="kei-ui-theme">
+        <SettingsProvider storageKey={STORAGE_KEYS.SETTINGS}>
           {children}
-        </ThemeProvider>
+        </SettingsProvider>
         <ScrollRestoration />
         <Scripts />
       </body>

@@ -25,7 +25,7 @@ import {
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { NextDayBadge } from "./NextDayBadge";
-import { useTheme } from "../providers/ThemeContext";
+import { useSettings } from "../providers/SettingsContext";
 import { formatTime } from "../utils/time";
 import { useCurrentDay } from "../hooks/useCurrentDay";
 import {
@@ -50,7 +50,8 @@ export function ActionItem({ action, type, onComplete, onAbandon, onEdit }: Acti
     id: action.id,
     disabled: type === ACTION_STATUS.COMPLETED,
   });
-  const { timeFormat } = useTheme();
+  const { settings } = useSettings();
+  const timeFormat = settings.time_format;
 
   const style = {
     transform: CSS.Translate.toString(transform),

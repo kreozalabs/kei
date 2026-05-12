@@ -4,6 +4,7 @@ interface SubtleOptions {
   initialDelay?: number;
   idleDelay?: number;
   disableOnMobile?: boolean;
+  disabled?: boolean;
 }
 
 /**
@@ -14,6 +15,7 @@ export function useSubtleOnIdle({
   initialDelay = 3000,
   idleDelay = 2000,
   disableOnMobile = true,
+  disabled = false,
 }: SubtleOptions = {}) {
   const [isSubtle, setIsSubtle] = useState(false);
   const timeoutRef = useRef<ReturnType<typeof setTimeout>>(null);
@@ -42,7 +44,7 @@ export function useSubtleOnIdle({
   };
 
   useEffect(() => {
-    if (disableOnMobile && window.matchMedia("(max-width: 767px)").matches) return;
+    if (disabled || (disableOnMobile && window.matchMedia("(max-width: 767px)").matches)) return;
 
     // Initial reveal then fade
     timeoutRef.current = setTimeout(() => {
@@ -55,8 +57,7 @@ export function useSubtleOnIdle({
     return () => {
       if (timeoutRef.current) clearTimeout(timeoutRef.current);
     };
-  }, [initialDelay, disableOnMobile]);
+  }, [initialDelay, disableOnMobile, disabled]);
 
-  return { isSubtle, show, hide };
+  return { isSubtle: disabled ? false : isSubtle, show, hide };
 }
-

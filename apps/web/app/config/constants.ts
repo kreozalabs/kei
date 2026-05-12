@@ -1,9 +1,12 @@
+export const GLOBAL_SETTINGS_ID = "00000000-0000-0000-0000-000000000000";
+
 export const EVENT_TYPES = {
   ACTION_INTENDED: "ACTION_INTENDED",
   ACTION_UPDATED: "ACTION_UPDATED",
   ACTION_COMPLETED: "ACTION_COMPLETED",
   ACTION_ACTIVATED: "ACTION_ACTIVATED",
   ACTION_ABANDONED: "ACTION_ABANDONED",
+  SETTING_UPDATED: "SETTING_UPDATED",
 } as const;
 
 export const ENERGY_LEVELS = {
@@ -96,7 +99,106 @@ export const DURATION_OPTIONS = [
   { label: "1 - 2 hours", value: [60, 120] as [number, number] },
 ];
 
+export const MAJOR_TIMEZONES = [
+  "UTC",
+  "America/New_York",
+  "America/Chicago",
+  "America/Denver",
+  "America/Los_Angeles",
+  "Europe/London",
+  "Europe/Paris",
+  "Europe/Berlin",
+  "Asia/Tokyo",
+  "Asia/Shanghai",
+  "Asia/Dubai",
+  "Australia/Sydney",
+];
+
+export const ALL_TIMEZONES = (
+  Intl as typeof Intl & { supportedValuesOf?: (key: string) => string[] }
+).supportedValuesOf?.("timeZone") || ["UTC"];
+
+export const TIMEZONES = {
+  AUTO: "auto",
+} as const;
+
 export const DEFAULT_SETTINGS = {
-  min_daily_actions: 3,
-  max_daily_actions: 6,
+  section_expanded: true,
+  theme: "system" as const,
+  accent: "rose" as const,
+  today_locked: true,
+  time_format: TIME_FORMATS.H24,
+  timezone: "auto",
+  subtle_on_idle: true,
+  language: "auto",
+  remember_layout_on_refresh: true,
+  action_duration_options: DURATION_OPTIONS,
+  action_timezone_options: MAJOR_TIMEZONES,
+  default_energy: ENERGY_LEVELS.MEDIUM,
+  default_intention: INTENTIONS.WANT,
+  show_overdue: false,
 };
+
+export const STORAGE_KEYS = {
+  SETTINGS: "kei-ui-settings",
+  SESSION: {
+    SECTION_EXPANDED: (id: string) => `kei-section-expanded-${id}`,
+    TIMELINE_LOCKED: "kei-dashboard-timeline-locked",
+  },
+} as const;
+
+export const THEMES = {
+  LIGHT: "light",
+  DARK: "dark",
+  SYSTEM: "system",
+} as const;
+
+export const LANGUAGES = {
+  AUTO: "auto",
+  EN: "en",
+  // DE: "de",
+  // ES: "es",
+  // RU: "ru",
+} as const;
+
+import type { Accent } from "../types/settings";
+
+export const ACCENTS: { name: Accent; color: string; hover: string }[] = [
+  { name: "blue", color: "bg-[#1e60f2]", hover: "hover:bg-[#1e60f2]" },
+  { name: "indigo", color: "bg-[#818cf8]", hover: "hover:bg-[#818cf8]" },
+  { name: "violet", color: "bg-[#a78bfa]", hover: "hover:bg-[#a78bfa]" },
+  { name: "emerald", color: "bg-[#10b981]", hover: "hover:bg-[#10b981]" },
+  { name: "rose", color: "bg-[#f43f5e]", hover: "hover:bg-[#f43f5e]" },
+  { name: "amber", color: "bg-[#f59e0b]", hover: "hover:bg-[#f59e0b]" },
+  { name: "forest", color: "bg-[#22c55e]", hover: "hover:bg-[#22c55e]" },
+];
+
+export const LANGUAGE_OPTIONS = [
+  { label: "Auto", value: LANGUAGES.AUTO },
+  { label: "English", value: LANGUAGES.EN },
+];
+
+export const DISTRACTION_FREE_OPTIONS = [
+  { label: "On", value: true },
+  { label: "Off", value: false },
+];
+
+export const TIMELINE_VIEW_OPTIONS = [
+  { label: "Locked (Today)", value: true },
+  { label: "Unlocked (Full)", value: false },
+];
+
+export const SECTION_STATE_OPTIONS = [
+  { label: "Expanded", value: true },
+  { label: "Collapsed", value: false },
+];
+
+export const OVERDUE_ACTIONS_OPTIONS = [
+  { label: "Expanded", value: true },
+  { label: "Collapsed", value: false },
+];
+
+export const LAYOUT_PERSISTENCE_OPTIONS = [
+  { label: "On", value: true },
+  { label: "Off", value: false },
+];

@@ -1,10 +1,24 @@
-// Settings are the application's current configuration preferences,
-// representing runtime values that can be modified by the user
-// (e.g., desired number of daily actions, theme preferences).
+import { TIME_FORMATS } from "../config/constants";
+
+export type Theme = "dark" | "light" | "system";
+export type Accent = "blue" | "indigo" | "violet" | "emerald" | "rose" | "amber" | "forest";
+export type TimeFormat = (typeof TIME_FORMATS)[keyof typeof TIME_FORMATS];
 
 export interface Settings {
-  min_daily_actions: number;
-  max_daily_actions: number;
+  section_expanded: boolean;
+  theme: Theme;
+  accent: Accent;
+  today_locked: boolean;
+  time_format: TimeFormat;
+  timezone: string;
+  subtle_on_idle: boolean;
+  language: string;
+  remember_layout_on_refresh: boolean;
+  action_duration_options: { label: string; value: [number, number] }[];
+  action_timezone_options: string[];
+  default_energy: string;
+  default_intention: string;
+  show_overdue: boolean;
 }
 
 export type SettingKey = keyof Settings;

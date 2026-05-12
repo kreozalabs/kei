@@ -7,7 +7,8 @@ import { ActionInput } from "./action-input";
 
 import { SortableContext, verticalListSortingStrategy } from "@dnd-kit/sortable";
 import { useDroppable } from "@dnd-kit/core";
-import { ACTION_STATUS } from "@/config/constants";
+import { ACTION_STATUS, STORAGE_KEYS } from "@/config/constants";
+import { useSettings } from "@/providers/SettingsContext";
 
 interface ActionSectionProps {
   id: string;
@@ -18,6 +19,7 @@ interface ActionSectionProps {
   onAbandon?: (action: Action) => void;
   onEdit?: (action: Action) => void;
   sectionDate: string;
+  defaultExpanded?: boolean;
 }
 
 export function ActionSection({
@@ -29,6 +31,7 @@ export function ActionSection({
   onAbandon,
   onEdit,
   sectionDate,
+  defaultExpanded,
 }: ActionSectionProps) {
   const [isAdding, setIsAdding] = useState(false);
   const { setNodeRef: setSectionRef, isOver } = useDroppable({
@@ -39,18 +42,25 @@ export function ActionSection({
     },
   });
 
-  // TODO: Allow user to set settings if he wants to save state at all.
+  const { settings } = useSettings();
   const [isExpanded, setIsExpanded] = useState(() => {
-    if (typeof window !== "undefined") {
-      const stored = window.sessionStorage.getItem(`kei-section-expanded-${id}`);
+    if (typeof window !== "undefined" && settings.remember_layout_on_refresh) {
+      const stored = window.sessionStorage.getItem(STORAGE_KEYS.SESSION.SECTION_EXPANDED(id));
       if (stored !== null) return stored === "true";
     }
-    return true; // NOTE: Default to expanded
+    return defaultExpanded ?? settings.section_expanded;
   });
 
   useEffect(() => {
-    window.sessionStorage.setItem(`kei-section-expanded-${id}`, String(isExpanded));
-  }, [id, isExpanded]);
+    if (settings.remember_layout_on_refresh) {
+      window.sessionStorage.setItem(STORAGE_KEYS.SESSION.SECTION_EXPANDED(id), String(isExpanded));
+    } else {
+      window.sessionStorage.removeItem(STORAGE_KEYS.SESSION.SECTION_EXPANDED(id));
+    }
+  }, [id, isExpanded, settings.remember_layout_on_refresh]);
+
+  const totalActions = actions.length;
+  const completedActionsCount = actions.filter((a) => a.status === ACTION_STATUS.COMPLETED).length;
 
   const showContent = isTodayLocked ? true : isExpanded;
 
@@ -58,8 +68,13 @@ export function ActionSection({
     <div className="mb-6 group/section">
       <div className="flex items-center gap-2 px-1 sm:px-2 border-b border-border/20 pb-2 mb-1 min-h-10">
         <div className="flex-1 flex items-center gap-2 overflow-hidden">
-          <h2 className="text-[14px] font-bold tracking-tight text-muted-foreground/70 truncate">
-            {sectionTitle}
+          <h2 className="text-[14px] font-bold tracking-tight text-muted-foreground/70 truncate flex items-center gap-2">
+            <span>{sectionTitle}</span>
+            {totalActions > 0 && (
+              <span className="text-[10px] font-medium text-muted-foreground/40 tabular-nums px-1.5 py-0.5 bg-muted/30 rounded-md border border-border/10">
+                {completedActionsCount}/{totalActions}
+              </span>
+            )}
           </h2>
           <Button
             variant="ghost"

@@ -44,6 +44,7 @@ export function AppLayout({ error }: { error?: unknown }) {
 
   const { toggleFullscreen } = useFullscreen();
 
+  // TODO: Add keyboard shortcut to open settings dialog/page.
   const shortcuts = useMemo(
     () => [
       {

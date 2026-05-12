@@ -21,7 +21,7 @@ import {
 } from "@/utils/time";
 import { Button } from "@kreozalabs/ui";
 import { LockIcon, UnlockIcon, Loader2Icon } from "lucide-react";
-import type { Action, ActionStatus } from "@/types/actions";
+import type { Action } from "@/types/actions";
 import { ActionSection } from "@/components/ActionSection";
 import { ActionItem } from "@/components/ActionItem";
 import { ActionInputDialog } from "@/components/ActionInputDialog";
@@ -38,19 +38,20 @@ import {
   type DragStartEvent,
   type DragOverEvent,
 } from "@dnd-kit/core";
-import { ACTION_STATUS } from "@/config/constants";
+import { useSettings } from "@/providers/SettingsContext";
+import { STORAGE_KEYS, ACTION_STATUS } from "@/config/constants";
 
 export default function Dashboard() {
+  const { settings } = useSettings();
   const [isDbReady, setIsDbReady] = useState(false);
   const queryClient = useQueryClient();
   const [isTodayLocked, setIsTodayLocked] = useState(() => {
     if (typeof window !== "undefined") {
-      const stored = window.sessionStorage.getItem("kei-dashboard-timeline-locked");
+      const stored = window.sessionStorage.getItem(STORAGE_KEYS.SESSION.TIMELINE_LOCKED);
       if (stored !== null) return stored === "true";
     }
 
-    // TODO: Allow user to set default state for locked, in settings, but session storage device within session, while settings defines initial state across devices/sessions.
-    return true; // NOTE: Default to locked
+    return settings.today_locked;
   });
 
   const todayStr = useCurrentDay();
@@ -69,13 +70,20 @@ export default function Dashboard() {
   );
 
   useEffect(() => {
-    window.sessionStorage.setItem("kei-dashboard-timeline-locked", String(isTodayLocked));
+    window.sessionStorage.setItem(STORAGE_KEYS.SESSION.TIMELINE_LOCKED, String(isTodayLocked));
   }, [isTodayLocked]);
 
   const { setTitle, setSubtitle, setHeaderActions } = useOutletContext<AppLayoutContext>();
 
   useEffect(() => {
-    initPromise.then(() => setIsDbReady(true));
+    initPromise
+      .then(() => setIsDbReady(true))
+      .catch((err) => {
+        console.error("Critical: DB Initialization failed", err);
+        // We still set it to true so the UI doesn't stay in a permanent loading state
+        // and can try to render whatever it can from the DB
+        setIsDbReady(true);
+      });
   }, []);
 
   useEffect(() => {
@@ -140,16 +148,16 @@ export default function Dashboard() {
   }, [isTodayLocked, selectedDate, todayStr]);
 
   const { data: activeActions = [] } = useQuery({
-    queryKey: ["actions", { status: "active" }],
-    queryFn: () => getActions({ status: [ACTION_STATUS.ACTIVE as ActionStatus] }),
+    queryKey: ["actions", { status: ACTION_STATUS.ACTIVE, endDate }],
+    queryFn: () => getActions({ status: [ACTION_STATUS.ACTIVE], endDate }),
     enabled: isDbReady,
   });
 
   const { data: completedActions = [] } = useQuery({
-    queryKey: ["actions", { status: "completed", startDate, endDate }],
+    queryKey: ["actions", { status: ACTION_STATUS.COMPLETED, startDate, endDate }],
     queryFn: () =>
       getActions({
-        status: [ACTION_STATUS.COMPLETED as ActionStatus],
+        status: [ACTION_STATUS.COMPLETED],
         startDate,
         endDate,
       }),
@@ -423,7 +431,6 @@ export default function Dashboard() {
         {!isTodayLocked && (
           <TimelineCalendar selectedDate={selectedDate} onDateSelect={setSelectedDate} />
         )}
-
         {overdueActions.length > 0 && !isTodayLocked && selectedDate <= todayStr && (
           <ActionSection
             id="overdue"
@@ -434,6 +441,7 @@ export default function Dashboard() {
             onAbandon={handleAbandon}
             onEdit={handleEdit}
             sectionDate={todayStr}
+            defaultExpanded={settings.show_overdue}
           />
         )}
 
