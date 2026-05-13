@@ -10,10 +10,35 @@ export const db =
       )
     : (null as unknown as PGliteWorker);
 
+/**
+ * Ensures a column exists in a table without dropping or recreating it.
+ * This is the preferred way to perform additive schema migrations while
+ * preserving existing data.
+ */
+
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+async function ensureColumn(tableName: string, columnName: string, columnDef: string) {
+  if (!db) return;
+  const result = await db.query(
+    `
+    SELECT column_name 
+    FROM information_schema.columns 
+    WHERE table_name = $1 AND column_name = $2
+  `,
+    [tableName, columnName]
+  );
+
+  if (result.rows.length === 0) {
+    console.log(`Adding column ${columnName} to table ${tableName}...`);
+    await db.exec(`ALTER TABLE ${tableName} ADD COLUMN ${columnName} ${columnDef}`);
+  }
+}
+
 // Initialize some tables if needed
 async function runMigrations() {
   if (!db) return;
   try {
+    // 1. Core Event Migration (from old schema without event_id)
     const tableInfo = await db.query(`
       SELECT column_name 
       FROM information_schema.columns 
@@ -45,6 +70,12 @@ async function runMigrations() {
         console.log("Migration complete.");
       }
     }
+
+    // 2. Additive Migrations for other tables
+    // Use ensureColumn to add new fields to existing tables without data loss.
+    // Examples:
+    // await ensureColumn("actions", "priority", "INTEGER DEFAULT 0");
+    // await ensureColumn("actions", "metadata", "JSONB");
   } catch (e) {
     console.error("Migration check failed:", e);
   }
@@ -108,8 +139,8 @@ async function ensureDerivedData() {
 
 export const initDb = async () => {
   if (typeof window === "undefined") return;
-  await runMigrations();
   await ensureSchema();
+  await runMigrations();
   await ensureDefaults();
   await ensureDerivedData();
 };

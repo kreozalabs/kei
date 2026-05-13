@@ -18,6 +18,7 @@ import {
   formatShortDate,
   formatFullWeekday,
   formatShortWeekday,
+  formatTitleDate,
 } from "@/utils/time";
 import { Button } from "@kreozalabs/ui";
 import { LockIcon, UnlockIcon, Loader2Icon } from "lucide-react";
@@ -55,7 +56,19 @@ export default function Dashboard() {
   });
 
   const todayStr = useCurrentDay();
-  const [selectedDate, setSelectedDate] = useState(getTodayString());
+  const [selectedDate, setSelectedDate] = useState(() => {
+    if (typeof window !== "undefined" && settings.remember_layout_on_refresh) {
+      const stored = localStorage.getItem(STORAGE_KEYS.LOCAL.SELECTED_DATE);
+      if (stored) return stored;
+    }
+    return getTodayString();
+  });
+
+  useEffect(() => {
+    if (settings.remember_layout_on_refresh) {
+      localStorage.setItem(STORAGE_KEYS.LOCAL.SELECTED_DATE, selectedDate);
+    }
+  }, [selectedDate, settings.remember_layout_on_refresh]);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [dialogPreDate, setDialogPreDate] = useState<string | null>(null);
   const [actionToEdit, setActionToEdit] = useState<Action | null>(null);
@@ -88,11 +101,7 @@ export default function Dashboard() {
 
   useEffect(() => {
     setTitle("Timeline");
-    setSubtitle(
-      formatShortWeekday(new Date(todayStr + "T12:00:00")) +
-        ", " +
-        formatShortDate(new Date(todayStr + "T12:00:00"))
-    );
+    setSubtitle(formatTitleDate(new Date(startDate + "T12:00:00")));
 
     setHeaderActions({
       center: <HeaderSearch />,
