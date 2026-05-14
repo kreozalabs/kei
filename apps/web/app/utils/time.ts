@@ -33,16 +33,19 @@ export const isNextDay = (startTime: string, endTime: string) => {
 
 export const formatDate = (d: Date) => d.toLocaleDateString("en-CA");
 export const getTodayString = () => formatDate(new Date());
-export const getTomorrowString = () => {
-  const d = new Date();
+export const getNextDayString = (dateStr: string) => {
+  const d = parseDateString(dateStr);
   d.setDate(d.getDate() + 1);
   return formatDate(d);
 };
 
+export const getTomorrowString = () => getNextDayString(getTodayString());
+
+export const parseDateString = (dateStr: string) => new Date(dateStr + "T12:00:00");
+
 export const formatGoogleDate = (dateStr: string) => {
   if (!dateStr) return "Date";
-  // We use dateStr + 'T12:00:00' to avoid timezone shift issues from "YYYY-MM-DD"
-  const d = new Date(dateStr + "T12:00:00");
+  const d = parseDateString(dateStr);
   return d.toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" });
 };
 

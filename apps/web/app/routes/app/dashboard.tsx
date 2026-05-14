@@ -15,9 +15,11 @@ import { useCurrentDay } from "@/hooks/useCurrentDay";
 import {
   getTodayString,
   formatDate,
+  getNextDayString,
   formatShortDate,
   formatFullWeekday,
   formatTitleDate,
+  parseDateString,
 } from "@/utils/time";
 import { Button } from "@kreozalabs/ui";
 import { LockIcon, UnlockIcon, Loader2Icon } from "lucide-react";
@@ -39,7 +41,7 @@ import {
   type DragOverEvent,
 } from "@dnd-kit/core";
 import { useSettings } from "@/providers/SettingsContext";
-import { STORAGE_KEYS, ACTION_STATUS } from "@/config/constants";
+import { STORAGE_KEYS, ACTION_STATUS, TIME } from "@/config/constants";
 
 export default function Dashboard() {
   const { settings } = useSettings();
@@ -89,14 +91,14 @@ export default function Dashboard() {
   const startDate = isTodayLocked ? todayStr : selectedDate;
   const endDate = useMemo(() => {
     if (isTodayLocked) return todayStr;
-    const d = new Date(selectedDate + "T12:00:00"); // FIXME: Hardcoded Timezone logic. Should such be made differently?
-    d.setDate(d.getDate() + 30); // FIXME: Magic number?
+    const d = parseDateString(selectedDate);
+    d.setDate(d.getDate() + TIME.TIMELINE_DAYS);
     return formatDate(d);
   }, [isTodayLocked, selectedDate, todayStr]);
 
   useEffect(() => {
     setTitle("Timeline");
-    setSubtitle(formatTitleDate(new Date(startDate + "T12:00:00")));
+    setSubtitle(formatTitleDate(parseDateString(startDate)));
 
     setHeaderActions({
       center: <HeaderSearch />,
@@ -217,16 +219,15 @@ export default function Dashboard() {
 
       sections.push({
         id: todayStr,
-        title: `${formatShortDate(new Date(todayStr + "T12:00:00"))} ‧ Today ‧ ${formatFullWeekday(new Date(todayStr + "T12:00:00"))}`,
+        title: `${formatShortDate(parseDateString(todayStr))} ‧ Today ‧ ${formatFullWeekday(parseDateString(todayStr))}`,
         date: todayStr,
         actions: actionsForDay,
       });
     } else {
-      // Extended mode: Compute 30 days of sections starting from selectedDate
-      const baseDate = new Date(selectedDate + "T12:00:00");
+      // Extended mode: Compute sections starting from selectedDate
+      const baseDate = parseDateString(selectedDate);
 
-      for (let i = 0; i < 30; i++) {
-        // FIXME: Magic Number?
+      for (let i = 0; i < TIME.TIMELINE_DAYS; i++) {
         const d = new Date(baseDate);
         d.setDate(d.getDate() + i);
         const dateStr = formatDate(d);
@@ -237,8 +238,7 @@ export default function Dashboard() {
 
         let title = formatShortDate(d);
         const isToday = dateStr === todayStr;
-        const isTomorrow =
-          dateStr === formatDate(new Date(new Date(todayStr + "T12:00:00").getTime() + 86400000));
+        const isTomorrow = dateStr === getNextDayString(todayStr);
 
         if (isToday) title += " ‧ Today";
         else if (isTomorrow) title += " ‧ Tomorrow";

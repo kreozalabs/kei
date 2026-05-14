@@ -10,7 +10,7 @@ import {
 } from "@kreozalabs/ui";
 import { ChevronLeftIcon, ChevronRightIcon, ChevronDownIcon } from "lucide-react";
 import { useCurrentDay } from "@/hooks/useCurrentDay";
-import { formatDate, formatShortWeekday, formatShortMonth, formatMonthYear } from "@/utils/time";
+import { formatDate, formatShortWeekday, formatShortMonth, formatMonthYear, parseDateString } from "@/utils/time";
 
 interface TimelineCalendarProps {
   selectedDate: string; // YYYY-MM-DD
@@ -26,19 +26,19 @@ export function TimelineCalendar({ selectedDate, onDateSelect }: TimelineCalenda
 
   // Track the year the user is currently "viewing" in the month picker
   const [pickerYear, setPickerYear] = useState(() =>
-    new Date(selectedDate + "T12:00:00").getFullYear()
+    parseDateString(selectedDate).getFullYear()
   );
   const [prevSelectedDate, setPrevSelectedDate] = useState(selectedDate);
 
   // Reset pickerYear when the selected date changes externally (e.g. today button)
   if (selectedDate !== prevSelectedDate) {
     setPrevSelectedDate(selectedDate);
-    setPickerYear(new Date(selectedDate + "T12:00:00").getFullYear());
+    setPickerYear(parseDateString(selectedDate).getFullYear());
   }
 
   // Generate a range of dates around the selected date
   const days = useMemo(() => {
-    const centerDate = new Date(selectedDate + "T12:00:00");
+    const centerDate = parseDateString(selectedDate);
     const result = [];
 
     // Show half a year (90 before, 90 after) for extensive horizontal scrolling
@@ -74,7 +74,7 @@ export function TimelineCalendar({ selectedDate, onDateSelect }: TimelineCalenda
   }, [selectedDate]);
 
   const currentMonthYear = useMemo(() => {
-    const d = new Date(selectedDate + "T12:00:00");
+    const d = parseDateString(selectedDate);
     return formatMonthYear(d);
   }, [selectedDate]);
 
@@ -122,7 +122,7 @@ export function TimelineCalendar({ selectedDate, onDateSelect }: TimelineCalenda
   };
 
   const shiftDate = (offset: number) => {
-    const d = new Date(selectedDate + "T12:00:00");
+    const d = parseDateString(selectedDate);
     d.setDate(d.getDate() + offset);
     onDateSelect(formatDate(d));
   };
@@ -182,8 +182,8 @@ export function TimelineCalendar({ selectedDate, onDateSelect }: TimelineCalenda
                   onClick={() => handleMonthSelect(idx)}
                   className={cn(
                     "flex items-center justify-center h-9 text-[11px] font-black uppercase tracking-widest rounded-lg cursor-pointer transition-all",
-                    new Date(selectedDate + "T12:00:00").getMonth() === idx &&
-                      new Date(selectedDate + "T12:00:00").getFullYear() === pickerYear
+                    parseDateString(selectedDate).getMonth() === idx &&
+                      parseDateString(selectedDate).getFullYear() === pickerYear
                       ? "bg-primary text-primary-foreground focus:bg-primary focus:text-primary-foreground"
                       : "hover:bg-accent focus:bg-accent"
                   )}

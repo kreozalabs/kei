@@ -41,6 +41,7 @@ export const TIME_FORMATS = {
 export const TIME = {
   MINUTES_IN_DAY: 1440,
   MINUTES_IN_HOUR: 60,
+  TIMELINE_DAYS: 30,
 };
 
 export const ENERGY_OPTIONS = [
