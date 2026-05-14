@@ -65,10 +65,10 @@ export function ActionSection({
   const showContent = isTodayLocked ? true : isExpanded;
 
   return (
-    <div className="mb-6 group/section">
-      <div className="flex items-center gap-2 px-1 sm:px-2 border-b border-border/20 pb-2 mb-1 min-h-10">
+    <div className="mb-8 group/section relative">
+      <div className="sticky top-0 z-20 flex items-center gap-2 px-1 sm:px-2 py-3 border-b border-border/20 bg-background/95 backdrop-blur-sm -mx-1 sm:-mx-2 mb-2 transition-shadow">
         <div className="flex-1 flex items-center gap-2 overflow-hidden">
-          <h2 className="text-[14px] font-bold tracking-tight text-muted-foreground/70 truncate flex items-center gap-2">
+          <h2 className="text-[14px] font-bold tracking-wider text-muted-foreground/60 truncate flex items-center gap-2">
             <span>{sectionTitle}</span>
             {totalActions > 0 && (
               <span className="text-[10px] font-medium text-muted-foreground/40 tabular-nums px-1.5 py-0.5 bg-muted/30 rounded-md border border-border/10">

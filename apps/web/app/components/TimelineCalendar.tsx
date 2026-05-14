@@ -10,7 +10,13 @@ import {
 } from "@kreozalabs/ui";
 import { ChevronLeftIcon, ChevronRightIcon, ChevronDownIcon } from "lucide-react";
 import { useCurrentDay } from "@/hooks/useCurrentDay";
-import { formatDate, formatShortWeekday, formatShortMonth, formatMonthYear, parseDateString } from "@/utils/time";
+import {
+  formatDate,
+  formatShortWeekday,
+  formatShortMonth,
+  formatMonthYear,
+  parseDateString,
+} from "@/utils/time";
 
 interface TimelineCalendarProps {
   selectedDate: string; // YYYY-MM-DD
@@ -25,9 +31,7 @@ export function TimelineCalendar({ selectedDate, onDateSelect }: TimelineCalenda
   const todayStr = useCurrentDay();
 
   // Track the year the user is currently "viewing" in the month picker
-  const [pickerYear, setPickerYear] = useState(() =>
-    parseDateString(selectedDate).getFullYear()
-  );
+  const [pickerYear, setPickerYear] = useState(() => parseDateString(selectedDate).getFullYear());
   const [prevSelectedDate, setPrevSelectedDate] = useState(selectedDate);
 
   // Reset pickerYear when the selected date changes externally (e.g. today button)
@@ -134,7 +138,7 @@ export function TimelineCalendar({ selectedDate, onDateSelect }: TimelineCalenda
   };
 
   return (
-    <div className="flex flex-col gap-1.5 mb-4 sticky top-0 bg-background/95 backdrop-blur-xl z-30 py-2 border-b border-border/5 shadow-sm">
+    <div className="flex flex-col gap-1.5 mb-4 py-2 border-b border-border/5">
       <div className="flex items-center justify-between px-3">
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
