@@ -145,6 +145,9 @@ export const STORAGE_KEYS = {
     SECTION_EXPANDED: (id: string) => `kei-section-expanded-${id}`,
     TIMELINE_LOCKED: "kei-dashboard-timeline-locked",
   },
+  LOCAL: {
+    SELECTED_DATE: "kei-dashboard-selected-date",
+  },
 } as const;
 
 export const THEMES = {

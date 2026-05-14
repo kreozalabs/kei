@@ -1,4 +1,4 @@
-import { useState, useCallback, useMemo } from "react";
+import { useState, useCallback, useMemo, useEffect } from "react";
 import { Outlet, isRouteErrorResponse } from "react-router";
 import { PlusIcon } from "lucide-react";
 import { useKeyboardShortcuts } from "@/hooks/useKeyboardShortcuts";
@@ -89,6 +89,10 @@ export function AppLayout({ error }: { error?: unknown }) {
     }),
     [openActionInput]
   );
+
+  useEffect(() => {
+    document.title = `${title}${subtitle ? ` - ${subtitle}` : ""} - Kei`;
+  }, [title, subtitle]);
 
   return (
     <div className="flex flex-col md:flex-row h-dvh w-full overflow-hidden bg-background md:bg-muted text-foreground">

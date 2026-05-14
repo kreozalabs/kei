@@ -8,6 +8,7 @@ import {
   useRouteError,
 } from "react-router";
 
+import { Toaster } from "sonner";
 import "./index.css";
 import { QueryProvider } from "./providers/QueryProvider";
 import { SettingsProvider } from "./providers/SettingsProvider";
@@ -34,6 +35,12 @@ export function Layout({ children }: { children: React.ReactNode }) {
       <body suppressHydrationWarning>
         <SettingsProvider storageKey={STORAGE_KEYS.SETTINGS}>
           {children}
+          <Toaster 
+            position="bottom-right" 
+            toastOptions={{
+              className: "rounded-2xl border-border bg-background text-foreground shadow-lg",
+            }}
+          />
         </SettingsProvider>
         <ScrollRestoration />
         <Scripts />

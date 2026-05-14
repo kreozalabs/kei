@@ -4,6 +4,7 @@ import type { AppLayoutContext } from "@/components/layout/AppLayout";
 import { PersonalizationSettings } from "@/components/settings/PersonalizationSettings";
 import { BehaviorSettings } from "@/components/settings/BehaviorSettings";
 import { ActionsSettings } from "@/components/settings/ActionsSettings";
+import { MaintenanceSettings } from "@/components/settings/MaintenanceSettings";
 
 export default function Settings() {
   const { setTitle, setSubtitle, setHeaderActions } = useOutletContext<AppLayoutContext>();
@@ -45,6 +46,13 @@ export default function Settings() {
           <div className="relative">
             <h3 className="text-lg font-bold tracking-tight mb-8">Actions Configuration</h3>
             <ActionsSettings />
+          </div>
+        </div>
+
+        <div className="bg-card/50 border border-border/40 rounded-4xl p-8 space-y-8 overflow-hidden relative group">
+          <div className="relative">
+            <h3 className="text-lg font-bold tracking-tight mb-8">Maintenance</h3>
+            <MaintenanceSettings />
           </div>
         </div>
       </div>

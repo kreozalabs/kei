@@ -58,6 +58,9 @@ export const formatShortMonth = (d: Date) => d.toLocaleDateString("en-US", { mon
 export const formatMonthYear = (d: Date) =>
   d.toLocaleDateString("en-US", { month: "long", year: "numeric" });
 
+export const formatTitleDate = (d: Date) =>
+  d.toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" });
+
 export const getTimeOptions = (format: (typeof TIME_FORMATS)[keyof typeof TIME_FORMATS]) =>
   Array.from({ length: 96 }).map((_, i) => {
     const hours = Math.floor(i / 4);
