@@ -3,7 +3,7 @@ import { useOutletContext } from "react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import type { AppLayoutContext } from "@/components/layout/AppLayout";
 import { HeaderSearch, HeaderNewAction } from "@/components/layout/AppHeader";
-import { initPromise } from "@/db";
+import { useDb } from "@/providers/DbContext";
 import {
   getActions,
   updateAction,
@@ -17,7 +17,6 @@ import {
   formatDate,
   formatShortDate,
   formatFullWeekday,
-  formatShortWeekday,
   formatTitleDate,
 } from "@/utils/time";
 import { Button } from "@kreozalabs/ui";
@@ -44,7 +43,7 @@ import { STORAGE_KEYS, ACTION_STATUS } from "@/config/constants";
 
 export default function Dashboard() {
   const { settings } = useSettings();
-  const [isDbReady, setIsDbReady] = useState(false);
+  const { isDbReady, dbError } = useDb();
   const queryClient = useQueryClient();
   const [isTodayLocked, setIsTodayLocked] = useState(() => {
     if (typeof window !== "undefined") {
@@ -87,17 +86,13 @@ export default function Dashboard() {
   }, [isTodayLocked]);
 
   const { setTitle, setSubtitle, setHeaderActions } = useOutletContext<AppLayoutContext>();
-
-  useEffect(() => {
-    initPromise
-      .then(() => setIsDbReady(true))
-      .catch((err) => {
-        console.error("Critical: DB Initialization failed", err);
-        // We still set it to true so the UI doesn't stay in a permanent loading state
-        // and can try to render whatever it can from the DB
-        setIsDbReady(true);
-      });
-  }, []);
+  const startDate = isTodayLocked ? todayStr : selectedDate;
+  const endDate = useMemo(() => {
+    if (isTodayLocked) return todayStr;
+    const d = new Date(selectedDate + "T12:00:00"); // FIXME: Hardcoded Timezone logic. Should such be made differently?
+    d.setDate(d.getDate() + 30); // FIXME: Magic number?
+    return formatDate(d);
+  }, [isTodayLocked, selectedDate, todayStr]);
 
   useEffect(() => {
     setTitle("Timeline");
@@ -146,15 +141,8 @@ export default function Dashboard() {
     todayStr,
     selectedDate,
     dialogPreDate,
+    startDate,
   ]);
-
-  const startDate = isTodayLocked ? todayStr : selectedDate;
-  const endDate = useMemo(() => {
-    if (isTodayLocked) return todayStr;
-    const d = new Date(selectedDate + "T12:00:00");
-    d.setDate(d.getDate() + 30);
-    return formatDate(d);
-  }, [isTodayLocked, selectedDate, todayStr]);
 
   const { data: activeActions = [] } = useQuery({
     queryKey: ["actions", { status: ACTION_STATUS.ACTIVE, endDate }],
@@ -238,6 +226,7 @@ export default function Dashboard() {
       const baseDate = new Date(selectedDate + "T12:00:00");
 
       for (let i = 0; i < 30; i++) {
+        // FIXME: Magic Number?
         const d = new Date(baseDate);
         d.setDate(d.getDate() + i);
         const dateStr = formatDate(d);
@@ -427,6 +416,20 @@ export default function Dashboard() {
       queryClient.setQueryData(["actions"], previousActions);
     }
   };
+
+  if (dbError) {
+    return (
+      <div className="flex flex-col items-center justify-center p-12 border-2 border-destructive/20 rounded-3xl bg-destructive/5 gap-4">
+        <div className="text-destructive font-bold">Database Error</div>
+        <p className="text-sm text-muted-foreground text-center max-w-md">
+          {dbError.message || "Failed to initialize the local database engine."}
+        </p>
+        <Button onClick={() => window.location.reload()} variant="outline">
+          Retry Initialization
+        </Button>
+      </div>
+    );
+  }
 
   return (
     <DndContext
