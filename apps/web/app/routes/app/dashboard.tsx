@@ -189,6 +189,7 @@ export default function Dashboard() {
 
   const { overdueActions, daySections } = useMemo(() => {
     const visibleActions = allActions;
+    const timelineStartDate = isTodayLocked ? todayStr : selectedDate;
 
     const sortFn = (a: Action, b: Action) => {
       // Completed items always go to the bottom
@@ -206,9 +207,14 @@ export default function Dashboard() {
       return b.sortOrder - a.sortOrder;
     };
 
-    // 1. Compute Overdue (tasks before Today)
+    // 1. Compute Overdue (tasks before the current view and before today)
     const overdue = visibleActions
-      .filter((a) => a.scheduledDate < todayStr && a.status === ACTION_STATUS.ACTIVE)
+      .filter(
+        (a) =>
+          a.scheduledDate < todayStr &&
+          a.scheduledDate < timelineStartDate &&
+          a.status === ACTION_STATUS.ACTIVE
+      )
       .sort(sortFn);
 
     const sections = [];
