@@ -13,13 +13,13 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Install pnpm
         uses: pnpm/action-setup@v4
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
           node-version: 24
           cache: pnpm
@@ -30,7 +30,4 @@ jobs:
       - name: Run Prettier formatter
         run: pnpm format
 
-      - name: Trigger autofix.ci
-        uses: autofix-ci/action@8bc06253bec489732e5f9c52884c7cace15c0160
-        with:
-          artifact-name: autofix-ci
+      - uses: autofix-ci/action@c5b2d67aa2274e7b5a18224e8171550871fc7e4a
