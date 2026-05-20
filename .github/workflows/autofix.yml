@@ -32,3 +32,5 @@ jobs:
 
       - name: Trigger autofix.ci
         uses: autofix-ci/action@8bc06253bec489732e5f9c52884c7cace15c0160
+        with:
+          artifact-name: autofix-ci
