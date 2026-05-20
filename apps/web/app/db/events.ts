@@ -6,7 +6,11 @@ import type { Event, EventType } from "../types/events";
  * Persists an event to the events table.
  * This is the low-level source of truth for all state changes.
  */
-export async function persistEvent<T>(entityId: string, type: string, payload: T): Promise<Event<T>> {
+export async function persistEvent<T>(
+  entityId: string,
+  type: string,
+  payload: T
+): Promise<Event<T>> {
   const event: Event<T> = {
     eventId: uuidv7(),
     id: entityId,
