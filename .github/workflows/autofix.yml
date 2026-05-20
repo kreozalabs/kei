@@ -17,13 +17,11 @@ jobs:
 
       - name: Install pnpm
         uses: pnpm/action-setup@v4
-        with:
-          version: 10
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 22
+          node-version: 24
           cache: pnpm
 
       - name: Install dependencies
@@ -33,4 +31,4 @@ jobs:
         run: pnpm format
 
       - name: Trigger autofix.ci
-        uses: autofix-ci/action@551ddda28e8748530b0f748ff113c29acddb3434
+        uses: autofix-ci/action@8bc06253bec489732e5f9c52884c7cace15c0160
