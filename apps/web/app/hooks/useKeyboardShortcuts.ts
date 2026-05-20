@@ -42,9 +42,7 @@ export function useKeyboardShortcuts(shortcuts: ShortcutConfig[]) {
       // 1. Check if we should ignore this event (e.g., focused in an input)
       const target = event.target as HTMLElement;
       const isInput =
-        target?.tagName === "INPUT" ||
-        target?.tagName === "TEXTAREA" ||
-        target?.isContentEditable;
+        target?.tagName === "INPUT" || target?.tagName === "TEXTAREA" || target?.isContentEditable;
 
       for (const shortcut of shortcuts) {
         if (isInput && !shortcut.allowInInputs) {
@@ -55,16 +53,17 @@ export function useKeyboardShortcuts(shortcuts: ShortcutConfig[]) {
         const matchesCtrlMeta = shortcut.ctrlOrMeta
           ? event.ctrlKey || event.metaKey
           : !(event.ctrlKey || event.metaKey);
-        
+
         const matchesAlt = !!shortcut.alt === event.altKey;
         const matchesShift = !!shortcut.shift === event.shiftKey;
-        
+
         // 3. Match key
         // We check both key and code to be more robust (e.g., 'KeyB' or 'b')
         const pressedKey = event.key.toLowerCase();
         const targetKey = shortcut.key.toLowerCase();
-        
-        const matchesKey = pressedKey === targetKey || event.code.toLowerCase() === `key${targetKey}`;
+
+        const matchesKey =
+          pressedKey === targetKey || event.code.toLowerCase() === `key${targetKey}`;
 
         if (matchesCtrlMeta && matchesAlt && matchesShift && matchesKey) {
           // Found a match!

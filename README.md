@@ -1,4 +1,4 @@
-# _Kei_ - Productivity Agent
+# Kei - Productivity Agent
 
 ## Motto
 

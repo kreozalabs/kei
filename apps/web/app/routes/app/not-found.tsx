@@ -12,11 +12,5 @@ export default function AppNotFound() {
     setOnFabClick(undefined);
   }, [setTitle, setSubtitle, setOnFabClick]);
 
-  return (
-    <ErrorPage 
-      status={404} 
-      homeLink="/app" 
-      homeLabel="Return to Dashboard" 
-    />
-  );
+  return <ErrorPage status={404} homeLink="/app" homeLabel="Return to Dashboard" />;
 }
