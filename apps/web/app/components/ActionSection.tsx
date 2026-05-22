@@ -4,6 +4,7 @@ import { ActionItem } from "./ActionItem";
 import { useState, useEffect } from "react";
 import { ChevronDownIcon, PlusIcon } from "lucide-react";
 import { ActionInput } from "./action-input";
+import { AnimatePresence } from "framer-motion";
 
 import { SortableContext, verticalListSortingStrategy } from "@dnd-kit/sortable";
 import { useDroppable } from "@dnd-kit/core";
@@ -22,6 +23,9 @@ interface ActionSectionProps {
   onDeletePermanently?: (action: Action) => void;
   sectionDate: string;
   defaultExpanded?: boolean;
+  selectedActionIds?: Set<string>;
+  onSelectToggle?: (id: string) => void;
+  isBulkModeActive?: boolean;
 }
 
 export function ActionSection({
@@ -36,6 +40,9 @@ export function ActionSection({
   onDeletePermanently,
   sectionDate,
   defaultExpanded,
+  selectedActionIds,
+  onSelectToggle,
+  isBulkModeActive,
 }: ActionSectionProps) {
   const [isAdding, setIsAdding] = useState(false);
   const { setNodeRef: setSectionRef, isOver } = useDroppable({
@@ -143,18 +150,23 @@ export function ActionSection({
               strategy={verticalListSortingStrategy}
             >
               <div className="flex flex-col min-h-5">
-                {actions.map((action) => (
-                  <ActionItem
-                    key={action.id}
-                    action={action}
-                    type={action.status}
-                    onComplete={onComplete ?? (() => {})}
-                    onAbandon={onAbandon ?? (() => {})}
-                    onEdit={onEdit ?? (() => {})}
-                    onReactivate={onReactivate}
-                    onDeletePermanently={onDeletePermanently}
-                  />
-                ))}
+                <AnimatePresence initial={false}>
+                  {actions.map((action) => (
+                    <ActionItem
+                      key={action.id}
+                      action={action}
+                      type={action.status}
+                      onComplete={onComplete ?? (() => {})}
+                      onAbandon={onAbandon ?? (() => {})}
+                      onEdit={onEdit ?? (() => {})}
+                      onReactivate={onReactivate}
+                      onDeletePermanently={onDeletePermanently}
+                      isSelected={selectedActionIds?.has(action.id)}
+                      onSelectToggle={onSelectToggle}
+                      isBulkModeActive={isBulkModeActive}
+                    />
+                  ))}
+                </AnimatePresence>
                 {actions.length === 0 && (
                   <div className="text-[11px] font-medium text-muted-foreground/30 p-3 text-center border border-dashed border-border/20 rounded-lg mx-1 mb-1">
                     No actions for this day

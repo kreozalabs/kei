@@ -1,5 +1,5 @@
 import type { Action, ActionStatus } from "../types/actions";
-import { Button, cn } from "@kreozalabs/ui";
+import { Button, cn, Checkbox } from "@kreozalabs/ui";
 import {
   Trash2Icon,
   CheckCircle2Icon,
@@ -36,6 +36,7 @@ import {
   INTENTION_OPTIONS,
   IMPORTANT_CONFIG,
 } from "../config/constants";
+import { motion } from "framer-motion";
 
 interface ActionItemProps {
   action: Action;
@@ -45,6 +46,9 @@ interface ActionItemProps {
   onEdit: (action: Action) => void;
   onReactivate?: (action: Action) => void;
   onDeletePermanently?: (action: Action) => void;
+  isSelected?: boolean;
+  onSelectToggle?: (id: string) => void;
+  isBulkModeActive?: boolean;
 }
 
 export function ActionItem({
@@ -55,6 +59,9 @@ export function ActionItem({
   onEdit,
   onReactivate,
   onDeletePermanently,
+  isSelected = false,
+  onSelectToggle,
+  isBulkModeActive = false,
 }: ActionItemProps) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id: action.id,
@@ -75,11 +82,26 @@ export function ActionItem({
   const isOverdue = action.scheduledDate < todayString;
 
   return (
-    <div
+    <motion.div
       ref={setNodeRef}
       style={style}
+      layout
+      initial={{ opacity: 0, height: 0, y: -10 }}
+      animate={{
+        opacity: type === ACTION_STATUS.COMPLETED ? 0.5 : type === ACTION_STATUS.ABANDONED ? 0.45 : 1,
+        height: "auto",
+        y: 0,
+      }}
+      exit={{ opacity: 0, height: 0, y: 10 }}
+      transition={{
+        type: "spring",
+        stiffness: 500,
+        damping: 30,
+        opacity: { duration: 0.15 },
+        height: { duration: 0.2 },
+      }}
       className={cn(
-        "group flex items-start gap-1 py-2.5 border-b border-border/40 last:border-none transition-colors px-1 sm:px-2 cursor-default relative",
+        "group flex items-start gap-1 py-2.5 border-b border-border/40 last:border-none transition-colors px-1 sm:px-2 cursor-default relative overflow-hidden",
         type === ACTION_STATUS.COMPLETED
           ? "opacity-50"
           : type === ACTION_STATUS.ABANDONED
@@ -100,6 +122,21 @@ export function ActionItem({
           <GripVertical className="size-3.5" />
         </div>
       )}
+
+      {/* Floating Checkbox (Gmail style hover / active bulk selection transition) */}
+      <div
+        className={cn(
+          "mt-0.5 shrink-0 transition-all duration-200 flex items-center justify-center h-5",
+          isBulkModeActive || isSelected
+            ? "w-5 opacity-100 mr-1.5 ml-1"
+            : "w-0 opacity-0 overflow-hidden group-hover:w-5 group-hover:opacity-100 group-hover:mr-1.5 group-hover:ml-1"
+        )}
+      >
+        <Checkbox
+          checked={isSelected}
+          onCheckedChange={() => onSelectToggle?.(action.id)}
+        />
+      </div>
 
       <div className="flex items-start gap-3 flex-1 min-w-0">
         {type === ACTION_STATUS.ACTIVE ? (
@@ -432,6 +469,6 @@ export function ActionItem({
           </div>
         </div>
       )}
-    </div>
+    </motion.div>
   );
 }
