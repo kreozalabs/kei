@@ -19,6 +19,8 @@ export interface Settings {
   default_energy: string;
   default_intention: string;
   show_overdue: boolean;
+  show_abandoned: boolean;
+  direct_edit_mode: boolean;
 }
 
 export type SettingKey = keyof Settings;

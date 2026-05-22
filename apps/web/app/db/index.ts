@@ -16,8 +16,7 @@ export const db =
  * preserving existing data.
  */
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-async function ensureColumn(tableName: string, columnName: string, columnDef: string) {
+export async function ensureColumn(tableName: string, columnName: string, columnDef: string) {
   if (!db) return;
   const result = await db.query(
     `

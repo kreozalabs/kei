@@ -10,6 +10,7 @@ import {
   completeAction,
   activateAction,
   abandonAction,
+  deleteActionPermanently,
 } from "@/db/actions";
 import { useCurrentDay } from "@/hooks/useCurrentDay";
 import {
@@ -21,8 +22,8 @@ import {
   formatTitleDate,
   parseDateString,
 } from "@/utils/time";
-import { Button } from "@kreozalabs/ui";
-import { LockIcon, UnlockIcon, Loader2Icon } from "lucide-react";
+import { Button, cn } from "@kreozalabs/ui";
+import { LockIcon, UnlockIcon, Loader2Icon, Trash2Icon } from "lucide-react";
 import type { Action } from "@/types/actions";
 import { ActionSection } from "@/components/ActionSection";
 import { ActionItem } from "@/components/ActionItem";
@@ -44,7 +45,7 @@ import { useSettings } from "@/providers/SettingsContext";
 import { STORAGE_KEYS, ACTION_STATUS, TIME } from "@/config/constants";
 
 export default function Dashboard() {
-  const { settings } = useSettings();
+  const { settings, updateSetting } = useSettings();
   const { isDbReady, dbError } = useDb();
   const queryClient = useQueryClient();
   const [isTodayLocked, setIsTodayLocked] = useState(() => {
@@ -101,7 +102,22 @@ export default function Dashboard() {
     setSubtitle(formatTitleDate(parseDateString(startDate)));
 
     setHeaderActions({
-      center: <HeaderSearch />,
+      center: (
+        <div className="flex items-center gap-2">
+          {/* Sticky Today Button */}
+          {!isTodayLocked && selectedDate !== todayStr && (
+            <div className="animate-in fade-in slide-in-from-top-4 duration-200">
+              <Button
+                onClick={() => setSelectedDate(todayStr)}
+                className="flex items-center gap-1.5 px-4 py-2 bg-primary text-primary-foreground font-black text-[11px] uppercase tracking-wider rounded-full shadow-lg hover:scale-105 active:scale-95 transition-all border-none"
+              >
+                Today
+              </Button>
+            </div>
+          )}
+          <HeaderSearch />
+        </div>
+      ),
       right: (
         <div className="flex items-center gap-2">
           <ActionInputDialog
@@ -118,6 +134,21 @@ export default function Dashboard() {
             selectedDate={selectedDate}
             actionToEdit={actionToEdit ?? undefined}
           />
+
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => updateSetting("show_abandoned", !settings.show_abandoned)}
+            className={cn(
+              "size-8 border-none rounded-full transition-all active:scale-95",
+              settings.show_abandoned
+                ? "text-primary bg-primary/10 hover:bg-primary/20"
+                : "text-muted-foreground hover:text-primary hover:bg-primary/10"
+            )}
+            title={settings.show_abandoned ? "Hide Abandoned Actions" : "Show Abandoned Actions"}
+          >
+            <Trash2Icon className="size-4" />
+          </Button>
 
           <Button
             variant="ghost"
@@ -144,6 +175,8 @@ export default function Dashboard() {
     selectedDate,
     dialogPreDate,
     startDate,
+    settings.show_abandoned,
+    updateSetting,
   ]);
 
   const { data: activeActions = [] } = useQuery({
@@ -163,10 +196,24 @@ export default function Dashboard() {
     enabled: isDbReady,
   });
 
-  const allActions = useMemo(
-    () => [...activeActions, ...completedActions],
-    [activeActions, completedActions]
-  );
+  const { data: abandonedActions = [] } = useQuery({
+    queryKey: ["actions", { status: ACTION_STATUS.ABANDONED, startDate, endDate }],
+    queryFn: () =>
+      getActions({
+        status: [ACTION_STATUS.ABANDONED],
+        startDate,
+        endDate,
+      }),
+    enabled: isDbReady && settings.show_abandoned,
+  });
+
+  const allActions = useMemo(() => {
+    const list = [...activeActions, ...completedActions];
+    if (settings.show_abandoned) {
+      list.push(...abandonedActions);
+    }
+    return list;
+  }, [activeActions, completedActions, abandonedActions, settings.show_abandoned]);
 
   const handleComplete = async (action: Action) => {
     if (action.status === ACTION_STATUS.COMPLETED) {
@@ -182,6 +229,16 @@ export default function Dashboard() {
     queryClient.invalidateQueries({ queryKey: ["actions"] });
   };
 
+  const handleReactivate = async (action: Action) => {
+    await activateAction(action.id);
+    queryClient.invalidateQueries({ queryKey: ["actions"] });
+  };
+
+  const handleDeletePermanently = async (action: Action) => {
+    await deleteActionPermanently(action.id);
+    queryClient.invalidateQueries({ queryKey: ["actions"] });
+  };
+
   const handleEdit = (action: Action) => {
     setActionToEdit(action);
     setIsDialogOpen(true);
@@ -192,9 +249,14 @@ export default function Dashboard() {
     const timelineStartDate = isTodayLocked ? todayStr : selectedDate;
 
     const sortFn = (a: Action, b: Action) => {
-      // Completed items always go to the bottom
-      if (a.status === ACTION_STATUS.COMPLETED && b.status !== ACTION_STATUS.COMPLETED) return 1;
-      if (a.status !== ACTION_STATUS.COMPLETED && b.status === ACTION_STATUS.COMPLETED) return -1;
+      // Completed and Abandoned items always go to the bottom
+      const isACompletedOrAbandoned =
+        a.status === ACTION_STATUS.COMPLETED || a.status === ACTION_STATUS.ABANDONED;
+      const isBCompletedOrAbandoned =
+        b.status === ACTION_STATUS.COMPLETED || b.status === ACTION_STATUS.ABANDONED;
+
+      if (isACompletedOrAbandoned && !isBCompletedOrAbandoned) return 1;
+      if (!isACompletedOrAbandoned && isBCompletedOrAbandoned) return -1;
 
       // For active items, sort by time if both have it
       if (a.startTime && b.startTime) {
@@ -458,6 +520,8 @@ export default function Dashboard() {
             onComplete={handleComplete}
             onAbandon={handleAbandon}
             onEdit={handleEdit}
+            onReactivate={handleReactivate}
+            onDeletePermanently={handleDeletePermanently}
             sectionDate={todayStr}
             defaultExpanded={settings.show_overdue}
           />
@@ -480,6 +544,8 @@ export default function Dashboard() {
               onComplete={handleComplete}
               onAbandon={handleAbandon}
               onEdit={handleEdit}
+              onReactivate={handleReactivate}
+              onDeletePermanently={handleDeletePermanently}
               sectionDate={section.date}
             />
           ))

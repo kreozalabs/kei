@@ -16,6 +16,8 @@ import type { Action, EnergyType, IntentionType } from "../../types/actions";
 import { useQueryClient } from "@tanstack/react-query";
 import { useDiscardGuard } from "../../hooks/useDiscardGuard";
 import { useSettings } from "../../providers/SettingsContext";
+import { useDb } from "../../providers/DbContext";
+import { MicroCalendar } from "../MicroCalendar";
 import { TimezoneSelector } from "../TimezoneSelector";
 import {
   formatTime,
@@ -73,6 +75,7 @@ const getNearestTimeValue = () => {
 export const ActionInput = forwardRef<ActionInputHandle, ActionInputProps>(
   ({ onSuccess, onCancel, initialDate, className, variant = "inline", actionToEdit }, ref) => {
     const { settings } = useSettings();
+    const { isDbReady } = useDb();
     const queryClient = useQueryClient();
 
     const [title, setTitle] = useState(actionToEdit?.title || DEFAULT_CONFIG.TITLE);
@@ -105,9 +108,19 @@ export const ActionInput = forwardRef<ActionInputHandle, ActionInputProps>(
     const [timezoneOpen, setTimezoneOpen] = useState(false);
     const [isTimeInvalid, setIsTimeInvalid] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
+
+    const handleKeyDown = (e: React.KeyboardEvent) => {
+      if (e.key === "Escape") {
+        e.preventDefault();
+        e.stopPropagation();
+        handleCancelAttempt();
+      }
+    };
+
     const timeFormat = settings.time_format;
 
     const titleInputRef = useRef<HTMLInputElement>(null);
+    const noteInputRef = useRef<HTMLTextAreaElement>(null);
 
     const timeOptions = useMemo(() => getTimeOptions(timeFormat), [timeFormat]);
     const energyOption = ENERGY_OPTIONS.find((opt) => opt.value === energy) || ENERGY_OPTIONS[1];
@@ -348,7 +361,19 @@ export const ActionInput = forwardRef<ActionInputHandle, ActionInputProps>(
           className
         )}
       >
-        <form onSubmit={handleSubmit} className="flex flex-col">
+        <form onSubmit={handleSubmit} onKeyDown={handleKeyDown} className="flex flex-col">
+          {/* Engine Syncing Notice */}
+          {!isDbReady && (
+            <div className="bg-amber-500/10 border-b border-amber-500/10 px-4 py-2.5 flex items-center gap-2">
+              <span className="relative flex h-2 w-2">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-amber-500"></span>
+              </span>
+              <span className="text-[10px] font-black uppercase tracking-wider text-amber-500 select-none">
+                Database Syncing (inputs locked)
+              </span>
+            </div>
+          )}
           {/* Input Section */}
           <div className="p-4 sm:p-5 flex flex-col gap-2">
             <div className="flex items-start justify-between gap-2 sm:gap-4">
@@ -357,17 +382,30 @@ export const ActionInput = forwardRef<ActionInputHandle, ActionInputProps>(
                   ref={titleInputRef}
                   value={title}
                   onChange={(e: React.ChangeEvent<HTMLInputElement>) => setTitle(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" && !e.shiftKey) {
+                      e.preventDefault();
+                      noteInputRef.current?.focus();
+                    }
+                  }}
                   placeholder="What do you want to accomplish?"
                   className="h-8 p-0 text-[17px] font-bold bg-transparent border-none focus-visible:ring-0 placeholder:text-muted-foreground/30 selection:bg-primary/20"
-                  disabled={isLoading}
+                  disabled={isLoading || !isDbReady}
                 />
                 <Textarea
+                  ref={noteInputRef}
                   value={note}
                   onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setNote(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" && !e.shiftKey) {
+                      e.preventDefault();
+                      handleSubmit(e);
+                    }
+                  }}
                   placeholder="Any notes or constraints?"
                   className="min-h-0 h-auto p-0 text-[14px] leading-relaxed bg-transparent border-none focus-visible:ring-0 placeholder:text-muted-foreground/20 resize-none overflow-hidden"
                   style={{ height: note ? "auto" : "20px" }}
-                  disabled={isLoading}
+                  disabled={isLoading || !isDbReady}
                   onInput={(e) => {
                     const target = e.target as HTMLTextAreaElement;
                     target.style.height = "auto";
@@ -387,7 +425,12 @@ export const ActionInput = forwardRef<ActionInputHandle, ActionInputProps>(
           </div>
 
           {/* Action Chips Row */}
-          <div className="px-4 sm:px-5 pb-5 mt-5 flex flex-wrap gap-2 sm:gap-2.5 items-center">
+          <div
+            className={cn(
+              "px-4 sm:px-5 pb-5 mt-5 flex flex-wrap gap-2 sm:gap-2.5 items-center",
+              !isDbReady && "opacity-50 pointer-events-none"
+            )}
+          >
             <ActionSelector
               icon={<Clock className="size-3.5 text-blue-500/70" />}
               label={formatDuration(duration[0], duration[1])}
@@ -434,17 +477,7 @@ export const ActionInput = forwardRef<ActionInputHandle, ActionInputProps>(
                 align="center"
                 triggerClassName="bg-muted/30 border-none hover:bg-muted/50 rounded-md px-3 h-8 shadow-none"
               >
-                <div className="p-2 space-y-2">
-                  <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground/50 px-1">
-                    Custom Date
-                  </p>
-                  <Input
-                    type="date"
-                    value={scheduledDate}
-                    onChange={(e) => setScheduledDate(e.target.value)}
-                    className="h-8 text-[12px] font-bold bg-muted/30 border-none focus-visible:ring-1 focus-visible:ring-primary/20 block w-full"
-                  />
-                </div>
+                <MicroCalendar value={scheduledDate} onChange={setScheduledDate} />
               </ActionSelector>
 
               <ActionSelector
@@ -626,7 +659,8 @@ export const ActionInput = forwardRef<ActionInputHandle, ActionInputProps>(
                 variant="secondary"
                 size="sm"
                 onClick={handleCancelAttempt}
-                className="h-10 px-4 sm:px-5 rounded-xl bg-muted/50 hover:bg-muted font-bold text-sm transition-all border-none active:scale-95"
+                disabled={!isDbReady}
+                className="h-10 px-4 sm:px-5 rounded-xl bg-muted/50 hover:bg-muted font-bold text-sm transition-all border-none active:scale-95 disabled:opacity-50"
               >
                 Cancel
               </Button>
@@ -634,7 +668,7 @@ export const ActionInput = forwardRef<ActionInputHandle, ActionInputProps>(
                 type="submit"
                 variant="default"
                 size="sm"
-                disabled={isLoading || !title.trim() || isTimeInvalid}
+                disabled={isLoading || !title.trim() || isTimeInvalid || !isDbReady}
                 className="h-10 px-4 sm:px-6 rounded-xl font-bold text-sm shadow-xl shadow-primary/10 transition-all bg-primary/10 hover:bg-primary/15 text-primary active:scale-95 disabled:opacity-50 disabled:scale-100"
               >
                 {actionToEdit ? "Update task" : "Add task"}
