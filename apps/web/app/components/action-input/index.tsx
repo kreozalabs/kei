@@ -1,6 +1,5 @@
 import {
   AlertCircle,
-  AudioLines,
   BatteryFull,
   BatteryLow,
   BatteryMedium,
@@ -363,7 +362,9 @@ export const ActionInput = forwardRef<ActionInputHandle, ActionInputProps>(
                       const revertedActions = queryClient.getQueryData<Action[]>(["actions"]) || [];
                       queryClient.setQueryData(
                         ["actions"],
-                        revertedActions.map((a) => (a.id === originalAction.id ? originalAction : a))
+                        revertedActions.map((a) =>
+                          a.id === originalAction.id ? originalAction : a
+                        )
                       );
                       try {
                         const revertPayload = {
@@ -466,14 +467,6 @@ export const ActionInput = forwardRef<ActionInputHandle, ActionInputProps>(
                   disabled={isLoading || !isDbReady}
                 />
               </div>
-              <Button
-                type="button"
-                variant="ghost"
-                size="icon"
-                className="size-9 rounded-xl text-muted-foreground/50 hover:text-primary hover:bg-primary/10 transition-all active:scale-95"
-              >
-                <AudioLines className="size-5" />
-              </Button>
             </div>
           </div>
 
