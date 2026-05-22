@@ -73,10 +73,16 @@ export function ActionDetailView({
 }: ActionDetailViewProps) {
   const [events, setEvents] = useState<Event[]>([]);
   const [loadingEvents, setLoadingEvents] = useState(true);
+  const [prevActionId, setPrevActionId] = useState(action.id);
+
+  if (action.id !== prevActionId) {
+    setPrevActionId(action.id);
+    setEvents([]);
+    setLoadingEvents(true);
+  }
 
   useEffect(() => {
     let active = true;
-    setLoadingEvents(true);
 
     getActionEvents(action.id)
       .then((evs) => {
@@ -162,8 +168,8 @@ export function ActionDetailView({
       </div>
 
       {/* Metadata Badges */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 bg-muted/30 border border-border/10 p-4 rounded-3xl">
-        <div className="flex flex-col gap-1">
+      <div className="flex flex-col bg-muted/30 border border-border/10 p-5 rounded-3xl divide-y divide-border/10">
+        <div className="flex flex-col gap-1 pb-3">
           <span className="text-[9px] font-bold uppercase tracking-wider text-muted-foreground/40">
             Intention
           </span>
@@ -177,7 +183,7 @@ export function ActionDetailView({
           </span>
         </div>
 
-        <div className="flex flex-col gap-1">
+        <div className="flex flex-col gap-1 py-3">
           <span className="text-[9px] font-bold uppercase tracking-wider text-muted-foreground/40">
             Energy Required
           </span>
@@ -191,7 +197,7 @@ export function ActionDetailView({
           </span>
         </div>
 
-        <div className="flex flex-col gap-1">
+        <div className="flex flex-col gap-1 py-3">
           <span className="text-[9px] font-bold uppercase tracking-wider text-muted-foreground/40">
             Scheduled Date
           </span>
@@ -201,7 +207,7 @@ export function ActionDetailView({
           </span>
         </div>
 
-        <div className="flex flex-col gap-1">
+        <div className="flex flex-col gap-1 pt-3">
           <span className="text-[9px] font-bold uppercase tracking-wider text-muted-foreground/40">
             Timing & Span
           </span>
