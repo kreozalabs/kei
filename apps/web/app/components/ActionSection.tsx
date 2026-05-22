@@ -18,6 +18,8 @@ interface ActionSectionProps {
   onComplete?: (action: Action) => void;
   onAbandon?: (action: Action) => void;
   onEdit?: (action: Action) => void;
+  onReactivate?: (action: Action) => void;
+  onDeletePermanently?: (action: Action) => void;
   sectionDate: string;
   defaultExpanded?: boolean;
 }
@@ -30,6 +32,8 @@ export function ActionSection({
   onComplete,
   onAbandon,
   onEdit,
+  onReactivate,
+  onDeletePermanently,
   sectionDate,
   defaultExpanded,
 }: ActionSectionProps) {
@@ -143,14 +147,12 @@ export function ActionSection({
                   <ActionItem
                     key={action.id}
                     action={action}
-                    type={
-                      action.status === ACTION_STATUS.COMPLETED
-                        ? ACTION_STATUS.COMPLETED
-                        : ACTION_STATUS.ACTIVE
-                    }
+                    type={action.status}
                     onComplete={onComplete ?? (() => {})}
                     onAbandon={onAbandon ?? (() => {})}
                     onEdit={onEdit ?? (() => {})}
+                    onReactivate={onReactivate}
+                    onDeletePermanently={onDeletePermanently}
                   />
                 ))}
                 {actions.length === 0 && (

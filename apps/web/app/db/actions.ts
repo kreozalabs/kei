@@ -17,8 +17,12 @@ const channel = typeof window !== "undefined" ? new BroadcastChannel("kei_db_syn
 /**
  * Reconstructs or updates an Action state based on an event.
  */
-function applyEventToAction(action: Action | null, event: Event<ActionPayload>): Action {
+function applyEventToAction(action: Action | null, event: Event<ActionPayload>): Action | null {
   const { type, payload, timestamp, id: actionId } = event;
+
+  if (type === EVENT_TYPES.ACTION_DELETED) {
+    return null;
+  }
 
   if (type === EVENT_TYPES.ACTION_INTENDED) {
     return {
@@ -98,6 +102,14 @@ async function pushEvent(actionId: string, type: string, payload: ActionPayload)
   }
 
   const updatedAction = applyEventToAction(currentAction, event);
+
+  if (!updatedAction) {
+    await db.query("DELETE FROM actions WHERE id = $1", [actionId]);
+    if (channel) {
+      channel.postMessage({ type: "DB_UPDATED", entity: "actions" });
+    }
+    return event;
+  }
 
   await db.query(
     `INSERT INTO actions (
@@ -224,6 +236,10 @@ export async function abandonAction(id: string) {
   await pushEvent(id, EVENT_TYPES.ACTION_ABANDONED, {});
 }
 
+export async function deleteActionPermanently(id: string) {
+  await pushEvent(id, EVENT_TYPES.ACTION_DELETED, {});
+}
+
 /**
  * Rebuilds the entire actions table from the events log.
  * Useful for migrations or when the derivation logic changes.
@@ -243,6 +259,8 @@ export async function rebuildActions() {
       const updated = applyEventToAction(existing, event);
       if (updated) {
         actionsMap.set(actionId, updated);
+      } else {
+        actionsMap.delete(actionId);
       }
     } catch (e) {
       console.warn(`Skipping event during rebuild: ${e}`);

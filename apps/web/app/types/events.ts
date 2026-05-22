@@ -4,6 +4,7 @@ export type EventType =
   | "ACTION_COMPLETED"
   | "ACTION_ACTIVATED"
   | "ACTION_ABANDONED"
+  | "ACTION_DELETED"
   | "TRANSITION_STARTED";
 
 // Events are the immutable source of truth for the application.

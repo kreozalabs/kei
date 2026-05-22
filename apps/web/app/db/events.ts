@@ -26,3 +26,27 @@ export async function persistEvent<T>(
 
   return event;
 }
+
+export async function getActionEvents(actionId: string): Promise<Event[]> {
+  const result = await db.query("SELECT * FROM events WHERE id = $1 ORDER BY timestamp ASC", [
+    actionId,
+  ]);
+  return result.rows.map((row) => {
+    const r = row as Record<string, unknown>;
+    const parsePayload = (val: unknown) => {
+      if (typeof val !== "string") return val;
+      try {
+        return JSON.parse(val);
+      } catch {
+        return val;
+      }
+    };
+    return {
+      eventId: r.event_id as string,
+      id: r.id as string,
+      type: r.type as EventType,
+      timestamp: Number(r.timestamp),
+      payload: parsePayload(r.payload),
+    };
+  });
+}

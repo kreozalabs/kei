@@ -6,6 +6,7 @@ export const EVENT_TYPES = {
   ACTION_COMPLETED: "ACTION_COMPLETED",
   ACTION_ACTIVATED: "ACTION_ACTIVATED",
   ACTION_ABANDONED: "ACTION_ABANDONED",
+  ACTION_DELETED: "ACTION_DELETED",
   SETTING_UPDATED: "SETTING_UPDATED",
 } as const;
 
@@ -138,6 +139,8 @@ export const DEFAULT_SETTINGS = {
   default_energy: ENERGY_LEVELS.MEDIUM,
   default_intention: INTENTIONS.WANT,
   show_overdue: false,
+  show_abandoned: false,
+  direct_edit_mode: true,
 };
 
 export const STORAGE_KEYS = {
