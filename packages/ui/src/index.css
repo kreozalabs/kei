@@ -1,0 +1,6 @@
+@import url('https://fonts.googleapis.com/css2?family=PT+Sans:wght@400;700&display=swap');
+@import "tw-animate-css";
+@import "./styles/base.css";
+
+@source "../../../apps/web/src/**/*.{ts,tsx}";
+@source "../../ui/src/**/*.{ts,tsx}";
