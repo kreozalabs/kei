@@ -141,6 +141,7 @@ export const DEFAULT_SETTINGS = {
   show_overdue: false,
   show_abandoned: false,
   direct_edit_mode: true,
+  enable_undo_toast: true,
 };
 
 export const STORAGE_KEYS = {

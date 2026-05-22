@@ -18,6 +18,7 @@ import { useDiscardGuard } from "../../hooks/useDiscardGuard";
 import { useSettings } from "../../providers/SettingsContext";
 import { useDb } from "../../providers/DbContext";
 import { MicroCalendar } from "../MicroCalendar";
+import { toast } from "sonner";
 import { TimezoneSelector } from "../TimezoneSelector";
 import {
   formatTime,
@@ -334,19 +335,77 @@ export const ActionInput = forwardRef<ActionInputHandle, ActionInputProps>(
           timezone,
         };
 
+        const prevActions = queryClient.getQueryData<Action[]>(["actions"]) || [];
         if (actionToEdit) {
-          await updateAction(actionToEdit.id, payload);
-        } else {
-          await addAction(payload);
+          const updatedActions = prevActions.map((a) =>
+            a.id === actionToEdit.id ? { ...a, ...payload } : a
+          );
+          queryClient.setQueryData(["actions"], updatedActions);
         }
 
+        // Reset the input state immediately for a fast responsive feel
         setTitle("");
         setNote("");
-        queryClient.invalidateQueries({ queryKey: ["actions"] });
+        setIsLoading(false);
         onSuccess?.();
+
+        // Perform the write asynchronously in the background
+        if (actionToEdit) {
+          const originalAction = actionToEdit;
+          updateAction(actionToEdit.id, payload)
+            .then(() => {
+              queryClient.invalidateQueries({ queryKey: ["actions"] });
+              if (settings.enable_undo_toast) {
+                toast.success(`"${payload.title}" updated`, {
+                  action: {
+                    label: "Undo",
+                    onClick: async () => {
+                      const revertedActions = queryClient.getQueryData<Action[]>(["actions"]) || [];
+                      queryClient.setQueryData(
+                        ["actions"],
+                        revertedActions.map((a) => (a.id === originalAction.id ? originalAction : a))
+                      );
+                      try {
+                        const revertPayload = {
+                          title: originalAction.title,
+                          note: originalAction.note || "",
+                          intention: originalAction.intention,
+                          important: originalAction.important,
+                          energy: originalAction.energy,
+                          duration: originalAction.duration as [number, number],
+                          scheduledDate: originalAction.scheduledDate,
+                          startTime: originalAction.startTime || undefined,
+                          endTime: originalAction.endTime || undefined,
+                          timezone: originalAction.timezone,
+                          sortOrder: originalAction.sortOrder,
+                        };
+                        await updateAction(originalAction.id, revertPayload);
+                        queryClient.invalidateQueries({ queryKey: ["actions"] });
+                        toast.success("Reverted updates");
+                      } catch (err) {
+                        console.error(err);
+                        queryClient.setQueryData(["actions"], revertedActions);
+                      }
+                    },
+                  },
+                });
+              }
+            })
+            .catch((error) => {
+              console.error("Failed to save action:", error);
+              queryClient.setQueryData(["actions"], prevActions);
+            });
+        } else {
+          addAction(payload)
+            .then(() => {
+              queryClient.invalidateQueries({ queryKey: ["actions"] });
+            })
+            .catch((error) => {
+              console.error("Failed to save action:", error);
+            });
+        }
       } catch (error) {
-        console.error("Failed to save action:", error);
-      } finally {
+        console.error("Failed to prepare action save:", error);
         setIsLoading(false);
       }
     };

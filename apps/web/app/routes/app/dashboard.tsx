@@ -11,7 +11,9 @@ import {
   activateAction,
   abandonAction,
   deleteActionPermanently,
+  restoreAction,
 } from "@/db/actions";
+import { toast } from "sonner";
 import { useCurrentDay } from "@/hooks/useCurrentDay";
 import {
   getTodayString,
@@ -232,27 +234,165 @@ export default function Dashboard() {
   }, [activeActions, completedActions, abandonedActions, settings.show_abandoned]);
 
   const handleComplete = async (action: Action) => {
-    if (action.status === ACTION_STATUS.COMPLETED) {
-      await activateAction(action.id);
-    } else {
-      await completeAction(action.id);
+    const isCompleted = action.status === ACTION_STATUS.COMPLETED;
+    const nextStatus = isCompleted ? ACTION_STATUS.ACTIVE : ACTION_STATUS.COMPLETED;
+
+    const previousActions = queryClient.getQueryData<Action[]>(["actions"]) || [];
+    const updatedActions = previousActions.map((a) =>
+      a.id === action.id ? { ...a, status: nextStatus } : a
+    );
+    queryClient.setQueryData(["actions"], updatedActions);
+
+    try {
+      if (isCompleted) {
+        await activateAction(action.id);
+      } else {
+        await completeAction(action.id);
+      }
+      queryClient.invalidateQueries({ queryKey: ["actions"] });
+
+      if (settings.enable_undo_toast) {
+        toast.success(isCompleted ? `"${action.title}" reactivated` : `"${action.title}" completed`, {
+          action: {
+            label: "Undo",
+            onClick: async () => {
+              const revertedActions = queryClient.getQueryData<Action[]>(["actions"]) || [];
+              queryClient.setQueryData(
+                ["actions"],
+                revertedActions.map((a) => (a.id === action.id ? { ...a, status: action.status } : a))
+              );
+              try {
+                if (isCompleted) {
+                  await completeAction(action.id);
+                } else {
+                  await activateAction(action.id);
+                }
+                queryClient.invalidateQueries({ queryKey: ["actions"] });
+                toast.success("Reverted status change");
+              } catch (err) {
+                console.error(err);
+                queryClient.setQueryData(["actions"], revertedActions);
+              }
+            },
+          },
+        });
+      }
+    } catch (error) {
+      console.error("Failed to complete action:", error);
+      queryClient.setQueryData(["actions"], previousActions);
     }
-    queryClient.invalidateQueries({ queryKey: ["actions"] });
   };
 
   const handleAbandon = async (action: Action) => {
-    await abandonAction(action.id);
-    queryClient.invalidateQueries({ queryKey: ["actions"] });
+    const previousActions = queryClient.getQueryData<Action[]>(["actions"]) || [];
+    const updatedActions = previousActions.map((a) =>
+      a.id === action.id ? { ...a, status: ACTION_STATUS.ABANDONED } : a
+    );
+    queryClient.setQueryData(["actions"], updatedActions);
+
+    try {
+      await abandonAction(action.id);
+      queryClient.invalidateQueries({ queryKey: ["actions"] });
+
+      if (settings.enable_undo_toast) {
+        toast.success(`"${action.title}" abandoned`, {
+          action: {
+            label: "Undo",
+            onClick: async () => {
+              const revertedActions = queryClient.getQueryData<Action[]>(["actions"]) || [];
+              queryClient.setQueryData(
+                ["actions"],
+                revertedActions.map((a) => (a.id === action.id ? { ...a, status: action.status } : a))
+              );
+              try {
+                await activateAction(action.id);
+                queryClient.invalidateQueries({ queryKey: ["actions"] });
+                toast.success("Action reactivated");
+              } catch (err) {
+                console.error(err);
+                queryClient.setQueryData(["actions"], revertedActions);
+              }
+            },
+          },
+        });
+      }
+    } catch (error) {
+      console.error("Failed to abandon action:", error);
+      queryClient.setQueryData(["actions"], previousActions);
+    }
   };
 
   const handleReactivate = async (action: Action) => {
-    await activateAction(action.id);
-    queryClient.invalidateQueries({ queryKey: ["actions"] });
+    const previousActions = queryClient.getQueryData<Action[]>(["actions"]) || [];
+    const updatedActions = previousActions.map((a) =>
+      a.id === action.id ? { ...a, status: ACTION_STATUS.ACTIVE } : a
+    );
+    queryClient.setQueryData(["actions"], updatedActions);
+
+    try {
+      await activateAction(action.id);
+      queryClient.invalidateQueries({ queryKey: ["actions"] });
+
+      if (settings.enable_undo_toast) {
+        toast.success(`"${action.title}" reactivated`, {
+          action: {
+            label: "Undo",
+            onClick: async () => {
+              const revertedActions = queryClient.getQueryData<Action[]>(["actions"]) || [];
+              queryClient.setQueryData(
+                ["actions"],
+                revertedActions.map((a) => (a.id === action.id ? { ...a, status: action.status } : a))
+              );
+              try {
+                await abandonAction(action.id);
+                queryClient.invalidateQueries({ queryKey: ["actions"] });
+                toast.success("Action abandoned");
+              } catch (err) {
+                console.error(err);
+                queryClient.setQueryData(["actions"], revertedActions);
+              }
+            },
+          },
+        });
+      }
+    } catch (error) {
+      console.error("Failed to reactivate action:", error);
+      queryClient.setQueryData(["actions"], previousActions);
+    }
   };
 
   const handleDeletePermanently = async (action: Action) => {
-    await deleteActionPermanently(action.id);
-    queryClient.invalidateQueries({ queryKey: ["actions"] });
+    const previousActions = queryClient.getQueryData<Action[]>(["actions"]) || [];
+    const updatedActions = previousActions.filter((a) => a.id !== action.id);
+    queryClient.setQueryData(["actions"], updatedActions);
+
+    try {
+      await deleteActionPermanently(action.id);
+      queryClient.invalidateQueries({ queryKey: ["actions"] });
+
+      if (settings.enable_undo_toast) {
+        toast.success(`"${action.title}" deleted permanently`, {
+          action: {
+            label: "Undo",
+            onClick: async () => {
+              const revertedActions = queryClient.getQueryData<Action[]>(["actions"]) || [];
+              queryClient.setQueryData(["actions"], [...revertedActions, action]);
+              try {
+                await restoreAction(action);
+                queryClient.invalidateQueries({ queryKey: ["actions"] });
+                toast.success("Action restored");
+              } catch (err) {
+                console.error(err);
+                queryClient.setQueryData(["actions"], revertedActions);
+              }
+            },
+          },
+        });
+      }
+    } catch (error) {
+      console.error("Failed to delete action permanently:", error);
+      queryClient.setQueryData(["actions"], previousActions);
+    }
   };
 
   const handleEdit = (action: Action) => {
@@ -295,25 +435,159 @@ export default function Dashboard() {
 
   const handleBulkComplete = async () => {
     const idsToComplete = Array.from(visibleSelectedActionIds);
-    await Promise.all(idsToComplete.map((id) => completeAction(id)));
+    const selectedActions = allActions.filter((a) => visibleSelectedActionIds.has(a.id));
+    const previousActions = queryClient.getQueryData<Action[]>(["actions"]) || [];
+    const updatedActions = previousActions.map((a) =>
+      visibleSelectedActionIds.has(a.id) ? { ...a, status: ACTION_STATUS.COMPLETED } : a
+    );
+    queryClient.setQueryData(["actions"], updatedActions);
     setSelectedActionIds(new Set());
-    queryClient.invalidateQueries({ queryKey: ["actions"] });
+
+    try {
+      await Promise.all(idsToComplete.map((id) => completeAction(id)));
+      queryClient.invalidateQueries({ queryKey: ["actions"] });
+
+      if (settings.enable_undo_toast) {
+        toast.success(`Completed ${idsToComplete.length} actions`, {
+          action: {
+            label: "Undo",
+            onClick: async () => {
+              const revertedActions = queryClient.getQueryData<Action[]>(["actions"]) || [];
+              queryClient.setQueryData(
+                ["actions"],
+                revertedActions.map((a) => {
+                  const match = selectedActions.find((sa) => sa.id === a.id);
+                  return match ? { ...a, status: match.status } : a;
+                })
+              );
+              try {
+                await Promise.all(
+                  selectedActions.map(async (sa) => {
+                    if (sa.status === ACTION_STATUS.COMPLETED) {
+                      await completeAction(sa.id);
+                    } else {
+                      await activateAction(sa.id);
+                    }
+                  })
+                );
+                queryClient.invalidateQueries({ queryKey: ["actions"] });
+                toast.success("Reverted status changes");
+              } catch (err) {
+                console.error(err);
+                queryClient.setQueryData(["actions"], revertedActions);
+              }
+            },
+          },
+        });
+      }
+    } catch (error) {
+      console.error("Failed to bulk complete actions:", error);
+      queryClient.setQueryData(["actions"], previousActions);
+    }
   };
 
   const handleBulkAbandon = async () => {
     const idsToAbandon = Array.from(visibleSelectedActionIds);
-    await Promise.all(idsToAbandon.map((id) => abandonAction(id)));
+    const selectedActions = allActions.filter((a) => visibleSelectedActionIds.has(a.id));
+    const previousActions = queryClient.getQueryData<Action[]>(["actions"]) || [];
+    const updatedActions = previousActions.map((a) =>
+      visibleSelectedActionIds.has(a.id) ? { ...a, status: ACTION_STATUS.ABANDONED } : a
+    );
+    queryClient.setQueryData(["actions"], updatedActions);
     setSelectedActionIds(new Set());
-    queryClient.invalidateQueries({ queryKey: ["actions"] });
+
+    try {
+      await Promise.all(idsToAbandon.map((id) => abandonAction(id)));
+      queryClient.invalidateQueries({ queryKey: ["actions"] });
+
+      if (settings.enable_undo_toast) {
+        toast.success(`Abandoned ${idsToAbandon.length} actions`, {
+          action: {
+            label: "Undo",
+            onClick: async () => {
+              const revertedActions = queryClient.getQueryData<Action[]>(["actions"]) || [];
+              queryClient.setQueryData(
+                ["actions"],
+                revertedActions.map((a) => {
+                  const match = selectedActions.find((sa) => sa.id === a.id);
+                  return match ? { ...a, status: match.status } : a;
+                })
+              );
+              try {
+                await Promise.all(
+                  selectedActions.map(async (sa) => {
+                    if (sa.status === ACTION_STATUS.COMPLETED) {
+                      await completeAction(sa.id);
+                    } else if (sa.status === ACTION_STATUS.ABANDONED) {
+                      await abandonAction(sa.id);
+                    } else {
+                      await activateAction(sa.id);
+                    }
+                  })
+                );
+                queryClient.invalidateQueries({ queryKey: ["actions"] });
+                toast.success("Reverted status changes");
+              } catch (err) {
+                console.error(err);
+                queryClient.setQueryData(["actions"], revertedActions);
+              }
+            },
+          },
+        });
+      }
+    } catch (error) {
+      console.error("Failed to bulk abandon actions:", error);
+      queryClient.setQueryData(["actions"], previousActions);
+    }
   };
 
   const handleBulkReschedule = async (newDate: string) => {
     const idsToReschedule = Array.from(visibleSelectedActionIds);
-    await Promise.all(
-      idsToReschedule.map((id) => updateAction(id, { scheduledDate: newDate }))
+    const selectedActions = allActions.filter((a) => visibleSelectedActionIds.has(a.id));
+    const previousActions = queryClient.getQueryData<Action[]>(["actions"]) || [];
+    const updatedActions = previousActions.map((a) =>
+      visibleSelectedActionIds.has(a.id) ? { ...a, scheduledDate: newDate } : a
     );
+    queryClient.setQueryData(["actions"], updatedActions);
     setSelectedActionIds(new Set());
-    queryClient.invalidateQueries({ queryKey: ["actions"] });
+
+    try {
+      await Promise.all(
+        idsToReschedule.map((id) => updateAction(id, { scheduledDate: newDate }))
+      );
+      queryClient.invalidateQueries({ queryKey: ["actions"] });
+
+      if (settings.enable_undo_toast) {
+        toast.success(`Rescheduled ${idsToReschedule.length} actions`, {
+          action: {
+            label: "Undo",
+            onClick: async () => {
+              const revertedActions = queryClient.getQueryData<Action[]>(["actions"]) || [];
+              queryClient.setQueryData(
+                ["actions"],
+                revertedActions.map((a) => {
+                  const match = selectedActions.find((sa) => sa.id === a.id);
+                  return match ? { ...a, scheduledDate: match.scheduledDate } : a;
+                })
+              );
+              try {
+                await Promise.all(
+                  selectedActions.map((sa) => updateAction(sa.id, { scheduledDate: sa.scheduledDate }))
+                );
+                queryClient.invalidateQueries({ queryKey: ["actions"] });
+                toast.success("Reverted rescheduling");
+              } catch (err) {
+                console.error(err);
+                queryClient.setQueryData(["actions"], revertedActions);
+              }
+            },
+          },
+        });
+      }
+    } catch (error) {
+      console.error("Failed to bulk reschedule actions:", error);
+      queryClient.setQueryData(["actions"], previousActions);
+    }
   };
 
   const { overdueActions, daySections } = useMemo(() => {

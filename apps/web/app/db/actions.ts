@@ -240,6 +240,22 @@ export async function deleteActionPermanently(id: string) {
   await pushEvent(id, EVENT_TYPES.ACTION_DELETED, {});
 }
 
+export async function restoreAction(action: Action) {
+  await pushEvent(action.id, EVENT_TYPES.ACTION_INTENDED, {
+    title: action.title,
+    note: action.note,
+    intention: action.intention,
+    important: action.important,
+    energy: action.energy,
+    duration: action.duration as [number, number],
+    scheduledDate: action.scheduledDate,
+    startTime: action.startTime || undefined,
+    endTime: action.endTime || undefined,
+    timezone: action.timezone,
+    sortOrder: action.sortOrder,
+  });
+}
+
 /**
  * Rebuilds the entire actions table from the events log.
  * Useful for migrations or when the derivation logic changes.

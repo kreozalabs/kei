@@ -54,30 +54,172 @@ export function ActionInputDialog({
 
   const handleComplete = async (action: Action) => {
     const { activateAction, completeAction } = await import("@/db/actions");
-    if (action.status === "completed") {
-      await activateAction(action.id);
-    } else {
-      await completeAction(action.id);
+    const isCompleted = action.status === "completed";
+    const nextStatus = isCompleted ? "active" : "completed";
+
+    const previousActions = queryClient.getQueryData<Action[]>(["actions"]) || [];
+    const updatedActions = previousActions.map((a) =>
+      a.id === action.id ? { ...a, status: nextStatus } : a
+    );
+    queryClient.setQueryData(["actions"], updatedActions);
+
+    try {
+      if (isCompleted) {
+        await activateAction(action.id);
+      } else {
+        await completeAction(action.id);
+      }
+      queryClient.invalidateQueries({ queryKey: ["actions"] });
+
+      if (settings.enable_undo_toast) {
+        const { toast } = await import("sonner");
+        toast.success(isCompleted ? `"${action.title}" reactivated` : `"${action.title}" completed`, {
+          action: {
+            label: "Undo",
+            onClick: async () => {
+              const revertedActions = queryClient.getQueryData<Action[]>(["actions"]) || [];
+              queryClient.setQueryData(
+                ["actions"],
+                revertedActions.map((a) => (a.id === action.id ? { ...a, status: action.status } : a))
+              );
+              try {
+                if (isCompleted) {
+                  await completeAction(action.id);
+                } else {
+                  await activateAction(action.id);
+                }
+                queryClient.invalidateQueries({ queryKey: ["actions"] });
+                toast.success("Reverted status change");
+              } catch (err) {
+                console.error(err);
+                queryClient.setQueryData(["actions"], revertedActions);
+              }
+            },
+          },
+        });
+      }
+    } catch (err) {
+      console.error(err);
+      queryClient.setQueryData(["actions"], previousActions);
     }
-    queryClient.invalidateQueries({ queryKey: ["actions"] });
   };
 
   const handleAbandon = async (action: Action) => {
-    const { abandonAction } = await import("@/db/actions");
-    await abandonAction(action.id);
-    queryClient.invalidateQueries({ queryKey: ["actions"] });
+    const { abandonAction, activateAction } = await import("@/db/actions");
+    const previousActions = queryClient.getQueryData<Action[]>(["actions"]) || [];
+    const updatedActions = previousActions.map((a) =>
+      a.id === action.id ? { ...a, status: "abandoned" } : a
+    );
+    queryClient.setQueryData(["actions"], updatedActions);
+
+    try {
+      await abandonAction(action.id);
+      queryClient.invalidateQueries({ queryKey: ["actions"] });
+
+      if (settings.enable_undo_toast) {
+        const { toast } = await import("sonner");
+        toast.success(`"${action.title}" abandoned`, {
+          action: {
+            label: "Undo",
+            onClick: async () => {
+              const revertedActions = queryClient.getQueryData<Action[]>(["actions"]) || [];
+              queryClient.setQueryData(
+                ["actions"],
+                revertedActions.map((a) => (a.id === action.id ? { ...a, status: action.status } : a))
+              );
+              try {
+                await activateAction(action.id);
+                queryClient.invalidateQueries({ queryKey: ["actions"] });
+                toast.success("Action reactivated");
+              } catch (err) {
+                console.error(err);
+                queryClient.setQueryData(["actions"], revertedActions);
+              }
+            },
+          },
+        });
+      }
+    } catch (err) {
+      console.error(err);
+      queryClient.setQueryData(["actions"], previousActions);
+    }
   };
 
   const handleReactivate = async (action: Action) => {
-    const { activateAction } = await import("@/db/actions");
-    await activateAction(action.id);
-    queryClient.invalidateQueries({ queryKey: ["actions"] });
+    const { activateAction, abandonAction } = await import("@/db/actions");
+    const previousActions = queryClient.getQueryData<Action[]>(["actions"]) || [];
+    const updatedActions = previousActions.map((a) =>
+      a.id === action.id ? { ...a, status: "active" } : a
+    );
+    queryClient.setQueryData(["actions"], updatedActions);
+
+    try {
+      await activateAction(action.id);
+      queryClient.invalidateQueries({ queryKey: ["actions"] });
+
+      if (settings.enable_undo_toast) {
+        const { toast } = await import("sonner");
+        toast.success(`"${action.title}" reactivated`, {
+          action: {
+            label: "Undo",
+            onClick: async () => {
+              const revertedActions = queryClient.getQueryData<Action[]>(["actions"]) || [];
+              queryClient.setQueryData(
+                ["actions"],
+                revertedActions.map((a) => (a.id === action.id ? { ...a, status: action.status } : a))
+              );
+              try {
+                await abandonAction(action.id);
+                queryClient.invalidateQueries({ queryKey: ["actions"] });
+                toast.success("Action abandoned");
+              } catch (err) {
+                console.error(err);
+                queryClient.setQueryData(["actions"], revertedActions);
+              }
+            },
+          },
+        });
+      }
+    } catch (err) {
+      console.error(err);
+      queryClient.setQueryData(["actions"], previousActions);
+    }
   };
 
   const handleDeletePermanently = async (action: Action) => {
-    const { deleteActionPermanently } = await import("@/db/actions");
-    await deleteActionPermanently(action.id);
-    queryClient.invalidateQueries({ queryKey: ["actions"] });
+    const { deleteActionPermanently, restoreAction } = await import("@/db/actions");
+    const previousActions = queryClient.getQueryData<Action[]>(["actions"]) || [];
+    const updatedActions = previousActions.filter((a) => a.id !== action.id);
+    queryClient.setQueryData(["actions"], updatedActions);
+
+    try {
+      await deleteActionPermanently(action.id);
+      queryClient.invalidateQueries({ queryKey: ["actions"] });
+
+      if (settings.enable_undo_toast) {
+        const { toast } = await import("sonner");
+        toast.success(`"${action.title}" deleted permanently`, {
+          action: {
+            label: "Undo",
+            onClick: async () => {
+              const revertedActions = queryClient.getQueryData<Action[]>(["actions"]) || [];
+              queryClient.setQueryData(["actions"], [...revertedActions, action]);
+              try {
+                await restoreAction(action);
+                queryClient.invalidateQueries({ queryKey: ["actions"] });
+                toast.success("Action restored");
+              } catch (err) {
+                console.error(err);
+                queryClient.setQueryData(["actions"], revertedActions);
+              }
+            },
+          },
+        });
+      }
+    } catch (err) {
+      console.error(err);
+      queryClient.setQueryData(["actions"], previousActions);
+    }
   };
 
   return (
