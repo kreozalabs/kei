@@ -7,9 +7,10 @@ const srcDir = path.resolve(__dirname, "src");
 const componentsDir = path.resolve(srcDir, "components");
 const utilsFile = path.resolve(srcDir, "lib/utils.ts");
 
-const components = fs.readdirSync(componentsDir)
-  .filter(f => f.endsWith(".tsx") && f !== "index.ts")
-  .map(f => `export * from "./components/${f.replace(".tsx", "")}";`);
+const components = fs
+  .readdirSync(componentsDir)
+  .filter((f) => f.endsWith(".tsx") && f !== "index.ts")
+  .map((f) => `export * from "./components/${f.replace(".tsx", "")}";`);
 
 const exports = [...components];
 if (fs.existsSync(utilsFile)) {
