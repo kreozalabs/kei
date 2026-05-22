@@ -13,12 +13,7 @@ import {
 import type { Action } from "../types/actions";
 import type { Event } from "../types/events";
 import { getActionEvents } from "../db/events";
-import {
-  EVENT_TYPES,
-  ACTION_STATUS,
-  ENERGY_OPTIONS,
-  INTENTION_OPTIONS,
-} from "../config/constants";
+import { EVENT_TYPES, ACTION_STATUS, ENERGY_OPTIONS, INTENTION_OPTIONS } from "../config/constants";
 import { formatGoogleDate } from "../utils/time";
 
 const STATUS_BADGE_STYLES: Record<string, string> = {
@@ -45,11 +40,15 @@ const EVENT_NODE_STYLES: Record<string, string> = {
 };
 
 const BUTTON_STYLES = {
-  COMPLETE: "flex-1 min-w-28 h-9 flex items-center justify-center gap-1.5 text-xs font-bold hover:bg-emerald-500/10 hover:text-emerald-500 hover:border-emerald-500/20 rounded-xl",
-  ABANDON: "flex-1 min-w-28 h-9 flex items-center justify-center gap-1.5 text-xs font-bold hover:bg-rose-500/10 hover:text-rose-500 hover:border-rose-500/20 rounded-xl",
+  COMPLETE:
+    "flex-1 min-w-28 h-9 flex items-center justify-center gap-1.5 text-xs font-bold hover:bg-emerald-500/10 hover:text-emerald-500 hover:border-emerald-500/20 rounded-xl",
+  ABANDON:
+    "flex-1 min-w-28 h-9 flex items-center justify-center gap-1.5 text-xs font-bold hover:bg-rose-500/10 hover:text-rose-500 hover:border-rose-500/20 rounded-xl",
   EDIT: "flex-1 min-w-28 h-9 flex items-center justify-center gap-1.5 text-xs font-bold hover:bg-primary/10 hover:text-primary hover:border-primary/20 rounded-xl",
-  DELETE: "flex-1 min-w-28 h-9 flex items-center justify-center gap-1.5 text-xs font-bold hover:bg-destructive/10 hover:text-destructive hover:border-destructive/20 text-muted-foreground/60 rounded-xl border-dashed",
-  CONTROL: "flex-1 min-w-32 h-9 flex items-center justify-center gap-1.5 text-xs font-bold hover:bg-muted/50 rounded-xl",
+  DELETE:
+    "flex-1 min-w-28 h-9 flex items-center justify-center gap-1.5 text-xs font-bold hover:bg-destructive/10 hover:text-destructive hover:border-destructive/20 text-muted-foreground/60 rounded-xl border-dashed",
+  CONTROL:
+    "flex-1 min-w-32 h-9 flex items-center justify-center gap-1.5 text-xs font-bold hover:bg-muted/50 rounded-xl",
 } as const;
 
 interface ActionDetailViewProps {
@@ -105,12 +104,16 @@ export function ActionDetailView({
 
   const getIntentionBadgeStyle = (intention: string) => {
     const config = INTENTION_OPTIONS.find((opt) => opt.value === intention?.toLowerCase());
-    return config ? `${config.bg} ${config.color} border` : "bg-muted text-muted-foreground border border-border/40";
+    return config
+      ? `${config.bg} ${config.color} border`
+      : "bg-muted text-muted-foreground border border-border/40";
   };
 
   const getEnergyBadgeStyle = (energy: string) => {
     const config = ENERGY_OPTIONS.find((opt) => opt.value === energy?.toLowerCase());
-    return config ? `${config.bg} ${config.color} border` : "bg-muted text-muted-foreground border border-border/40";
+    return config
+      ? `${config.bg} ${config.color} border`
+      : "bg-muted text-muted-foreground border border-border/40";
   };
 
   const getEventName = (type: string) => {
@@ -330,12 +333,7 @@ export function ActionDetailView({
           </>
         )}
 
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={onEdit}
-          className={BUTTON_STYLES.EDIT}
-        >
+        <Button variant="outline" size="sm" onClick={onEdit} className={BUTTON_STYLES.EDIT}>
           <Pencil className="size-3.5" />
           Edit Details
         </Button>
