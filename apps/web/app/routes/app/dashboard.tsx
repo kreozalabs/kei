@@ -11,7 +11,9 @@ import {
   activateAction,
   abandonAction,
   deleteActionPermanently,
+  restoreAction,
 } from "@/db/actions";
+import { toast } from "sonner";
 import { useCurrentDay } from "@/hooks/useCurrentDay";
 import {
   getTodayString,
@@ -22,9 +24,25 @@ import {
   formatTitleDate,
   parseDateString,
 } from "@/utils/time";
-import { Button, cn } from "@kreozalabs/ui";
-import { LockIcon, UnlockIcon, Loader2Icon, Trash2Icon } from "lucide-react";
+import {
+  Button,
+  cn,
+  Input,
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuItem,
+} from "@kreozalabs/ui";
+import {
+  LockIcon,
+  UnlockIcon,
+  Loader2Icon,
+  Trash2Icon,
+  CheckCircle2Icon,
+  CalendarIcon,
+} from "lucide-react";
 import type { Action } from "@/types/actions";
+import { motion, AnimatePresence } from "framer-motion";
 import { ActionSection } from "@/components/ActionSection";
 import { ActionItem } from "@/components/ActionItem";
 import { ActionInputDialog } from "@/components/ActionInputDialog";
@@ -216,32 +234,369 @@ export default function Dashboard() {
   }, [activeActions, completedActions, abandonedActions, settings.show_abandoned]);
 
   const handleComplete = async (action: Action) => {
-    if (action.status === ACTION_STATUS.COMPLETED) {
-      await activateAction(action.id);
-    } else {
-      await completeAction(action.id);
+    const isCompleted = action.status === ACTION_STATUS.COMPLETED;
+    const nextStatus = isCompleted ? ACTION_STATUS.ACTIVE : ACTION_STATUS.COMPLETED;
+
+    const previousActions = queryClient.getQueryData<Action[]>(["actions"]) || [];
+    const updatedActions = previousActions.map((a) =>
+      a.id === action.id ? { ...a, status: nextStatus } : a
+    );
+    queryClient.setQueryData(["actions"], updatedActions);
+
+    try {
+      if (isCompleted) {
+        await activateAction(action.id);
+      } else {
+        await completeAction(action.id);
+      }
+      queryClient.invalidateQueries({ queryKey: ["actions"] });
+
+      if (settings.enable_undo_toast) {
+        toast.success(
+          isCompleted ? `"${action.title}" reactivated` : `"${action.title}" completed`,
+          {
+            action: {
+              label: "Undo",
+              onClick: async () => {
+                const revertedActions = queryClient.getQueryData<Action[]>(["actions"]) || [];
+                queryClient.setQueryData(
+                  ["actions"],
+                  revertedActions.map((a) =>
+                    a.id === action.id ? { ...a, status: action.status } : a
+                  )
+                );
+                try {
+                  if (isCompleted) {
+                    await completeAction(action.id);
+                  } else {
+                    await activateAction(action.id);
+                  }
+                  queryClient.invalidateQueries({ queryKey: ["actions"] });
+                  toast.success("Reverted status change");
+                } catch (err) {
+                  console.error(err);
+                  queryClient.setQueryData(["actions"], revertedActions);
+                }
+              },
+            },
+          }
+        );
+      }
+    } catch (error) {
+      console.error("Failed to complete action:", error);
+      queryClient.setQueryData(["actions"], previousActions);
     }
-    queryClient.invalidateQueries({ queryKey: ["actions"] });
   };
 
   const handleAbandon = async (action: Action) => {
-    await abandonAction(action.id);
-    queryClient.invalidateQueries({ queryKey: ["actions"] });
+    const previousActions = queryClient.getQueryData<Action[]>(["actions"]) || [];
+    const updatedActions = previousActions.map((a) =>
+      a.id === action.id ? { ...a, status: ACTION_STATUS.ABANDONED } : a
+    );
+    queryClient.setQueryData(["actions"], updatedActions);
+
+    try {
+      await abandonAction(action.id);
+      queryClient.invalidateQueries({ queryKey: ["actions"] });
+
+      if (settings.enable_undo_toast) {
+        toast.success(`"${action.title}" abandoned`, {
+          action: {
+            label: "Undo",
+            onClick: async () => {
+              const revertedActions = queryClient.getQueryData<Action[]>(["actions"]) || [];
+              queryClient.setQueryData(
+                ["actions"],
+                revertedActions.map((a) =>
+                  a.id === action.id ? { ...a, status: action.status } : a
+                )
+              );
+              try {
+                await activateAction(action.id);
+                queryClient.invalidateQueries({ queryKey: ["actions"] });
+                toast.success("Action reactivated");
+              } catch (err) {
+                console.error(err);
+                queryClient.setQueryData(["actions"], revertedActions);
+              }
+            },
+          },
+        });
+      }
+    } catch (error) {
+      console.error("Failed to abandon action:", error);
+      queryClient.setQueryData(["actions"], previousActions);
+    }
   };
 
   const handleReactivate = async (action: Action) => {
-    await activateAction(action.id);
-    queryClient.invalidateQueries({ queryKey: ["actions"] });
+    const previousActions = queryClient.getQueryData<Action[]>(["actions"]) || [];
+    const updatedActions = previousActions.map((a) =>
+      a.id === action.id ? { ...a, status: ACTION_STATUS.ACTIVE } : a
+    );
+    queryClient.setQueryData(["actions"], updatedActions);
+
+    try {
+      await activateAction(action.id);
+      queryClient.invalidateQueries({ queryKey: ["actions"] });
+
+      if (settings.enable_undo_toast) {
+        toast.success(`"${action.title}" reactivated`, {
+          action: {
+            label: "Undo",
+            onClick: async () => {
+              const revertedActions = queryClient.getQueryData<Action[]>(["actions"]) || [];
+              queryClient.setQueryData(
+                ["actions"],
+                revertedActions.map((a) =>
+                  a.id === action.id ? { ...a, status: action.status } : a
+                )
+              );
+              try {
+                await abandonAction(action.id);
+                queryClient.invalidateQueries({ queryKey: ["actions"] });
+                toast.success("Action abandoned");
+              } catch (err) {
+                console.error(err);
+                queryClient.setQueryData(["actions"], revertedActions);
+              }
+            },
+          },
+        });
+      }
+    } catch (error) {
+      console.error("Failed to reactivate action:", error);
+      queryClient.setQueryData(["actions"], previousActions);
+    }
   };
 
   const handleDeletePermanently = async (action: Action) => {
-    await deleteActionPermanently(action.id);
-    queryClient.invalidateQueries({ queryKey: ["actions"] });
+    const previousActions = queryClient.getQueryData<Action[]>(["actions"]) || [];
+    const updatedActions = previousActions.filter((a) => a.id !== action.id);
+    queryClient.setQueryData(["actions"], updatedActions);
+
+    try {
+      await deleteActionPermanently(action.id);
+      queryClient.invalidateQueries({ queryKey: ["actions"] });
+
+      if (settings.enable_undo_toast) {
+        toast.success(`"${action.title}" deleted permanently`, {
+          action: {
+            label: "Undo",
+            onClick: async () => {
+              const revertedActions = queryClient.getQueryData<Action[]>(["actions"]) || [];
+              queryClient.setQueryData(["actions"], [...revertedActions, action]);
+              try {
+                await restoreAction(action);
+                queryClient.invalidateQueries({ queryKey: ["actions"] });
+                toast.success("Action restored");
+              } catch (err) {
+                console.error(err);
+                queryClient.setQueryData(["actions"], revertedActions);
+              }
+            },
+          },
+        });
+      }
+    } catch (error) {
+      console.error("Failed to delete action permanently:", error);
+      queryClient.setQueryData(["actions"], previousActions);
+    }
   };
 
   const handleEdit = (action: Action) => {
     setActionToEdit(action);
     setIsDialogOpen(true);
+  };
+
+  // Multi-select & Bulk actions state
+  const [selectedActionIds, setSelectedActionIds] = useState<Set<string>>(new Set());
+
+  // Filter selected IDs to only valid visible actions to prevent ghost selections
+  const visibleSelectedActionIds = useMemo(() => {
+    const validIds = new Set<string>();
+    const allActionIds = new Set(allActions.map((a) => a.id));
+    selectedActionIds.forEach((id) => {
+      if (allActionIds.has(id)) {
+        validIds.add(id);
+      }
+    });
+    return validIds;
+  }, [selectedActionIds, allActions]);
+
+  const isBulkModeActive = visibleSelectedActionIds.size > 0;
+
+  const handleSelectToggle = (id: string) => {
+    setSelectedActionIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) {
+        next.delete(id);
+      } else {
+        next.add(id);
+      }
+      return next;
+    });
+  };
+
+  const handleClearSelection = () => {
+    setSelectedActionIds(new Set());
+  };
+
+  const handleBulkComplete = async () => {
+    const idsToComplete = Array.from(visibleSelectedActionIds);
+    const selectedActions = allActions.filter((a) => visibleSelectedActionIds.has(a.id));
+    const previousActions = queryClient.getQueryData<Action[]>(["actions"]) || [];
+    const updatedActions = previousActions.map((a) =>
+      visibleSelectedActionIds.has(a.id) ? { ...a, status: ACTION_STATUS.COMPLETED } : a
+    );
+    queryClient.setQueryData(["actions"], updatedActions);
+    setSelectedActionIds(new Set());
+
+    try {
+      await Promise.all(idsToComplete.map((id) => completeAction(id)));
+      queryClient.invalidateQueries({ queryKey: ["actions"] });
+
+      if (settings.enable_undo_toast) {
+        toast.success(`Completed ${idsToComplete.length} actions`, {
+          action: {
+            label: "Undo",
+            onClick: async () => {
+              const revertedActions = queryClient.getQueryData<Action[]>(["actions"]) || [];
+              queryClient.setQueryData(
+                ["actions"],
+                revertedActions.map((a) => {
+                  const match = selectedActions.find((sa) => sa.id === a.id);
+                  return match ? { ...a, status: match.status } : a;
+                })
+              );
+              try {
+                await Promise.all(
+                  selectedActions.map(async (sa) => {
+                    if (sa.status === ACTION_STATUS.COMPLETED) {
+                      await completeAction(sa.id);
+                    } else {
+                      await activateAction(sa.id);
+                    }
+                  })
+                );
+                queryClient.invalidateQueries({ queryKey: ["actions"] });
+                toast.success("Reverted status changes");
+              } catch (err) {
+                console.error(err);
+                queryClient.setQueryData(["actions"], revertedActions);
+              }
+            },
+          },
+        });
+      }
+    } catch (error) {
+      console.error("Failed to bulk complete actions:", error);
+      queryClient.setQueryData(["actions"], previousActions);
+    }
+  };
+
+  const handleBulkAbandon = async () => {
+    const idsToAbandon = Array.from(visibleSelectedActionIds);
+    const selectedActions = allActions.filter((a) => visibleSelectedActionIds.has(a.id));
+    const previousActions = queryClient.getQueryData<Action[]>(["actions"]) || [];
+    const updatedActions = previousActions.map((a) =>
+      visibleSelectedActionIds.has(a.id) ? { ...a, status: ACTION_STATUS.ABANDONED } : a
+    );
+    queryClient.setQueryData(["actions"], updatedActions);
+    setSelectedActionIds(new Set());
+
+    try {
+      await Promise.all(idsToAbandon.map((id) => abandonAction(id)));
+      queryClient.invalidateQueries({ queryKey: ["actions"] });
+
+      if (settings.enable_undo_toast) {
+        toast.success(`Abandoned ${idsToAbandon.length} actions`, {
+          action: {
+            label: "Undo",
+            onClick: async () => {
+              const revertedActions = queryClient.getQueryData<Action[]>(["actions"]) || [];
+              queryClient.setQueryData(
+                ["actions"],
+                revertedActions.map((a) => {
+                  const match = selectedActions.find((sa) => sa.id === a.id);
+                  return match ? { ...a, status: match.status } : a;
+                })
+              );
+              try {
+                await Promise.all(
+                  selectedActions.map(async (sa) => {
+                    if (sa.status === ACTION_STATUS.COMPLETED) {
+                      await completeAction(sa.id);
+                    } else if (sa.status === ACTION_STATUS.ABANDONED) {
+                      await abandonAction(sa.id);
+                    } else {
+                      await activateAction(sa.id);
+                    }
+                  })
+                );
+                queryClient.invalidateQueries({ queryKey: ["actions"] });
+                toast.success("Reverted status changes");
+              } catch (err) {
+                console.error(err);
+                queryClient.setQueryData(["actions"], revertedActions);
+              }
+            },
+          },
+        });
+      }
+    } catch (error) {
+      console.error("Failed to bulk abandon actions:", error);
+      queryClient.setQueryData(["actions"], previousActions);
+    }
+  };
+
+  const handleBulkReschedule = async (newDate: string) => {
+    const idsToReschedule = Array.from(visibleSelectedActionIds);
+    const selectedActions = allActions.filter((a) => visibleSelectedActionIds.has(a.id));
+    const previousActions = queryClient.getQueryData<Action[]>(["actions"]) || [];
+    const updatedActions = previousActions.map((a) =>
+      visibleSelectedActionIds.has(a.id) ? { ...a, scheduledDate: newDate } : a
+    );
+    queryClient.setQueryData(["actions"], updatedActions);
+    setSelectedActionIds(new Set());
+
+    try {
+      await Promise.all(idsToReschedule.map((id) => updateAction(id, { scheduledDate: newDate })));
+      queryClient.invalidateQueries({ queryKey: ["actions"] });
+
+      if (settings.enable_undo_toast) {
+        toast.success(`Rescheduled ${idsToReschedule.length} actions`, {
+          action: {
+            label: "Undo",
+            onClick: async () => {
+              const revertedActions = queryClient.getQueryData<Action[]>(["actions"]) || [];
+              queryClient.setQueryData(
+                ["actions"],
+                revertedActions.map((a) => {
+                  const match = selectedActions.find((sa) => sa.id === a.id);
+                  return match ? { ...a, scheduledDate: match.scheduledDate } : a;
+                })
+              );
+              try {
+                await Promise.all(
+                  selectedActions.map((sa) =>
+                    updateAction(sa.id, { scheduledDate: sa.scheduledDate })
+                  )
+                );
+                queryClient.invalidateQueries({ queryKey: ["actions"] });
+                toast.success("Reverted rescheduling");
+              } catch (err) {
+                console.error(err);
+                queryClient.setQueryData(["actions"], revertedActions);
+              }
+            },
+          },
+        });
+      }
+    } catch (error) {
+      console.error("Failed to bulk reschedule actions:", error);
+      queryClient.setQueryData(["actions"], previousActions);
+    }
   };
 
   const { overdueActions, daySections } = useMemo(() => {
@@ -524,32 +879,55 @@ export default function Dashboard() {
             onDeletePermanently={handleDeletePermanently}
             sectionDate={todayStr}
             defaultExpanded={settings.show_overdue}
+            selectedActionIds={visibleSelectedActionIds}
+            onSelectToggle={handleSelectToggle}
+            isBulkModeActive={isBulkModeActive}
           />
         )}
 
         {/* Daily Sections */}
-        {!isDbReady ? (
-          <div className="space-y-6">
-            <ActionSectionSkeleton />
-            <ActionSectionSkeleton />
-          </div>
-        ) : (
-          daySections.map((section) => (
-            <ActionSection
-              key={section.id}
-              id={`date-${section.id}`}
-              sectionTitle={section.title}
-              actions={section.actions}
-              isTodayLocked={isTodayLocked}
-              onComplete={handleComplete}
-              onAbandon={handleAbandon}
-              onEdit={handleEdit}
-              onReactivate={handleReactivate}
-              onDeletePermanently={handleDeletePermanently}
-              sectionDate={section.date}
-            />
-          ))
-        )}
+        <AnimatePresence mode="wait">
+          {!isDbReady ? (
+            <motion.div
+              key="skeleton"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.15 }}
+              className="space-y-6"
+            >
+              <ActionSectionSkeleton />
+              <ActionSectionSkeleton />
+            </motion.div>
+          ) : (
+            <motion.div
+              key="content"
+              initial={{ opacity: 0, y: 15 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.35, ease: "easeOut" }}
+              className="space-y-6"
+            >
+              {daySections.map((section) => (
+                <ActionSection
+                  key={section.id}
+                  id={`date-${section.id}`}
+                  sectionTitle={section.title}
+                  actions={section.actions}
+                  isTodayLocked={isTodayLocked}
+                  onComplete={handleComplete}
+                  onAbandon={handleAbandon}
+                  onEdit={handleEdit}
+                  onReactivate={handleReactivate}
+                  onDeletePermanently={handleDeletePermanently}
+                  sectionDate={section.date}
+                  selectedActionIds={visibleSelectedActionIds}
+                  onSelectToggle={handleSelectToggle}
+                  isBulkModeActive={isBulkModeActive}
+                />
+              ))}
+            </motion.div>
+          )}
+        </AnimatePresence>
 
         <div className="h-24 md:h-8" />
       </div>
@@ -579,6 +957,105 @@ export default function Dashboard() {
           </div>
         </div>
       )}
+
+      {/* Floating Glassmorphic Bulk Actions Bar */}
+      <AnimatePresence>
+        {isBulkModeActive && (
+          <motion.div
+            initial={{ opacity: 0, y: 50, scale: 0.95 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 50, scale: 0.95 }}
+            transition={{ type: "spring", stiffness: 350, damping: 25 }}
+            className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 flex items-center gap-4 px-5 py-3 border border-border/40 bg-background/70 backdrop-blur-xl rounded-full shadow-2xl"
+          >
+            <div className="flex items-center gap-1.5 border-r border-border/20 pr-4 shrink-0">
+              <span className="flex items-center justify-center size-5 bg-primary text-primary-foreground font-black text-[10px] rounded-full">
+                {visibleSelectedActionIds.size}
+              </span>
+              <span className="text-xs font-black tracking-wider uppercase text-muted-foreground">
+                Selected
+              </span>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={handleBulkComplete}
+                className="h-8 text-xs font-bold hover:bg-emerald-500/10 hover:text-emerald-500 hover:border-emerald-500/20 text-muted-foreground gap-1.5 rounded-full px-3 transition-all border-none"
+              >
+                <CheckCircle2Icon className="size-3.5 text-emerald-500" />
+                Complete
+              </Button>
+
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-8 text-xs font-bold hover:bg-primary/10 hover:text-primary text-muted-foreground gap-1.5 rounded-full px-3 transition-all border-none"
+                  >
+                    <CalendarIcon className="size-3.5" />
+                    Reschedule
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent
+                  align="center"
+                  className="bg-background/90 backdrop-blur-md border border-border/20 shadow-2xl p-1 rounded-2xl w-44 animate-in fade-in zoom-in-95 duration-200 ring-0"
+                >
+                  <DropdownMenuItem
+                    onClick={() => handleBulkReschedule(todayStr)}
+                    className="flex items-center gap-2 px-2 py-1.5 text-[12.5px] font-semibold hover:bg-muted/50 rounded-md transition-colors cursor-pointer border-none"
+                  >
+                    Today
+                  </DropdownMenuItem>
+                  <DropdownMenuItem
+                    onClick={() => handleBulkReschedule(getNextDayString(todayStr))}
+                    className="flex items-center gap-2 px-2 py-1.5 text-[12.5px] font-semibold hover:bg-muted/50 rounded-md transition-colors cursor-pointer border-none"
+                  >
+                    Tomorrow
+                  </DropdownMenuItem>
+                  <div className="px-2 py-1.5 flex flex-col gap-1 border-t border-border/10">
+                    <span className="text-[9px] uppercase font-bold text-muted-foreground/50 tracking-wider">
+                      Pick custom date
+                    </span>
+                    <Input
+                      type="date"
+                      className="h-7 text-xs border border-border/20 px-1 py-0.5 rounded-lg bg-transparent focus-visible:ring-1 focus-visible:ring-primary focus-visible:ring-offset-0 text-foreground"
+                      onChange={(e) => {
+                        if (e.target.value) {
+                          handleBulkReschedule(e.target.value);
+                        }
+                      }}
+                    />
+                  </div>
+                </DropdownMenuContent>
+              </DropdownMenu>
+
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={handleBulkAbandon}
+                className="h-8 text-xs font-bold hover:bg-rose-500/10 hover:text-rose-500 hover:border-rose-500/20 text-muted-foreground gap-1.5 rounded-full px-3 transition-all border-none"
+              >
+                <Trash2Icon className="size-3.5" />
+                Abandon
+              </Button>
+            </div>
+
+            <div className="border-l border-border/20 pl-2 shrink-0">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={handleClearSelection}
+                className="h-7 text-[10px] font-black uppercase tracking-wider text-muted-foreground/60 hover:text-foreground hover:bg-muted/50 rounded-full px-2.5 transition-all border-none"
+              >
+                Clear
+              </Button>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </DndContext>
   );
 }

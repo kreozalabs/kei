@@ -21,6 +21,7 @@ export interface Settings {
   show_overdue: boolean;
   show_abandoned: boolean;
   direct_edit_mode: boolean;
+  enable_undo_toast: boolean;
 }
 
 export type SettingKey = keyof Settings;

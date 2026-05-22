@@ -1,5 +1,4 @@
 import { NavLink } from "react-router";
-import { BellIcon } from "lucide-react";
 import { Button, cn } from "@kreozalabs/ui";
 import { SidebarToggle } from "./SidebarToggle";
 import { Logo as KreozaLogo } from "@kreozalabs/icons";
@@ -30,7 +29,7 @@ export function AppSidebar({ isOpen = true, onToggle }: AppSidebarProps) {
       >
         <div
           className={cn(
-            "flex items-end justify-between px-6 md:px-8 pt-4 md:pt-6 pb-2 md:pb-2 shrink-0 border-b border-border/80 mb-2 animate-in fade-in slide-in-from-top-2 [animation-duration:700ms]"
+            "flex items-end justify-between px-6 md:px-8 pt-4 md:pt-6 pb-2 md:pb-2 shrink-0 border-b border-border/80 mb-2 animate-in fade-in slide-in-from-top-2 animation-duration-[700ms]"
           )}
         >
           <div className="flex items-center justify-between w-full h-12">
@@ -68,15 +67,6 @@ export function AppSidebar({ isOpen = true, onToggle }: AppSidebarProps) {
                 </span>
               </div>
             </Button>
-            <div className="flex items-center gap-1 shrink-0">
-              <Button
-                variant="ghost"
-                size="icon"
-                className="hidden md:flex items-center gap-1.5 h-8 rounded-md hover:bg-muted/50 border-none font-medium size-8 hover:text-foreground text-muted-foreground/60"
-              >
-                <BellIcon className="size-5" />
-              </Button>
-            </div>
           </div>
 
           <div className="flex flex-col space-y-6 flex-1 gap-2.5">

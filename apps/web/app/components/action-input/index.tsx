@@ -1,6 +1,5 @@
 import {
   AlertCircle,
-  AudioLines,
   BatteryFull,
   BatteryLow,
   BatteryMedium,
@@ -18,6 +17,7 @@ import { useDiscardGuard } from "../../hooks/useDiscardGuard";
 import { useSettings } from "../../providers/SettingsContext";
 import { useDb } from "../../providers/DbContext";
 import { MicroCalendar } from "../MicroCalendar";
+import { toast } from "sonner";
 import { TimezoneSelector } from "../TimezoneSelector";
 import {
   formatTime,
@@ -119,7 +119,7 @@ export const ActionInput = forwardRef<ActionInputHandle, ActionInputProps>(
 
     const timeFormat = settings.time_format;
 
-    const titleInputRef = useRef<HTMLInputElement>(null);
+    const titleInputRef = useRef<HTMLTextAreaElement>(null);
     const noteInputRef = useRef<HTMLTextAreaElement>(null);
 
     const timeOptions = useMemo(() => getTimeOptions(timeFormat), [timeFormat]);
@@ -334,19 +334,79 @@ export const ActionInput = forwardRef<ActionInputHandle, ActionInputProps>(
           timezone,
         };
 
+        const prevActions = queryClient.getQueryData<Action[]>(["actions"]) || [];
         if (actionToEdit) {
-          await updateAction(actionToEdit.id, payload);
-        } else {
-          await addAction(payload);
+          const updatedActions = prevActions.map((a) =>
+            a.id === actionToEdit.id ? { ...a, ...payload } : a
+          );
+          queryClient.setQueryData(["actions"], updatedActions);
         }
 
+        // Reset the input state immediately for a fast responsive feel
         setTitle("");
         setNote("");
-        queryClient.invalidateQueries({ queryKey: ["actions"] });
+        setIsLoading(false);
         onSuccess?.();
+
+        // Perform the write asynchronously in the background
+        if (actionToEdit) {
+          const originalAction = actionToEdit;
+          updateAction(actionToEdit.id, payload)
+            .then(() => {
+              queryClient.invalidateQueries({ queryKey: ["actions"] });
+              if (settings.enable_undo_toast) {
+                toast.success(`"${payload.title}" updated`, {
+                  action: {
+                    label: "Undo",
+                    onClick: async () => {
+                      const revertedActions = queryClient.getQueryData<Action[]>(["actions"]) || [];
+                      queryClient.setQueryData(
+                        ["actions"],
+                        revertedActions.map((a) =>
+                          a.id === originalAction.id ? originalAction : a
+                        )
+                      );
+                      try {
+                        const revertPayload = {
+                          title: originalAction.title,
+                          note: originalAction.note || "",
+                          intention: originalAction.intention,
+                          important: originalAction.important,
+                          energy: originalAction.energy,
+                          duration: originalAction.duration as [number, number],
+                          scheduledDate: originalAction.scheduledDate,
+                          startTime: originalAction.startTime || undefined,
+                          endTime: originalAction.endTime || undefined,
+                          timezone: originalAction.timezone,
+                          sortOrder: originalAction.sortOrder,
+                        };
+                        await updateAction(originalAction.id, revertPayload);
+                        queryClient.invalidateQueries({ queryKey: ["actions"] });
+                        toast.success("Reverted updates");
+                      } catch (err) {
+                        console.error(err);
+                        queryClient.setQueryData(["actions"], revertedActions);
+                      }
+                    },
+                  },
+                });
+              }
+            })
+            .catch((error) => {
+              console.error("Failed to save action:", error);
+              queryClient.setQueryData(["actions"], prevActions);
+            });
+        } else {
+          addAction(payload)
+            .then(() => {
+              queryClient.invalidateQueries({ queryKey: ["actions"] });
+            })
+            .catch((error) => {
+              console.error("Failed to save action:", error);
+            });
+        }
       } catch (error) {
-        console.error("Failed to save action:", error);
-      } finally {
+        console.error("Failed to prepare action save:", error);
         setIsLoading(false);
       }
     };
@@ -377,11 +437,11 @@ export const ActionInput = forwardRef<ActionInputHandle, ActionInputProps>(
           {/* Input Section */}
           <div className="p-4 sm:p-5 flex flex-col gap-2">
             <div className="flex items-start justify-between gap-2 sm:gap-4">
-              <div className="flex-1 flex flex-col gap-4">
-                <Input
+              <div className="flex-1 min-w-0 flex flex-col gap-4">
+                <Textarea
                   ref={titleInputRef}
                   value={title}
-                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => setTitle(e.target.value)}
+                  onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setTitle(e.target.value)}
                   onKeyDown={(e) => {
                     if (e.key === "Enter" && !e.shiftKey) {
                       e.preventDefault();
@@ -389,7 +449,7 @@ export const ActionInput = forwardRef<ActionInputHandle, ActionInputProps>(
                     }
                   }}
                   placeholder="What do you want to accomplish?"
-                  className="h-8 p-0 text-[17px] font-bold bg-transparent border-none focus-visible:ring-0 placeholder:text-muted-foreground/30 selection:bg-primary/20"
+                  className="h-8 p-0 text-[17px] font-bold bg-transparent border-none dark:bg-transparent dark:border-none focus-visible:ring-0 placeholder:text-muted-foreground/30 selection:bg-primary/20 resize-none overflow-y-auto w-full break-all custom-scrollbar"
                   disabled={isLoading || !isDbReady}
                 />
                 <Textarea
@@ -403,24 +463,10 @@ export const ActionInput = forwardRef<ActionInputHandle, ActionInputProps>(
                     }
                   }}
                   placeholder="Any notes or constraints?"
-                  className="min-h-0 h-auto p-0 text-[14px] leading-relaxed bg-transparent border-none focus-visible:ring-0 placeholder:text-muted-foreground/20 resize-none overflow-hidden"
-                  style={{ height: note ? "auto" : "20px" }}
+                  className="h-20 p-0 text-[14px] leading-relaxed bg-transparent border-none dark:bg-transparent dark:border-none focus-visible:ring-0 placeholder:text-muted-foreground/20 resize-none overflow-y-auto w-full break-all custom-scrollbar"
                   disabled={isLoading || !isDbReady}
-                  onInput={(e) => {
-                    const target = e.target as HTMLTextAreaElement;
-                    target.style.height = "auto";
-                    target.style.height = `${target.scrollHeight}px`;
-                  }}
                 />
               </div>
-              <Button
-                type="button"
-                variant="ghost"
-                size="icon"
-                className="size-9 rounded-xl text-muted-foreground/50 hover:text-primary hover:bg-primary/10 transition-all active:scale-95"
-              >
-                <AudioLines className="size-5" />
-              </Button>
             </div>
           </div>
 
