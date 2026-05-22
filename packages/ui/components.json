@@ -1,0 +1,19 @@
+{
+  "$schema": "https://ui.shadcn.com/schema.json",
+  "style": "radix-nova",
+  "rsc": false,
+  "tsx": true,
+  "tailwind": {
+    "config": "src/index.css",
+    "css": "src/index.css",
+    "baseColor": "slate",
+    "cssVariables": true
+  },
+  "aliases": {
+    "components": "@kreozalabs/ui/components",
+    "utils": "@kreozalabs/ui/lib/utils",
+    "hooks": "@kreozalabs/ui/hooks",
+    "lib": "@kreozalabs/ui/lib",
+    "ui": "@kreozalabs/ui/components"
+  }
+}
