@@ -252,30 +252,35 @@ export default function Dashboard() {
       queryClient.invalidateQueries({ queryKey: ["actions"] });
 
       if (settings.enable_undo_toast) {
-        toast.success(isCompleted ? `"${action.title}" reactivated` : `"${action.title}" completed`, {
-          action: {
-            label: "Undo",
-            onClick: async () => {
-              const revertedActions = queryClient.getQueryData<Action[]>(["actions"]) || [];
-              queryClient.setQueryData(
-                ["actions"],
-                revertedActions.map((a) => (a.id === action.id ? { ...a, status: action.status } : a))
-              );
-              try {
-                if (isCompleted) {
-                  await completeAction(action.id);
-                } else {
-                  await activateAction(action.id);
+        toast.success(
+          isCompleted ? `"${action.title}" reactivated` : `"${action.title}" completed`,
+          {
+            action: {
+              label: "Undo",
+              onClick: async () => {
+                const revertedActions = queryClient.getQueryData<Action[]>(["actions"]) || [];
+                queryClient.setQueryData(
+                  ["actions"],
+                  revertedActions.map((a) =>
+                    a.id === action.id ? { ...a, status: action.status } : a
+                  )
+                );
+                try {
+                  if (isCompleted) {
+                    await completeAction(action.id);
+                  } else {
+                    await activateAction(action.id);
+                  }
+                  queryClient.invalidateQueries({ queryKey: ["actions"] });
+                  toast.success("Reverted status change");
+                } catch (err) {
+                  console.error(err);
+                  queryClient.setQueryData(["actions"], revertedActions);
                 }
-                queryClient.invalidateQueries({ queryKey: ["actions"] });
-                toast.success("Reverted status change");
-              } catch (err) {
-                console.error(err);
-                queryClient.setQueryData(["actions"], revertedActions);
-              }
+              },
             },
-          },
-        });
+          }
+        );
       }
     } catch (error) {
       console.error("Failed to complete action:", error);
@@ -302,7 +307,9 @@ export default function Dashboard() {
               const revertedActions = queryClient.getQueryData<Action[]>(["actions"]) || [];
               queryClient.setQueryData(
                 ["actions"],
-                revertedActions.map((a) => (a.id === action.id ? { ...a, status: action.status } : a))
+                revertedActions.map((a) =>
+                  a.id === action.id ? { ...a, status: action.status } : a
+                )
               );
               try {
                 await activateAction(action.id);
@@ -341,7 +348,9 @@ export default function Dashboard() {
               const revertedActions = queryClient.getQueryData<Action[]>(["actions"]) || [];
               queryClient.setQueryData(
                 ["actions"],
-                revertedActions.map((a) => (a.id === action.id ? { ...a, status: action.status } : a))
+                revertedActions.map((a) =>
+                  a.id === action.id ? { ...a, status: action.status } : a
+                )
               );
               try {
                 await abandonAction(action.id);
@@ -552,9 +561,7 @@ export default function Dashboard() {
     setSelectedActionIds(new Set());
 
     try {
-      await Promise.all(
-        idsToReschedule.map((id) => updateAction(id, { scheduledDate: newDate }))
-      );
+      await Promise.all(idsToReschedule.map((id) => updateAction(id, { scheduledDate: newDate })));
       queryClient.invalidateQueries({ queryKey: ["actions"] });
 
       if (settings.enable_undo_toast) {
@@ -572,7 +579,9 @@ export default function Dashboard() {
               );
               try {
                 await Promise.all(
-                  selectedActions.map((sa) => updateAction(sa.id, { scheduledDate: sa.scheduledDate }))
+                  selectedActions.map((sa) =>
+                    updateAction(sa.id, { scheduledDate: sa.scheduledDate })
+                  )
                 );
                 queryClient.invalidateQueries({ queryKey: ["actions"] });
                 toast.success("Reverted rescheduling");

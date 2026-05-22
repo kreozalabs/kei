@@ -88,7 +88,8 @@ export function ActionItem({
       layout
       initial={{ opacity: 0, height: 0, y: -10 }}
       animate={{
-        opacity: type === ACTION_STATUS.COMPLETED ? 0.5 : type === ACTION_STATUS.ABANDONED ? 0.45 : 1,
+        opacity:
+          type === ACTION_STATUS.COMPLETED ? 0.5 : type === ACTION_STATUS.ABANDONED ? 0.45 : 1,
         height: "auto",
         y: 0,
       }}
@@ -132,10 +133,7 @@ export function ActionItem({
             : "w-0 opacity-0 overflow-hidden group-hover:w-5 group-hover:opacity-100 group-hover:mr-1.5 group-hover:ml-1"
         )}
       >
-        <Checkbox
-          checked={isSelected}
-          onCheckedChange={() => onSelectToggle?.(action.id)}
-        />
+        <Checkbox checked={isSelected} onCheckedChange={() => onSelectToggle?.(action.id)} />
       </div>
 
       <div className="flex items-start gap-3 flex-1 min-w-0">

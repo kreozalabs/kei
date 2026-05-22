@@ -73,30 +73,35 @@ export function ActionInputDialog({
 
       if (settings.enable_undo_toast) {
         const { toast } = await import("sonner");
-        toast.success(isCompleted ? `"${action.title}" reactivated` : `"${action.title}" completed`, {
-          action: {
-            label: "Undo",
-            onClick: async () => {
-              const revertedActions = queryClient.getQueryData<Action[]>(["actions"]) || [];
-              queryClient.setQueryData(
-                ["actions"],
-                revertedActions.map((a) => (a.id === action.id ? { ...a, status: action.status } : a))
-              );
-              try {
-                if (isCompleted) {
-                  await completeAction(action.id);
-                } else {
-                  await activateAction(action.id);
+        toast.success(
+          isCompleted ? `"${action.title}" reactivated` : `"${action.title}" completed`,
+          {
+            action: {
+              label: "Undo",
+              onClick: async () => {
+                const revertedActions = queryClient.getQueryData<Action[]>(["actions"]) || [];
+                queryClient.setQueryData(
+                  ["actions"],
+                  revertedActions.map((a) =>
+                    a.id === action.id ? { ...a, status: action.status } : a
+                  )
+                );
+                try {
+                  if (isCompleted) {
+                    await completeAction(action.id);
+                  } else {
+                    await activateAction(action.id);
+                  }
+                  queryClient.invalidateQueries({ queryKey: ["actions"] });
+                  toast.success("Reverted status change");
+                } catch (err) {
+                  console.error(err);
+                  queryClient.setQueryData(["actions"], revertedActions);
                 }
-                queryClient.invalidateQueries({ queryKey: ["actions"] });
-                toast.success("Reverted status change");
-              } catch (err) {
-                console.error(err);
-                queryClient.setQueryData(["actions"], revertedActions);
-              }
+              },
             },
-          },
-        });
+          }
+        );
       }
     } catch (err) {
       console.error(err);
@@ -125,7 +130,9 @@ export function ActionInputDialog({
               const revertedActions = queryClient.getQueryData<Action[]>(["actions"]) || [];
               queryClient.setQueryData(
                 ["actions"],
-                revertedActions.map((a) => (a.id === action.id ? { ...a, status: action.status } : a))
+                revertedActions.map((a) =>
+                  a.id === action.id ? { ...a, status: action.status } : a
+                )
               );
               try {
                 await activateAction(action.id);
@@ -166,7 +173,9 @@ export function ActionInputDialog({
               const revertedActions = queryClient.getQueryData<Action[]>(["actions"]) || [];
               queryClient.setQueryData(
                 ["actions"],
-                revertedActions.map((a) => (a.id === action.id ? { ...a, status: action.status } : a))
+                revertedActions.map((a) =>
+                  a.id === action.id ? { ...a, status: action.status } : a
+                )
               );
               try {
                 await abandonAction(action.id);
