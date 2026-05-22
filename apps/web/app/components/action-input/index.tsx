@@ -119,7 +119,7 @@ export const ActionInput = forwardRef<ActionInputHandle, ActionInputProps>(
 
     const timeFormat = settings.time_format;
 
-    const titleInputRef = useRef<HTMLInputElement>(null);
+    const titleInputRef = useRef<HTMLTextAreaElement>(null);
     const noteInputRef = useRef<HTMLTextAreaElement>(null);
 
     const timeOptions = useMemo(() => getTimeOptions(timeFormat), [timeFormat]);
@@ -377,11 +377,11 @@ export const ActionInput = forwardRef<ActionInputHandle, ActionInputProps>(
           {/* Input Section */}
           <div className="p-4 sm:p-5 flex flex-col gap-2">
             <div className="flex items-start justify-between gap-2 sm:gap-4">
-              <div className="flex-1 flex flex-col gap-4">
-                <Input
+              <div className="flex-1 min-w-0 flex flex-col gap-4">
+                <Textarea
                   ref={titleInputRef}
                   value={title}
-                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => setTitle(e.target.value)}
+                  onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setTitle(e.target.value)}
                   onKeyDown={(e) => {
                     if (e.key === "Enter" && !e.shiftKey) {
                       e.preventDefault();
@@ -389,7 +389,7 @@ export const ActionInput = forwardRef<ActionInputHandle, ActionInputProps>(
                     }
                   }}
                   placeholder="What do you want to accomplish?"
-                  className="h-8 p-0 text-[17px] font-bold bg-transparent border-none focus-visible:ring-0 placeholder:text-muted-foreground/30 selection:bg-primary/20"
+                  className="h-8 p-0 text-[17px] font-bold bg-transparent border-none dark:bg-transparent dark:border-none focus-visible:ring-0 placeholder:text-muted-foreground/30 selection:bg-primary/20 resize-none overflow-y-auto w-full break-all custom-scrollbar"
                   disabled={isLoading || !isDbReady}
                 />
                 <Textarea
@@ -403,14 +403,8 @@ export const ActionInput = forwardRef<ActionInputHandle, ActionInputProps>(
                     }
                   }}
                   placeholder="Any notes or constraints?"
-                  className="min-h-0 h-auto p-0 text-[14px] leading-relaxed bg-transparent border-none focus-visible:ring-0 placeholder:text-muted-foreground/20 resize-none overflow-hidden"
-                  style={{ height: note ? "auto" : "20px" }}
+                  className="h-20 p-0 text-[14px] leading-relaxed bg-transparent border-none dark:bg-transparent dark:border-none focus-visible:ring-0 placeholder:text-muted-foreground/20 resize-none overflow-y-auto w-full break-all custom-scrollbar"
                   disabled={isLoading || !isDbReady}
-                  onInput={(e) => {
-                    const target = e.target as HTMLTextAreaElement;
-                    target.style.height = "auto";
-                    target.style.height = `${target.scrollHeight}px`;
-                  }}
                 />
               </div>
               <Button
