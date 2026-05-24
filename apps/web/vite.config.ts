@@ -13,9 +13,18 @@ export default defineConfig(({ command }) => ({
     reactRouter(),
     tailwindcss(),
     VitePWA({
+      includeAssets: [
+        "favicon.svg",
+        "mask-icon.svg",
+        "favicon-192.png",
+        "favicon-512.png",
+        "mask-icon-192.png",
+        "mask-icon-512.png",
+      ],
       registerType: "autoUpdate",
       injectRegister: "auto",
       manifest: {
+        id: "/app",
         name: "Kei",
         short_name: "Kei",
         description:
@@ -26,10 +35,28 @@ export default defineConfig(({ command }) => ({
         start_url: "/app",
         icons: [
           {
-            src: "favicon.svg",
-            sizes: "any",
-            type: "image/svg+xml",
+            src: "/favicon-192.png",
+            sizes: "192x192",
+            type: "image/png",
             purpose: "any",
+          },
+          {
+            src: "/favicon-512.png",
+            sizes: "512x512",
+            type: "image/png",
+            purpose: "any",
+          },
+          {
+            src: "/mask-icon-192.png",
+            sizes: "192x192",
+            type: "image/png",
+            purpose: "maskable",
+          },
+          {
+            src: "/mask-icon-512.png",
+            sizes: "512x512",
+            type: "image/png",
+            purpose: "maskable",
           },
         ],
       },

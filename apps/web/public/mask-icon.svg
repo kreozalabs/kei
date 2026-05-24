@@ -1,0 +1,16 @@
+<svg width="200" height="200" viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Solid Background for Masking -->
+  <rect width="200" height="200" fill="#18181b"/>
+  
+  <!-- Centered Hexagon: The Sanctuary (scaled to fit within the 60% safe zone) -->
+  <!-- Original path: M50 0L93.3 25V75L50 100L6.7 75V25L50 0Z -->
+  <!-- Scaled down by 0.6 and translated to center (x: 40, y: 40) -->
+  <g transform="translate(50, 50) scale(1)">
+    <path d="M50 0L93.3 25V75L50 100L6.7 75V25L50 0Z" fill="#27272a"/>
+    
+    <!-- Negative Space K -->
+    <rect x="28" y="25" width="12" height="50" fill="white"/>
+    <path d="M72 25L42 50H56L72 36V25Z" fill="white"/>
+    <path d="M72 75L42 50H56L72 64V75Z" fill="white"/>
+  </g>
+</svg>
