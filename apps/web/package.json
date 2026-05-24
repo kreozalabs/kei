@@ -1,13 +1,13 @@
 {
   "name": "@kreozalabs/kei-web",
   "private": true,
-  "version": "0.0.0",
+  "version": "1.0.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && react-router build",
-    "lint": "pnpm type-check && eslint .",
-    "type-check": "tsc --noEmit",
+    "lint": "pnpm typecheck && eslint .",
+    "typecheck": "tsc --noEmit",
     "preview": "vite preview"
   },
   "dependencies": {

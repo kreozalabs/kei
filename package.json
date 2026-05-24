@@ -1,6 +1,6 @@
 {
   "name": "kei",
-  "version": "0.0.0",
+  "version": "1.0.0",
   "type": "module",
   "description": "",
   "main": "index.js",
@@ -8,6 +8,7 @@
     "dev": "turbo dev",
     "build": "turbo build",
     "lint": "turbo lint",
+    "typecheck": "turbo typecheck",
     "format": "prettier --write .",
     "clean": "pnpm -r exec rm -rf node_modules dist .turbo .react-router build"
   },
