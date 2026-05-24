@@ -5,7 +5,7 @@ import { VitePWA } from "vite-plugin-pwa";
 import checker from "vite-plugin-checker";
 import path from "path";
 
-export default defineConfig({
+export default defineConfig(({ command }) => ({
   server: {
     host: true,
   },
@@ -41,10 +41,11 @@ export default defineConfig({
         enabled: true,
       },
     }),
-    checker({
-      typescript: true,
-    }),
-  ],
+    command === "serve" &&
+      checker({
+        typescript: true,
+      }),
+  ].filter(Boolean),
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./app"),
@@ -56,4 +57,4 @@ export default defineConfig({
   worker: {
     format: "es",
   },
-});
+}));
