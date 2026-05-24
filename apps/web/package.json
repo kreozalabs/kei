@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "tsc -b && vite build",
+    "build": "tsc -b && react-router build",
     "lint": "pnpm type-check && eslint .",
     "type-check": "tsc --noEmit",
     "preview": "vite preview"
