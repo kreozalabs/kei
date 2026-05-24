@@ -1,0 +1,8 @@
+# 1. Disable sw.js caching so users get client updates instantly
+/sw.js
+  Cache-Control: no-cache, no-store, must-revalidate
+
+# 2. Enable SharedArrayBuffer for PGlite multi-tab worker synchronization
+/*
+  Cross-Origin-Opener-Policy: same-origin
+  Cross-Origin-Embedder-Policy: require-corp

@@ -1,0 +1,9 @@
+User-agent: *
+Allow: /                     # Allow crawling landing pages
+Allow: /docs                 # Allow crawling docs
+
+Disallow: /app/              # STRICTLY BLOCK crawling the app dashboard
+Disallow: /app               # Block base app route
+Disallow: /_react-router/    # Block react-router internals
+
+Sitemap: https://kei.kreoza.com/sitemap.xml
