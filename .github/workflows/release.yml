@@ -19,3 +19,5 @@ jobs:
         id: release
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
+          skip-github-pull-request: true
+          skip-github-release: true
