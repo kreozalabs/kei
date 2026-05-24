@@ -57,4 +57,14 @@ export default defineConfig(({ command }) => ({
   worker: {
     format: "es",
   },
+  build: {
+    rollupOptions: {
+      onLog(level, log, defaultHandler) {
+        if (log.code === "EVAL") {
+          return;
+        }
+        defaultHandler(level, log);
+      },
+    },
+  },
 }));
