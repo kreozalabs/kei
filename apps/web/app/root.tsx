@@ -8,7 +8,9 @@ import {
   useRouteError,
 } from "react-router";
 
-import { Toaster } from "sonner";
+import { Toaster, toast } from "sonner";
+import { useEffect } from "react";
+import { Button } from "@kreozalabs/ui";
 import "./index.css";
 import { QueryProvider } from "./providers/QueryProvider";
 import { SettingsProvider } from "./providers/SettingsProvider";
@@ -17,6 +19,42 @@ import { STORAGE_KEYS } from "./config/constants";
 import { ErrorPage } from "./components/ErrorPage";
 
 export function Layout({ children }: { children: React.ReactNode }) {
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      import("virtual:pwa-register").then(({ registerSW }) => {
+        registerSW({
+          onOfflineReady() {
+            toast.custom(
+              (t) => (
+                <div className="flex flex-col gap-3 rounded-2xl border border-border bg-background p-4 shadow-lg w-80 md:w-96 text-left">
+                  <div className="flex flex-col gap-1">
+                    <h3 className="font-semibold text-foreground text-sm">Ready to work offline</h3>
+                    <p className="text-xs text-muted-foreground">
+                      Kei is now fully configured for offline capability and works perfectly without
+                      internet connection!
+                    </p>
+                  </div>
+                  <div className="flex justify-end">
+                    <Button
+                      size="sm"
+                      onClick={() => toast.dismiss(t)}
+                      className="rounded-xl px-4 py-1 text-xs"
+                    >
+                      OK
+                    </Button>
+                  </div>
+                </div>
+              ),
+              {
+                duration: Infinity,
+              }
+            );
+          },
+        });
+      });
+    }
+  }, []);
+
   return (
     <html lang="en" suppressHydrationWarning>
       <head>

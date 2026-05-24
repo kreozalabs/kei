@@ -22,7 +22,7 @@ export default defineConfig(({ command }) => ({
         "mask-icon-512.png",
       ],
       registerType: "autoUpdate",
-      injectRegister: "auto",
+      injectRegister: null,
       manifest: {
         id: "/app",
         name: "Kei",
