@@ -34,8 +34,24 @@ export default defineConfig(({ command }) => ({
         ],
       },
       workbox: {
-        globPatterns: ["**/*.{js,css,html,ico,png,svg,wasm}"],
-        maximumFileSizeToCacheInBytes: 10 * 1024 * 1024,
+        globPatterns: ["**/*.{js,css,html,ico,png,svg}"],
+        maximumFileSizeToCacheInBytes: 2 * 1024 * 1024,
+        runtimeCaching: [
+          {
+            urlPattern: /\.(?:wasm|data)$/i,
+            handler: "CacheFirst",
+            options: {
+              cacheName: "pglite-cache",
+              expiration: {
+                maxEntries: 10,
+                maxAgeSeconds: 60 * 60 * 24 * 30, // 30 days
+              },
+              cacheableResponse: {
+                statuses: [0, 200],
+              },
+            },
+          },
+        ],
       },
       devOptions: {
         enabled: true,

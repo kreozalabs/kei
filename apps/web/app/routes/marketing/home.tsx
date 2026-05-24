@@ -4,7 +4,6 @@ import { ArrowRightIcon, ZapIcon, RefreshCcwIcon, CompassIcon } from "lucide-rea
 import { Logo as KreozaLogo } from "@kreozalabs/icons";
 
 import "../../landing.css";
-import heroImg from "../../assets/hero.png";
 
 export default function Home() {
   const navigate = useNavigate();
@@ -65,8 +64,6 @@ export default function Home() {
             </span>
           </Button>
         </div>
-
-        <img src={heroImg} alt="Kei Visual" className="hero-visual" />
       </section>
 
       <section id="values" className="container mx-auto py-24 px-8">
