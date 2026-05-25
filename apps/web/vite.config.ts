@@ -29,8 +29,8 @@ export default defineConfig(({ command }) => ({
         short_name: "Kei",
         description:
           "Your productivity app that frees you from planning and lets you focus on what matters to you.",
-        theme_color: "#ffffff",
-        background_color: "#ffffff",
+        theme_color: "#18181b",
+        background_color: "#18181b",
         display: "standalone",
         start_url: "/app",
         icons: [
@@ -63,6 +63,9 @@ export default defineConfig(({ command }) => ({
       workbox: {
         globPatterns: ["**/*.{js,css,html,ico,png,svg}"],
         maximumFileSizeToCacheInBytes: 2 * 1024 * 1024,
+        additionalManifestEntries: [
+          { url: "index.html", revision: Date.now().toString() },
+        ],
         runtimeCaching: [
           {
             urlPattern: /\.(?:wasm|data)$/i,
