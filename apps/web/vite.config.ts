@@ -63,7 +63,10 @@ export default defineConfig(({ command }) => ({
       workbox: {
         globPatterns: ["**/*.{js,css,html,ico,png,svg}"],
         maximumFileSizeToCacheInBytes: 2 * 1024 * 1024,
-        additionalManifestEntries: [{ url: "index.html", revision: Date.now().toString() }],
+        navigateFallback: "__spa-fallback.html",
+        additionalManifestEntries: [
+          { url: "__spa-fallback.html", revision: Date.now().toString() },
+        ],
         runtimeCaching: [
           {
             urlPattern: /\.(?:wasm|data)$/i,
