@@ -13,30 +13,74 @@ export default defineConfig(({ command }) => ({
     reactRouter(),
     tailwindcss(),
     VitePWA({
+      includeAssets: [
+        "favicon.svg",
+        "mask-icon.svg",
+        "favicon-192.png",
+        "favicon-512.png",
+        "mask-icon-192.png",
+        "mask-icon-512.png",
+      ],
       registerType: "autoUpdate",
-      injectRegister: "auto",
+      injectRegister: null,
       manifest: {
+        id: "/app",
         name: "Kei",
         short_name: "Kei",
         description:
           "Your productivity app that frees you from planning and lets you focus on what matters to you.",
-        theme_color: "#ffffff",
-        background_color: "#ffffff",
+        theme_color: "#18181b",
+        background_color: "#18181b",
         display: "standalone",
         start_url: "/app",
         icons: [
           {
-            src: "favicon.svg",
-            sizes: "any",
-            type: "image/svg+xml",
+            src: "/favicon-192.png",
+            sizes: "192x192",
+            type: "image/png",
             purpose: "any",
+          },
+          {
+            src: "/favicon-512.png",
+            sizes: "512x512",
+            type: "image/png",
+            purpose: "any",
+          },
+          {
+            src: "/mask-icon-192.png",
+            sizes: "192x192",
+            type: "image/png",
+            purpose: "maskable",
+          },
+          {
+            src: "/mask-icon-512.png",
+            sizes: "512x512",
+            type: "image/png",
+            purpose: "maskable",
           },
         ],
       },
       workbox: {
         globPatterns: ["**/*.{js,css,html,ico,png,svg}"],
         maximumFileSizeToCacheInBytes: 2 * 1024 * 1024,
+        navigateFallback: "__spa-fallback.html",
+        additionalManifestEntries: [
+          { url: "__spa-fallback.html", revision: Date.now().toString() },
+        ],
         runtimeCaching: [
+          {
+            urlPattern: /.*assets\/manifest-.*\.js$/,
+            handler: "StaleWhileRevalidate",
+            options: {
+              cacheName: "manifest-cache",
+              expiration: {
+                maxEntries: 5,
+              },
+              cacheableResponse: {
+                statuses: [0, 200],
+              },
+            },
+          },
           {
             urlPattern: /\.(?:wasm|data)$/i,
             handler: "CacheFirst",
@@ -55,6 +99,7 @@ export default defineConfig(({ command }) => ({
       },
       devOptions: {
         enabled: true,
+        suppressWarnings: true,
       },
     }),
     command === "serve" &&
