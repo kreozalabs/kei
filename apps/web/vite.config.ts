@@ -69,6 +69,19 @@ export default defineConfig(({ command }) => ({
         ],
         runtimeCaching: [
           {
+            urlPattern: /.*assets\/manifest-.*\.js$/,
+            handler: "StaleWhileRevalidate",
+            options: {
+              cacheName: "manifest-cache",
+              expiration: {
+                maxEntries: 5,
+              },
+              cacheableResponse: {
+                statuses: [0, 200],
+              },
+            },
+          },
+          {
             urlPattern: /\.(?:wasm|data)$/i,
             handler: "CacheFirst",
             options: {
