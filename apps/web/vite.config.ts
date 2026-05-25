@@ -99,6 +99,7 @@ export default defineConfig(({ command }) => ({
       },
       devOptions: {
         enabled: true,
+        suppressWarnings: true,
       },
     }),
     command === "serve" &&
