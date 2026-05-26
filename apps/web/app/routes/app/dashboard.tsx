@@ -157,6 +157,21 @@ export default function Dashboard() {
           <Button
             variant="ghost"
             size="icon"
+            onClick={() => updateSetting("show_completed", !settings.show_completed)}
+            className={cn(
+              "size-8 border-none rounded-full transition-all active:scale-95",
+              settings.show_completed
+                ? "text-primary bg-primary/10 hover:bg-primary/20"
+                : "text-muted-foreground hover:text-primary hover:bg-primary/10"
+            )}
+            title={settings.show_completed ? "Hide Completed Actions" : "Show Completed Actions"}
+          >
+            <CheckCircle2Icon className="size-4" />
+          </Button>
+
+          <Button
+            variant="ghost"
+            size="icon"
             onClick={() => updateSetting("show_abandoned", !settings.show_abandoned)}
             className={cn(
               "size-8 border-none rounded-full transition-all active:scale-95",
@@ -194,6 +209,7 @@ export default function Dashboard() {
     selectedDate,
     dialogPreDate,
     startDate,
+    settings.show_completed,
     settings.show_abandoned,
     updateSetting,
   ]);
@@ -212,7 +228,7 @@ export default function Dashboard() {
         startDate,
         endDate,
       }),
-    enabled: isDbReady,
+    enabled: isDbReady && settings.show_completed,
   });
 
   const { data: abandonedActions = [] } = useQuery({
@@ -227,12 +243,15 @@ export default function Dashboard() {
   });
 
   const allActions = useMemo(() => {
-    const list = [...activeActions, ...completedActions];
+    const list = [...activeActions];
+    if (settings.show_completed) {
+      list.push(...completedActions);
+    }
     if (settings.show_abandoned) {
       list.push(...abandonedActions);
     }
     return list;
-  }, [activeActions, completedActions, abandonedActions, settings.show_abandoned]);
+  }, [activeActions, completedActions, abandonedActions, settings.show_completed, settings.show_abandoned]);
 
   const handleComplete = async (action: Action) => {
     const isCompleted = action.status === ACTION_STATUS.COMPLETED;

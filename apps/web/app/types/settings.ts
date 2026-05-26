@@ -19,6 +19,7 @@ export interface Settings {
   default_energy: string;
   default_intention: string;
   show_overdue: boolean;
+  show_completed: boolean;
   show_abandoned: boolean;
   direct_edit_mode: boolean;
   enable_undo_toast: boolean;

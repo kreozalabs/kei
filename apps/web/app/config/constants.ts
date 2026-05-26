@@ -139,6 +139,7 @@ export const DEFAULT_SETTINGS = {
   default_energy: ENERGY_LEVELS.MEDIUM,
   default_intention: INTENTIONS.WANT,
   show_overdue: false,
+  show_completed: true,
   show_abandoned: false,
   direct_edit_mode: false,
   enable_undo_toast: true,
@@ -212,6 +213,11 @@ export const LAYOUT_PERSISTENCE_OPTIONS = [
 ];
 
 export const SHOW_ABANDONED_OPTIONS = [
+  { label: "Show", value: true },
+  { label: "Hide", value: false },
+];
+
+export const SHOW_COMPLETED_OPTIONS = [
   { label: "Show", value: true },
   { label: "Hide", value: false },
 ];
