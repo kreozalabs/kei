@@ -251,7 +251,13 @@ export default function Dashboard() {
       list.push(...abandonedActions);
     }
     return list;
-  }, [activeActions, completedActions, abandonedActions, settings.show_completed, settings.show_abandoned]);
+  }, [
+    activeActions,
+    completedActions,
+    abandonedActions,
+    settings.show_completed,
+    settings.show_abandoned,
+  ]);
 
   const handleComplete = async (action: Action) => {
     const isCompleted = action.status === ACTION_STATUS.COMPLETED;
