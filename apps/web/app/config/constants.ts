@@ -140,7 +140,7 @@ export const DEFAULT_SETTINGS = {
   default_intention: INTENTIONS.WANT,
   show_overdue: false,
   show_abandoned: false,
-  direct_edit_mode: true,
+  direct_edit_mode: false,
   enable_undo_toast: true,
 };
 
