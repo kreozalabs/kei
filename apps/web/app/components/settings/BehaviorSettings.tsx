@@ -8,24 +8,12 @@ import {
   SECTION_STATE_OPTIONS,
   OVERDUE_ACTIONS_OPTIONS,
   LAYOUT_PERSISTENCE_OPTIONS,
+  SHOW_ABANDONED_OPTIONS,
+  DIRECT_EDIT_OPTIONS,
+  UNDO_TOAST_OPTIONS,
 } from "../../config/constants";
 import { MapPin } from "lucide-react";
 import { TimezoneSelector } from "../TimezoneSelector";
-
-const SHOW_ABANDONED_OPTIONS = [
-  { label: "Show", value: true },
-  { label: "Hide", value: false },
-];
-
-const DIRECT_EDIT_OPTIONS = [
-  { label: "Direct Edit", value: true },
-  { label: "View Details", value: false },
-];
-
-const UNDO_TOAST_OPTIONS = [
-  { label: "Show", value: true },
-  { label: "Hide", value: false },
-];
 
 export function BehaviorSettings() {
   const { settings, updateSetting } = useSettings();

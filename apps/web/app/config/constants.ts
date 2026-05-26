@@ -140,7 +140,7 @@ export const DEFAULT_SETTINGS = {
   default_intention: INTENTIONS.WANT,
   show_overdue: false,
   show_abandoned: false,
-  direct_edit_mode: true,
+  direct_edit_mode: false,
   enable_undo_toast: true,
 };
 
@@ -209,4 +209,19 @@ export const OVERDUE_ACTIONS_OPTIONS = [
 export const LAYOUT_PERSISTENCE_OPTIONS = [
   { label: "On", value: true },
   { label: "Off", value: false },
+];
+
+export const SHOW_ABANDONED_OPTIONS = [
+  { label: "Show", value: true },
+  { label: "Hide", value: false },
+];
+
+export const DIRECT_EDIT_OPTIONS = [
+  { label: "Direct Edit", value: true },
+  { label: "View Details", value: false },
+];
+
+export const UNDO_TOAST_OPTIONS = [
+  { label: "Show", value: true },
+  { label: "Hide", value: false },
 ];
