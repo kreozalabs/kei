@@ -40,6 +40,7 @@ import {
   Trash2Icon,
   CheckCircle2Icon,
   CalendarIcon,
+  RotateCcw,
 } from "lucide-react";
 import type { Action } from "@/types/actions";
 import { motion, AnimatePresence } from "framer-motion";
@@ -426,6 +427,17 @@ export default function Dashboard() {
 
   const isBulkModeActive = visibleSelectedActionIds.size > 0;
 
+  const selectedActions = useMemo(() => {
+    return allActions.filter((a) => visibleSelectedActionIds.has(a.id));
+  }, [allActions, visibleSelectedActionIds]);
+
+  const areAllSelectedCompleted = useMemo(() => {
+    return (
+      selectedActions.length > 0 &&
+      selectedActions.every((a) => a.status === ACTION_STATUS.COMPLETED)
+    );
+  }, [selectedActions]);
+
   const handleSelectToggle = (id: string) => {
     setSelectedActionIds((prev) => {
       const next = new Set(prev);
@@ -444,7 +456,6 @@ export default function Dashboard() {
 
   const handleBulkComplete = async () => {
     const idsToComplete = Array.from(visibleSelectedActionIds);
-    const selectedActions = allActions.filter((a) => visibleSelectedActionIds.has(a.id));
     const previousActions = queryClient.getQueryData<Action[]>(["actions"]) || [];
     const updatedActions = previousActions.map((a) =>
       visibleSelectedActionIds.has(a.id) ? { ...a, status: ACTION_STATUS.COMPLETED } : a
@@ -491,6 +502,60 @@ export default function Dashboard() {
       }
     } catch (error) {
       console.error("Failed to bulk complete actions:", error);
+      queryClient.setQueryData(["actions"], previousActions);
+    }
+  };
+
+  const handleBulkReactivate = async () => {
+    const idsToReactivate = Array.from(visibleSelectedActionIds);
+    const previousActions = queryClient.getQueryData<Action[]>(["actions"]) || [];
+    const updatedActions = previousActions.map((a) =>
+      visibleSelectedActionIds.has(a.id) ? { ...a, status: ACTION_STATUS.ACTIVE } : a
+    );
+    queryClient.setQueryData(["actions"], updatedActions);
+    setSelectedActionIds(new Set());
+
+    try {
+      await Promise.all(idsToReactivate.map((id) => activateAction(id)));
+      queryClient.invalidateQueries({ queryKey: ["actions"] });
+
+      if (settings.enable_undo_toast) {
+        toast.success(`Reactivated ${idsToReactivate.length} actions`, {
+          action: {
+            label: "Undo",
+            onClick: async () => {
+              const revertedActions = queryClient.getQueryData<Action[]>(["actions"]) || [];
+              queryClient.setQueryData(
+                ["actions"],
+                revertedActions.map((a) => {
+                  const match = selectedActions.find((sa) => sa.id === a.id);
+                  return match ? { ...a, status: match.status } : a;
+                })
+              );
+              try {
+                await Promise.all(
+                  selectedActions.map(async (sa) => {
+                    if (sa.status === ACTION_STATUS.COMPLETED) {
+                      await completeAction(sa.id);
+                    } else if (sa.status === ACTION_STATUS.ABANDONED) {
+                      await abandonAction(sa.id);
+                    } else {
+                      await activateAction(sa.id);
+                    }
+                  })
+                );
+                queryClient.invalidateQueries({ queryKey: ["actions"] });
+                toast.success("Reverted status changes");
+              } catch (err) {
+                console.error(err);
+                queryClient.setQueryData(["actions"], revertedActions);
+              }
+            },
+          },
+        });
+      }
+    } catch (error) {
+      console.error("Failed to bulk reactivate actions:", error);
       queryClient.setQueryData(["actions"], previousActions);
     }
   };
@@ -978,15 +1043,27 @@ export default function Dashboard() {
             </div>
 
             <div className="flex items-center gap-2">
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={handleBulkComplete}
-                className="h-8 text-xs font-bold hover:bg-emerald-500/10 hover:text-emerald-500 hover:border-emerald-500/20 text-muted-foreground gap-1.5 rounded-full px-3 transition-all border-none"
-              >
-                <CheckCircle2Icon className="size-3.5 text-emerald-500" />
-                Complete
-              </Button>
+              {areAllSelectedCompleted ? (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={handleBulkReactivate}
+                  className="h-8 text-xs font-bold hover:bg-amber-500/10 hover:text-amber-500 hover:border-amber-500/20 text-muted-foreground gap-1.5 rounded-full px-3 transition-all border-none"
+                >
+                  <RotateCcw className="size-3.5 text-amber-500" />
+                  Reactivate
+                </Button>
+              ) : (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={handleBulkComplete}
+                  className="h-8 text-xs font-bold hover:bg-emerald-500/10 hover:text-emerald-500 hover:border-emerald-500/20 text-muted-foreground gap-1.5 rounded-full px-3 transition-all border-none"
+                >
+                  <CheckCircle2Icon className="size-3.5 text-emerald-500" />
+                  Complete
+                </Button>
+              )}
 
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
