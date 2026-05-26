@@ -210,3 +210,19 @@ export const LAYOUT_PERSISTENCE_OPTIONS = [
   { label: "On", value: true },
   { label: "Off", value: false },
 ];
+
+export const SHOW_ABANDONED_OPTIONS = [
+  { label: "Show", value: true },
+  { label: "Hide", value: false },
+];
+
+export const DIRECT_EDIT_OPTIONS = [
+  { label: "Direct Edit", value: true },
+  { label: "View Details", value: false },
+];
+
+export const UNDO_TOAST_OPTIONS = [
+  { label: "Show", value: true },
+  { label: "Hide", value: false },
+];
+
