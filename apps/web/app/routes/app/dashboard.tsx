@@ -32,6 +32,7 @@ import {
   DropdownMenuTrigger,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuCheckboxItem,
 } from "@kreozalabs/ui";
 import {
   LockIcon,
@@ -41,6 +42,7 @@ import {
   CheckCircle2Icon,
   CalendarIcon,
   RotateCcw,
+  MoreVertical,
 } from "lucide-react";
 import type { Action } from "@/types/actions";
 import { motion, AnimatePresence } from "framer-motion";
@@ -157,42 +159,53 @@ export default function Dashboard() {
           <Button
             variant="ghost"
             size="icon"
-            onClick={() => updateSetting("show_completed", !settings.show_completed)}
-            className={cn(
-              "size-8 border-none rounded-full transition-all active:scale-95",
-              settings.show_completed
-                ? "text-primary bg-primary/10 hover:bg-primary/20"
-                : "text-muted-foreground hover:text-primary hover:bg-primary/10"
-            )}
-            title={settings.show_completed ? "Hide Completed Actions" : "Show Completed Actions"}
-          >
-            <CheckCircle2Icon className="size-4" />
-          </Button>
-
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => updateSetting("show_abandoned", !settings.show_abandoned)}
-            className={cn(
-              "size-8 border-none rounded-full transition-all active:scale-95",
-              settings.show_abandoned
-                ? "text-primary bg-primary/10 hover:bg-primary/20"
-                : "text-muted-foreground hover:text-primary hover:bg-primary/10"
-            )}
-            title={settings.show_abandoned ? "Hide Abandoned Actions" : "Show Abandoned Actions"}
-          >
-            <Trash2Icon className="size-4" />
-          </Button>
-
-          <Button
-            variant="ghost"
-            size="icon"
             onClick={() => setIsTodayLocked((prev) => !prev)}
             className="size-8 border-none rounded-full text-muted-foreground hover:text-primary hover:bg-primary/10 transition-all active:scale-95"
             title={isTodayLocked ? "Unlock Timeline" : "Lock to Today"}
           >
             {isTodayLocked ? <LockIcon className="size-4" /> : <UnlockIcon className="size-4" />}
           </Button>
+
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="size-8 border-none rounded-full text-muted-foreground hover:text-primary hover:bg-primary/10 transition-all active:scale-95"
+                title="More Actions"
+              >
+                <MoreVertical className="size-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-48 bg-background border-border/40">
+              <DropdownMenuCheckboxItem
+                checked={settings.show_completed}
+                onCheckedChange={(checked) => updateSetting("show_completed", checked)}
+                className="flex items-center gap-2 cursor-pointer text-xs"
+              >
+                <CheckCircle2Icon
+                  className={cn(
+                    "size-3.5 mr-1",
+                    settings.show_completed ? "text-primary" : "text-muted-foreground"
+                  )}
+                />
+                <span>Show Completed</span>
+              </DropdownMenuCheckboxItem>
+              <DropdownMenuCheckboxItem
+                checked={settings.show_abandoned}
+                onCheckedChange={(checked) => updateSetting("show_abandoned", checked)}
+                className="flex items-center gap-2 cursor-pointer text-xs"
+              >
+                <Trash2Icon
+                  className={cn(
+                    "size-3.5 mr-1",
+                    settings.show_abandoned ? "text-primary" : "text-muted-foreground"
+                  )}
+                />
+                <span>Show Abandoned</span>
+              </DropdownMenuCheckboxItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
       ),
     });
