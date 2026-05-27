@@ -138,7 +138,9 @@ export function ActionItem({
                 )
               : cn(
                   "w-5 mr-1.5 ml-1 transition-opacity duration-200",
-                  isBulkModeActive || isSelected ? "opacity-100" : "opacity-0 group-hover:opacity-100"
+                  isBulkModeActive || isSelected
+                    ? "opacity-100"
+                    : "opacity-0 group-hover:opacity-100"
                 )
           )}
         >

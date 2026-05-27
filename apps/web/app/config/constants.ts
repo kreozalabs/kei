@@ -243,4 +243,3 @@ export const SHIFT_ON_HOVER_OPTIONS = [
   { label: "Shift", value: true },
   { label: "Static", value: false },
 ];
-
