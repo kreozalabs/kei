@@ -334,12 +334,12 @@ export const ActionInput = forwardRef<ActionInputHandle, ActionInputProps>(
           timezone,
         };
 
-        const prevActions = queryClient.getQueryData<Action[]>(["actions"]) || [];
+        const previousQueries = queryClient.getQueriesData<Action[]>({ queryKey: ["actions"] });
         if (actionToEdit) {
-          const updatedActions = prevActions.map((a) =>
-            a.id === actionToEdit.id ? { ...a, ...payload } : a
-          );
-          queryClient.setQueryData(["actions"], updatedActions);
+          queryClient.setQueriesData<Action[]>({ queryKey: ["actions"] }, (oldData) => {
+            if (!oldData) return [];
+            return oldData.map((a) => (a.id === actionToEdit.id ? { ...a, ...payload } : a));
+          });
         }
 
         // Reset the input state immediately for a fast responsive feel
@@ -359,13 +359,12 @@ export const ActionInput = forwardRef<ActionInputHandle, ActionInputProps>(
                   action: {
                     label: "Undo",
                     onClick: async () => {
-                      const revertedActions = queryClient.getQueryData<Action[]>(["actions"]) || [];
-                      queryClient.setQueryData(
-                        ["actions"],
-                        revertedActions.map((a) =>
-                          a.id === originalAction.id ? originalAction : a
-                        )
-                      );
+                      const revertedQueries = queryClient.getQueriesData<Action[]>({
+                        queryKey: ["actions"],
+                      });
+                      previousQueries.forEach(([queryKey, data]) => {
+                        queryClient.setQueryData(queryKey, data);
+                      });
                       try {
                         const revertPayload = {
                           title: originalAction.title,
@@ -385,7 +384,9 @@ export const ActionInput = forwardRef<ActionInputHandle, ActionInputProps>(
                         toast.success("Reverted updates");
                       } catch (err) {
                         console.error(err);
-                        queryClient.setQueryData(["actions"], revertedActions);
+                        revertedQueries.forEach(([queryKey, data]) => {
+                          queryClient.setQueryData(queryKey, data);
+                        });
                       }
                     },
                   },
@@ -394,7 +395,9 @@ export const ActionInput = forwardRef<ActionInputHandle, ActionInputProps>(
             })
             .catch((error) => {
               console.error("Failed to save action:", error);
-              queryClient.setQueryData(["actions"], prevActions);
+              previousQueries.forEach(([queryKey, data]) => {
+                queryClient.setQueryData(queryKey, data);
+              });
             });
         } else {
           addAction(payload)

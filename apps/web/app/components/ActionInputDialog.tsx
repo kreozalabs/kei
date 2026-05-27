@@ -57,11 +57,11 @@ export function ActionInputDialog({
     const isCompleted = action.status === "completed";
     const nextStatus = isCompleted ? "active" : "completed";
 
-    const previousActions = queryClient.getQueryData<Action[]>(["actions"]) || [];
-    const updatedActions = previousActions.map((a) =>
-      a.id === action.id ? { ...a, status: nextStatus } : a
-    );
-    queryClient.setQueryData(["actions"], updatedActions);
+    const previousQueries = queryClient.getQueriesData<Action[]>({ queryKey: ["actions"] });
+    queryClient.setQueriesData<Action[]>({ queryKey: ["actions"] }, (oldData) => {
+      if (!oldData) return [];
+      return oldData.map((a) => (a.id === action.id ? { ...a, status: nextStatus } : a));
+    });
 
     try {
       if (isCompleted) {
@@ -79,13 +79,12 @@ export function ActionInputDialog({
             action: {
               label: "Undo",
               onClick: async () => {
-                const revertedActions = queryClient.getQueryData<Action[]>(["actions"]) || [];
-                queryClient.setQueryData(
-                  ["actions"],
-                  revertedActions.map((a) =>
-                    a.id === action.id ? { ...a, status: action.status } : a
-                  )
-                );
+                const revertedQueries = queryClient.getQueriesData<Action[]>({
+                  queryKey: ["actions"],
+                });
+                previousQueries.forEach(([queryKey, data]) => {
+                  queryClient.setQueryData(queryKey, data);
+                });
                 try {
                   if (isCompleted) {
                     await completeAction(action.id);
@@ -96,7 +95,9 @@ export function ActionInputDialog({
                   toast.success("Reverted status change");
                 } catch (err) {
                   console.error(err);
-                  queryClient.setQueryData(["actions"], revertedActions);
+                  revertedQueries.forEach(([queryKey, data]) => {
+                    queryClient.setQueryData(queryKey, data);
+                  });
                 }
               },
             },
@@ -105,17 +106,19 @@ export function ActionInputDialog({
       }
     } catch (err) {
       console.error(err);
-      queryClient.setQueryData(["actions"], previousActions);
+      previousQueries.forEach(([queryKey, data]) => {
+        queryClient.setQueryData(queryKey, data);
+      });
     }
   };
 
   const handleAbandon = async (action: Action) => {
     const { abandonAction, activateAction } = await import("@/db/actions");
-    const previousActions = queryClient.getQueryData<Action[]>(["actions"]) || [];
-    const updatedActions = previousActions.map((a) =>
-      a.id === action.id ? { ...a, status: "abandoned" } : a
-    );
-    queryClient.setQueryData(["actions"], updatedActions);
+    const previousQueries = queryClient.getQueriesData<Action[]>({ queryKey: ["actions"] });
+    queryClient.setQueriesData<Action[]>({ queryKey: ["actions"] }, (oldData) => {
+      if (!oldData) return [];
+      return oldData.map((a) => (a.id === action.id ? { ...a, status: "abandoned" } : a));
+    });
 
     try {
       await abandonAction(action.id);
@@ -127,20 +130,21 @@ export function ActionInputDialog({
           action: {
             label: "Undo",
             onClick: async () => {
-              const revertedActions = queryClient.getQueryData<Action[]>(["actions"]) || [];
-              queryClient.setQueryData(
-                ["actions"],
-                revertedActions.map((a) =>
-                  a.id === action.id ? { ...a, status: action.status } : a
-                )
-              );
+              const revertedQueries = queryClient.getQueriesData<Action[]>({
+                queryKey: ["actions"],
+              });
+              previousQueries.forEach(([queryKey, data]) => {
+                queryClient.setQueryData(queryKey, data);
+              });
               try {
                 await activateAction(action.id);
                 queryClient.invalidateQueries({ queryKey: ["actions"] });
                 toast.success("Action reactivated");
               } catch (err) {
                 console.error(err);
-                queryClient.setQueryData(["actions"], revertedActions);
+                revertedQueries.forEach(([queryKey, data]) => {
+                  queryClient.setQueryData(queryKey, data);
+                });
               }
             },
           },
@@ -148,17 +152,19 @@ export function ActionInputDialog({
       }
     } catch (err) {
       console.error(err);
-      queryClient.setQueryData(["actions"], previousActions);
+      previousQueries.forEach(([queryKey, data]) => {
+        queryClient.setQueryData(queryKey, data);
+      });
     }
   };
 
   const handleReactivate = async (action: Action) => {
     const { activateAction, abandonAction } = await import("@/db/actions");
-    const previousActions = queryClient.getQueryData<Action[]>(["actions"]) || [];
-    const updatedActions = previousActions.map((a) =>
-      a.id === action.id ? { ...a, status: "active" } : a
-    );
-    queryClient.setQueryData(["actions"], updatedActions);
+    const previousQueries = queryClient.getQueriesData<Action[]>({ queryKey: ["actions"] });
+    queryClient.setQueriesData<Action[]>({ queryKey: ["actions"] }, (oldData) => {
+      if (!oldData) return [];
+      return oldData.map((a) => (a.id === action.id ? { ...a, status: "active" } : a));
+    });
 
     try {
       await activateAction(action.id);
@@ -170,20 +176,21 @@ export function ActionInputDialog({
           action: {
             label: "Undo",
             onClick: async () => {
-              const revertedActions = queryClient.getQueryData<Action[]>(["actions"]) || [];
-              queryClient.setQueryData(
-                ["actions"],
-                revertedActions.map((a) =>
-                  a.id === action.id ? { ...a, status: action.status } : a
-                )
-              );
+              const revertedQueries = queryClient.getQueriesData<Action[]>({
+                queryKey: ["actions"],
+              });
+              previousQueries.forEach(([queryKey, data]) => {
+                queryClient.setQueryData(queryKey, data);
+              });
               try {
                 await abandonAction(action.id);
                 queryClient.invalidateQueries({ queryKey: ["actions"] });
                 toast.success("Action abandoned");
               } catch (err) {
                 console.error(err);
-                queryClient.setQueryData(["actions"], revertedActions);
+                revertedQueries.forEach(([queryKey, data]) => {
+                  queryClient.setQueryData(queryKey, data);
+                });
               }
             },
           },
@@ -191,15 +198,19 @@ export function ActionInputDialog({
       }
     } catch (err) {
       console.error(err);
-      queryClient.setQueryData(["actions"], previousActions);
+      previousQueries.forEach(([queryKey, data]) => {
+        queryClient.setQueryData(queryKey, data);
+      });
     }
   };
 
   const handleDeletePermanently = async (action: Action) => {
     const { deleteActionPermanently, restoreAction } = await import("@/db/actions");
-    const previousActions = queryClient.getQueryData<Action[]>(["actions"]) || [];
-    const updatedActions = previousActions.filter((a) => a.id !== action.id);
-    queryClient.setQueryData(["actions"], updatedActions);
+    const previousQueries = queryClient.getQueriesData<Action[]>({ queryKey: ["actions"] });
+    queryClient.setQueriesData<Action[]>({ queryKey: ["actions"] }, (oldData) => {
+      if (!oldData) return [];
+      return oldData.filter((a) => a.id !== action.id);
+    });
 
     try {
       await deleteActionPermanently(action.id);
@@ -211,15 +222,21 @@ export function ActionInputDialog({
           action: {
             label: "Undo",
             onClick: async () => {
-              const revertedActions = queryClient.getQueryData<Action[]>(["actions"]) || [];
-              queryClient.setQueryData(["actions"], [...revertedActions, action]);
+              const revertedQueries = queryClient.getQueriesData<Action[]>({
+                queryKey: ["actions"],
+              });
+              previousQueries.forEach(([queryKey, data]) => {
+                queryClient.setQueryData(queryKey, data);
+              });
               try {
                 await restoreAction(action);
                 queryClient.invalidateQueries({ queryKey: ["actions"] });
                 toast.success("Action restored");
               } catch (err) {
                 console.error(err);
-                queryClient.setQueryData(["actions"], revertedActions);
+                revertedQueries.forEach(([queryKey, data]) => {
+                  queryClient.setQueryData(queryKey, data);
+                });
               }
             },
           },
@@ -227,7 +244,9 @@ export function ActionInputDialog({
       }
     } catch (err) {
       console.error(err);
-      queryClient.setQueryData(["actions"], previousActions);
+      previousQueries.forEach(([queryKey, data]) => {
+        queryClient.setQueryData(queryKey, data);
+      });
     }
   };
 
