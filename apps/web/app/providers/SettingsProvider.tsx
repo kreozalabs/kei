@@ -56,12 +56,12 @@ export function SettingsProvider({
     // On mount, load latest from DB
     const loadFromDb = async () => {
       await initPromise;
-      const dbSettings: Record<string, any> = {};
+      const dbSettings: Partial<Settings> = {};
 
       for (const key of Object.keys(DEFAULT_SETTINGS) as (keyof Settings)[]) {
-        const dbValue = await getSetting<any>(key);
+        const dbValue = await getSetting<Settings[keyof Settings]>(key);
         if (dbValue !== null) {
-          dbSettings[key] = dbValue;
+          dbSettings[key] = dbValue as never;
         }
       }
 
