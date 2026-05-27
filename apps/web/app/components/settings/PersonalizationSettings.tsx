@@ -10,7 +10,7 @@ import {
 } from "@kreozalabs/ui";
 import { useSettings } from "../../providers/SettingsContext";
 import type { Theme } from "../../types/settings";
-import { TIME_FORMATS, ACCENTS } from "../../config/constants";
+import { TIME_FORMATS, ACCENTS, LANGUAGES, LANGUAGE_LABELS } from "../../config/constants";
 
 export function PersonalizationSettings() {
   const { settings, updateSetting } = useSettings();
@@ -109,9 +109,11 @@ export function PersonalizationSettings() {
               <SelectValue placeholder="Select Language" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="auto">Auto</SelectItem>
-              <SelectItem value="en">English</SelectItem>
-              {/* Add more languages here when ready */}
+              {Object.values(LANGUAGES).map((l) => (
+                <SelectItem key={l} value={l}>
+                  {LANGUAGE_LABELS[l] || l}
+                </SelectItem>
+              ))}
             </SelectContent>
           </Select>
         </div>

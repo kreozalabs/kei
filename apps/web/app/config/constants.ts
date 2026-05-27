@@ -170,6 +170,14 @@ export const LANGUAGES = {
   // RU: "ru",
 } as const;
 
+export const LANGUAGE_LABELS: Record<string, string> = {
+  [LANGUAGES.AUTO]: "Auto", // TODO: Translate using i18n when installed
+  [LANGUAGES.EN]: "English",
+  // de: "Deutsch",
+  // es: "Español",
+  // ru: "Русский",
+};
+
 import type { Accent } from "../types/settings";
 
 export const ACCENTS: { name: Accent; color: string; hover: string }[] = [
@@ -180,11 +188,6 @@ export const ACCENTS: { name: Accent; color: string; hover: string }[] = [
   { name: "rose", color: "bg-[#f43f5e]", hover: "hover:bg-[#f43f5e]" },
   { name: "amber", color: "bg-[#f59e0b]", hover: "hover:bg-[#f59e0b]" },
   { name: "forest", color: "bg-[#22c55e]", hover: "hover:bg-[#22c55e]" },
-];
-
-export const LANGUAGE_OPTIONS = [
-  { label: "Auto", value: LANGUAGES.AUTO },
-  { label: "English", value: LANGUAGES.EN },
 ];
 
 export const DISTRACTION_FREE_OPTIONS = [
