@@ -143,6 +143,8 @@ export const DEFAULT_SETTINGS = {
   show_abandoned: false,
   direct_edit_mode: false,
   enable_undo_toast: true,
+  enable_selection: true,
+  shift_on_selection_hover: true,
 };
 
 export const STORAGE_KEYS = {
@@ -233,4 +235,14 @@ export const DIRECT_EDIT_OPTIONS = [
 export const UNDO_TOAST_OPTIONS = [
   { label: "Show", value: true },
   { label: "Hide", value: false },
+];
+
+export const SELECTION_OPTIONS = [
+  { label: "On", value: true },
+  { label: "Off", value: false },
+];
+
+export const SHIFT_ON_HOVER_OPTIONS = [
+  { label: "Shift", value: true },
+  { label: "Static", value: false },
 ];

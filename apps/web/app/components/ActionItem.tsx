@@ -125,16 +125,28 @@ export function ActionItem({
       )}
 
       {/* Floating Checkbox (Gmail style hover / active bulk selection transition) */}
-      <div
-        className={cn(
-          "mt-0.5 shrink-0 transition-all duration-200 flex items-center justify-center h-5",
-          isBulkModeActive || isSelected
-            ? "w-5 opacity-100 mr-1.5 ml-1"
-            : "w-0 opacity-0 overflow-hidden group-hover:w-5 group-hover:opacity-100 group-hover:mr-1.5 group-hover:ml-1"
-        )}
-      >
-        <Checkbox checked={isSelected} onCheckedChange={() => onSelectToggle?.(action.id)} />
-      </div>
+      {settings.enable_selection && (
+        <div
+          className={cn(
+            "mt-0.5 shrink-0 flex items-center justify-center h-5",
+            settings.shift_on_selection_hover
+              ? cn(
+                  "transition-all duration-200",
+                  isBulkModeActive || isSelected
+                    ? "w-5 opacity-100 mr-1.5 ml-1"
+                    : "w-0 opacity-0 overflow-hidden group-hover:w-5 group-hover:opacity-100 group-hover:mr-1.5 group-hover:ml-1"
+                )
+              : cn(
+                  "w-5 mr-1.5 ml-1 transition-opacity duration-200",
+                  isBulkModeActive || isSelected
+                    ? "opacity-100"
+                    : "opacity-0 group-hover:opacity-100"
+                )
+          )}
+        >
+          <Checkbox checked={isSelected} onCheckedChange={() => onSelectToggle?.(action.id)} />
+        </div>
+      )}
 
       <div className="flex items-start gap-3 flex-1 min-w-0">
         {type === ACTION_STATUS.ACTIVE ? (
