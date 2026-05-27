@@ -52,6 +52,12 @@ import {
 } from "lucide-react";
 import type { Action, ActionStatus } from "@/types/actions";
 import { motion, AnimatePresence } from "framer-motion";
+
+declare global {
+  interface Window {
+    __activeWrites?: number;
+  }
+}
 import { ActionSection } from "@/components/ActionSection";
 import { ActionItem } from "@/components/ActionItem";
 import { ActionInputDialog } from "@/components/ActionInputDialog";
@@ -103,6 +109,23 @@ export default function Dashboard() {
   const [actionToEdit, setActionToEdit] = useState<Action | null>(null);
   const [activeId, setActiveId] = useState<string | null>(null);
   const activeWritesRef = useRef(0);
+
+  useMemo(() => {
+    let val = 0;
+    Object.defineProperty(activeWritesRef, "current", {
+      get() {
+        return val;
+      },
+      set(newVal) {
+        const diff = newVal - val;
+        val = newVal;
+        if (typeof window !== "undefined") {
+          window.__activeWrites = Math.max(0, (window.__activeWrites || 0) + diff);
+        }
+      },
+      configurable: true,
+    });
+  }, []);
 
   const sensors = useSensors(
     useSensor(PointerSensor, {

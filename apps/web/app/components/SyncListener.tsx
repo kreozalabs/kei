@@ -13,6 +13,10 @@ export function SyncListener() {
 
       if (type === "DB_UPDATED") {
         if (!entity || entity === "actions") {
+          if (typeof window !== "undefined" && (window as any).__activeWrites > 0) {
+            console.log("Skipping sync-listener query invalidation because local writes are in progress");
+            return;
+          }
           if (debounceTimeout) {
             clearTimeout(debounceTimeout);
           }
