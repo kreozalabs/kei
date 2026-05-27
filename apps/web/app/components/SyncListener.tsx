@@ -32,13 +32,26 @@ export function SyncListener() {
       }
     };
 
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      const activeWrites = typeof window !== "undefined"
+        ? (window as Window & { __activeWrites?: number }).__activeWrites
+        : undefined;
+      if (activeWrites && activeWrites > 0) {
+        e.preventDefault();
+        e.returnValue = "Changes you made may not be saved.";
+        return e.returnValue;
+      }
+    };
+
     channel.addEventListener("message", handleMessage);
+    window.addEventListener("beforeunload", handleBeforeUnload);
 
     return () => {
       if (debounceTimeout) {
         clearTimeout(debounceTimeout);
       }
       channel.removeEventListener("message", handleMessage);
+      window.removeEventListener("beforeunload", handleBeforeUnload);
       channel.close();
     };
   }, [queryClient]);
