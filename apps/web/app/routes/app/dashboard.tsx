@@ -440,6 +440,7 @@ export default function Dashboard() {
 
   // Filter selected IDs to only valid visible actions to prevent ghost selections
   const visibleSelectedActionIds = useMemo(() => {
+    if (!settings.enable_selection) return new Set<string>();
     const validIds = new Set<string>();
     const allActionIds = new Set(allActions.map((a) => a.id));
     selectedActionIds.forEach((id) => {
@@ -448,7 +449,7 @@ export default function Dashboard() {
       }
     });
     return validIds;
-  }, [selectedActionIds, allActions]);
+  }, [selectedActionIds, allActions, settings.enable_selection]);
 
   const isBulkModeActive = visibleSelectedActionIds.size > 0;
 
@@ -464,6 +465,7 @@ export default function Dashboard() {
   }, [selectedActions]);
 
   const handleSelectToggle = (id: string) => {
+    if (!settings.enable_selection) return;
     setSelectedActionIds((prev) => {
       const next = new Set(prev);
       if (next.has(id)) {

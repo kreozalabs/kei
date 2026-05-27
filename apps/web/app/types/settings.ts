@@ -23,6 +23,8 @@ export interface Settings {
   show_abandoned: boolean;
   direct_edit_mode: boolean;
   enable_undo_toast: boolean;
+  enable_selection: boolean;
+  shift_on_selection_hover: boolean;
 }
 
 export type SettingKey = keyof Settings;
