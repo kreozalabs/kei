@@ -1,4 +1,4 @@
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useState, useMemo, useRef } from "react";
 import { useOutletContext } from "react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import type { AppLayoutContext } from "@/components/layout/AppLayout";
@@ -12,6 +12,12 @@ import {
   abandonAction,
   deleteActionPermanently,
   restoreAction,
+  bulkCompleteActions,
+  bulkActivateActions,
+  bulkAbandonActions,
+  bulkUpdateActions,
+  bulkStatusUpdateActions,
+  bulkUpdateMultipleActions,
 } from "@/db/actions";
 import { toast } from "sonner";
 import { useCurrentDay } from "@/hooks/useCurrentDay";
@@ -96,6 +102,7 @@ export default function Dashboard() {
   const [dialogPreDate, setDialogPreDate] = useState<string | null>(null);
   const [actionToEdit, setActionToEdit] = useState<Action | null>(null);
   const [activeId, setActiveId] = useState<string | null>(null);
+  const activeWritesRef = useRef(0);
 
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -302,10 +309,16 @@ export default function Dashboard() {
           let nextData = [...oldData];
 
           if (matchesNextStatus) {
-            // Add any that are not in the list yet
+            // Update existing ones in place, and add any that are not in the list yet
             ids.forEach((id) => {
-              const exists = nextData.some((a) => a.id === id);
-              if (!exists) {
+              const index = nextData.findIndex((a) => a.id === id);
+              if (index !== -1) {
+                nextData[index] = {
+                  ...nextData[index],
+                  ...updatedActionData,
+                  status: nextStatus,
+                };
+              } else {
                 const actionToRestore = allActions.find((a) => a.id === id);
                 if (actionToRestore) {
                   nextData.unshift({
@@ -346,13 +359,14 @@ export default function Dashboard() {
             previousQueries.forEach(([queryKey, data]) => {
               queryClient.setQueryData(queryKey, data);
             });
+            activeWritesRef.current++;
+            await queryClient.cancelQueries({ queryKey: ["actions"] });
             try {
               if (isCompleted) {
                 await completeAction(action.id);
               } else {
                 await activateAction(action.id);
               }
-              queryClient.invalidateQueries({ queryKey: ["actions"] });
               toast.success("Reverted status change");
             } catch (err) {
               console.error(err);
@@ -360,6 +374,11 @@ export default function Dashboard() {
                 queryClient.setQueryData(queryKey, data);
               });
               toast.error("Failed to revert status change");
+            } finally {
+              activeWritesRef.current--;
+              if (activeWritesRef.current === 0) {
+                queryClient.invalidateQueries({ queryKey: ["actions"] });
+              }
             }
           },
         },
@@ -368,19 +387,25 @@ export default function Dashboard() {
 
     updateActionsQueriesCache(action.id, nextStatus);
 
+    activeWritesRef.current++;
+    await queryClient.cancelQueries({ queryKey: ["actions"] });
     try {
       if (isCompleted) {
         await activateAction(action.id);
       } else {
         await completeAction(action.id);
       }
-      queryClient.invalidateQueries({ queryKey: ["actions"] });
     } catch (error) {
       console.error("Failed to complete action:", error);
       previousQueries.forEach(([queryKey, data]) => {
         queryClient.setQueryData(queryKey, data);
       });
       toast.error("Failed to complete action");
+    } finally {
+      activeWritesRef.current--;
+      if (activeWritesRef.current === 0) {
+        queryClient.invalidateQueries({ queryKey: ["actions"] });
+      }
     }
   };
 
@@ -396,9 +421,10 @@ export default function Dashboard() {
             previousQueries.forEach(([queryKey, data]) => {
               queryClient.setQueryData(queryKey, data);
             });
+            activeWritesRef.current++;
+            await queryClient.cancelQueries({ queryKey: ["actions"] });
             try {
               await activateAction(action.id);
-              queryClient.invalidateQueries({ queryKey: ["actions"] });
               toast.success("Action reactivated");
             } catch (err) {
               console.error(err);
@@ -406,6 +432,11 @@ export default function Dashboard() {
                 queryClient.setQueryData(queryKey, data);
               });
               toast.error("Failed to reactivate action");
+            } finally {
+              activeWritesRef.current--;
+              if (activeWritesRef.current === 0) {
+                queryClient.invalidateQueries({ queryKey: ["actions"] });
+              }
             }
           },
         },
@@ -414,15 +445,21 @@ export default function Dashboard() {
 
     updateActionsQueriesCache(action.id, ACTION_STATUS.ABANDONED);
 
+    activeWritesRef.current++;
+    await queryClient.cancelQueries({ queryKey: ["actions"] });
     try {
       await abandonAction(action.id);
-      queryClient.invalidateQueries({ queryKey: ["actions"] });
     } catch (error) {
       console.error("Failed to abandon action:", error);
       previousQueries.forEach(([queryKey, data]) => {
         queryClient.setQueryData(queryKey, data);
       });
       toast.error("Failed to abandon action");
+    } finally {
+      activeWritesRef.current--;
+      if (activeWritesRef.current === 0) {
+        queryClient.invalidateQueries({ queryKey: ["actions"] });
+      }
     }
   };
 
@@ -438,9 +475,10 @@ export default function Dashboard() {
             previousQueries.forEach(([queryKey, data]) => {
               queryClient.setQueryData(queryKey, data);
             });
+            activeWritesRef.current++;
+            await queryClient.cancelQueries({ queryKey: ["actions"] });
             try {
               await abandonAction(action.id);
-              queryClient.invalidateQueries({ queryKey: ["actions"] });
               toast.success("Action abandoned");
             } catch (err) {
               console.error(err);
@@ -448,6 +486,11 @@ export default function Dashboard() {
                 queryClient.setQueryData(queryKey, data);
               });
               toast.error("Failed to abandon action");
+            } finally {
+              activeWritesRef.current--;
+              if (activeWritesRef.current === 0) {
+                queryClient.invalidateQueries({ queryKey: ["actions"] });
+              }
             }
           },
         },
@@ -456,15 +499,21 @@ export default function Dashboard() {
 
     updateActionsQueriesCache(action.id, ACTION_STATUS.ACTIVE);
 
+    activeWritesRef.current++;
+    await queryClient.cancelQueries({ queryKey: ["actions"] });
     try {
       await activateAction(action.id);
-      queryClient.invalidateQueries({ queryKey: ["actions"] });
     } catch (error) {
       console.error("Failed to reactivate action:", error);
       previousQueries.forEach(([queryKey, data]) => {
         queryClient.setQueryData(queryKey, data);
       });
       toast.error("Failed to reactivate action");
+    } finally {
+      activeWritesRef.current--;
+      if (activeWritesRef.current === 0) {
+        queryClient.invalidateQueries({ queryKey: ["actions"] });
+      }
     }
   };
 
@@ -480,9 +529,10 @@ export default function Dashboard() {
             previousQueries.forEach(([queryKey, data]) => {
               queryClient.setQueryData(queryKey, data);
             });
+            activeWritesRef.current++;
+            await queryClient.cancelQueries({ queryKey: ["actions"] });
             try {
               await restoreAction(action);
-              queryClient.invalidateQueries({ queryKey: ["actions"] });
               toast.success("Action restored");
             } catch (err) {
               console.error(err);
@@ -490,6 +540,11 @@ export default function Dashboard() {
                 queryClient.setQueryData(queryKey, data);
               });
               toast.error("Failed to restore action");
+            } finally {
+              activeWritesRef.current--;
+              if (activeWritesRef.current === 0) {
+                queryClient.invalidateQueries({ queryKey: ["actions"] });
+              }
             }
           },
         },
@@ -501,15 +556,21 @@ export default function Dashboard() {
       return oldData.filter((a) => a.id !== action.id);
     });
 
+    activeWritesRef.current++;
+    await queryClient.cancelQueries({ queryKey: ["actions"] });
     try {
       await deleteActionPermanently(action.id);
-      queryClient.invalidateQueries({ queryKey: ["actions"] });
     } catch (error) {
       console.error("Failed to delete action permanently:", error);
       previousQueries.forEach(([queryKey, data]) => {
         queryClient.setQueryData(queryKey, data);
       });
       toast.error("Failed to delete action");
+    } finally {
+      activeWritesRef.current--;
+      if (activeWritesRef.current === 0) {
+        queryClient.invalidateQueries({ queryKey: ["actions"] });
+      }
     }
   };
 
@@ -577,17 +638,13 @@ export default function Dashboard() {
             previousQueries.forEach(([queryKey, data]) => {
               queryClient.setQueryData(queryKey, data);
             });
+            activeWritesRef.current++;
+            await queryClient.cancelQueries({ queryKey: ["actions"] });
             try {
-              await Promise.all(
-                selectedActions.map(async (sa) => {
-                  if (sa.status === ACTION_STATUS.COMPLETED) {
-                    await completeAction(sa.id);
-                  } else {
-                    await activateAction(sa.id);
-                  }
-                })
-              );
-              queryClient.invalidateQueries({ queryKey: ["actions"] });
+              await bulkStatusUpdateActions(selectedActions.map(sa => ({
+                id: sa.id,
+                status: sa.status
+              })));
               toast.success("Reverted status changes");
             } catch (err) {
               console.error(err);
@@ -595,6 +652,11 @@ export default function Dashboard() {
                 queryClient.setQueryData(queryKey, data);
               });
               toast.error("Failed to revert status changes");
+            } finally {
+              activeWritesRef.current--;
+              if (activeWritesRef.current === 0) {
+                queryClient.invalidateQueries({ queryKey: ["actions"] });
+              }
             }
           },
         },
@@ -604,15 +666,21 @@ export default function Dashboard() {
     updateActionsQueriesCache(idsToComplete, ACTION_STATUS.COMPLETED);
     setSelectedActionIds(new Set());
 
+    activeWritesRef.current++;
+    await queryClient.cancelQueries({ queryKey: ["actions"] });
     try {
-      await Promise.all(idsToComplete.map((id) => completeAction(id)));
-      queryClient.invalidateQueries({ queryKey: ["actions"] });
+      await bulkCompleteActions(idsToComplete);
     } catch (error) {
       console.error("Failed to bulk complete actions:", error);
       previousQueries.forEach(([queryKey, data]) => {
         queryClient.setQueryData(queryKey, data);
       });
       toast.error("Failed to bulk complete actions");
+    } finally {
+      activeWritesRef.current--;
+      if (activeWritesRef.current === 0) {
+        queryClient.invalidateQueries({ queryKey: ["actions"] });
+      }
     }
   };
 
@@ -629,19 +697,13 @@ export default function Dashboard() {
             previousQueries.forEach(([queryKey, data]) => {
               queryClient.setQueryData(queryKey, data);
             });
+            activeWritesRef.current++;
+            await queryClient.cancelQueries({ queryKey: ["actions"] });
             try {
-              await Promise.all(
-                selectedActions.map(async (sa) => {
-                  if (sa.status === ACTION_STATUS.COMPLETED) {
-                    await completeAction(sa.id);
-                  } else if (sa.status === ACTION_STATUS.ABANDONED) {
-                    await abandonAction(sa.id);
-                  } else {
-                    await activateAction(sa.id);
-                  }
-                })
-              );
-              queryClient.invalidateQueries({ queryKey: ["actions"] });
+              await bulkStatusUpdateActions(selectedActions.map(sa => ({
+                id: sa.id,
+                status: sa.status
+              })));
               toast.success("Reverted status changes");
             } catch (err) {
               console.error(err);
@@ -649,6 +711,11 @@ export default function Dashboard() {
                 queryClient.setQueryData(queryKey, data);
               });
               toast.error("Failed to revert status changes");
+            } finally {
+              activeWritesRef.current--;
+              if (activeWritesRef.current === 0) {
+                queryClient.invalidateQueries({ queryKey: ["actions"] });
+              }
             }
           },
         },
@@ -658,15 +725,21 @@ export default function Dashboard() {
     updateActionsQueriesCache(idsToReactivate, ACTION_STATUS.ACTIVE);
     setSelectedActionIds(new Set());
 
+    activeWritesRef.current++;
+    await queryClient.cancelQueries({ queryKey: ["actions"] });
     try {
-      await Promise.all(idsToReactivate.map((id) => activateAction(id)));
-      queryClient.invalidateQueries({ queryKey: ["actions"] });
+      await bulkActivateActions(idsToReactivate);
     } catch (error) {
       console.error("Failed to bulk reactivate actions:", error);
       previousQueries.forEach(([queryKey, data]) => {
         queryClient.setQueryData(queryKey, data);
       });
       toast.error("Failed to bulk reactivate actions");
+    } finally {
+      activeWritesRef.current--;
+      if (activeWritesRef.current === 0) {
+        queryClient.invalidateQueries({ queryKey: ["actions"] });
+      }
     }
   };
 
@@ -683,19 +756,13 @@ export default function Dashboard() {
             previousQueries.forEach(([queryKey, data]) => {
               queryClient.setQueryData(queryKey, data);
             });
+            activeWritesRef.current++;
+            await queryClient.cancelQueries({ queryKey: ["actions"] });
             try {
-              await Promise.all(
-                selectedActions.map(async (sa) => {
-                  if (sa.status === ACTION_STATUS.COMPLETED) {
-                    await completeAction(sa.id);
-                  } else if (sa.status === ACTION_STATUS.ABANDONED) {
-                    await abandonAction(sa.id);
-                  } else {
-                    await activateAction(sa.id);
-                  }
-                })
-              );
-              queryClient.invalidateQueries({ queryKey: ["actions"] });
+              await bulkStatusUpdateActions(selectedActions.map(sa => ({
+                id: sa.id,
+                status: sa.status
+              })));
               toast.success("Reverted status changes");
             } catch (err) {
               console.error(err);
@@ -703,6 +770,11 @@ export default function Dashboard() {
                 queryClient.setQueryData(queryKey, data);
               });
               toast.error("Failed to revert status changes");
+            } finally {
+              activeWritesRef.current--;
+              if (activeWritesRef.current === 0) {
+                queryClient.invalidateQueries({ queryKey: ["actions"] });
+              }
             }
           },
         },
@@ -712,15 +784,21 @@ export default function Dashboard() {
     updateActionsQueriesCache(idsToAbandon, ACTION_STATUS.ABANDONED);
     setSelectedActionIds(new Set());
 
+    activeWritesRef.current++;
+    await queryClient.cancelQueries({ queryKey: ["actions"] });
     try {
-      await Promise.all(idsToAbandon.map((id) => abandonAction(id)));
-      queryClient.invalidateQueries({ queryKey: ["actions"] });
+      await bulkAbandonActions(idsToAbandon);
     } catch (error) {
       console.error("Failed to bulk abandon actions:", error);
       previousQueries.forEach(([queryKey, data]) => {
         queryClient.setQueryData(queryKey, data);
       });
       toast.error("Failed to bulk abandon actions");
+    } finally {
+      activeWritesRef.current--;
+      if (activeWritesRef.current === 0) {
+        queryClient.invalidateQueries({ queryKey: ["actions"] });
+      }
     }
   };
 
@@ -737,13 +815,13 @@ export default function Dashboard() {
             previousQueries.forEach(([queryKey, data]) => {
               queryClient.setQueryData(queryKey, data);
             });
+            activeWritesRef.current++;
+            await queryClient.cancelQueries({ queryKey: ["actions"] });
             try {
-              await Promise.all(
-                selectedActions.map((sa) =>
-                  updateAction(sa.id, { scheduledDate: sa.scheduledDate })
-                )
-              );
-              queryClient.invalidateQueries({ queryKey: ["actions"] });
+              await bulkUpdateMultipleActions(selectedActions.map(sa => ({
+                id: sa.id,
+                payload: { scheduledDate: sa.scheduledDate }
+              })));
               toast.success("Reverted rescheduling");
             } catch (err) {
               console.error(err);
@@ -751,6 +829,11 @@ export default function Dashboard() {
                 queryClient.setQueryData(queryKey, data);
               });
               toast.error("Failed to revert rescheduling");
+            } finally {
+              activeWritesRef.current--;
+              if (activeWritesRef.current === 0) {
+                queryClient.invalidateQueries({ queryKey: ["actions"] });
+              }
             }
           },
         },
@@ -760,15 +843,21 @@ export default function Dashboard() {
     updateActionsQueriesCache(idsToReschedule, ACTION_STATUS.ACTIVE, { scheduledDate: newDate });
     setSelectedActionIds(new Set());
 
+    activeWritesRef.current++;
+    await queryClient.cancelQueries({ queryKey: ["actions"] });
     try {
-      await Promise.all(idsToReschedule.map((id) => updateAction(id, { scheduledDate: newDate })));
-      queryClient.invalidateQueries({ queryKey: ["actions"] });
+      await bulkUpdateActions(idsToReschedule, { scheduledDate: newDate });
     } catch (error) {
       console.error("Failed to bulk reschedule actions:", error);
       previousQueries.forEach(([queryKey, data]) => {
         queryClient.setQueryData(queryKey, data);
       });
       toast.error("Failed to bulk reschedule actions");
+    } finally {
+      activeWritesRef.current--;
+      if (activeWritesRef.current === 0) {
+        queryClient.invalidateQueries({ queryKey: ["actions"] });
+      }
     }
   };
 

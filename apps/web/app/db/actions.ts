@@ -163,6 +163,130 @@ async function pushEvent(actionId: string, type: string, payload: ActionPayload)
   }
 }
 
+async function bulkPushEvents(updates: { id: string; type: string; payload: ActionPayload }[]) {
+  await db.query("BEGIN");
+  try {
+    for (const { id, type, payload } of updates) {
+      // 1. Store the event using the central persistence
+      const event = await persistEvent(id, type, payload);
+
+      // 2. Update the snapshot
+      let currentAction: Action | null = null;
+      if (type !== EVENT_TYPES.ACTION_INTENDED) {
+        const result = await db.query("SELECT * FROM actions WHERE id = $1", [id]);
+        if (result.rows.length > 0) {
+          const row = result.rows[0] as unknown as Action & {
+            scheduled_date: string;
+            start_time: string | null;
+            end_time: string | null;
+            created_at: string | number;
+            sort_order: string | number;
+          };
+          const parseDuration = (val: unknown) => {
+            if (typeof val !== "string") return val;
+            try {
+              return JSON.parse(val);
+            } catch {
+              return null;
+            }
+          };
+          currentAction = {
+            ...row,
+            scheduledDate: row.scheduled_date,
+            startTime: row.start_time,
+            endTime: row.end_time,
+            createdAt: Number(row.created_at),
+            sortOrder: Number(row.sort_order),
+            duration: parseDuration(row.duration),
+          } as Action;
+        }
+      }
+
+      const updatedAction = applyEventToAction(currentAction, event);
+
+      if (!updatedAction) {
+        await db.query("DELETE FROM actions WHERE id = $1", [id]);
+      } else {
+        await db.query(
+          `INSERT INTO actions (
+            id, title, note, intention, important, energy, duration, 
+            scheduled_date, start_time, end_time, timezone, status, created_at, sort_order
+          ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)
+          ON CONFLICT (id) DO UPDATE SET
+            title = EXCLUDED.title,
+            note = EXCLUDED.note,
+            intention = EXCLUDED.intention,
+            important = EXCLUDED.important,
+            energy = EXCLUDED.energy,
+            duration = EXCLUDED.duration,
+            scheduled_date = EXCLUDED.scheduled_date,
+            start_time = EXCLUDED.start_time,
+            end_time = EXCLUDED.end_time,
+            timezone = EXCLUDED.timezone,
+            status = EXCLUDED.status,
+            sort_order = EXCLUDED.sort_order`,
+          [
+            updatedAction.id,
+            updatedAction.title,
+            updatedAction.note,
+            updatedAction.intention,
+            updatedAction.important,
+            updatedAction.energy,
+            JSON.stringify(updatedAction.duration),
+            updatedAction.scheduledDate,
+            updatedAction.startTime,
+            updatedAction.endTime,
+            updatedAction.timezone,
+            updatedAction.status,
+            updatedAction.createdAt,
+            updatedAction.sortOrder,
+          ]
+        );
+      }
+    }
+    await db.query("COMMIT");
+    if (channel) {
+      channel.postMessage({ type: "DB_UPDATED", entity: "actions" });
+    }
+  } catch (error) {
+    await db.query("ROLLBACK");
+    throw error;
+  }
+}
+
+export async function bulkCompleteActions(ids: string[]) {
+  await bulkPushEvents(ids.map(id => ({ id, type: EVENT_TYPES.ACTION_COMPLETED, payload: {} })));
+}
+
+export async function bulkActivateActions(ids: string[]) {
+  await bulkPushEvents(ids.map(id => ({ id, type: EVENT_TYPES.ACTION_ACTIVATED, payload: {} })));
+}
+
+export async function bulkAbandonActions(ids: string[]) {
+  await bulkPushEvents(ids.map(id => ({ id, type: EVENT_TYPES.ACTION_ABANDONED, payload: {} })));
+}
+
+export async function bulkUpdateActions(ids: string[], payload: Partial<ActionPayload>) {
+  await bulkPushEvents(ids.map(id => ({ id, type: EVENT_TYPES.ACTION_UPDATED, payload })));
+}
+
+export async function bulkStatusUpdateActions(updates: { id: string; status: ActionStatus }[]) {
+  const mapped = updates.map(({ id, status }) => {
+    let type: string = EVENT_TYPES.ACTION_ACTIVATED;
+    if (status === ACTION_STATUS.COMPLETED) {
+      type = EVENT_TYPES.ACTION_COMPLETED;
+    } else if (status === ACTION_STATUS.ABANDONED) {
+      type = EVENT_TYPES.ACTION_ABANDONED;
+    }
+    return { id, type, payload: {} };
+  });
+  await bulkPushEvents(mapped);
+}
+
+export async function bulkUpdateMultipleActions(updates: { id: string; payload: Partial<ActionPayload> }[]) {
+  await bulkPushEvents(updates.map(({ id, payload }) => ({ id, type: EVENT_TYPES.ACTION_UPDATED, payload })));
+}
+
 export async function getActions(filters?: {
   startDate?: string;
   endDate?: string;

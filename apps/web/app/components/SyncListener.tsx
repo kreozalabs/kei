@@ -6,17 +6,21 @@ export function SyncListener() {
 
   useEffect(() => {
     const channel = new BroadcastChannel("kei_db_sync");
+    let debounceTimeout: ReturnType<typeof setTimeout> | null = null;
 
     const handleMessage = (event: MessageEvent) => {
       const { type, entity } = event.data || {};
 
       if (type === "DB_UPDATED") {
-        console.log(`DB update broadcast received for ${entity || "all"}, invalidating queries...`);
-
-        // If no entity is specified (legacy/global) or it's "actions"
         if (!entity || entity === "actions") {
-          queryClient.invalidateQueries({ queryKey: ["actions"] });
-          queryClient.invalidateQueries({ queryKey: ["recent-configs"] });
+          if (debounceTimeout) {
+            clearTimeout(debounceTimeout);
+          }
+          debounceTimeout = setTimeout(() => {
+            console.log(`DB update broadcast received for ${entity || "all"}, invalidating queries (debounced)...`);
+            queryClient.invalidateQueries({ queryKey: ["actions"] });
+            queryClient.invalidateQueries({ queryKey: ["recent-configs"] });
+          }, 150);
         }
       }
     };
@@ -24,6 +28,9 @@ export function SyncListener() {
     channel.addEventListener("message", handleMessage);
 
     return () => {
+      if (debounceTimeout) {
+        clearTimeout(debounceTimeout);
+      }
       channel.removeEventListener("message", handleMessage);
       channel.close();
     };
