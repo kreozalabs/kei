@@ -336,15 +336,10 @@ export const ActionInput = forwardRef<ActionInputHandle, ActionInputProps>(
 
         const previousQueries = queryClient.getQueriesData<Action[]>({ queryKey: ["actions"] });
         if (actionToEdit) {
-          queryClient.setQueriesData<Action[]>(
-            { queryKey: ["actions"] },
-            (oldData) => {
-              if (!oldData) return [];
-              return oldData.map((a) =>
-                a.id === actionToEdit.id ? { ...a, ...payload } : a
-              );
-            }
-          );
+          queryClient.setQueriesData<Action[]>({ queryKey: ["actions"] }, (oldData) => {
+            if (!oldData) return [];
+            return oldData.map((a) => (a.id === actionToEdit.id ? { ...a, ...payload } : a));
+          });
         }
 
         // Reset the input state immediately for a fast responsive feel
@@ -364,7 +359,9 @@ export const ActionInput = forwardRef<ActionInputHandle, ActionInputProps>(
                   action: {
                     label: "Undo",
                     onClick: async () => {
-                      const revertedQueries = queryClient.getQueriesData<Action[]>({ queryKey: ["actions"] });
+                      const revertedQueries = queryClient.getQueriesData<Action[]>({
+                        queryKey: ["actions"],
+                      });
                       previousQueries.forEach(([queryKey, data]) => {
                         queryClient.setQueryData(queryKey, data);
                       });

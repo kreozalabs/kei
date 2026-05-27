@@ -308,7 +308,11 @@ export default function Dashboard() {
               if (!exists) {
                 const actionToRestore = allActions.find((a) => a.id === id);
                 if (actionToRestore) {
-                  nextData.unshift({ ...actionToRestore, ...updatedActionData, status: nextStatus });
+                  nextData.unshift({
+                    ...actionToRestore,
+                    ...updatedActionData,
+                    status: nextStatus,
+                  });
                 }
               }
             });
