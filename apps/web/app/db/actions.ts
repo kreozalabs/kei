@@ -279,19 +279,19 @@ async function bulkPushEvents(updates: { id: string; type: string; payload: Acti
 }
 
 export async function bulkCompleteActions(ids: string[]) {
-  await bulkPushEvents(ids.map(id => ({ id, type: EVENT_TYPES.ACTION_COMPLETED, payload: {} })));
+  await bulkPushEvents(ids.map((id) => ({ id, type: EVENT_TYPES.ACTION_COMPLETED, payload: {} })));
 }
 
 export async function bulkActivateActions(ids: string[]) {
-  await bulkPushEvents(ids.map(id => ({ id, type: EVENT_TYPES.ACTION_ACTIVATED, payload: {} })));
+  await bulkPushEvents(ids.map((id) => ({ id, type: EVENT_TYPES.ACTION_ACTIVATED, payload: {} })));
 }
 
 export async function bulkAbandonActions(ids: string[]) {
-  await bulkPushEvents(ids.map(id => ({ id, type: EVENT_TYPES.ACTION_ABANDONED, payload: {} })));
+  await bulkPushEvents(ids.map((id) => ({ id, type: EVENT_TYPES.ACTION_ABANDONED, payload: {} })));
 }
 
 export async function bulkUpdateActions(ids: string[], payload: Partial<ActionPayload>) {
-  await bulkPushEvents(ids.map(id => ({ id, type: EVENT_TYPES.ACTION_UPDATED, payload })));
+  await bulkPushEvents(ids.map((id) => ({ id, type: EVENT_TYPES.ACTION_UPDATED, payload })));
 }
 
 export async function bulkStatusUpdateActions(updates: { id: string; status: ActionStatus }[]) {
@@ -307,8 +307,12 @@ export async function bulkStatusUpdateActions(updates: { id: string; status: Act
   await bulkPushEvents(mapped);
 }
 
-export async function bulkUpdateMultipleActions(updates: { id: string; payload: Partial<ActionPayload> }[]) {
-  await bulkPushEvents(updates.map(({ id, payload }) => ({ id, type: EVENT_TYPES.ACTION_UPDATED, payload })));
+export async function bulkUpdateMultipleActions(
+  updates: { id: string; payload: Partial<ActionPayload> }[]
+) {
+  await bulkPushEvents(
+    updates.map(({ id, payload }) => ({ id, type: EVENT_TYPES.ACTION_UPDATED, payload }))
+  );
 }
 
 export async function getActions(filters?: {

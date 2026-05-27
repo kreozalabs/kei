@@ -664,10 +664,12 @@ export default function Dashboard() {
             activeWritesRef.current++;
             await queryClient.cancelQueries({ queryKey: ["actions"] });
             try {
-              await bulkStatusUpdateActions(selectedActions.map(sa => ({
-                id: sa.id,
-                status: sa.status
-              })));
+              await bulkStatusUpdateActions(
+                selectedActions.map((sa) => ({
+                  id: sa.id,
+                  status: sa.status,
+                }))
+              );
               toast.success("Reverted status changes");
             } catch (err) {
               console.error(err);
@@ -723,10 +725,12 @@ export default function Dashboard() {
             activeWritesRef.current++;
             await queryClient.cancelQueries({ queryKey: ["actions"] });
             try {
-              await bulkStatusUpdateActions(selectedActions.map(sa => ({
-                id: sa.id,
-                status: sa.status
-              })));
+              await bulkStatusUpdateActions(
+                selectedActions.map((sa) => ({
+                  id: sa.id,
+                  status: sa.status,
+                }))
+              );
               toast.success("Reverted status changes");
             } catch (err) {
               console.error(err);
@@ -782,10 +786,12 @@ export default function Dashboard() {
             activeWritesRef.current++;
             await queryClient.cancelQueries({ queryKey: ["actions"] });
             try {
-              await bulkStatusUpdateActions(selectedActions.map(sa => ({
-                id: sa.id,
-                status: sa.status
-              })));
+              await bulkStatusUpdateActions(
+                selectedActions.map((sa) => ({
+                  id: sa.id,
+                  status: sa.status,
+                }))
+              );
               toast.success("Reverted status changes");
             } catch (err) {
               console.error(err);
@@ -841,10 +847,12 @@ export default function Dashboard() {
             activeWritesRef.current++;
             await queryClient.cancelQueries({ queryKey: ["actions"] });
             try {
-              await bulkUpdateMultipleActions(selectedActions.map(sa => ({
-                id: sa.id,
-                payload: { scheduledDate: sa.scheduledDate }
-              })));
+              await bulkUpdateMultipleActions(
+                selectedActions.map((sa) => ({
+                  id: sa.id,
+                  payload: { scheduledDate: sa.scheduledDate },
+                }))
+              );
               toast.success("Reverted rescheduling");
             } catch (err) {
               console.error(err);

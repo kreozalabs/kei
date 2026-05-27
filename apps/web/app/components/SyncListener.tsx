@@ -13,18 +13,23 @@ export function SyncListener() {
 
       if (type === "DB_UPDATED") {
         if (!entity || entity === "actions") {
-          const activeWrites = typeof window !== "undefined"
-            ? (window as Window & { __activeWrites?: number }).__activeWrites
-            : undefined;
+          const activeWrites =
+            typeof window !== "undefined"
+              ? (window as Window & { __activeWrites?: number }).__activeWrites
+              : undefined;
           if (activeWrites && activeWrites > 0) {
-            console.log("Skipping sync-listener query invalidation because local writes are in progress");
+            console.log(
+              "Skipping sync-listener query invalidation because local writes are in progress"
+            );
             return;
           }
           if (debounceTimeout) {
             clearTimeout(debounceTimeout);
           }
           debounceTimeout = setTimeout(() => {
-            console.log(`DB update broadcast received for ${entity || "all"}, invalidating queries (debounced)...`);
+            console.log(
+              `DB update broadcast received for ${entity || "all"}, invalidating queries (debounced)...`
+            );
             queryClient.invalidateQueries({ queryKey: ["actions"] });
             queryClient.invalidateQueries({ queryKey: ["recent-configs"] });
           }, 150);
@@ -33,9 +38,10 @@ export function SyncListener() {
     };
 
     const handleBeforeUnload = (e: BeforeUnloadEvent) => {
-      const activeWrites = typeof window !== "undefined"
-        ? (window as Window & { __activeWrites?: number }).__activeWrites
-        : undefined;
+      const activeWrites =
+        typeof window !== "undefined"
+          ? (window as Window & { __activeWrites?: number }).__activeWrites
+          : undefined;
       if (activeWrites && activeWrites > 0) {
         e.preventDefault();
         e.returnValue = "Changes you made may not be saved.";
