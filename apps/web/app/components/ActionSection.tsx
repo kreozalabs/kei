@@ -5,9 +5,6 @@ import { useState, useEffect } from "react";
 import { ChevronDownIcon, PlusIcon } from "lucide-react";
 import { ActionInput } from "./action-input";
 import { AnimatePresence } from "framer-motion";
-
-import { SortableContext, verticalListSortingStrategy } from "@dnd-kit/sortable";
-import { useDroppable } from "@dnd-kit/core";
 import { ACTION_STATUS, STORAGE_KEYS } from "@/config/constants";
 import { useSettings } from "@/providers/SettingsContext";
 
@@ -26,6 +23,8 @@ interface ActionSectionProps {
   selectedActionIds?: Set<string>;
   onSelectToggle?: (id: string) => void;
   isBulkModeActive?: boolean;
+  onMoveUp?: (action: Action) => void;
+  onMoveDown?: (action: Action) => void;
 }
 
 export function ActionSection({
@@ -43,16 +42,10 @@ export function ActionSection({
   selectedActionIds,
   onSelectToggle,
   isBulkModeActive,
+  onMoveUp,
+  onMoveDown,
 }: ActionSectionProps) {
   const [isAdding, setIsAdding] = useState(false);
-  const { setNodeRef: setSectionRef, isOver } = useDroppable({
-    id: `section-${sectionDate}`,
-    data: {
-      type: "section",
-      date: sectionDate,
-    },
-  });
-
   const { settings } = useSettings();
   const [isExpanded, setIsExpanded] = useState(() => {
     if (typeof window !== "undefined" && settings.remember_layout_on_refresh) {
@@ -136,44 +129,49 @@ export function ActionSection({
             </div>
           )}
 
-          <div
-            ref={setSectionRef}
-            className={cn(
-              "flex flex-col min-h-12 rounded-xl border border-dashed transition-all p-1",
-              isOver
-                ? "bg-primary/5 border-primary/40 ring-1 ring-primary/10"
-                : "bg-muted/5 border-transparent hover:border-border/50"
-            )}
-          >
-            <SortableContext
-              items={actions.map((a) => a.id)}
-              strategy={verticalListSortingStrategy}
-            >
-              <div className="flex flex-col min-h-5">
-                <AnimatePresence initial={false}>
-                  {actions.map((action) => (
-                    <ActionItem
-                      key={action.id}
-                      action={action}
-                      type={action.status}
-                      onComplete={onComplete ?? (() => {})}
-                      onAbandon={onAbandon ?? (() => {})}
-                      onEdit={onEdit ?? (() => {})}
-                      onReactivate={onReactivate}
-                      onDeletePermanently={onDeletePermanently}
-                      isSelected={selectedActionIds?.has(action.id)}
-                      onSelectToggle={onSelectToggle}
-                      isBulkModeActive={isBulkModeActive}
-                    />
-                  ))}
-                </AnimatePresence>
-                {actions.length === 0 && (
-                  <div className="text-[11px] font-medium text-muted-foreground/30 p-3 text-center border border-dashed border-border/20 rounded-lg mx-1 mb-1">
-                    No actions for this day
-                  </div>
-                )}
-              </div>
-            </SortableContext>
+          <div className="flex flex-col min-h-12 rounded-xl border border-dashed transition-all p-1 bg-muted/5 border-transparent hover:border-border/50">
+            <div className="flex flex-col min-h-5">
+              <AnimatePresence initial={false}>
+                {(() => {
+                  let activeCount = 0;
+                  const activeActions = actions.filter((a) => a.status === ACTION_STATUS.ACTIVE);
+                  const totalActiveCount = activeActions.length;
+
+                  return actions.map((action) => {
+                    const isActive = action.status === ACTION_STATUS.ACTIVE;
+                    if (isActive) {
+                      activeCount++;
+                    }
+
+                    return (
+                      <ActionItem
+                        key={action.id}
+                        action={action}
+                        type={action.status}
+                        index={isActive ? activeCount : undefined}
+                        onComplete={onComplete ?? (() => {})}
+                        onAbandon={onAbandon ?? (() => {})}
+                        onEdit={onEdit ?? (() => {})}
+                        onReactivate={onReactivate}
+                        onDeletePermanently={onDeletePermanently}
+                        isSelected={selectedActionIds?.has(action.id)}
+                        onSelectToggle={onSelectToggle}
+                        isBulkModeActive={isBulkModeActive}
+                        onMoveUp={onMoveUp}
+                        onMoveDown={onMoveDown}
+                        isFirstActive={isActive && activeCount === 1}
+                        isLastActive={isActive && activeCount === totalActiveCount}
+                      />
+                    );
+                  });
+                })()}
+              </AnimatePresence>
+              {actions.length === 0 && (
+                <div className="text-[11px] font-medium text-muted-foreground/30 p-3 text-center border border-dashed border-border/20 rounded-lg mx-1 mb-1">
+                  No actions for this day
+                </div>
+              )}
+            </div>
           </div>
         </div>
       </div>

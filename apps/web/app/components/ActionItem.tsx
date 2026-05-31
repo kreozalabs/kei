@@ -5,7 +5,8 @@ import {
   CheckCircle2Icon,
   CalendarIcon,
   Star,
-  GripVertical,
+  ChevronUp,
+  ChevronDown,
   Clock,
   RotateCcw,
   PencilIcon,
@@ -22,8 +23,6 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
 } from "@kreozalabs/ui";
-import { useSortable } from "@dnd-kit/sortable";
-import { CSS } from "@dnd-kit/utilities";
 import { NextDayBadge } from "./NextDayBadge";
 import { useSettings } from "../providers/SettingsContext";
 import { formatTime } from "../utils/time";
@@ -49,6 +48,11 @@ interface ActionItemProps {
   isSelected?: boolean;
   onSelectToggle?: (id: string) => void;
   isBulkModeActive?: boolean;
+  index?: number;
+  onMoveUp?: (action: Action) => void;
+  onMoveDown?: (action: Action) => void;
+  isFirstActive?: boolean;
+  isLastActive?: boolean;
 }
 
 export function ActionItem({
@@ -62,18 +66,14 @@ export function ActionItem({
   isSelected = false,
   onSelectToggle,
   isBulkModeActive = false,
+  index,
+  onMoveUp,
+  onMoveDown,
+  isFirstActive = false,
+  isLastActive = false,
 }: ActionItemProps) {
-  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
-    id: action.id,
-    disabled: type === ACTION_STATUS.COMPLETED || type === ACTION_STATUS.ABANDONED,
-  });
   const { settings } = useSettings();
   const timeFormat = settings.time_format;
-
-  const style = {
-    transform: CSS.Translate.toString(transform),
-    transition,
-  };
 
   const energyConfig = ENERGY_OPTIONS.find((opt) => opt.value === action.energy?.toLowerCase());
   const intentionConfig =
@@ -83,8 +83,6 @@ export function ActionItem({
 
   return (
     <motion.div
-      ref={setNodeRef}
-      style={style}
       layout
       initial={{ opacity: 0, height: 0, y: -10 }}
       animate={{
@@ -107,20 +105,38 @@ export function ActionItem({
           ? "opacity-50"
           : type === ACTION_STATUS.ABANDONED
             ? "opacity-45 italic bg-rose-500/1"
-            : "hover:bg-muted/10",
-        isDragging &&
-          "opacity-50 z-50 bg-background shadow-lg rounded-lg border-2 border-primary/20"
+            : "hover:bg-muted/10"
       )}
     >
-      {/* Drag Handle */}
+      {/* Reorder Arrows */}
       {type === ACTION_STATUS.ACTIVE && (
-        <div
-          {...attributes}
-          {...listeners}
-          className="mt-0.5 opacity-0 group-hover:opacity-100 cursor-grab active:cursor-grabbing p-0.5 -ml-1.5 text-muted-foreground/30 hover:text-muted-foreground/60 transition-all shrink-0"
-          title="Drag to reorder"
-        >
-          <GripVertical className="size-3.5" />
+        <div className="flex flex-col items-center gap-0.5 mr-1 opacity-0 group-hover:opacity-100 transition-opacity shrink-0">
+          <Button
+            variant="ghost"
+            size="icon-xs"
+            onClick={(e) => {
+              e.stopPropagation();
+              onMoveUp?.(action);
+            }}
+            disabled={isFirstActive}
+            className="size-5 text-muted-foreground/50 hover:text-primary hover:bg-primary/10 disabled:opacity-0 rounded-md transition-all active:scale-90"
+            title="Move up"
+          >
+            <ChevronUp className="size-3.5" />
+          </Button>
+          <Button
+            variant="ghost"
+            size="icon-xs"
+            onClick={(e) => {
+              e.stopPropagation();
+              onMoveDown?.(action);
+            }}
+            disabled={isLastActive}
+            className="size-5 text-muted-foreground/50 hover:text-primary hover:bg-primary/10 disabled:opacity-0 rounded-md transition-all active:scale-90"
+            title="Move down"
+          >
+            <ChevronDown className="size-3.5" />
+          </Button>
         </div>
       )}
 
@@ -216,6 +232,11 @@ export function ActionItem({
                       : "text-foreground"
                 )}
               >
+                {index !== undefined && (
+                  <span className="text-[11px] font-bold text-muted-foreground/40 tabular-nums mr-1.5 select-none inline-block w-4">
+                    {index}
+                  </span>
+                )}
                 {action.title}
                 {/* Strike-through line */}
                 <div

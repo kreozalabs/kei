@@ -6,7 +6,6 @@ import { HeaderSearch, HeaderNewAction } from "@/components/layout/AppHeader";
 import { useDb } from "@/providers/DbContext";
 import {
   getActions,
-  updateAction,
   completeAction,
   activateAction,
   abandonAction,
@@ -59,21 +58,9 @@ declare global {
   }
 }
 import { ActionSection } from "@/components/ActionSection";
-import { ActionItem } from "@/components/ActionItem";
 import { ActionInputDialog } from "@/components/ActionInputDialog";
 import { TimelineCalendar } from "@/components/TimelineCalendar";
 import { ActionSectionSkeleton } from "@/components/ActionSkeleton";
-import {
-  DndContext,
-  closestCenter,
-  PointerSensor,
-  useSensor,
-  useSensors,
-  DragOverlay,
-  type DragEndEvent,
-  type DragStartEvent,
-  type DragOverEvent,
-} from "@dnd-kit/core";
 import { useSettings } from "@/providers/SettingsContext";
 import { STORAGE_KEYS, ACTION_STATUS, TIME } from "@/config/constants";
 
@@ -107,7 +94,6 @@ export default function Dashboard() {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [dialogPreDate, setDialogPreDate] = useState<string | null>(null);
   const [actionToEdit, setActionToEdit] = useState<Action | null>(null);
-  const [activeId, setActiveId] = useState<string | null>(null);
   const activeWritesRef = useRef(0);
 
   useMemo(() => {
@@ -126,14 +112,6 @@ export default function Dashboard() {
       configurable: true,
     });
   }, []);
-
-  const sensors = useSensors(
-    useSensor(PointerSensor, {
-      activationConstraint: {
-        distance: 8,
-      },
-    })
-  );
 
   useEffect(() => {
     window.sessionStorage.setItem(STORAGE_KEYS.SESSION.TIMELINE_LOCKED, String(isTodayLocked));
@@ -906,14 +884,7 @@ export default function Dashboard() {
       if (isACompletedOrAbandoned && !isBCompletedOrAbandoned) return 1;
       if (!isACompletedOrAbandoned && isBCompletedOrAbandoned) return -1;
 
-      // For active items, sort by time if both have it
-      if (a.startTime && b.startTime) {
-        const timeCompare = a.startTime.localeCompare(b.startTime);
-        if (timeCompare !== 0) return timeCompare;
-      } else if (a.startTime) return -1;
-      else if (b.startTime) return 1;
-
-      // Default fallback to sortOrder
+      // Sort strictly by sortOrder descending (larger values at the top)
       return b.sortOrder - a.sortOrder;
     };
 
@@ -973,124 +944,34 @@ export default function Dashboard() {
     return { overdueActions: overdue, daySections: sections };
   }, [allActions, selectedDate, isTodayLocked, todayStr]);
 
-  const handleDragStart = (event: DragStartEvent) => {
-    setActiveId(event.active.id as string);
-  };
+  const handleMoveAction = async (action: Action, direction: "up" | "down") => {
+    // 1. Get all active actions for the same day, sorted descending by sortOrder
+    const actionsInDay = allActions
+      .filter((a) => a.scheduledDate === action.scheduledDate && a.status === ACTION_STATUS.ACTIVE)
+      .sort((a, b) => b.sortOrder - a.sortOrder);
 
-  const handleDragOver = (event: DragOverEvent) => {
-    const { active, over } = event;
-    if (!over) return;
+    const idx = actionsInDay.findIndex((a) => a.id === action.id);
+    if (idx === -1) return;
 
-    const activeId = active.id as string;
-    const overId = over.id as string;
+    const targetIdx = direction === "up" ? idx - 1 : idx + 1;
+    if (targetIdx < 0 || targetIdx >= actionsInDay.length) return;
 
-    if (activeId === overId) return;
+    const targetAction = actionsInDay[targetIdx];
 
-    const activeAction = allActions.find((a) => a.id === activeId);
-    if (!activeAction) return;
+    // Swap sortOrder
+    const currentOrder = action.sortOrder;
+    const targetOrder = targetAction.sortOrder;
 
-    // Find target section/group
-    let targetDate: string | undefined;
-
-    const overAction = allActions.find((a) => a.id === overId);
-    if (overAction) {
-      targetDate = overAction.scheduledDate;
-    } else {
-      const overData = over.data.current;
-      if (overData && overData.type === "section" && overData.date) {
-        targetDate = overData.date;
-      } else if (overId.startsWith("section-")) {
-        targetDate = overId.replace("section-", "");
-      }
-    }
-
-    if (!targetDate) return;
-
-    // If section changed, update UI state optimistically
-    const isDifferentSection = activeAction.scheduledDate !== targetDate;
-
-    if (isDifferentSection) {
-      queryClient.setQueriesData<Action[]>({ queryKey: ["actions"] }, (oldData) => {
-        if (!oldData) return [];
-        return oldData.map((a) => (a.id === activeId ? { ...a, scheduledDate: targetDate! } : a));
-      });
-    }
-  };
-
-  const handleDragEnd = async (event: DragEndEvent) => {
-    setActiveId(null);
-    const { active, over } = event;
-    if (!over) return;
-
-    const activeId = active.id as string;
-    const overId = over.id as string;
-
-    if (activeId === overId) return;
-
-    const activeAction = allActions.find((a) => a.id === activeId);
-    if (!activeAction) return;
-
-    let targetDate: string | undefined;
-    const overAction = allActions.find((a) => a.id === overId);
-
-    if (overAction) {
-      targetDate = overAction.scheduledDate;
-    } else {
-      // Check if we dropped on a section area
-      const overData = over.data.current;
-      if (overData && overData.type === "section" && overData.date) {
-        targetDate = overData.date;
-      } else if (overId.startsWith("section-")) {
-        targetDate = overId.replace("section-", "");
-      }
-    }
-
-    if (!targetDate) return;
-
-    // Keep original times, only adoption logic removed to avoid data loss/confusion
-    const newStartTime = activeAction.startTime;
-    const newEndTime = activeAction.endTime;
-
-    // Calculate new sortOrder
-    const actionsInTargetDay = allActions
-      .filter(
-        (a) =>
-          a.scheduledDate === targetDate && a.status === ACTION_STATUS.ACTIVE && a.id !== activeId
-      )
-      .sort((a, b) => {
-        if (a.startTime && b.startTime) {
-          const timeCompare = a.startTime.localeCompare(b.startTime);
-          if (timeCompare !== 0) return timeCompare;
-        } else if (a.startTime) return -1;
-        else if (b.startTime) return 1;
-        return b.sortOrder - a.sortOrder;
-      });
-
-    let newSortOrder: number;
-
-    if (overAction) {
-      const overIndex = actionsInTargetDay.findIndex((a) => a.id === overId);
-
-      if (overIndex === 0) {
-        // Dropped at the very top
-        newSortOrder = actionsInTargetDay[0].sortOrder + 10000;
-      } else if (overIndex === -1) {
-        // Dropped on an item that somehow isn't in filtered list
-        newSortOrder = Date.now();
+    // Handle identical sortOrders (e.g. if both have default timestamp) to ensure strict order difference
+    let finalCurrentOrder = targetOrder;
+    let finalTargetOrder = currentOrder;
+    if (currentOrder === targetOrder) {
+      if (direction === "up") {
+        finalCurrentOrder = currentOrder + 1;
+        finalTargetOrder = currentOrder - 1;
       } else {
-        // Dropped between two items OR at the end
-        // If overIndex is last, we still put it "above" the overAction with this logic
-        const prevItem = actionsInTargetDay[overIndex - 1];
-        const nextItem = actionsInTargetDay[overIndex];
-        newSortOrder = (prevItem.sortOrder + nextItem.sortOrder) / 2;
-      }
-    } else {
-      // Dropped on an empty section or section header
-      if (actionsInTargetDay.length > 0) {
-        // Drop at the top of the section by default when dropping on header
-        newSortOrder = actionsInTargetDay[0].sortOrder + 10000;
-      } else {
-        newSortOrder = Date.now();
+        finalCurrentOrder = currentOrder - 1;
+        finalTargetOrder = currentOrder + 1;
       }
     }
 
@@ -1099,34 +980,35 @@ export default function Dashboard() {
 
     queryClient.setQueriesData<Action[]>({ queryKey: ["actions"] }, (oldData) => {
       if (!oldData) return [];
-      return oldData.map((a) =>
-        a.id === activeId
-          ? {
-              ...a,
-              scheduledDate: targetDate!,
-              sortOrder: newSortOrder,
-              startTime: newStartTime,
-              endTime: newEndTime,
-            }
-          : a
-      );
+      return oldData.map((a) => {
+        if (a.id === action.id) {
+          return { ...a, sortOrder: finalCurrentOrder };
+        }
+        if (a.id === targetAction.id) {
+          return { ...a, sortOrder: finalTargetOrder };
+        }
+        return a;
+      });
     });
 
+    activeWritesRef.current++;
+    await queryClient.cancelQueries({ queryKey: ["actions"] });
     try {
-      await updateAction(activeId, {
-        scheduledDate: targetDate,
-        sortOrder: newSortOrder,
-        startTime: newStartTime,
-        endTime: newEndTime,
-      });
-      // Optional: invalidate to make sure we are in sync with any other changes
-      queryClient.invalidateQueries({ queryKey: ["actions"] });
+      await bulkUpdateMultipleActions([
+        { id: action.id, payload: { sortOrder: finalCurrentOrder } },
+        { id: targetAction.id, payload: { sortOrder: finalTargetOrder } },
+      ]);
     } catch (error) {
-      console.error("Failed to update action order:", error);
-      // Rollback on error
+      console.error(`Failed to move action ${direction}:`, error);
       previousQueries.forEach(([queryKey, data]) => {
         queryClient.setQueryData(queryKey, data);
       });
+      toast.error(`Failed to move action ${direction}`);
+    } finally {
+      activeWritesRef.current--;
+      if (activeWritesRef.current === 0) {
+        queryClient.invalidateQueries({ queryKey: ["actions"] });
+      }
     }
   };
 
@@ -1145,96 +1027,78 @@ export default function Dashboard() {
   }
 
   return (
-    <DndContext
-      sensors={sensors}
-      collisionDetection={closestCenter}
-      onDragStart={handleDragStart}
-      onDragOver={handleDragOver}
-      onDragEnd={handleDragEnd}
-    >
-      <div className="max-w-3xl mx-auto px-2 sm:px-0 mt-2">
-        {!isTodayLocked && (
-          <TimelineCalendar selectedDate={selectedDate} onDateSelect={setSelectedDate} />
+    <div className="max-w-3xl mx-auto px-2 sm:px-0 mt-2">
+      {!isTodayLocked && (
+        <TimelineCalendar selectedDate={selectedDate} onDateSelect={setSelectedDate} />
+      )}
+      {overdueActions.length > 0 && !isTodayLocked && selectedDate <= todayStr && (
+        <ActionSection
+          id="overdue"
+          sectionTitle="Overdue"
+          actions={overdueActions}
+          isTodayLocked={isTodayLocked}
+          onComplete={handleComplete}
+          onAbandon={handleAbandon}
+          onEdit={handleEdit}
+          onReactivate={handleReactivate}
+          onDeletePermanently={handleDeletePermanently}
+          sectionDate={todayStr}
+          defaultExpanded={settings.show_overdue}
+          selectedActionIds={visibleSelectedActionIds}
+          onSelectToggle={handleSelectToggle}
+          isBulkModeActive={isBulkModeActive}
+          onMoveUp={(action) => handleMoveAction(action, "up")}
+          onMoveDown={(action) => handleMoveAction(action, "down")}
+        />
+      )}
+
+      {/* Daily Sections */}
+      <AnimatePresence mode="wait">
+        {!isDbReady ? (
+          <motion.div
+            key="skeleton"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.15 }}
+            className="space-y-6"
+          >
+            <ActionSectionSkeleton />
+            <ActionSectionSkeleton />
+          </motion.div>
+        ) : (
+          <motion.div
+            key="content"
+            initial={{ opacity: 0, y: 15 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.35, ease: "easeOut" }}
+            className="space-y-6"
+          >
+            {daySections.map((section) => (
+              <ActionSection
+                key={section.id}
+                id={`date-${section.id}`}
+                sectionTitle={section.title}
+                actions={section.actions}
+                isTodayLocked={isTodayLocked}
+                onComplete={handleComplete}
+                onAbandon={handleAbandon}
+                onEdit={handleEdit}
+                onReactivate={handleReactivate}
+                onDeletePermanently={handleDeletePermanently}
+                sectionDate={section.date}
+                selectedActionIds={visibleSelectedActionIds}
+                onSelectToggle={handleSelectToggle}
+                isBulkModeActive={isBulkModeActive}
+                onMoveUp={(action) => handleMoveAction(action, "up")}
+                onMoveDown={(action) => handleMoveAction(action, "down")}
+              />
+            ))}
+          </motion.div>
         )}
-        {overdueActions.length > 0 && !isTodayLocked && selectedDate <= todayStr && (
-          <ActionSection
-            id="overdue"
-            sectionTitle="Overdue"
-            actions={overdueActions}
-            isTodayLocked={isTodayLocked}
-            onComplete={handleComplete}
-            onAbandon={handleAbandon}
-            onEdit={handleEdit}
-            onReactivate={handleReactivate}
-            onDeletePermanently={handleDeletePermanently}
-            sectionDate={todayStr}
-            defaultExpanded={settings.show_overdue}
-            selectedActionIds={visibleSelectedActionIds}
-            onSelectToggle={handleSelectToggle}
-            isBulkModeActive={isBulkModeActive}
-          />
-        )}
+      </AnimatePresence>
 
-        {/* Daily Sections */}
-        <AnimatePresence mode="wait">
-          {!isDbReady ? (
-            <motion.div
-              key="skeleton"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.15 }}
-              className="space-y-6"
-            >
-              <ActionSectionSkeleton />
-              <ActionSectionSkeleton />
-            </motion.div>
-          ) : (
-            <motion.div
-              key="content"
-              initial={{ opacity: 0, y: 15 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.35, ease: "easeOut" }}
-              className="space-y-6"
-            >
-              {daySections.map((section) => (
-                <ActionSection
-                  key={section.id}
-                  id={`date-${section.id}`}
-                  sectionTitle={section.title}
-                  actions={section.actions}
-                  isTodayLocked={isTodayLocked}
-                  onComplete={handleComplete}
-                  onAbandon={handleAbandon}
-                  onEdit={handleEdit}
-                  onReactivate={handleReactivate}
-                  onDeletePermanently={handleDeletePermanently}
-                  sectionDate={section.date}
-                  selectedActionIds={visibleSelectedActionIds}
-                  onSelectToggle={handleSelectToggle}
-                  isBulkModeActive={isBulkModeActive}
-                />
-              ))}
-            </motion.div>
-          )}
-        </AnimatePresence>
-
-        <div className="h-24 md:h-8" />
-      </div>
-
-      <DragOverlay dropAnimation={null}>
-        {activeId ? (
-          <div className="opacity-80 scale-105 shadow-2xl rounded-xl border-2 border-primary/20 bg-background/50 backdrop-blur-md overflow-hidden pointer-events-none">
-            <ActionItem
-              action={allActions.find((a) => a.id === activeId)!}
-              type={ACTION_STATUS.ACTIVE}
-              onComplete={() => {}}
-              onAbandon={() => {}}
-              onEdit={() => {}}
-            />
-          </div>
-        ) : null}
-      </DragOverlay>
+      <div className="h-24 md:h-8" />
 
       {/* Status Alert */}
       {!isDbReady && (
@@ -1358,6 +1222,6 @@ export default function Dashboard() {
           </motion.div>
         )}
       </AnimatePresence>
-    </DndContext>
+    </div>
   );
 }
