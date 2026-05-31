@@ -129,9 +129,7 @@ export function ActionSection({
             </div>
           )}
 
-          <div
-            className="flex flex-col min-h-12 rounded-xl border border-dashed transition-all p-1 bg-muted/5 border-transparent hover:border-border/50"
-          >
+          <div className="flex flex-col min-h-12 rounded-xl border border-dashed transition-all p-1 bg-muted/5 border-transparent hover:border-border/50">
             <div className="flex flex-col min-h-5">
               <AnimatePresence initial={false}>
                 {(() => {
