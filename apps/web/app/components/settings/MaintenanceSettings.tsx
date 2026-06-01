@@ -78,18 +78,35 @@ export function MaintenanceSettings() {
     setIsImporting(true);
     try {
       const text = await file.text();
-      const parsed = JSON.parse(text);
+      let parsed;
+      try {
+        parsed = JSON.parse(text);
+      } catch {
+        throw new Error("Invalid JSON: The uploaded file is not a valid JSON document.");
+      }
+
       const eventsList = Array.isArray(parsed) ? parsed : parsed?.events;
 
       if (!eventsList || !Array.isArray(eventsList)) {
-        throw new Error("Invalid backup file: could not find event logs.");
+        throw new Error("Invalid backup file: Could not locate event logs array.");
       }
 
-      await importEvents(eventsList);
+      const actualImportedCount = await importEvents(eventsList);
 
-      toast.success("Data imported successfully", {
-        description: `Imported and synchronized ${eventsList.length} events.`,
-      });
+      if (actualImportedCount === 0) {
+        toast.info("Database up to date", {
+          description: "All events in the backup are already present in your local database.",
+        });
+      } else {
+        toast.success("Data imported successfully", {
+          description: `Successfully restored and rebuilt ${actualImportedCount} events. Refreshing...`,
+        });
+
+        // Clean reload to ensure all cached React states and DB connections are completely pristine
+        setTimeout(() => {
+          window.location.reload();
+        }, 1500);
+      }
 
       if (fileInputRef.current) {
         fileInputRef.current.value = "";

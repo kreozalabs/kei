@@ -32,30 +32,49 @@ export async function exportEvents(): Promise<Event[]> {
 }
 
 /**
- * Idempotently imports a list of events into the events table, rebuilds projections, and broadcasts a reload.
+ * Processes a batch of events and returns the count of newly inserted events.
+ * Events are inserted using a single SQL transaction with ON CONFLICT DO NOTHING to ensure idempotency.
  */
-export async function importEvents(events: Event[]): Promise<void> {
+export async function importEvents(events: Event[]): Promise<number> {
   if (!Array.isArray(events)) {
     throw new Error("Invalid backup format: data is not a list of events.");
   }
 
+  const validEvents = events.filter((e) => e.eventId && e.id && e.type && e.timestamp);
+
+  if (validEvents.length === 0) {
+    return 0;
+  }
+
+  const chunkSize = 100;
+  let importedCount = 0;
+
   await db.query("BEGIN");
   try {
-    for (const event of events) {
-      if (!event.eventId || !event.id || !event.type || !event.timestamp) {
-        console.warn("Skipping malformed event during import:", event);
-        continue;
+    for (let i = 0; i < validEvents.length; i += chunkSize) {
+      const chunk = validEvents.slice(i, i + chunkSize);
+      const valueStrings: string[] = [];
+      const values: unknown[] = [];
+      let paramIdx = 1;
+
+      for (const event of chunk) {
+        valueStrings.push(
+          `($${paramIdx++}, $${paramIdx++}, $${paramIdx++}, $${paramIdx++}, $${paramIdx++})`
+        );
+        const payloadString =
+          typeof event.payload === "string" ? event.payload : JSON.stringify(event.payload);
+
+        values.push(event.eventId, event.id, event.type, event.timestamp, payloadString);
+        importedCount++;
       }
 
-      const payloadString =
-        typeof event.payload === "string" ? event.payload : JSON.stringify(event.payload);
+      const insertQuery = `
+        INSERT INTO events (event_id, id, type, timestamp, payload)
+        VALUES ${valueStrings.join(", ")}
+        ON CONFLICT (event_id) DO NOTHING
+      `;
 
-      await db.query(
-        `INSERT INTO events (event_id, id, type, timestamp, payload)
-         VALUES ($1, $2, $3, $4, $5)
-         ON CONFLICT (event_id) DO NOTHING`,
-        [event.eventId, event.id, event.type, event.timestamp, payloadString]
-      );
+      await db.query(insertQuery, values);
     }
     await db.query("COMMIT");
 
@@ -69,6 +88,8 @@ export async function importEvents(events: Event[]): Promise<void> {
       channel.postMessage({ type: "DB_UPDATED", entity: "actions" });
       channel.postMessage({ type: "DB_UPDATED", entity: "settings" });
     }
+
+    return importedCount;
   } catch (error) {
     await db.query("ROLLBACK");
     throw error;
