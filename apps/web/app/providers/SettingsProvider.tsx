@@ -36,20 +36,19 @@ export function SettingsProvider({
     key: K,
     valueOrFn: Settings[K] | ((prev: Settings[K]) => Settings[K])
   ) => {
-    setSettingsState((prev) => {
-      const newValue =
-        typeof valueOrFn === "function"
-          ? (valueOrFn as (prev: Settings[K]) => Settings[K])(prev[key])
-          : valueOrFn;
+    const newValue =
+      typeof valueOrFn === "function"
+        ? (valueOrFn as (prev: Settings[K]) => Settings[K])(settings[key])
+        : valueOrFn;
 
-      const newSettings = { ...prev, [key]: newValue };
-      localStorage.setItem(storageKey, JSON.stringify(newSettings));
+    const newSettings = { ...settings, [key]: newValue };
 
-      // Persist to DB asynchronously
-      initPromise.then(() => setSetting(key, newValue));
+    // 1. Update React state
+    setSettingsState(newSettings);
 
-      return newSettings;
-    });
+    // 2. Perform side-effects cleanly exactly once
+    localStorage.setItem(storageKey, JSON.stringify(newSettings));
+    initPromise.then(() => setSetting(key, newValue));
   };
 
   useEffect(() => {
