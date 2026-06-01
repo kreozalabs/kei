@@ -26,7 +26,9 @@ export async function persistEvent<T>(
 
   return event;
 }
-
+// FIXME: Rename function to `getEventsForEntity(entityId: string)`.
+// Actually, this function just gets all events for a given entity.
+// The name `getActionEvents` is misleading.
 export async function getActionEvents(actionId: string): Promise<Event[]> {
   const result = await db.query("SELECT * FROM events WHERE id = $1 ORDER BY timestamp ASC", [
     actionId,
