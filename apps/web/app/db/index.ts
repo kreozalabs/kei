@@ -1,6 +1,6 @@
 import { DEFAULT_SETTINGS } from "@/config/constants";
 import { PGliteWorker } from "@electric-sql/pglite/worker";
-import { getOrCreateDeviceIdentity } from "./events";
+import { getOrCreateDeviceIdentity } from "@/utils/device";
 
 export const db =
   typeof window !== "undefined"
@@ -10,29 +10,6 @@ export const db =
         })
       )
     : (null as unknown as PGliteWorker);
-
-/**
- * Ensures a column exists in a table without dropping or recreating it.
- * This is the preferred way to perform additive schema migrations while
- * preserving existing data.
- */
-
-export async function ensureColumn(tableName: string, columnName: string, columnDef: string) {
-  if (!db) return;
-  const result = await db.query(
-    `
-    SELECT column_name 
-    FROM information_schema.columns 
-    WHERE table_name = $1 AND column_name = $2
-  `,
-    [tableName, columnName]
-  );
-
-  if (result.rows.length === 0) {
-    console.log(`Adding column ${columnName} to table ${tableName}...`);
-    await db.exec(`ALTER TABLE ${tableName} ADD COLUMN ${columnName} ${columnDef}`);
-  }
-}
 
 // Initialize some tables if needed
 async function runMigrations() {
@@ -72,39 +49,39 @@ async function runMigrations() {
     }
 
     // 2. Additive Migrations for other tables
-    // Use ensureColumn to add new fields to existing tables without data loss.
-    await ensureColumn("events", "origin_device_id", "TEXT");
-    await ensureColumn("events", "sequence_number", "BIGINT");
+    // We use native ALTER TABLE ADD COLUMN IF NOT EXISTS for atomic, bulletproof execution
     await db.exec(`
+      ALTER TABLE events ADD COLUMN IF NOT EXISTS origin_device_id TEXT;
+      ALTER TABLE events ADD COLUMN IF NOT EXISTS sequence_number BIGINT;
       CREATE UNIQUE INDEX IF NOT EXISTS idx_device_sequence 
-      ON events (origin_device_id, sequence_number)
+      ON events (origin_device_id, sequence_number);
     `);
 
     // 3. Backfill legacy events with default device identity and monotonic sequences
     const legacyEvents = await db.query(
-      "SELECT event_id FROM events WHERE origin_device_id IS NULL ORDER BY timestamp ASC"
+      "SELECT event_id FROM events WHERE origin_device_id IS NULL LIMIT 1"
     );
 
     if (legacyEvents.rows.length > 0) {
-      console.log(`Backfilling ${legacyEvents.rows.length} legacy events with device identity...`);
-      const localId = await getOrCreateDeviceIdentity();
+      console.log("Backfilling legacy events with device identity...");
+      const localId = getOrCreateDeviceIdentity();
 
-      await db.query("BEGIN");
-      try {
-        let seq = 1;
-        for (const row of legacyEvents.rows) {
-          const r = row as Record<string, unknown>;
-          await db.query(
-            "UPDATE events SET origin_device_id = $1, sequence_number = $2 WHERE event_id = $3",
-            [localId, seq++, r.event_id]
-          );
-        }
-        await db.query("COMMIT");
-        console.log("Backfill complete.");
-      } catch (err) {
-        await db.query("ROLLBACK");
-        console.error("Backfill failed:", err);
-      }
+      await db.query(
+        `
+        WITH numbered_events AS (
+          SELECT event_id, ROW_NUMBER() OVER (ORDER BY timestamp ASC) as seq
+          FROM events
+          WHERE origin_device_id IS NULL
+        )
+        UPDATE events
+        SET origin_device_id = $1,
+            sequence_number = numbered_events.seq
+        FROM numbered_events
+        WHERE events.event_id = numbered_events.event_id
+      `,
+        [localId]
+      );
+      console.log("Backfill complete.");
     }
   } catch (e) {
     console.error("Migration check failed:", e);
@@ -123,9 +100,6 @@ async function ensureSchema() {
       origin_device_id TEXT,
       sequence_number BIGINT
     );
-
-    CREATE UNIQUE INDEX IF NOT EXISTS idx_device_sequence 
-    ON events (origin_device_id, sequence_number);
 
     CREATE TABLE IF NOT EXISTS settings (
       key TEXT PRIMARY KEY,

@@ -1,22 +1,9 @@
 import { db } from "./index";
 import { v7 as uuidv7 } from "uuid";
 import type { Event, EventType } from "../types/events";
+import { getOrCreateDeviceIdentity } from "@/utils/device";
 
 let localSequenceCounter: number | null = null;
-
-/**
- * Returns the client-side device identifier stored in localStorage (or creates one).
- */
-export function getOrCreateDeviceIdentity(): string {
-  if (typeof window === "undefined") return "server";
-
-  let deviceId = localStorage.getItem("kei_device_id");
-  if (!deviceId) {
-    deviceId = `kei-device-${crypto.randomUUID().slice(0, 8)}`;
-    localStorage.setItem("kei_device_id", deviceId);
-  }
-  return deviceId;
-}
 
 /**
  * Returns the next monotonic sequence number for a device, querying max from DB if not cached.

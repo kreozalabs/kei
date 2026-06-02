@@ -15,9 +15,10 @@ import "./index.css";
 import { QueryProvider } from "./providers/QueryProvider";
 import { SettingsProvider } from "./providers/SettingsProvider";
 import { DbProvider } from "./providers/DbProvider";
+import { P2PProvider } from "./providers/P2PProvider";
 import { STORAGE_KEYS } from "./config/constants";
 import { ErrorPage } from "./components/ErrorPage";
-
+ 
 export function Layout({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     if (typeof window !== "undefined") {
@@ -54,7 +55,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
       });
     }
   }, []);
-
+ 
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
@@ -77,15 +78,17 @@ export function Layout({ children }: { children: React.ReactNode }) {
       </head>
       <body suppressHydrationWarning>
         <DbProvider>
-          <SettingsProvider storageKey={STORAGE_KEYS.SETTINGS}>
-            {children}
-            <Toaster
-              position="bottom-right"
-              toastOptions={{
-                className: "rounded-2xl border-border bg-background text-foreground shadow-lg",
-              }}
-            />
-          </SettingsProvider>
+          <P2PProvider>
+            <SettingsProvider storageKey={STORAGE_KEYS.SETTINGS}>
+              {children}
+              <Toaster
+                position="bottom-right"
+                toastOptions={{
+                  className: "rounded-2xl border-border bg-background text-foreground shadow-lg",
+                }}
+              />
+            </SettingsProvider>
+          </P2PProvider>
         </DbProvider>
         <ScrollRestoration />
         <Scripts />

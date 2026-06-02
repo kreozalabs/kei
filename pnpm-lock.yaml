@@ -98,6 +98,9 @@ importers:
       sonner:
         specifier: ^2.0.7
         version: 2.0.7(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
+      trystero:
+        specifier: ^0.25.1
+        version: 0.25.1
       uuid:
         specifier: ^14.0.0
         version: 14.0.0
@@ -1376,6 +1379,9 @@ packages:
       '@emnapi/core': ^1.7.1
       '@emnapi/runtime': ^1.7.1
 
+  '@noble/secp256k1@3.1.0':
+    resolution: {integrity: sha512-+F7iS7tUMaNGXcc9X3PjmjvuQnXEuSjCRNzVVA2xAcKXgCaP0dHYz4SFyt4FKNHef7sOP//xihowcySSS7PK9g==}
+
   '@nodelib/fs.scandir@2.1.5':
     resolution: {integrity: sha512-vq24Bq3ym5HEQm2NKCr3yXDwjc7vTsEThRDnkp2DK9p1uqLR+DHurm/NOTo0KG7HYHU7eppKZj3MyqYuMBf62g==}
     engines: {node: '>= 8'}
@@ -2531,6 +2537,12 @@ packages:
     resolution: {integrity: sha512-sYyzzJT4G0g02azzJ8o55VFFV31XvFpdUpG+unxS0vSaYsJnSPKGoI6WdPwUucJL1wpgGfwfmntNX/Ub1uOViA==}
     peerDependencies:
       react: ^18 || ^19
+
+  '@trystero-p2p/core@0.25.1':
+    resolution: {integrity: sha512-BHYM5pxybRUKKuJP3PTuNIqYosWut8Sinm58Pdq88ivIqEKeK142UiZcuB3YRBPCvn6ajnCD60qp5q1At8GrUQ==}
+
+  '@trystero-p2p/nostr@0.25.1':
+    resolution: {integrity: sha512-cAWcpGEeuYX4jZADhEm/gGdJ5qph4PJa4cfRqHtvQs4XLJt0fkb/2i2PJqi1KXhsjJ78D8+cwyIytBExNV+KoQ==}
 
   '@turbo/darwin-64@2.9.14':
     resolution: {integrity: sha512-t7QiPflaEyBE4oayeZtSmu4mEfjgIrcNlNNl1z1dmIVPqEdtA7+CfTf8d7KXsOGPh6aNgWjKxyvQg9uGfDQF+A==}
@@ -4301,6 +4313,9 @@ packages:
     resolution: {integrity: sha512-L0Orpi8qGpRG//Nd+H90vFB+3iHnue1zSSGmNOOCh1GLJ7rUKVwV2HvijphGQS2UmhUZewS9VgvxYIdgr+fG1A==}
     hasBin: true
 
+  trystero@0.25.1:
+    resolution: {integrity: sha512-lUZxcCzCfdaOyETUhwxG6q+RhGRRIi2rUqFbpM2PQOgh1tkvRMUCxVkcKKd0VxQAq7HtMAJwxzdNxrJQunetiw==}
+
   ts-api-utils@1.4.3:
     resolution: {integrity: sha512-i3eMG77UTMD0hZhgRS562pv83RC6ukSAC2GMNWc+9dieh/+jDM5u5YG+NHX6VNDRHQcHwmsTHctP9LhbC3WxVw==}
     engines: {node: '>=16'}
@@ -5963,7 +5978,7 @@ snapshots:
 
   '@kreozalabs/eslint-config@1.1.0(eslint@10.4.0(jiti@2.6.1))(typescript@5.5.4)':
     dependencies:
-      '@typescript-eslint/eslint-plugin': 7.18.0(@typescript-eslint/parser@7.18.0(eslint@10.4.0(jiti@2.6.1))(typescript@5.5.4))(eslint@10.4.0(jiti@2.6.1))(typescript@5.5.4)
+      '@typescript-eslint/eslint-plugin': 7.18.0(@typescript-eslint/parser@7.18.0(eslint@10.1.0(jiti@2.6.1))(typescript@6.0.2))(eslint@10.4.0(jiti@2.6.1))(typescript@5.5.4)
       '@typescript-eslint/parser': 7.18.0(eslint@10.4.0(jiti@2.6.1))(typescript@5.5.4)
       eslint: 10.4.0(jiti@2.6.1)
       eslint-config-prettier: 9.1.2(eslint@10.4.0(jiti@2.6.1))
@@ -5988,6 +6003,8 @@ snapshots:
       '@emnapi/runtime': 1.9.2
       '@tybys/wasm-util': 0.10.2
     optional: true
+
+  '@noble/secp256k1@3.1.0': {}
 
   '@nodelib/fs.scandir@2.1.5':
     dependencies:
@@ -7090,6 +7107,13 @@ snapshots:
       '@tanstack/query-core': 5.96.2
       react: 19.2.4
 
+  '@trystero-p2p/core@0.25.1': {}
+
+  '@trystero-p2p/nostr@0.25.1':
+    dependencies:
+      '@noble/secp256k1': 3.1.0
+      '@trystero-p2p/core': 0.25.1
+
   '@turbo/darwin-64@2.9.14':
     optional: true
 
@@ -7161,10 +7185,10 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  '@typescript-eslint/eslint-plugin@7.18.0(@typescript-eslint/parser@7.18.0(eslint@10.4.0(jiti@2.6.1))(typescript@5.5.4))(eslint@10.4.0(jiti@2.6.1))(typescript@5.5.4)':
+  '@typescript-eslint/eslint-plugin@7.18.0(@typescript-eslint/parser@7.18.0(eslint@10.1.0(jiti@2.6.1))(typescript@6.0.2))(eslint@10.4.0(jiti@2.6.1))(typescript@5.5.4)':
     dependencies:
       '@eslint-community/regexpp': 4.12.2
-      '@typescript-eslint/parser': 7.18.0(eslint@10.4.0(jiti@2.6.1))(typescript@5.5.4)
+      '@typescript-eslint/parser': 7.18.0(eslint@10.1.0(jiti@2.6.1))(typescript@6.0.2)
       '@typescript-eslint/scope-manager': 7.18.0
       '@typescript-eslint/type-utils': 7.18.0(eslint@10.4.0(jiti@2.6.1))(typescript@5.5.4)
       '@typescript-eslint/utils': 7.18.0(eslint@10.4.0(jiti@2.6.1))(typescript@5.5.4)
@@ -9265,6 +9289,10 @@ snapshots:
       punycode: 2.3.1
 
   tree-kill@1.2.2: {}
+
+  trystero@0.25.1:
+    dependencies:
+      '@trystero-p2p/nostr': 0.25.1
 
   ts-api-utils@1.4.3(typescript@5.5.4):
     dependencies:
