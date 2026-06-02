@@ -1,5 +1,6 @@
 import { DEFAULT_SETTINGS } from "@/config/constants";
 import { PGliteWorker } from "@electric-sql/pglite/worker";
+import { getOrCreateDeviceIdentity } from "./events";
 
 export const db =
   typeof window !== "undefined"
@@ -72,9 +73,39 @@ async function runMigrations() {
 
     // 2. Additive Migrations for other tables
     // Use ensureColumn to add new fields to existing tables without data loss.
-    // Examples:
-    // await ensureColumn("actions", "priority", "INTEGER DEFAULT 0");
-    // await ensureColumn("actions", "metadata", "JSONB");
+    await ensureColumn("events", "origin_device_id", "TEXT");
+    await ensureColumn("events", "sequence_number", "BIGINT");
+    await db.exec(`
+      CREATE UNIQUE INDEX IF NOT EXISTS idx_device_sequence 
+      ON events (origin_device_id, sequence_number)
+    `);
+
+    // 3. Backfill legacy events with default device identity and monotonic sequences
+    const legacyEvents = await db.query(
+      "SELECT event_id FROM events WHERE origin_device_id IS NULL ORDER BY timestamp ASC"
+    );
+
+    if (legacyEvents.rows.length > 0) {
+      console.log(`Backfilling ${legacyEvents.rows.length} legacy events with device identity...`);
+      const localId = await getOrCreateDeviceIdentity();
+
+      await db.query("BEGIN");
+      try {
+        let seq = 1;
+        for (const row of legacyEvents.rows) {
+          const r = row as Record<string, unknown>;
+          await db.query(
+            "UPDATE events SET origin_device_id = $1, sequence_number = $2 WHERE event_id = $3",
+            [localId, seq++, r.event_id]
+          );
+        }
+        await db.query("COMMIT");
+        console.log("Backfill complete.");
+      } catch (err) {
+        await db.query("ROLLBACK");
+        console.error("Backfill failed:", err);
+      }
+    }
   } catch (e) {
     console.error("Migration check failed:", e);
   }
@@ -88,8 +119,13 @@ async function ensureSchema() {
       id TEXT NOT NULL,
       type TEXT NOT NULL,
       timestamp BIGINT NOT NULL,
-      payload JSONB NOT NULL
+      payload JSONB NOT NULL,
+      origin_device_id TEXT,
+      sequence_number BIGINT
     );
+
+    CREATE UNIQUE INDEX IF NOT EXISTS idx_device_sequence 
+    ON events (origin_device_id, sequence_number);
 
     CREATE TABLE IF NOT EXISTS settings (
       key TEXT PRIMARY KEY,

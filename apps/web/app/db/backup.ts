@@ -8,7 +8,7 @@ import type { Event, EventType } from "../types/events";
  */
 export async function exportEvents(): Promise<Event[]> {
   const result = await db.query(
-    "SELECT event_id, id, type, timestamp, payload FROM events ORDER BY timestamp ASC"
+    "SELECT event_id, id, type, timestamp, payload, origin_device_id, sequence_number FROM events ORDER BY timestamp ASC"
   );
 
   return result.rows.map((row) => {
@@ -27,6 +27,8 @@ export async function exportEvents(): Promise<Event[]> {
       type: r.type as EventType,
       timestamp: Number(r.timestamp),
       payload,
+      originDeviceId: r.origin_device_id as string | undefined,
+      sequenceNumber: r.sequence_number ? Number(r.sequence_number) : undefined,
     };
   });
 }
@@ -59,17 +61,25 @@ export async function importEvents(events: Event[]): Promise<number> {
 
       for (const event of chunk) {
         valueStrings.push(
-          `($${paramIdx++}, $${paramIdx++}, $${paramIdx++}, $${paramIdx++}, $${paramIdx++})`
+          `($${paramIdx++}, $${paramIdx++}, $${paramIdx++}, $${paramIdx++}, $${paramIdx++}, $${paramIdx++}, $${paramIdx++})`
         );
         const payloadString =
           typeof event.payload === "string" ? event.payload : JSON.stringify(event.payload);
 
-        values.push(event.eventId, event.id, event.type, event.timestamp, payloadString);
+        values.push(
+          event.eventId,
+          event.id,
+          event.type,
+          event.timestamp,
+          payloadString,
+          event.originDeviceId || null,
+          event.sequenceNumber || null
+        );
         importedCount++;
       }
 
       const insertQuery = `
-        INSERT INTO events (event_id, id, type, timestamp, payload)
+        INSERT INTO events (event_id, id, type, timestamp, payload, origin_device_id, sequence_number)
         VALUES ${valueStrings.join(", ")}
         ON CONFLICT (event_id) DO NOTHING
       `;
