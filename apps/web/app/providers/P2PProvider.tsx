@@ -27,11 +27,11 @@ export function useP2P() {
 
 export function P2PProvider({ children }: { children: React.ReactNode }) {
   const [pairingCode, setPairingCode] = useState<string>("");
-  const [connectionStatus, setConnectionStatus] = useState<"disconnected" | "connecting" | "connected">(
-    "disconnected"
-  );
+  const [connectionStatus, setConnectionStatus] = useState<
+    "disconnected" | "connecting" | "connected"
+  >("disconnected");
   const [connectedPeers, setConnectedPeers] = useState<string[]>([]);
-  
+
   const roomRef = useRef<any>(null);
   const dbChannelRef = useRef<BroadcastChannel | null>(null);
 
@@ -72,10 +72,12 @@ export function P2PProvider({ children }: { children: React.ReactNode }) {
         const { joinRoom } = (await import("trystero")) as any;
         const roomId = await deriveRoomId(pairingCode);
         console.log(`[P2P] Derived stable roomId: "${roomId}" for pairing code: "${pairingCode}"`);
-        
+
         if (!isSubscribed) return;
 
-        console.log(`[P2P] Joining Nostr-signaled room: appId="kreozalabs-kei-v1", roomId="${roomId}"`);
+        console.log(
+          `[P2P] Joining Nostr-signaled room: appId="kreozalabs-kei-v1", roomId="${roomId}"`
+        );
         const room = joinRoom({ appId: "kreozalabs-kei-v1" }, roomId);
         roomRef.current = room;
         console.log("[P2P] Room successfully created, listening for peer events...");
@@ -83,9 +85,12 @@ export function P2PProvider({ children }: { children: React.ReactNode }) {
         // Define synchronization message actions
         const watermarksAction = room.makeAction("watermarks");
         const eventsAction = room.makeAction("events");
- 
+
         // Action 1: On receiving peer watermarks, calculate deltas and send missing events
-        watermarksAction.onMessage = async (peerWatermarks: any, { peerId }: { peerId: string }) => {
+        watermarksAction.onMessage = async (
+          peerWatermarks: any,
+          { peerId }: { peerId: string }
+        ) => {
           console.log(`[P2P] Received watermarks from peer ${peerId}`);
           try {
             const missingEvents = await getEventsSince(peerWatermarks);
@@ -97,7 +102,7 @@ export function P2PProvider({ children }: { children: React.ReactNode }) {
             console.error("[P2P] Delta computation failed:", err);
           }
         };
- 
+
         // Action 2: On receiving peer events, bulk import them
         eventsAction.onMessage = async (receivedEvents: any[], { peerId }: { peerId: string }) => {
           console.log(`[P2P] Received ${receivedEvents.length} events from peer ${peerId}`);
@@ -112,7 +117,7 @@ export function P2PProvider({ children }: { children: React.ReactNode }) {
             console.error("[P2P] Import of synced events failed:", err);
           }
         };
- 
+
         // Monitor peer connection events
         room.onPeerJoin = (peerId: string) => {
           console.log(`[P2P] Peer connected: ${peerId}`);
@@ -121,7 +126,7 @@ export function P2PProvider({ children }: { children: React.ReactNode }) {
           toast.info("Paired device connected", {
             description: "Direct real-time WebRTC channel established.",
           });
- 
+
           // Kick off the handshake instantly
           setTimeout(async () => {
             try {
@@ -133,7 +138,7 @@ export function P2PProvider({ children }: { children: React.ReactNode }) {
             }
           }, 500);
         };
- 
+
         room.onPeerLeave = (peerId: string) => {
           console.log(`[P2P] Peer disconnected: ${peerId}`);
           setConnectedPeers((prev) => {
@@ -144,7 +149,6 @@ export function P2PProvider({ children }: { children: React.ReactNode }) {
             return next;
           });
         };
-
       } catch (err) {
         console.error("[P2P] WebRTC connection initialization failed:", err);
         if (isSubscribed) {
@@ -175,15 +179,18 @@ export function P2PProvider({ children }: { children: React.ReactNode }) {
 
     const handleLocalWrite = async (event: MessageEvent) => {
       const { type } = event.data || {};
-      
+
       // If a database update occurred, broadcast our new watermarks to all active peers
       if (type === "DB_UPDATED" && roomRef.current && connectedPeers.length > 0) {
         try {
           // Look up or declare action
           const watermarksAction = roomRef.current.makeAction("watermarks");
-          
+
           const localWatermarks = await getLocalWatermarks();
-          console.log("[P2P] Local write detected, broadcasting updated watermarks:", localWatermarks);
+          console.log(
+            "[P2P] Local write detected, broadcasting updated watermarks:",
+            localWatermarks
+          );
           watermarksAction.send(localWatermarks);
         } catch (err) {
           console.error("[P2P] Failed to broadcast write update:", err);
@@ -236,14 +243,14 @@ export function P2PProvider({ children }: { children: React.ReactNode }) {
     const genBlock = (length: number) =>
       Array.from({ length }, () => chars[Math.floor(Math.random() * chars.length)]).join("");
     const code = `KEI-${genBlock(4)}-${genBlock(4)}`;
-    
+
     localStorage.setItem("kei_sync_pairing_code", code);
     setPairingCode(code);
-    
+
     toast.success("Pairing code generated", {
       description: "Waiting for your other device to connect using this code...",
     });
-    
+
     return code;
   };
 

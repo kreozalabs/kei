@@ -18,7 +18,7 @@ import { DbProvider } from "./providers/DbProvider";
 import { P2PProvider } from "./providers/P2PProvider";
 import { STORAGE_KEYS } from "./config/constants";
 import { ErrorPage } from "./components/ErrorPage";
- 
+
 export function Layout({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     if (typeof window !== "undefined") {
@@ -55,7 +55,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
       });
     }
   }, []);
- 
+
   return (
     <html lang="en" suppressHydrationWarning>
       <head>

@@ -1,8 +1,17 @@
 import { useState, useRef } from "react";
 import { Button, Input } from "@kreozalabs/ui";
-import { 
-  Loader2, Database, RefreshCw, Download, Upload, 
-  Smartphone, WifiOff, Link2, Unlink, Copy, Check 
+import {
+  Loader2,
+  Database,
+  RefreshCw,
+  Download,
+  Upload,
+  Smartphone,
+  WifiOff,
+  Link2,
+  Unlink,
+  Copy,
+  Check,
 } from "lucide-react";
 import { rebuildActions } from "@/db/actions";
 import { rebuildSettings } from "@/db/settings";
@@ -15,7 +24,7 @@ export function MaintenanceSettings() {
   const [isExporting, setIsExporting] = useState(false);
   const [isImporting, setIsImporting] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
- 
+
   const {
     isPaired,
     pairingCode,
@@ -265,7 +274,8 @@ export function MaintenanceSettings() {
           </div>
 
           <p className="text-[13px] text-muted-foreground leading-relaxed">
-            Synchronize tasks and settings directly with your other devices (laptop, phone) using secure, real-time WebRTC channels.
+            Synchronize tasks and settings directly with your other devices (laptop, phone) using
+            secure, real-time WebRTC channels.
           </p>
 
           {!isPaired ? (
@@ -294,7 +304,11 @@ export function MaintenanceSettings() {
                       variant="outline"
                       className="rounded-lg h-8 px-3 bg-background hover:bg-muted border-border/50 text-foreground gap-1.5"
                     >
-                      {copied ? <Check className="size-3.5 text-emerald-500" /> : <Copy className="size-3.5" />}
+                      {copied ? (
+                        <Check className="size-3.5 text-emerald-500" />
+                      ) : (
+                        <Copy className="size-3.5" />
+                      )}
                       <span className="text-[10px] font-bold uppercase tracking-wider">
                         {copied ? "Copied" : "Copy"}
                       </span>
@@ -332,12 +346,16 @@ export function MaintenanceSettings() {
               <div className="p-3.5 rounded-xl bg-muted/20 border border-border/30 space-y-2.5">
                 <div className="flex items-center justify-between text-xs">
                   <span className="text-muted-foreground">Pairing Code</span>
-                  <span className="font-mono font-semibold tracking-wider text-foreground select-all">{pairingCode}</span>
+                  <span className="font-mono font-semibold tracking-wider text-foreground select-all">
+                    {pairingCode}
+                  </span>
                 </div>
                 <div className="flex items-center justify-between text-xs">
                   <span className="text-muted-foreground">Active Peer Channels</span>
                   <span className="font-semibold text-foreground">
-                    {connectedPeers.length > 0 ? `${connectedPeers.length} active` : "waiting for peer..."}
+                    {connectedPeers.length > 0
+                      ? `${connectedPeers.length} active`
+                      : "waiting for peer..."}
                   </span>
                 </div>
               </div>
