@@ -1,12 +1,16 @@
-import { useState } from "react";
-import { Button } from "@kreozalabs/ui";
-import { Loader2, Database, RefreshCw } from "lucide-react";
-import { rebuildActions } from "../../db/actions";
-import { rebuildSettings } from "../../db/settings";
+import { useState, useRef } from "react";
+import { Button, Input } from "@kreozalabs/ui";
+import { Loader2, Database, RefreshCw, Download, Upload } from "lucide-react";
+import { rebuildActions } from "@/db/actions";
+import { rebuildSettings } from "@/db/settings";
 import { toast } from "sonner";
+import { exportEvents, importEvents } from "@/db/backup";
 
 export function MaintenanceSettings() {
   const [isRebuilding, setIsRebuilding] = useState(false);
+  const [isExporting, setIsExporting] = useState(false);
+  const [isImporting, setIsImporting] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleRebuild = async () => {
     setIsRebuilding(true);
@@ -27,9 +31,100 @@ export function MaintenanceSettings() {
     }
   };
 
+  const handleExport = async () => {
+    setIsExporting(true);
+    try {
+      const events = await exportEvents();
+      const payload = {
+        version: 1,
+        exportedAt: Date.now(),
+        events,
+      };
+      const blob = new Blob([JSON.stringify(payload, null, 2)], {
+        type: "application/json",
+      });
+      const url = URL.createObjectURL(blob);
+
+      const link = document.createElement("a");
+      link.href = url;
+      const dateStr = new Date().toISOString().split("T")[0];
+      link.download = `kei-backup-${dateStr}.json`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+
+      toast.success("Data exported successfully", {
+        description: `Exported ${events.length} events. Keep this file safe!`,
+      });
+    } catch (error) {
+      console.error("Failed to export data:", error);
+      toast.error("Export failed", {
+        description: "Check the console for more details.",
+      });
+    } finally {
+      setIsExporting(false);
+    }
+  };
+
+  const handleImportClick = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handleImportChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setIsImporting(true);
+    try {
+      const text = await file.text();
+      let parsed;
+      try {
+        parsed = JSON.parse(text);
+      } catch {
+        throw new Error("Invalid JSON: The uploaded file is not a valid JSON document.");
+      }
+
+      const eventsList = Array.isArray(parsed) ? parsed : parsed?.events;
+
+      if (!eventsList || !Array.isArray(eventsList)) {
+        throw new Error("Invalid backup file: Could not locate event logs array.");
+      }
+
+      const actualImportedCount = await importEvents(eventsList);
+
+      if (actualImportedCount === 0) {
+        toast.info("Database up to date", {
+          description: "All events in the backup are already present in your local database.",
+        });
+      } else {
+        toast.success("Data imported successfully", {
+          description: `Successfully restored and rebuilt ${actualImportedCount} events. Refreshing...`,
+        });
+
+        // Clean reload to ensure all cached React states and DB connections are completely pristine
+        setTimeout(() => {
+          window.location.reload();
+        }, 1500);
+      }
+
+      if (fileInputRef.current) {
+        fileInputRef.current.value = "";
+      }
+    } catch (error) {
+      console.error("Failed to import data:", error);
+      toast.error("Import failed", {
+        description: error instanceof Error ? error.message : "Invalid backup file format.",
+      });
+    } finally {
+      setIsImporting(false);
+    }
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex flex-col gap-4">
+        {/* Rebuild Derived Data */}
         <div className="p-4 rounded-2xl bg-amber-500/5 border border-amber-500/10 space-y-3">
           <div className="flex items-center gap-2 text-amber-500">
             <Database className="size-4" />
@@ -54,6 +149,56 @@ export function MaintenanceSettings() {
               {isRebuilding ? "Rebuilding..." : "Rebuild Database"}
             </span>
           </Button>
+        </div>
+
+        {/* Export & Import */}
+        <div className="p-4 rounded-2xl bg-amber-500/5 border border-amber-500/10 space-y-3">
+          <div className="flex items-center gap-2 text-amber-500">
+            <Database className="size-4" />
+            <h4 className="text-xs font-bold uppercase tracking-wider">Export & Import</h4>
+          </div>
+          <p className="text-[13px] text-muted-foreground leading-relaxed">
+            Export and Import Your Data
+          </p>
+          <div className="flex flex-col gap-2">
+            <Button
+              onClick={handleExport}
+              disabled={isExporting}
+              variant="outline"
+              className="w-full justify-start gap-2 h-10 rounded-xl bg-background hover:bg-muted border-border/50 text-foreground"
+            >
+              {isExporting ? (
+                <Loader2 className="size-4 animate-spin text-primary" />
+              ) : (
+                <Download className="size-4 text-primary" />
+              )}
+              <span className="font-bold text-[12px] uppercase tracking-widest">
+                {isExporting ? "Exporting..." : "Export"}
+              </span>
+            </Button>
+            <Button
+              onClick={handleImportClick}
+              disabled={isImporting}
+              variant="outline"
+              className="w-full justify-start gap-2 h-10 rounded-xl bg-background hover:bg-muted border-border/50 text-foreground"
+            >
+              {isImporting ? (
+                <Loader2 className="size-4 animate-spin text-primary" />
+              ) : (
+                <Upload className="size-4 text-primary" />
+              )}
+              <span className="font-bold text-[12px] uppercase tracking-widest">
+                {isImporting ? "Importing..." : "Import"}
+              </span>
+            </Button>
+            <Input
+              type="file"
+              ref={fileInputRef}
+              onChange={handleImportChange}
+              accept=".json"
+              className="hidden"
+            />
+          </div>
         </div>
       </div>
     </div>
