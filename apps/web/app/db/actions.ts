@@ -45,7 +45,7 @@ function applyEventToAction(action: Action | null, event: Event<ActionPayload>):
       timezone: payload.timezone,
       status: ACTION_STATUS.ACTIVE,
       createdAt: timestamp,
-      sortOrder: payload.sortOrder ?? timestamp,
+      sortOrder: payload.sortOrder ?? -timestamp,
     };
   }
 
@@ -376,7 +376,7 @@ export async function addAction(payload: ActionPayload) {
   await pushEvent(actionId, EVENT_TYPES.ACTION_INTENDED, {
     ...payload,
     scheduledDate: payload.scheduledDate || getTodayString(),
-    sortOrder: payload.sortOrder ?? Date.now(),
+    sortOrder: payload.sortOrder ?? -Date.now(),
   });
   return actionId;
 }
