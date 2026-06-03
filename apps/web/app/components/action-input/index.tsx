@@ -46,7 +46,6 @@ import { forwardRef, useEffect, useImperativeHandle, useMemo, useRef, useState }
 import { Button, cn, Input, Textarea } from "@kreozalabs/ui";
 
 // TODO: Somehow we should allow user to move between input fields, so it is frictionless and requires less effort. Maybe enter, or arrows?
-// TODO: NOT RELATED TO THIS COMPONENT, BUT IT IS BACKUP LOGIC. Allow user to import and export data.
 
 export interface ActionInputProps {
   onSuccess?: () => void;

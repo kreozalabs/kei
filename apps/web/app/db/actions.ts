@@ -45,7 +45,7 @@ function applyEventToAction(action: Action | null, event: Event<ActionPayload>):
       timezone: payload.timezone,
       status: ACTION_STATUS.ACTIVE,
       createdAt: timestamp,
-      sortOrder: payload.sortOrder ?? timestamp,
+      sortOrder: payload.sortOrder ?? -timestamp,
     };
   }
 
@@ -291,7 +291,13 @@ export async function bulkAbandonActions(ids: string[]) {
 }
 
 export async function bulkUpdateActions(ids: string[], payload: Partial<ActionPayload>) {
-  await bulkPushEvents(ids.map((id) => ({ id, type: EVENT_TYPES.ACTION_UPDATED, payload })));
+  const updatedPayload = { ...payload };
+  if (payload.scheduledDate && payload.sortOrder === undefined) {
+    updatedPayload.sortOrder = -Date.now();
+  }
+  await bulkPushEvents(
+    ids.map((id) => ({ id, type: EVENT_TYPES.ACTION_UPDATED, payload: updatedPayload }))
+  );
 }
 
 export async function bulkStatusUpdateActions(updates: { id: string; status: ActionStatus }[]) {
@@ -310,9 +316,15 @@ export async function bulkStatusUpdateActions(updates: { id: string; status: Act
 export async function bulkUpdateMultipleActions(
   updates: { id: string; payload: Partial<ActionPayload> }[]
 ) {
-  await bulkPushEvents(
-    updates.map(({ id, payload }) => ({ id, type: EVENT_TYPES.ACTION_UPDATED, payload }))
-  );
+  const now = Date.now();
+  const processedUpdates = updates.map(({ id, payload }) => {
+    const updatedPayload = { ...payload };
+    if (payload.scheduledDate && payload.sortOrder === undefined) {
+      updatedPayload.sortOrder = -now;
+    }
+    return { id, type: EVENT_TYPES.ACTION_UPDATED, payload: updatedPayload };
+  });
+  await bulkPushEvents(processedUpdates);
 }
 
 export async function getActions(filters?: {
@@ -376,13 +388,17 @@ export async function addAction(payload: ActionPayload) {
   await pushEvent(actionId, EVENT_TYPES.ACTION_INTENDED, {
     ...payload,
     scheduledDate: payload.scheduledDate || getTodayString(),
-    sortOrder: payload.sortOrder ?? Date.now(),
+    sortOrder: payload.sortOrder ?? -Date.now(),
   });
   return actionId;
 }
 
 export async function updateAction(id: string, payload: Partial<ActionPayload>) {
-  await pushEvent(id, EVENT_TYPES.ACTION_UPDATED, payload);
+  const updatedPayload = { ...payload };
+  if (payload.scheduledDate && payload.sortOrder === undefined) {
+    updatedPayload.sortOrder = -Date.now();
+  }
+  await pushEvent(id, EVENT_TYPES.ACTION_UPDATED, updatedPayload);
 }
 
 export async function completeAction(id: string) {
