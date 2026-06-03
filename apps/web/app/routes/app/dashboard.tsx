@@ -812,6 +812,7 @@ export default function Dashboard() {
   const handleBulkReschedule = async (newDate: string) => {
     const idsToReschedule = Array.from(visibleSelectedActionIds);
     const previousQueries = queryClient.getQueriesData<Action[]>({ queryKey: ["actions"] });
+    const now = Date.now();
 
     if (settings.enable_undo_toast) {
       toast.success(`Rescheduled ${idsToReschedule.length} actions`, {
@@ -828,7 +829,7 @@ export default function Dashboard() {
               await bulkUpdateMultipleActions(
                 selectedActions.map((sa) => ({
                   id: sa.id,
-                  payload: { scheduledDate: sa.scheduledDate },
+                  payload: { scheduledDate: sa.scheduledDate, sortOrder: sa.sortOrder },
                 }))
               );
               toast.success("Reverted rescheduling");
@@ -849,13 +850,16 @@ export default function Dashboard() {
       });
     }
 
-    updateActionsQueriesCache(idsToReschedule, ACTION_STATUS.ACTIVE, { scheduledDate: newDate });
+    updateActionsQueriesCache(idsToReschedule, ACTION_STATUS.ACTIVE, {
+      scheduledDate: newDate,
+      sortOrder: -now,
+    });
     setSelectedActionIds(new Set());
 
     activeWritesRef.current++;
     await queryClient.cancelQueries({ queryKey: ["actions"] });
     try {
-      await bulkUpdateActions(idsToReschedule, { scheduledDate: newDate });
+      await bulkUpdateActions(idsToReschedule, { scheduledDate: newDate, sortOrder: -now });
     } catch (error) {
       console.error("Failed to bulk reschedule actions:", error);
       previousQueries.forEach(([queryKey, data]) => {
