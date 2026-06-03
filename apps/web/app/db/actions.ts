@@ -295,7 +295,9 @@ export async function bulkUpdateActions(ids: string[], payload: Partial<ActionPa
   if (payload.scheduledDate && payload.sortOrder === undefined) {
     updatedPayload.sortOrder = -Date.now();
   }
-  await bulkPushEvents(ids.map((id) => ({ id, type: EVENT_TYPES.ACTION_UPDATED, payload: updatedPayload })));
+  await bulkPushEvents(
+    ids.map((id) => ({ id, type: EVENT_TYPES.ACTION_UPDATED, payload: updatedPayload }))
+  );
 }
 
 export async function bulkStatusUpdateActions(updates: { id: string; status: ActionStatus }[]) {
