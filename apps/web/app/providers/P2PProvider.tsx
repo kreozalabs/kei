@@ -205,7 +205,7 @@ export function P2PProvider({ children }: { children: React.ReactNode }) {
 
           if (data.deviceId) {
             console.log(`[P2P] Received handshake from peer ${peerId}:`, data);
-            
+
             // Direct connection clears any previous removal tombstone
             removeRemovedDevice(data.deviceId);
 
@@ -238,7 +238,7 @@ export function P2PProvider({ children }: { children: React.ReactNode }) {
 
             setConnectedPeers((prev) => {
               const currentTombstones = getRemovedDevices();
-              
+
               // Filter out any peers that are now tombstoned
               const filteredPrev = prev.filter((p) => !currentTombstones.includes(p.peerId));
 

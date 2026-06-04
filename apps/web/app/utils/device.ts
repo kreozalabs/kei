@@ -26,7 +26,8 @@ export function getDeviceName(): string {
   let os = "Device";
 
   if (ua.includes("Firefox")) browser = "Firefox";
-  else if (ua.includes("Chrome") && !ua.includes("Chromium") && !ua.includes("Edg")) browser = "Chrome";
+  else if (ua.includes("Chrome") && !ua.includes("Chromium") && !ua.includes("Edg"))
+    browser = "Chrome";
   else if (ua.includes("Safari") && !ua.includes("Chrome")) browser = "Safari";
   else if (ua.includes("Edg")) browser = "Edge";
 
