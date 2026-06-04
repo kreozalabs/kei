@@ -180,14 +180,14 @@ export function SyncSettings() {
         )}
       </div>
 
-      <div className="flex justify-end items-center gap-2 mt-4">
+      <div className="flex flex-col sm:flex-row sm:justify-end items-stretch sm:items-center gap-2 mt-4 w-full">
         {pairingCode ? (
           <>
             <Dialog open={viewCodeOpen} onOpenChange={setViewCodeOpen}>
               <DialogTrigger asChild>
                 <Button
                   variant="outline"
-                  className="rounded-lg h-8 px-3 bg-background hover:bg-muted border-border/50 text-foreground gap-1.5"
+                  className="w-full sm:w-auto rounded-lg h-8 px-3 bg-background hover:bg-muted border-border/50 text-foreground gap-1.5"
                 >
                   View Sync Code
                 </Button>
@@ -239,7 +239,7 @@ export function SyncSettings() {
               <DialogTrigger asChild>
                 <Button
                   variant="default"
-                  className="rounded-lg h-8 px-3 bg-primary hover:bg-primary/80 text-foreground gap-1.5"
+                  className="w-full sm:w-auto rounded-lg h-8 px-3 bg-primary hover:bg-primary/80 text-foreground gap-1.5"
                 >
                   Add New Device
                 </Button>
@@ -321,7 +321,7 @@ export function SyncSettings() {
 
             <Button
               variant="outline"
-              className="rounded-lg h-8 px-3 border-destructive/30 hover:border-destructive/50 text-destructive hover:text-destructive hover:bg-destructive/10 gap-1.5"
+              className="w-full sm:w-auto rounded-lg h-8 px-3 border-destructive/30 hover:border-destructive/50 text-destructive hover:text-destructive hover:bg-destructive/10 gap-1.5"
               onClick={() => unpairDevice()}
             >
               Leave Sync Chain
@@ -341,7 +341,7 @@ export function SyncSettings() {
               <DialogTrigger asChild>
                 <Button
                   variant="outline"
-                  className="rounded-lg h-8 px-3 bg-background hover:bg-muted border-border/50 text-foreground gap-1.5"
+                  className="w-full sm:w-auto rounded-lg h-8 px-3 bg-background hover:bg-muted border-border/50 text-foreground gap-1.5"
                 >
                   I have a Sync Code
                 </Button>
@@ -393,7 +393,7 @@ export function SyncSettings() {
               <DialogTrigger asChild>
                 <Button
                   variant="default"
-                  className="rounded-lg h-8 px-3 bg-primary hover:bg-primary/80 text-foreground gap-1.5"
+                  className="w-full sm:w-auto rounded-lg h-8 px-3 bg-primary hover:bg-primary/80 text-foreground gap-1.5"
                 >
                   Start a new Sync Chain
                 </Button>
