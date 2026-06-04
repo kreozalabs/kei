@@ -72,6 +72,46 @@ export function P2PProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
+  // Helper to load removed/tombstoned devices from localStorage
+  const getRemovedDevices = (): string[] => {
+    if (typeof window === "undefined") return [];
+    try {
+      const stored = localStorage.getItem("kei_removed_devices");
+      return stored ? JSON.parse(stored) : [];
+    } catch {
+      return [];
+    }
+  };
+
+  // Helper to add a device to the removed list
+  const addRemovedDevice = (deviceId: string) => {
+    if (typeof window === "undefined") return;
+    try {
+      const removed = getRemovedDevices();
+      if (!removed.includes(deviceId)) {
+        localStorage.setItem("kei_removed_devices", JSON.stringify([...removed, deviceId]));
+      }
+    } catch (e) {
+      console.error("[P2P] Failed to save removed device tombstone:", e);
+    }
+  };
+
+  // Helper to remove a device from the removed list (e.g. if we connect directly again)
+  const removeRemovedDevice = (deviceId: string) => {
+    if (typeof window === "undefined") return;
+    try {
+      const removed = getRemovedDevices();
+      if (removed.includes(deviceId)) {
+        localStorage.setItem(
+          "kei_removed_devices",
+          JSON.stringify(removed.filter((id) => id !== deviceId))
+        );
+      }
+    } catch (e) {
+      console.error("[P2P] Failed to clear removed device tombstone:", e);
+    }
+  };
+
   // Load pairing code and paired devices on mount/change
   useEffect(() => {
     if (typeof window !== "undefined") {
@@ -150,6 +190,10 @@ export function P2PProvider({ children }: { children: React.ReactNode }) {
         handshakeAction.onMessage = (data: any, { peerId }: { peerId: string }) => {
           if (data && data.deviceId) {
             console.log(`[P2P] Received handshake from peer ${peerId}:`, data);
+            
+            // Direct connection clears any previous removal tombstone
+            removeRemovedDevice(data.deviceId);
+
             const alreadyMapped = transientToPersistentMapRef.current.has(peerId);
             transientToPersistentMapRef.current.set(peerId, data.deviceId);
 
@@ -180,6 +224,40 @@ export function P2PProvider({ children }: { children: React.ReactNode }) {
                   },
                 ];
               }
+
+              // Merge indirect gossiped peers from peer's list
+              if (Array.isArray(data.knownPeers)) {
+                const myDevId = getOrCreateDeviceIdentity();
+                const tombstones = getRemovedDevices();
+                const mergedMap = new Map(updated.map((p) => [p.peerId, p]));
+
+                data.knownPeers.forEach((incoming: any) => {
+                  if (incoming.peerId === myDevId) return;
+                  if (tombstones.includes(incoming.peerId)) return;
+
+                  const existing = mergedMap.get(incoming.peerId);
+                  if (!existing) {
+                    mergedMap.set(incoming.peerId, {
+                      peerId: incoming.peerId,
+                      name: incoming.name,
+                      connectedAt: new Date(incoming.connectedAt),
+                      syncedAt: new Date(incoming.syncedAt),
+                      status: "disconnected" as const,
+                    });
+                  } else {
+                    const incomingConnected = new Date(incoming.connectedAt).getTime();
+                    const existingConnected = new Date(existing.connectedAt).getTime();
+                    if (incomingConnected > existingConnected) {
+                      existing.name = incoming.name;
+                      existing.connectedAt = new Date(incoming.connectedAt);
+                      existing.syncedAt = new Date(incoming.syncedAt);
+                    }
+                  }
+                });
+
+                updated = Array.from(mergedMap.values());
+              }
+
               saveStoredPairedDevices(updated);
               return updated;
             });
@@ -196,6 +274,7 @@ export function P2PProvider({ children }: { children: React.ReactNode }) {
                   {
                     deviceId: getOrCreateDeviceIdentity(),
                     name: getDeviceName(),
+                    knownPeers: getStoredPairedDevices(),
                   },
                   { target: peerId }
                 );
@@ -270,6 +349,7 @@ export function P2PProvider({ children }: { children: React.ReactNode }) {
                 {
                   deviceId: getOrCreateDeviceIdentity(),
                   name: getDeviceName(),
+                  knownPeers: getStoredPairedDevices(),
                 },
                 { target: peerId }
               );
@@ -381,12 +461,14 @@ export function P2PProvider({ children }: { children: React.ReactNode }) {
         saveStoredPairedDevices(updated);
         return updated;
       });
+      addRemovedDevice(peerId);
       toast.info("Device removed", {
         description: "The selected device has been removed.",
       });
     } else {
       localStorage.removeItem("kei_sync_pairing_code");
       localStorage.removeItem("kei_paired_devices");
+      localStorage.removeItem("kei_removed_devices");
       setPairingCode("");
       setConnectedPeers([]);
       if (roomRef.current) {
