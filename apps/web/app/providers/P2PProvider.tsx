@@ -188,7 +188,22 @@ export function P2PProvider({ children }: { children: React.ReactNode }) {
 
         // Action 0: Handshake protocol to discover peer's persistent identity & name
         handshakeAction.onMessage = (data: any, { peerId }: { peerId: string }) => {
-          if (data && data.deviceId) {
+          if (!data) return;
+
+          // Check if it is a direct unpair command from a peer
+          if (
+            data.type === "UNPAIR_COMMAND" &&
+            data.targetDeviceId === getOrCreateDeviceIdentity()
+          ) {
+            console.warn("[P2P] Received direct unpair command from peer. Unpairing...");
+            unpairDevice();
+            toast.error("Removed from Sync Chain", {
+              description: "This device was removed from the sync chain by another device.",
+            });
+            return;
+          }
+
+          if (data.deviceId) {
             console.log(`[P2P] Received handshake from peer ${peerId}:`, data);
             
             // Direct connection clears any previous removal tombstone
@@ -197,11 +212,40 @@ export function P2PProvider({ children }: { children: React.ReactNode }) {
             const alreadyMapped = transientToPersistentMapRef.current.has(peerId);
             transientToPersistentMapRef.current.set(peerId, data.deviceId);
 
+            const myDevId = getOrCreateDeviceIdentity();
+
+            // First check if our own device ID is in the incoming tombstone list
+            if (Array.isArray(data.tombstones) && data.tombstones.includes(myDevId)) {
+              console.warn(
+                "[P2P] This device has been removed from the sync chain by a peer. Unpairing..."
+              );
+              unpairDevice();
+              toast.error("Removed from Sync Chain", {
+                description: "This device was removed from the sync chain by another device.",
+              });
+              return;
+            }
+
+            // Merge incoming tombstones into our local removed devices list
+            if (Array.isArray(data.tombstones)) {
+              const localTombstones = getRemovedDevices();
+              data.tombstones.forEach((tId: string) => {
+                if (!localTombstones.includes(tId)) {
+                  addRemovedDevice(tId);
+                }
+              });
+            }
+
             setConnectedPeers((prev) => {
-              const exists = prev.some((p) => p.peerId === data.deviceId);
+              const currentTombstones = getRemovedDevices();
+              
+              // Filter out any peers that are now tombstoned
+              const filteredPrev = prev.filter((p) => !currentTombstones.includes(p.peerId));
+
+              const exists = filteredPrev.some((p) => p.peerId === data.deviceId);
               let updated: Peer[];
               if (exists) {
-                updated = prev.map((p) => {
+                updated = filteredPrev.map((p) => {
                   if (p.peerId === data.deviceId) {
                     return {
                       ...p,
@@ -214,7 +258,7 @@ export function P2PProvider({ children }: { children: React.ReactNode }) {
                 });
               } else {
                 updated = [
-                  ...prev,
+                  ...filteredPrev,
                   {
                     peerId: data.deviceId,
                     name: data.name || data.deviceId,
@@ -227,13 +271,11 @@ export function P2PProvider({ children }: { children: React.ReactNode }) {
 
               // Merge indirect gossiped peers from peer's list
               if (Array.isArray(data.knownPeers)) {
-                const myDevId = getOrCreateDeviceIdentity();
-                const tombstones = getRemovedDevices();
                 const mergedMap = new Map(updated.map((p) => [p.peerId, p]));
 
                 data.knownPeers.forEach((incoming: any) => {
                   if (incoming.peerId === myDevId) return;
-                  if (tombstones.includes(incoming.peerId)) return;
+                  if (currentTombstones.includes(incoming.peerId)) return;
 
                   const existing = mergedMap.get(incoming.peerId);
                   if (!existing) {
@@ -275,6 +317,7 @@ export function P2PProvider({ children }: { children: React.ReactNode }) {
                     deviceId: getOrCreateDeviceIdentity(),
                     name: getDeviceName(),
                     knownPeers: getStoredPairedDevices(),
+                    tombstones: getRemovedDevices(),
                   },
                   { target: peerId }
                 );
@@ -350,6 +393,7 @@ export function P2PProvider({ children }: { children: React.ReactNode }) {
                   deviceId: getOrCreateDeviceIdentity(),
                   name: getDeviceName(),
                   knownPeers: getStoredPairedDevices(),
+                  tombstones: getRemovedDevices(),
                 },
                 { target: peerId }
               );
@@ -454,8 +498,32 @@ export function P2PProvider({ children }: { children: React.ReactNode }) {
     return true;
   };
 
-  const unpairDevice = (peerId?: string) => {
+  const unpairDevice = useCallback((peerId?: string) => {
     if (peerId) {
+      // Find transient peerId from persistent deviceId to send direct unpair command if online
+      let transientId: string | undefined;
+      for (const [tId, pId] of transientToPersistentMapRef.current.entries()) {
+        if (pId === peerId) {
+          transientId = tId;
+          break;
+        }
+      }
+
+      if (transientId && roomRef.current) {
+        try {
+          const handshakeAction = roomRef.current.makeAction("handshake");
+          handshakeAction.send(
+            {
+              type: "UNPAIR_COMMAND",
+              targetDeviceId: peerId,
+            },
+            { target: transientId }
+          );
+        } catch (e) {
+          console.error("[P2P] Failed to send direct unpair command:", e);
+        }
+      }
+
       setConnectedPeers((prev) => {
         const updated = prev.filter((p) => p.peerId !== peerId);
         saveStoredPairedDevices(updated);
@@ -481,7 +549,7 @@ export function P2PProvider({ children }: { children: React.ReactNode }) {
         description: "Local data is untouched, but syncing is now deactivated.",
       });
     }
-  };
+  }, []);
 
   const generatePairingCode = (): string => {
     const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
