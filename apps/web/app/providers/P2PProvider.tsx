@@ -1,9 +1,8 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-/* eslint-disable react-refresh/only-export-components */
-import React, { createContext, useContext, useState, useEffect, useRef } from "react";
+import React, { createContext, useContext, useState, useEffect, useRef, useCallback } from "react";
 import { getLocalWatermarks, getEventsSince } from "@/db/sync";
 import { importEvents } from "@/db/backup";
 import { toast } from "sonner";
+import { getOrCreateDeviceIdentity, getDeviceName } from "@/utils/device";
 
 export interface Peer {
   name: string;
@@ -12,13 +11,14 @@ export interface Peer {
   syncedAt: number | Date;
   status: "disconnected" | "connecting" | "connected";
 }
+
 interface P2PContextType {
   isPaired: boolean;
   pairingCode: string;
   connectionStatus: "disconnected" | "connecting" | "connected";
-  connectedPeers: string[];
+  connectedPeers: Peer[];
   pairDevice: (code: string) => Promise<boolean>;
-  unpairDevice: () => void;
+  unpairDevice: (peerId?: string) => void;
   generatePairingCode: () => string;
   pairedDevices: () => Peer[];
 }
@@ -32,24 +32,58 @@ export function useP2P() {
   }
   return context;
 }
-// TODO: Refactor !!!
+
 export function P2PProvider({ children }: { children: React.ReactNode }) {
   const [pairingCode, setPairingCode] = useState<string>("");
   const [connectionStatus, setConnectionStatus] = useState<
     "disconnected" | "connecting" | "connected"
   >("disconnected");
-  const [connectedPeers, setConnectedPeers] = useState<string[]>([]);
+  const [connectedPeers, setConnectedPeers] = useState<Peer[]>([]);
 
   const roomRef = useRef<any>(null);
   const dbChannelRef = useRef<BroadcastChannel | null>(null);
+  const transientToPersistentMapRef = useRef<Map<string, string>>(new Map());
 
-  // Read pairing code on mount
+  // Helper to load paired devices from localStorage
+  const getStoredPairedDevices = (): Peer[] => {
+    if (typeof window === "undefined") return [];
+    try {
+      const stored = localStorage.getItem("kei_paired_devices");
+      if (!stored) return [];
+      const parsed = JSON.parse(stored);
+      return parsed.map((p: any) => ({
+        ...p,
+        connectedAt: new Date(p.connectedAt),
+        syncedAt: new Date(p.syncedAt),
+      }));
+    } catch (e) {
+      console.error("[P2P] Failed to parse paired devices:", e);
+      return [];
+    }
+  };
+
+  // Helper to save paired devices to localStorage
+  const saveStoredPairedDevices = (devices: Peer[]) => {
+    if (typeof window === "undefined") return;
+    try {
+      localStorage.setItem("kei_paired_devices", JSON.stringify(devices));
+    } catch (e) {
+      console.error("[P2P] Failed to save paired devices:", e);
+    }
+  };
+
+  // Load pairing code and paired devices on mount/change
   useEffect(() => {
     if (typeof window !== "undefined") {
       const code = localStorage.getItem("kei_sync_pairing_code") || "";
       setPairingCode(code);
+
+      const stored = getStoredPairedDevices();
+      // Set all loaded devices to disconnected status initially
+      const offlineList = stored.map((p) => ({ ...p, status: "disconnected" as const }));
+      setConnectedPeers(offlineList);
     }
-  }, []);
+  }, [pairingCode]);
 
   // Helper to derive a stable 16-character room ID from a pairing code
   const deriveRoomId = async (code: string): Promise<string> => {
@@ -63,16 +97,33 @@ export function P2PProvider({ children }: { children: React.ReactNode }) {
       .slice(0, 16);
   };
 
+  // Update a device's synchronization time in the state & localStorage
+  const updateDeviceSyncTime = useCallback((deviceId: string) => {
+    setConnectedPeers((prev) => {
+      const updated = prev.map((p) => {
+        if (p.peerId === deviceId) {
+          return {
+            ...p,
+            syncedAt: new Date(),
+          };
+        }
+        return p;
+      });
+      saveStoredPairedDevices(updated);
+      return updated;
+    });
+  }, []);
+
   // Main WebRTC Connection effect
   useEffect(() => {
     if (typeof window === "undefined" || !pairingCode) {
       setConnectionStatus("disconnected");
-      setConnectedPeers([]);
       return;
     }
 
     let isSubscribed = true;
     setConnectionStatus("connecting");
+    const currentTransientMap = transientToPersistentMapRef.current;
 
     async function startTrystero() {
       try {
@@ -91,8 +142,80 @@ export function P2PProvider({ children }: { children: React.ReactNode }) {
         console.log("[P2P] Room successfully created, listening for peer events...");
 
         // Define synchronization message actions
+        const handshakeAction = room.makeAction("handshake");
         const watermarksAction = room.makeAction("watermarks");
         const eventsAction = room.makeAction("events");
+
+        // Action 0: Handshake protocol to discover peer's persistent identity & name
+        handshakeAction.onMessage = (data: any, { peerId }: { peerId: string }) => {
+          if (data && data.deviceId) {
+            console.log(`[P2P] Received handshake from peer ${peerId}:`, data);
+            const alreadyMapped = transientToPersistentMapRef.current.has(peerId);
+            transientToPersistentMapRef.current.set(peerId, data.deviceId);
+
+            setConnectedPeers((prev) => {
+              const exists = prev.some((p) => p.peerId === data.deviceId);
+              let updated: Peer[];
+              if (exists) {
+                updated = prev.map((p) => {
+                  if (p.peerId === data.deviceId) {
+                    return {
+                      ...p,
+                      name: data.name || p.name,
+                      connectedAt: new Date(),
+                      status: "connected" as const,
+                    };
+                  }
+                  return p;
+                });
+              } else {
+                updated = [
+                  ...prev,
+                  {
+                    peerId: data.deviceId,
+                    name: data.name || data.deviceId,
+                    connectedAt: new Date(),
+                    syncedAt: new Date(),
+                    status: "connected" as const,
+                  },
+                ];
+              }
+              saveStoredPairedDevices(updated);
+              return updated;
+            });
+
+            setConnectionStatus("connected");
+
+            if (!alreadyMapped) {
+              toast.info("Paired device connected", {
+                description: `Direct channel established with ${data.name || "paired device"}.`,
+              });
+              // Send back our own handshake if we haven't already
+              try {
+                handshakeAction.send(
+                  {
+                    deviceId: getOrCreateDeviceIdentity(),
+                    name: getDeviceName(),
+                  },
+                  { target: peerId }
+                );
+              } catch (e) {
+                console.error("[P2P] Failed to send handshake response:", e);
+              }
+            }
+
+            // Immediately query watermarks sync
+            setTimeout(async () => {
+              try {
+                const localWatermarks = await getLocalWatermarks();
+                console.log("[P2P] Handshake complete, sending watermarks:", localWatermarks);
+                watermarksAction.send(localWatermarks, { target: peerId });
+              } catch (err) {
+                console.error("[P2P] Failed to send initial watermarks:", err);
+              }
+            }, 300);
+          }
+        };
 
         // Action 1: On receiving peer watermarks, calculate deltas and send missing events
         watermarksAction.onMessage = async (
@@ -105,6 +228,11 @@ export function P2PProvider({ children }: { children: React.ReactNode }) {
             if (missingEvents.length > 0) {
               console.log(`[P2P] Sending ${missingEvents.length} delta events to peer ${peerId}`);
               eventsAction.send(missingEvents, { target: peerId });
+            }
+            // Update syncedAt for this peer
+            const devId = transientToPersistentMapRef.current.get(peerId);
+            if (devId) {
+              updateDeviceSyncTime(devId);
             }
           } catch (err) {
             console.error("[P2P] Delta computation failed:", err);
@@ -121,6 +249,11 @@ export function P2PProvider({ children }: { children: React.ReactNode }) {
                 description: `Synced ${imported} new updates from your paired device.`,
               });
             }
+            // Update syncedAt for this peer
+            const devId = transientToPersistentMapRef.current.get(peerId);
+            if (devId) {
+              updateDeviceSyncTime(devId);
+            }
           } catch (err) {
             console.error("[P2P] Import of synced events failed:", err);
           }
@@ -128,34 +261,45 @@ export function P2PProvider({ children }: { children: React.ReactNode }) {
 
         // Monitor peer connection events
         room.onPeerJoin = (peerId: string) => {
-          console.log(`[P2P] Peer connected: ${peerId}`);
-          setConnectedPeers((prev) => [...prev, peerId]);
-          setConnectionStatus("connected");
-          toast.info("Paired device connected", {
-            description: "Direct real-time WebRTC channel established.",
-          });
-
-          // Kick off the handshake instantly
-          setTimeout(async () => {
+          console.log(`[P2P] Peer joined: ${peerId}`);
+          // Send handshake
+          setTimeout(() => {
             try {
-              const localWatermarks = await getLocalWatermarks();
-              console.log("[P2P] Initiating handshake with watermarks:", localWatermarks);
-              watermarksAction.send(localWatermarks, { target: peerId });
+              console.log("[P2P] Sending initial handshake to:", peerId);
+              handshakeAction.send(
+                {
+                  deviceId: getOrCreateDeviceIdentity(),
+                  name: getDeviceName(),
+                },
+                { target: peerId }
+              );
             } catch (err) {
-              console.error("[P2P] Failed to send initial watermarks:", err);
+              console.error("[P2P] Failed to send handshake on join:", err);
             }
           }, 500);
         };
 
         room.onPeerLeave = (peerId: string) => {
           console.log(`[P2P] Peer disconnected: ${peerId}`);
-          setConnectedPeers((prev) => {
-            const next = prev.filter((p) => p !== peerId);
-            if (next.length === 0) {
-              setConnectionStatus("connecting");
-            }
-            return next;
-          });
+          const devId = transientToPersistentMapRef.current.get(peerId);
+          if (devId) {
+            setConnectedPeers((prev) => {
+              const updated = prev.map((p) => {
+                if (p.peerId === devId) {
+                  return { ...p, status: "disconnected" as const };
+                }
+                return p;
+              });
+              saveStoredPairedDevices(updated);
+              return updated;
+            });
+            transientToPersistentMapRef.current.delete(peerId);
+          }
+
+          const activePeersCount = Array.from(transientToPersistentMapRef.current.keys()).length;
+          if (activePeersCount === 0) {
+            setConnectionStatus("connecting");
+          }
         };
       } catch (err) {
         console.error("[P2P] WebRTC connection initialization failed:", err);
@@ -173,10 +317,11 @@ export function P2PProvider({ children }: { children: React.ReactNode }) {
         roomRef.current.leave();
         roomRef.current = null;
       }
-      setConnectedPeers([]);
+      currentTransientMap.clear();
+      setConnectedPeers((prev) => prev.map((p) => ({ ...p, status: "disconnected" as const })));
       setConnectionStatus("disconnected");
     };
-  }, [pairingCode]);
+  }, [pairingCode, updateDeviceSyncTime]);
 
   // Hook into local write broadcasts for live instant updates
   useEffect(() => {
@@ -188,12 +333,10 @@ export function P2PProvider({ children }: { children: React.ReactNode }) {
     const handleLocalWrite = async (event: MessageEvent) => {
       const { type } = event.data || {};
 
-      // If a database update occurred, broadcast our new watermarks to all active peers
-      if (type === "DB_UPDATED" && roomRef.current && connectedPeers.length > 0) {
+      const activePeers = Array.from(transientToPersistentMapRef.current.keys());
+      if (type === "DB_UPDATED" && roomRef.current && activePeers.length > 0) {
         try {
-          // Look up or declare action
           const watermarksAction = roomRef.current.makeAction("watermarks");
-
           const localWatermarks = await getLocalWatermarks();
           console.log(
             "[P2P] Local write detected, broadcasting updated watermarks:",
@@ -212,11 +355,10 @@ export function P2PProvider({ children }: { children: React.ReactNode }) {
       dbChannel.removeEventListener("message", handleLocalWrite);
       dbChannel.close();
     };
-  }, [pairingCode, connectedPeers]);
+  }, [pairingCode]);
 
   const pairDevice = async (code: string): Promise<boolean> => {
     const cleanedCode = code.toUpperCase().trim();
-    // Validate format (e.g. KEI-XXXX-XXXX)
     if (!/^[A-Z0-9]{3,4}-[A-Z0-9]{4}-[A-Z0-9]{4}$/.test(cleanedCode)) {
       toast.error("Invalid pairing code format", {
         description: "Please enter a code in the format: KEI-XXXX-XXXX",
@@ -232,22 +374,35 @@ export function P2PProvider({ children }: { children: React.ReactNode }) {
     return true;
   };
 
-  const unpairDevice = () => {
-    localStorage.removeItem("kei_sync_pairing_code");
-    setPairingCode("");
-    if (roomRef.current) {
-      roomRef.current.leave();
-      roomRef.current = null;
+  const unpairDevice = (peerId?: string) => {
+    if (peerId) {
+      setConnectedPeers((prev) => {
+        const updated = prev.filter((p) => p.peerId !== peerId);
+        saveStoredPairedDevices(updated);
+        return updated;
+      });
+      toast.info("Device removed", {
+        description: "The selected device has been removed.",
+      });
+    } else {
+      localStorage.removeItem("kei_sync_pairing_code");
+      localStorage.removeItem("kei_paired_devices");
+      setPairingCode("");
+      setConnectedPeers([]);
+      if (roomRef.current) {
+        roomRef.current.leave();
+        roomRef.current = null;
+      }
+      transientToPersistentMapRef.current.clear();
+      setConnectionStatus("disconnected");
+      toast.info("Device unpaired successfully", {
+        description: "Local data is untouched, but syncing is now deactivated.",
+      });
     }
-    setConnectedPeers([]);
-    setConnectionStatus("disconnected");
-    toast.info("Device unpaired successfully", {
-      description: "Local data is untouched, but syncing is now deactivated.",
-    });
   };
 
   const generatePairingCode = (): string => {
-    const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"; // Removed ambiguous characters (I, O, 0, 1)
+    const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
     const genBlock = (length: number) =>
       Array.from({ length }, () => chars[Math.floor(Math.random() * chars.length)]).join("");
     const code = `KEI-${genBlock(4)}-${genBlock(4)}`;
@@ -261,32 +416,11 @@ export function P2PProvider({ children }: { children: React.ReactNode }) {
 
     return code;
   };
+
   const pairedDevices = (): Peer[] => {
-    // TODO: Get paired devices some storage place where data is persistent, but is not shared with other peers
-    return [
-      {
-        peerId: "peer1",
-        name: "peer1",
-        connectedAt: new Date(),
-        syncedAt: new Date(),
-        status: "connected",
-      },
-      {
-        peerId: "peer2",
-        name: "peer2",
-        connectedAt: new Date(),
-        syncedAt: new Date(),
-        status: "connected",
-      },
-      {
-        peerId: "peer3",
-        name: "peer3",
-        connectedAt: new Date(),
-        syncedAt: new Date(),
-        status: "connected",
-      },
-    ];
+    return connectedPeers;
   };
+
   return (
     <P2PContext.Provider
       value={{
