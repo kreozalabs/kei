@@ -5,6 +5,13 @@ import { getLocalWatermarks, getEventsSince } from "@/db/sync";
 import { importEvents } from "@/db/backup";
 import { toast } from "sonner";
 
+export interface Peer {
+  name: string;
+  peerId: string;
+  connectedAt: number | Date;
+  syncedAt: number | Date;
+  status: "disconnected" | "connecting" | "connected";
+}
 interface P2PContextType {
   isPaired: boolean;
   pairingCode: string;
@@ -13,6 +20,7 @@ interface P2PContextType {
   pairDevice: (code: string) => Promise<boolean>;
   unpairDevice: () => void;
   generatePairingCode: () => string;
+  pairedDevices: () => Peer[];
 }
 
 const P2PContext = createContext<P2PContextType | undefined>(undefined);
@@ -24,7 +32,7 @@ export function useP2P() {
   }
   return context;
 }
-
+// TODO: Refactor !!!
 export function P2PProvider({ children }: { children: React.ReactNode }) {
   const [pairingCode, setPairingCode] = useState<string>("");
   const [connectionStatus, setConnectionStatus] = useState<
@@ -253,7 +261,32 @@ export function P2PProvider({ children }: { children: React.ReactNode }) {
 
     return code;
   };
-
+  const pairedDevices = (): Peer[] => {
+    // TODO: Get paired devices some storage place where data is persistent, but is not shared with other peers
+    return [
+      {
+        peerId: "peer1",
+        name: "peer1",
+        connectedAt: new Date(),
+        syncedAt: new Date(),
+        status: "connected",
+      },
+      {
+        peerId: "peer2",
+        name: "peer2",
+        connectedAt: new Date(),
+        syncedAt: new Date(),
+        status: "connected",
+      },
+      {
+        peerId: "peer3",
+        name: "peer3",
+        connectedAt: new Date(),
+        syncedAt: new Date(),
+        status: "connected",
+      },
+    ];
+  };
   return (
     <P2PContext.Provider
       value={{
@@ -264,6 +297,7 @@ export function P2PProvider({ children }: { children: React.ReactNode }) {
         pairDevice,
         unpairDevice,
         generatePairingCode,
+        pairedDevices,
       }}
     >
       {children}

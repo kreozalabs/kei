@@ -1,63 +1,17 @@
 import { useState, useRef } from "react";
 import { Button, Input } from "@kreozalabs/ui";
-import {
-  Loader2,
-  Database,
-  RefreshCw,
-  Download,
-  Upload,
-  Smartphone,
-  WifiOff,
-  Link2,
-  Unlink,
-  Copy,
-  Check,
-} from "lucide-react";
+import { Loader2, Database, RefreshCw, Download, Upload } from "lucide-react";
 import { rebuildActions } from "@/db/actions";
 import { rebuildSettings } from "@/db/settings";
 import { toast } from "sonner";
 import { exportEvents, importEvents } from "@/db/backup";
-import { useP2P } from "@/providers/P2PProvider";
+import { SyncSettings } from "./SyncSettings";
 
 export function MaintenanceSettings() {
   const [isRebuilding, setIsRebuilding] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
   const [isImporting, setIsImporting] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
-
-  const {
-    isPaired,
-    pairingCode,
-    connectionStatus,
-    connectedPeers,
-    pairDevice,
-    unpairDevice,
-    generatePairingCode,
-  } = useP2P();
-
-  const [inputCode, setInputCode] = useState("");
-  const [generatedCode, setGeneratedCode] = useState("");
-  const [copied, setCopied] = useState(false);
-
-  const handleGenerate = () => {
-    setGeneratedCode(generatePairingCode());
-  };
-
-  const handlePair = async () => {
-    if (!inputCode) return;
-    const success = await pairDevice(inputCode);
-    if (success) {
-      setInputCode("");
-      setGeneratedCode("");
-    }
-  };
-
-  const handleCopy = () => {
-    navigator.clipboard.writeText(generatedCode || pairingCode);
-    setCopied(true);
-    toast.success("Code copied to clipboard");
-    setTimeout(() => setCopied(false), 2000);
-  };
 
   const handleRebuild = async () => {
     setIsRebuilding(true);
@@ -250,128 +204,7 @@ export function MaintenanceSettings() {
 
         {/* Device Sync (P2P) */}
         <div className="p-4 rounded-2xl bg-zinc-500/5 border border-border/50 space-y-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2 text-primary">
-              <Smartphone className="size-4" />
-              <h4 className="text-xs font-bold uppercase tracking-wider">Device Sync</h4>
-            </div>
-            {/* Connection Status Badge */}
-            <div className="flex items-center gap-1.5">
-              {!isPaired ? (
-                <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider border border-border bg-muted/30 text-muted-foreground">
-                  <WifiOff className="size-3" /> Unpaired
-                </span>
-              ) : connectionStatus === "connected" ? (
-                <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider border border-emerald-500/20 bg-emerald-500/10 text-emerald-500">
-                  <span className="size-1.5 rounded-full bg-emerald-500 animate-pulse" /> Connected
-                </span>
-              ) : (
-                <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider border border-amber-500/20 bg-amber-500/10 text-amber-500">
-                  <span className="size-1.5 rounded-full bg-amber-500 animate-pulse" /> Connecting
-                </span>
-              )}
-            </div>
-          </div>
-
-          <p className="text-[13px] text-muted-foreground leading-relaxed">
-            Synchronize tasks and settings directly with your other devices (laptop, phone) using
-            secure, real-time WebRTC channels.
-          </p>
-
-          {!isPaired ? (
-            <div className="space-y-4 pt-2">
-              {/* Option A: Generate pairing code */}
-              <div className="space-y-3">
-                <Button
-                  onClick={handleGenerate}
-                  variant="outline"
-                  className="w-full justify-center gap-2 h-10 rounded-xl bg-background hover:bg-muted border-border/50 text-foreground"
-                >
-                  <Link2 className="size-4 text-primary" />
-                  <span className="font-bold text-[12px] uppercase tracking-widest">
-                    Generate Pairing Code
-                  </span>
-                </Button>
-
-                {generatedCode && (
-                  <div className="flex items-center justify-between gap-3 p-3 rounded-xl bg-muted/30 border border-border/40">
-                    <span className="font-mono text-lg font-bold tracking-widest text-primary px-2 selection:bg-primary/20">
-                      {generatedCode}
-                    </span>
-                    <Button
-                      size="sm"
-                      onClick={handleCopy}
-                      variant="outline"
-                      className="rounded-lg h-8 px-3 bg-background hover:bg-muted border-border/50 text-foreground gap-1.5"
-                    >
-                      {copied ? (
-                        <Check className="size-3.5 text-emerald-500" />
-                      ) : (
-                        <Copy className="size-3.5" />
-                      )}
-                      <span className="text-[10px] font-bold uppercase tracking-wider">
-                        {copied ? "Copied" : "Copy"}
-                      </span>
-                    </Button>
-                  </div>
-                )}
-              </div>
-
-              {/* Option B: Input pairing code */}
-              <div className="space-y-2 pt-2 border-t border-border/30">
-                <p className="text-[11px] text-muted-foreground/80 uppercase tracking-widest font-bold">
-                  Or enter code from other device
-                </p>
-                <div className="flex gap-2">
-                  <Input
-                    placeholder="KEI-XXXX-XXXX"
-                    value={inputCode}
-                    onChange={(e) => setInputCode(e.target.value)}
-                    className="flex-1 rounded-xl h-10 border-border/50 text-center font-mono uppercase tracking-widest bg-background/50 placeholder:text-muted-foreground/45 text-sm"
-                  />
-                  <Button
-                    onClick={handlePair}
-                    disabled={!inputCode}
-                    variant="outline"
-                    className="h-10 rounded-xl px-5 bg-background hover:bg-muted border-border/50 font-bold text-[12px] uppercase tracking-widest text-primary disabled:opacity-50"
-                  >
-                    Pair
-                  </Button>
-                </div>
-              </div>
-            </div>
-          ) : (
-            <div className="space-y-4 pt-2">
-              {/* Paired state display */}
-              <div className="p-3.5 rounded-xl bg-muted/20 border border-border/30 space-y-2.5">
-                <div className="flex items-center justify-between text-xs">
-                  <span className="text-muted-foreground">Pairing Code</span>
-                  <span className="font-mono font-semibold tracking-wider text-foreground select-all">
-                    {pairingCode}
-                  </span>
-                </div>
-                <div className="flex items-center justify-between text-xs">
-                  <span className="text-muted-foreground">Active Peer Channels</span>
-                  <span className="font-semibold text-foreground">
-                    {connectedPeers.length > 0
-                      ? `${connectedPeers.length} active`
-                      : "waiting for peer..."}
-                  </span>
-                </div>
-              </div>
-
-              <Button
-                onClick={unpairDevice}
-                variant="outline"
-                className="w-full justify-center gap-2 h-10 rounded-xl bg-background hover:bg-red-500/5 border-border/50 text-red-500 hover:text-red-600 hover:border-red-500/20"
-              >
-                <Unlink className="size-4" />
-                <span className="font-bold text-[12px] uppercase tracking-widest">
-                  Unpair & Disconnect
-                </span>
-              </Button>
-            </div>
-          )}
+          <SyncSettings />
         </div>
       </div>
     </div>
