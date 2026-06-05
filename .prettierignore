@@ -1,4 +1,7 @@
+build/
 dist/
+dev-dist/
+.react-router/
 node_modules/
 .turbo/
 coverage/

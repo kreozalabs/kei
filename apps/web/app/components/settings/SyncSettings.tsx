@@ -358,8 +358,37 @@ export function SyncSettings() {
                     <div className="flex gap-2">
                       <Input
                         value={inputCode}
-                        onChange={(e) => setInputCode(e.target.value.toUpperCase())}
-                        placeholder="KEI-XXXX-XXXX"
+                        onChange={(e) => {
+                          const val = e.target.value;
+                          let raw = val.replace(/[^A-Z0-9]/gi, "").toUpperCase();
+                          if (
+                            raw.length > 0 &&
+                            !raw.startsWith("K") &&
+                            !raw.startsWith("E") &&
+                            !raw.startsWith("I")
+                          ) {
+                            raw = "KEI" + raw;
+                          } else if (raw.length >= 3 && !raw.startsWith("KEI")) {
+                            raw = "KEI" + raw;
+                          }
+
+                          let formatted = "";
+                          if (raw.length > 0) {
+                            formatted += raw.slice(0, Math.min(raw.length, 3));
+                          }
+                          if (raw.length > 3) {
+                            formatted += "-" + raw.slice(3, Math.min(raw.length, 7));
+                          }
+                          if (raw.length > 7) {
+                            formatted += "-" + raw.slice(7, Math.min(raw.length, 11));
+                          }
+                          if (raw.length > 11) {
+                            formatted += "-" + raw.slice(11, Math.min(raw.length, 15));
+                          }
+
+                          setInputCode(formatted);
+                        }}
+                        placeholder="KEI-XXXX-XXXX-XXXX"
                         className="h-9 bg-muted/20 border-border/30 rounded-xl text-xs font-mono tracking-wider placeholder:font-sans placeholder:tracking-normal flex-1"
                       />
                       <Button
