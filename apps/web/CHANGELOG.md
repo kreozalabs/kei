@@ -1,5 +1,29 @@
 # Changelog
 
+## [1.1.0](https://github.com/kreozalabs/kei/compare/@kreozalabs/kei-web-v1.0.0...@kreozalabs/kei-web-v1.1.0) (2026-06-05)
+
+
+### Features
+
+* add setting to show or hide completed actions ([82eb86e](https://github.com/kreozalabs/kei/commit/82eb86ed2595b45a71761f1950317765d295efe3))
+* add toggles for multi-select and selection hover animation ([17af09b](https://github.com/kreozalabs/kei/commit/17af09b791fc39679ec2cbafbc576d7fe3483358))
+* implement high-performance event data export and import ([80ef369](https://github.com/kreozalabs/kei/commit/80ef369445dafa159070423955944b5fdde4b902))
+* implement p2p sync ([5da37c4](https://github.com/kreozalabs/kei/commit/5da37c434a988e13c734d8a7534a940bb3f3f913))
+* implement sequence numbering and arrow-based reordering ([b09b3c1](https://github.com/kreozalabs/kei/commit/b09b3c1657671af42da104969d0f5cf13dd6d351))
+
+
+### Bug Fixes
+
+* default new task sort order to place them at bottom ([00dcca1](https://github.com/kreozalabs/kei/commit/00dcca1508a221c10be5c412006079a9d3298c96))
+* support bulk reactivate when all selected actions are completed ([dd79da9](https://github.com/kreozalabs/kei/commit/dd79da961bc352fcbf955ba860287831a83abdeb))
+* update redirects target to avoid cloudflare pages clean url redirect ([ea86afd](https://github.com/kreozalabs/kei/commit/ea86afdae2cfb988790116fa032e3e10cc147ddd))
+* update wrong changelog paths ([6816bcf](https://github.com/kreozalabs/kei/commit/6816bcfa520a8ee3f27fc8806498a286aaf52ebb))
+
+
+### Performance Improvements
+
+* optimize optimistic updates and consolidate database transactions ([cde139f](https://github.com/kreozalabs/kei/commit/cde139f3137c866e4c7fb07efe6aee414203812b))
+
 ## [1.0.0](https://github.com/kreozalabs/kei/compare/@kreozalabs/kei-web-v0.1.0...@kreozalabs/kei-web-v1.0.0) (2026-05-26)
 
 ### Features
