@@ -693,9 +693,9 @@ export function P2PProvider({ children }: { children: React.ReactNode }) {
             setConnectionStatus("connected");
 
             if (!alreadyMapped) {
-              toast.info("Paired device connected", {
-                description: `Direct channel established with ${msg.name || "paired device"}.`,
-              });
+              console.log(
+                `[P2P] Paired device connected: Direct channel established with ${msg.name || "paired device"}.`
+              );
               // Send back our own handshake if we haven't already
               try {
                 handshakeAction.send(
@@ -804,11 +804,6 @@ export function P2PProvider({ children }: { children: React.ReactNode }) {
           try {
             const imported = await importEvents(events);
             console.log(`[P2P] Import complete. Successfully imported ${imported} events.`);
-            if (imported > 0) {
-              toast.success("Synchronized successfully", {
-                description: `Synced ${imported} new updates from your paired device.`,
-              });
-            }
             // Update syncedAt for this peer
             if (devId) {
               updateDeviceSyncTime(devId);
