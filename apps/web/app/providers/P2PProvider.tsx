@@ -5,7 +5,7 @@ import { importEvents } from "@/db/backup";
 import { toast } from "sonner";
 import { getOrCreateDeviceIdentity, getDeviceName } from "@/utils/device";
 import { Button } from "@kreozalabs/ui";
-import type { Event } from "@/types/events";
+import type { Event as DBEvent } from "@/types/events";
 
 export interface Peer {
   name: string;
@@ -789,7 +789,7 @@ export function P2PProvider({ children }: { children: React.ReactNode }) {
           receivedEvents: unknown,
           { peerId }: { peerId: string }
         ) => {
-          const events = receivedEvents as Event[];
+          const events = receivedEvents as DBEvent[];
           console.log(`[P2P] Received ${events?.length} events from peer ${peerId}:`, events);
 
           const devId = transientToPersistentMapRef.current.get(peerId);
@@ -915,9 +915,9 @@ export function P2PProvider({ children }: { children: React.ReactNode }) {
       }
     };
 
-    const handleCustomEvent = async (event: Event) => {
-      const customEvent = event as CustomEvent;
-      const { type } = customEvent.detail || {};
+    const handleCustomEvent = async (event: globalThis.Event) => {
+      const customEvent = event as globalThis.CustomEvent;
+      const { type } = (customEvent.detail || {}) as { type?: string };
       if (type === "DB_UPDATED") {
         await triggerSync();
       }
