@@ -11,8 +11,7 @@ import {
 } from "../config/constants";
 import { persistEvent } from "./events";
 import { getTodayString } from "../utils/time";
-
-const channel = typeof window !== "undefined" ? new BroadcastChannel("kei_db_sync") : null;
+import { broadcastDbUpdate } from "../utils/broadcast";
 
 declare global {
   interface Window {
@@ -118,9 +117,7 @@ async function pushEvent(actionId: string, type: string, payload: ActionPayload)
       if (!updatedAction) {
         await db.query("DELETE FROM actions WHERE id = $1", [actionId]);
         await db.query("COMMIT");
-        if (channel) {
-          channel.postMessage({ type: "DB_UPDATED", entity: "actions" });
-        }
+        broadcastDbUpdate("actions");
         return event;
       }
 
@@ -162,9 +159,7 @@ async function pushEvent(actionId: string, type: string, payload: ActionPayload)
 
       await db.query("COMMIT");
 
-      if (channel) {
-        channel.postMessage({ type: "DB_UPDATED", entity: "actions" });
-      }
+      broadcastDbUpdate("actions");
 
       return event;
     } catch (error) {
@@ -264,9 +259,7 @@ async function bulkPushEvents(updates: { id: string; type: string; payload: Acti
         }
       }
       await db.query("COMMIT");
-      if (channel) {
-        channel.postMessage({ type: "DB_UPDATED", entity: "actions" });
-      }
+      broadcastDbUpdate("actions");
     } catch (error) {
       await db.query("ROLLBACK");
       throw error;
@@ -460,44 +453,51 @@ export async function rebuildActions() {
     }
   }
 
-  await db.query("DELETE FROM actions");
+  await db.query("BEGIN");
+  try {
+    await db.query("DELETE FROM actions");
 
-  const actions = Array.from(actionsMap.values()).filter(Boolean);
-  if (actions.length === 0) return;
+    const actions = Array.from(actionsMap.values()).filter(Boolean);
+    if (actions.length > 0) {
+      // Batch insert all actions
+      const valueStrings: string[] = [];
+      const values: unknown[] = [];
+      let paramIdx = 1;
 
-  // Batch insert all actions
-  const valueStrings: string[] = [];
-  const values: unknown[] = [];
-  let paramIdx = 1;
+      for (const action of actions) {
+        valueStrings.push(
+          `($${paramIdx++}, $${paramIdx++}, $${paramIdx++}, $${paramIdx++}, $${paramIdx++}, $${paramIdx++}, $${paramIdx++}, $${paramIdx++}, $${paramIdx++}, $${paramIdx++}, $${paramIdx++}, $${paramIdx++}, $${paramIdx++}, $${paramIdx++})`
+        );
+        values.push(
+          action.id,
+          action.title,
+          action.note,
+          action.intention,
+          action.important,
+          action.energy,
+          JSON.stringify(action.duration),
+          action.scheduledDate,
+          action.startTime,
+          action.endTime,
+          action.timezone,
+          action.status,
+          action.createdAt,
+          action.sortOrder
+        );
+      }
 
-  for (const action of actions) {
-    valueStrings.push(
-      `($${paramIdx++}, $${paramIdx++}, $${paramIdx++}, $${paramIdx++}, $${paramIdx++}, $${paramIdx++}, $${paramIdx++}, $${paramIdx++}, $${paramIdx++}, $${paramIdx++}, $${paramIdx++}, $${paramIdx++}, $${paramIdx++}, $${paramIdx++})`
-    );
-    values.push(
-      action.id,
-      action.title,
-      action.note,
-      action.intention,
-      action.important,
-      action.energy,
-      JSON.stringify(action.duration),
-      action.scheduledDate,
-      action.startTime,
-      action.endTime,
-      action.timezone,
-      action.status,
-      action.createdAt,
-      action.sortOrder
-    );
+      const insertQuery = `
+        INSERT INTO actions (
+          id, title, note, intention, important, energy, duration, 
+          scheduled_date, start_time, end_time, timezone, status, created_at, sort_order
+        ) VALUES ${valueStrings.join(", ")}
+      `;
+
+      await db.query(insertQuery, values);
+    }
+    await db.query("COMMIT");
+  } catch (error) {
+    await db.query("ROLLBACK");
+    throw error;
   }
-
-  const insertQuery = `
-    INSERT INTO actions (
-      id, title, note, intention, important, energy, duration, 
-      scheduled_date, start_time, end_time, timezone, status, created_at, sort_order
-    ) VALUES ${valueStrings.join(", ")}
-  `;
-
-  await db.query(insertQuery, values);
 }

@@ -5,6 +5,7 @@ import { rebuildActions } from "@/db/actions";
 import { rebuildSettings } from "@/db/settings";
 import { toast } from "sonner";
 import { exportEvents, importEvents } from "@/db/backup";
+import { SyncSettings } from "./SyncSettings";
 
 export function MaintenanceSettings() {
   const [isRebuilding, setIsRebuilding] = useState(false);
@@ -199,6 +200,11 @@ export function MaintenanceSettings() {
               className="hidden"
             />
           </div>
+        </div>
+
+        {/* Device Sync (P2P) */}
+        <div className="p-4 rounded-2xl bg-zinc-500/5 border border-border/50 space-y-4">
+          <SyncSettings />
         </div>
       </div>
     </div>

@@ -17,4 +17,6 @@ export interface Event<T = unknown> {
   type: EventType;
   timestamp: number;
   payload: T; // Data associated with this state change
+  originDeviceId?: string;
+  sequenceNumber?: number;
 }

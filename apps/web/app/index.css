@@ -38,6 +38,18 @@ body {
   --text-lg: var(--text-lg-val);
   --text-sm: var(--text-sm-val);
   --text-xs: var(--text-xs-val);
+
+  --animate-scan: scan 2s linear infinite;
+
+  @keyframes scan {
+    0%,
+    100% {
+      top: 0%;
+    }
+    50% {
+      top: 100%;
+    }
+  }
 }
 
 @utility no-scrollbar {
