@@ -226,7 +226,7 @@ export function SyncSettings() {
                 </div>
               </DialogContent>
             </Dialog>
-            
+
             <Dialog open={confirmLeaveOpen} onOpenChange={setConfirmLeaveOpen}>
               <DialogTrigger asChild>
                 <Button
@@ -242,7 +242,8 @@ export function SyncSettings() {
                     Leave Sync Chain
                   </DialogTitle>
                   <DialogDescription className="text-xs text-muted-foreground text-center">
-                    Are you sure you want to disconnect this device from the sync chain? This will stop real-time data synchronization.
+                    Are you sure you want to disconnect this device from the sync chain? This will
+                    stop real-time data synchronization.
                   </DialogDescription>
                 </DialogHeader>
 

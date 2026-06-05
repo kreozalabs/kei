@@ -354,7 +354,7 @@ export function P2PProvider({ children }: { children: React.ReactNode }) {
           console.log(`[P2P] Received watermarks from peer ${peerId}:`, peerWatermarks);
           try {
             const localWatermarks = await getLocalWatermarks();
-            
+
             // 1. Check if the local device is missing any events that the peer has
             let localIsMissingEvents = false;
             for (const devId in peerWatermarks) {
@@ -367,13 +367,19 @@ export function P2PProvider({ children }: { children: React.ReactNode }) {
             }
 
             if (localIsMissingEvents) {
-              console.log(`[P2P] Local device is behind peer ${peerId}. Requesting updates by sending local watermarks:`, localWatermarks);
+              console.log(
+                `[P2P] Local device is behind peer ${peerId}. Requesting updates by sending local watermarks:`,
+                localWatermarks
+              );
               watermarksAction.send(localWatermarks, { target: peerId });
             }
 
             // 2. Check if the peer is missing any events that we have
             const missingEvents = await getEventsSince(peerWatermarks);
-            console.log(`[P2P] Delta computation: peer ${peerId} is missing ${missingEvents.length} events:`, missingEvents);
+            console.log(
+              `[P2P] Delta computation: peer ${peerId} is missing ${missingEvents.length} events:`,
+              missingEvents
+            );
             if (missingEvents.length > 0) {
               console.log(`[P2P] Sending ${missingEvents.length} delta events to peer ${peerId}`);
               eventsAction.send(missingEvents, { target: peerId });
@@ -390,7 +396,10 @@ export function P2PProvider({ children }: { children: React.ReactNode }) {
 
         // Action 2: On receiving peer events, bulk import them
         eventsAction.onMessage = async (receivedEvents: any[], { peerId }: { peerId: string }) => {
-          console.log(`[P2P] Received ${receivedEvents?.length} events from peer ${peerId}:`, receivedEvents);
+          console.log(
+            `[P2P] Received ${receivedEvents?.length} events from peer ${peerId}:`,
+            receivedEvents
+          );
           try {
             const imported = await importEvents(receivedEvents);
             console.log(`[P2P] Import complete. Successfully imported ${imported} events.`);

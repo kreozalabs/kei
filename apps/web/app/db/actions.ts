@@ -13,7 +13,6 @@ import { persistEvent } from "./events";
 import { getTodayString } from "../utils/time";
 import { broadcastDbUpdate } from "../utils/broadcast";
 
-
 declare global {
   interface Window {
     __activeWrites?: number;
