@@ -10,7 +10,7 @@
     "lint": "turbo lint",
     "typecheck": "turbo typecheck",
     "format": "prettier --write .",
-    "clean": "pnpm -r exec rm -rf node_modules dist .turbo .react-router build"
+    "clean": "pnpm exec rm -rf node_modules .turbo && pnpm -r exec rm -rf node_modules .turbo .react-router dev-dist build dist"
   },
   "keywords": [],
   "author": "",
