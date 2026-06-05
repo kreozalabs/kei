@@ -2,6 +2,7 @@ import { db } from "./index";
 import { rebuildActions } from "./actions";
 import { rebuildSettings } from "./settings";
 import type { Event, EventType } from "../types/events";
+import { broadcastDbUpdate } from "../utils/broadcast";
 
 /**
  * Queries and exports all event records chronologically from the local event log.
@@ -37,12 +38,38 @@ export async function exportEvents(): Promise<Event[]> {
  * Processes a batch of events and returns the count of newly inserted events.
  * Events are inserted using a single SQL transaction with ON CONFLICT DO NOTHING to ensure idempotency.
  */
+class Mutex {
+  private queue = Promise.resolve();
+
+  async run<T>(fn: () => Promise<T>): Promise<T> {
+    const res = new Promise<T>((resolve, reject) => {
+      this.queue = this.queue.then(async () => {
+        try {
+          const val = await fn();
+          resolve(val);
+        } catch (err) {
+          reject(err);
+        }
+      });
+    });
+    return res;
+  }
+}
+
+const importMutex = new Mutex();
+
 export async function importEvents(events: Event[]): Promise<number> {
+  return importMutex.run(() => executeImportEvents(events));
+}
+
+async function executeImportEvents(events: Event[]): Promise<number> {
+  console.log("[P2P/Import] Received events to import:", events);
   if (!Array.isArray(events)) {
     throw new Error("Invalid backup format: data is not a list of events.");
   }
 
   const validEvents = events.filter((e) => e.eventId && e.id && e.type && e.timestamp);
+  console.log(`[P2P/Import] Valid events count: ${validEvents.length} / total: ${events.length}`);
 
   if (validEvents.length === 0) {
     return 0;
@@ -93,11 +120,8 @@ export async function importEvents(events: Event[]): Promise<number> {
     await rebuildSettings();
 
     // 2. Notify all tabs that the database was updated
-    if (typeof window !== "undefined") {
-      const channel = new BroadcastChannel("kei_db_sync");
-      channel.postMessage({ type: "DB_UPDATED", entity: "actions" });
-      channel.postMessage({ type: "DB_UPDATED", entity: "settings" });
-    }
+    broadcastDbUpdate("actions");
+    broadcastDbUpdate("settings");
 
     return importedCount;
   } catch (error) {

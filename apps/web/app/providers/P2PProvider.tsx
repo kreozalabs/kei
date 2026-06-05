@@ -43,6 +43,9 @@ export function P2PProvider({ children }: { children: React.ReactNode }) {
   const roomRef = useRef<any>(null);
   const dbChannelRef = useRef<BroadcastChannel | null>(null);
   const transientToPersistentMapRef = useRef<Map<string, string>>(new Map());
+  const handshakeActionRef = useRef<any>(null);
+  const watermarksActionRef = useRef<any>(null);
+  const eventsActionRef = useRef<any>(null);
 
   // Helper to load paired devices from localStorage
   const getStoredPairedDevices = (): Peer[] => {
@@ -185,6 +188,10 @@ export function P2PProvider({ children }: { children: React.ReactNode }) {
         const handshakeAction = room.makeAction("handshake");
         const watermarksAction = room.makeAction("watermarks");
         const eventsAction = room.makeAction("events");
+
+        handshakeActionRef.current = handshakeAction;
+        watermarksActionRef.current = watermarksAction;
+        eventsActionRef.current = eventsAction;
 
         // Action 0: Handshake protocol to discover peer's persistent identity & name
         handshakeAction.onMessage = (data: any, { peerId }: { peerId: string }) => {
@@ -344,9 +351,29 @@ export function P2PProvider({ children }: { children: React.ReactNode }) {
           peerWatermarks: any,
           { peerId }: { peerId: string }
         ) => {
-          console.log(`[P2P] Received watermarks from peer ${peerId}`);
+          console.log(`[P2P] Received watermarks from peer ${peerId}:`, peerWatermarks);
           try {
+            const localWatermarks = await getLocalWatermarks();
+            
+            // 1. Check if the local device is missing any events that the peer has
+            let localIsMissingEvents = false;
+            for (const devId in peerWatermarks) {
+              const peerSeq = peerWatermarks[devId] || 0;
+              const localSeq = localWatermarks[devId] || 0;
+              if (peerSeq > localSeq) {
+                localIsMissingEvents = true;
+                break;
+              }
+            }
+
+            if (localIsMissingEvents) {
+              console.log(`[P2P] Local device is behind peer ${peerId}. Requesting updates by sending local watermarks:`, localWatermarks);
+              watermarksAction.send(localWatermarks, { target: peerId });
+            }
+
+            // 2. Check if the peer is missing any events that we have
             const missingEvents = await getEventsSince(peerWatermarks);
+            console.log(`[P2P] Delta computation: peer ${peerId} is missing ${missingEvents.length} events:`, missingEvents);
             if (missingEvents.length > 0) {
               console.log(`[P2P] Sending ${missingEvents.length} delta events to peer ${peerId}`);
               eventsAction.send(missingEvents, { target: peerId });
@@ -363,9 +390,10 @@ export function P2PProvider({ children }: { children: React.ReactNode }) {
 
         // Action 2: On receiving peer events, bulk import them
         eventsAction.onMessage = async (receivedEvents: any[], { peerId }: { peerId: string }) => {
-          console.log(`[P2P] Received ${receivedEvents.length} events from peer ${peerId}`);
+          console.log(`[P2P] Received ${receivedEvents?.length} events from peer ${peerId}:`, receivedEvents);
           try {
             const imported = await importEvents(receivedEvents);
+            console.log(`[P2P] Import complete. Successfully imported ${imported} events.`);
             if (imported > 0) {
               toast.success("Synchronized successfully", {
                 description: `Synced ${imported} new updates from your paired device.`,
@@ -441,6 +469,9 @@ export function P2PProvider({ children }: { children: React.ReactNode }) {
         roomRef.current.leave();
         roomRef.current = null;
       }
+      handshakeActionRef.current = null;
+      watermarksActionRef.current = null;
+      eventsActionRef.current = null;
       currentTransientMap.clear();
       setConnectedPeers((prev) => prev.map((p) => ({ ...p, status: "disconnected" as const })));
       setConnectionStatus("disconnected");
@@ -454,29 +485,43 @@ export function P2PProvider({ children }: { children: React.ReactNode }) {
     const dbChannel = new BroadcastChannel("kei_db_sync");
     dbChannelRef.current = dbChannel;
 
-    const handleLocalWrite = async (event: MessageEvent) => {
-      const { type } = event.data || {};
-
+    const triggerSync = async () => {
       const activePeers = Array.from(transientToPersistentMapRef.current.keys());
-      if (type === "DB_UPDATED" && roomRef.current && activePeers.length > 0) {
+      if (roomRef.current && watermarksActionRef.current && activePeers.length > 0) {
         try {
-          const watermarksAction = roomRef.current.makeAction("watermarks");
           const localWatermarks = await getLocalWatermarks();
           console.log(
             "[P2P] Local write detected, broadcasting updated watermarks:",
             localWatermarks
           );
-          watermarksAction.send(localWatermarks);
+          watermarksActionRef.current.send(localWatermarks);
         } catch (err) {
           console.error("[P2P] Failed to broadcast write update:", err);
         }
       }
     };
 
-    dbChannel.addEventListener("message", handleLocalWrite);
+    const handleMessageEvent = async (event: MessageEvent) => {
+      const { type } = event.data || {};
+      if (type === "DB_UPDATED") {
+        await triggerSync();
+      }
+    };
+
+    const handleCustomEvent = async (event: Event) => {
+      const customEvent = event as CustomEvent;
+      const { type } = customEvent.detail || {};
+      if (type === "DB_UPDATED") {
+        await triggerSync();
+      }
+    };
+
+    dbChannel.addEventListener("message", handleMessageEvent);
+    window.addEventListener("kei_db_sync_local", handleCustomEvent);
 
     return () => {
-      dbChannel.removeEventListener("message", handleLocalWrite);
+      dbChannel.removeEventListener("message", handleMessageEvent);
+      window.removeEventListener("kei_db_sync_local", handleCustomEvent);
       dbChannel.close();
     };
   }, [pairingCode]);
@@ -509,10 +554,9 @@ export function P2PProvider({ children }: { children: React.ReactNode }) {
         }
       }
 
-      if (transientId && roomRef.current) {
+      if (transientId && roomRef.current && handshakeActionRef.current) {
         try {
-          const handshakeAction = roomRef.current.makeAction("handshake");
-          handshakeAction.send(
+          handshakeActionRef.current.send(
             {
               type: "UNPAIR_COMMAND",
               targetDeviceId: peerId,

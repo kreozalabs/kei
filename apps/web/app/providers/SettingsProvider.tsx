@@ -88,16 +88,28 @@ export function SettingsProvider({
 
     loadFromDb();
 
-    // Listen to broadcast channel for changes in other tabs
+    // Listen to broadcast channel and custom local events for settings updates
     const channel = new BroadcastChannel("kei_db_sync");
     const handleMessage = (e: MessageEvent) => {
       if (e.data && e.data.type === "DB_UPDATED" && e.data.entity === "settings") {
         loadFromDb();
       }
     };
+    const handleCustomEvent = (e: Event) => {
+      const customEvent = e as CustomEvent;
+      if (
+        customEvent.detail &&
+        customEvent.detail.type === "DB_UPDATED" &&
+        customEvent.detail.entity === "settings"
+      ) {
+        loadFromDb();
+      }
+    };
     channel.addEventListener("message", handleMessage);
+    window.addEventListener("kei_db_sync_local", handleCustomEvent);
     return () => {
       channel.removeEventListener("message", handleMessage);
+      window.removeEventListener("kei_db_sync_local", handleCustomEvent);
       channel.close();
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
