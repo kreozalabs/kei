@@ -9,12 +9,12 @@
     "apps/web": {
       "release-type": "node",
       "component": "@kreozalabs/kei-web",
-      "changelog-path": "apps/web/CHANGELOG.md"
+      "changelog-path": "CHANGELOG.md"
     },
     "packages/ui": {
       "release-type": "node",
       "component": "@kreozalabs/ui",
-      "changelog-path": "packages/ui/CHANGELOG.md"
+      "changelog-path": "CHANGELOG.md"
     }
   },
   "plugins": [
