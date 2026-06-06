@@ -13,6 +13,7 @@ export default defineConfig(({ command }) => ({
     reactRouter(),
     tailwindcss(),
     VitePWA({
+      outDir: "build/client",
       includeAssets: [
         "favicon.svg",
         "mask-icon.svg",
@@ -22,7 +23,6 @@ export default defineConfig(({ command }) => ({
         "mask-icon-512.png",
       ],
       registerType: "autoUpdate",
-      injectRegister: null,
       manifest: {
         id: "/app",
         name: "Kei",
@@ -62,7 +62,7 @@ export default defineConfig(({ command }) => ({
       },
       workbox: {
         globPatterns: ["**/*.{js,css,html,ico,png,svg}"],
-        maximumFileSizeToCacheInBytes: 2 * 1024 * 1024,
+        maximumFileSizeToCacheInBytes: 15 * 1024 * 1024,
         navigateFallback: "__spa-fallback.html",
         additionalManifestEntries: [
           { url: "__spa-fallback.html", revision: Date.now().toString() },

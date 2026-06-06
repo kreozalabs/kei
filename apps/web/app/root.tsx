@@ -51,6 +51,34 @@ export function Layout({ children }: { children: React.ReactNode }) {
               }
             );
           },
+          onRegisteredSW(swUrl, r) {
+            const intervalMS = 60 * 60 * 1000;
+            if (r) {
+              setInterval(async () => {
+                if (r.installing || !navigator) return;
+
+                if ("connection" in navigator && !navigator.onLine) return;
+
+                try {
+                  console.log("Checking for service worker updates...");
+                  const resp = await fetch(swUrl, {
+                    cache: "no-store",
+                    headers: {
+                      cache: "no-store",
+                      "cache-control": "no-cache",
+                    },
+                  });
+
+                  if (resp?.status === 200) {
+                    await r.update();
+                  }
+                } catch (error) {
+                  // handle fetch failure/network error gracefully (server is down)
+                  console.error("Failed to check for service worker updates:", error);
+                }
+              }, intervalMS);
+            }
+          },
         });
       });
     }
