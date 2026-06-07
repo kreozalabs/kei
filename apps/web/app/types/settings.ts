@@ -27,6 +27,7 @@ export interface Settings {
   shift_on_selection_hover: boolean;
   default_insert_at_top: boolean;
   show_intentions: boolean;
+  show_default_energy: boolean;
 }
 
 export type SettingKey = keyof Settings;

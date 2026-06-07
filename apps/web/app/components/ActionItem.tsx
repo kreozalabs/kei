@@ -93,6 +93,8 @@ export function ActionItem({
     INTENTION_OPTIONS.find((opt) => opt.value === action.intention) || INTENTION_OPTIONS[0];
   const todayString = useCurrentDay();
   const isOverdue = action.scheduledDate < todayString;
+  const isDefaultEnergy = action.energy === (settings.default_energy || "medium");
+  const shouldShowEnergy = settings.show_default_energy || !isDefaultEnergy;
 
   const rescheduleLabel = (() => {
     if (isOverdue) {
@@ -392,29 +394,31 @@ export function ActionItem({
                       : `${action.duration[0]}-${action.duration[1]}m`}
                   </span>
                 )}
-                <div
-                  className={cn(
-                    "px-1.5 sm:px-2 py-0.5 rounded-full text-[10px] font-bold border flex items-center gap-1 sm:gap-1.5",
-                    energyConfig?.bg || "bg-muted/50 border-border/50"
-                  )}
-                  title={`Energy: ${action.energy}`}
-                >
-                  {action.energy === ENERGY_LEVELS.HIGH ? (
-                    <BatteryFull className={cn("size-3", energyConfig?.color)} />
-                  ) : action.energy === ENERGY_LEVELS.MEDIUM ? (
-                    <BatteryMedium className={cn("size-3", energyConfig?.color)} />
-                  ) : (
-                    <BatteryLow className={cn("size-3", energyConfig?.color)} />
-                  )}
-                  <span
+                {shouldShowEnergy && (
+                  <div
                     className={cn(
-                      "uppercase tracking-wider hidden sm:inline",
-                      energyConfig?.color || "text-muted-foreground"
+                      "px-1.5 sm:px-2 py-0.5 rounded-full text-[10px] font-bold border flex items-center gap-1 sm:gap-1.5",
+                      energyConfig?.bg || "bg-muted/50 border-border/50"
                     )}
+                    title={`Energy: ${action.energy}`}
                   >
-                    {action.energy}
-                  </span>
-                </div>
+                    {action.energy === ENERGY_LEVELS.HIGH ? (
+                      <BatteryFull className={cn("size-3", energyConfig?.color)} />
+                    ) : action.energy === ENERGY_LEVELS.MEDIUM ? (
+                      <BatteryMedium className={cn("size-3", energyConfig?.color)} />
+                    ) : (
+                      <BatteryLow className={cn("size-3", energyConfig?.color)} />
+                    )}
+                    <span
+                      className={cn(
+                        "uppercase tracking-wider hidden sm:inline",
+                        energyConfig?.color || "text-muted-foreground"
+                      )}
+                    >
+                      {action.energy}
+                    </span>
+                  </div>
+                )}
               </div>
             </div>
             {settings.show_intentions && action.intention === INTENTIONS.WANT && (
