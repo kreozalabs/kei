@@ -53,8 +53,23 @@ function applyEventToAction(action: Action | null, event: Event<ActionPayload>):
   }
 
   switch (type) {
-    case EVENT_TYPES.ACTION_UPDATED:
-      return { ...action, ...payload };
+    case EVENT_TYPES.ACTION_UPDATED: {
+      const hasScheduledDateChanged =
+        payload.scheduledDate !== undefined && payload.scheduledDate !== action.scheduledDate;
+
+      const nextSortOrder =
+        payload.sortOrder !== undefined
+          ? payload.sortOrder
+          : hasScheduledDateChanged
+            ? -timestamp
+            : action.sortOrder;
+
+      return {
+        ...action,
+        ...payload,
+        sortOrder: nextSortOrder,
+      };
+    }
     case EVENT_TYPES.ACTION_COMPLETED:
       return { ...action, status: ACTION_STATUS.COMPLETED as ActionStatus };
     case EVENT_TYPES.ACTION_ACTIVATED:
@@ -288,13 +303,7 @@ export async function bulkAbandonActions(ids: string[]) {
 }
 
 export async function bulkUpdateActions(ids: string[], payload: Partial<ActionPayload>) {
-  const updatedPayload = { ...payload };
-  if (payload.scheduledDate && payload.sortOrder === undefined) {
-    updatedPayload.sortOrder = -Date.now();
-  }
-  await bulkPushEvents(
-    ids.map((id) => ({ id, type: EVENT_TYPES.ACTION_UPDATED, payload: updatedPayload }))
-  );
+  await bulkPushEvents(ids.map((id) => ({ id, type: EVENT_TYPES.ACTION_UPDATED, payload })));
 }
 
 export async function bulkStatusUpdateActions(updates: { id: string; status: ActionStatus }[]) {
@@ -313,13 +322,8 @@ export async function bulkStatusUpdateActions(updates: { id: string; status: Act
 export async function bulkUpdateMultipleActions(
   updates: { id: string; payload: Partial<ActionPayload> }[]
 ) {
-  const now = Date.now();
   const processedUpdates = updates.map(({ id, payload }) => {
-    const updatedPayload = { ...payload };
-    if (payload.scheduledDate && payload.sortOrder === undefined) {
-      updatedPayload.sortOrder = -now;
-    }
-    return { id, type: EVENT_TYPES.ACTION_UPDATED, payload: updatedPayload };
+    return { id, type: EVENT_TYPES.ACTION_UPDATED, payload };
   });
   await bulkPushEvents(processedUpdates);
 }
@@ -382,20 +386,35 @@ export async function getActions(filters?: {
 
 export async function addAction(payload: ActionPayload) {
   const actionId = uuidv7();
+  let finalSortOrder = payload.sortOrder;
+  if (finalSortOrder === undefined) {
+    if (payload.insertAtTop) {
+      const scheduledDate = payload.scheduledDate || getTodayString();
+      const result = await db.query(
+        "SELECT MAX(sort_order) as max_order FROM actions WHERE scheduled_date = $1 AND status = 'active'",
+        [scheduledDate]
+      );
+      const maxOrder = (result.rows[0] as Record<string, unknown> | undefined)?.max_order;
+      finalSortOrder =
+        maxOrder !== null && maxOrder !== undefined ? Number(maxOrder) + 1 : -Date.now();
+    } else {
+      finalSortOrder = -Date.now();
+    }
+  }
+
+  const cleanPayload = { ...payload };
+  delete cleanPayload.insertAtTop;
+
   await pushEvent(actionId, EVENT_TYPES.ACTION_INTENDED, {
-    ...payload,
+    ...cleanPayload,
     scheduledDate: payload.scheduledDate || getTodayString(),
-    sortOrder: payload.sortOrder ?? -Date.now(),
+    sortOrder: finalSortOrder,
   });
   return actionId;
 }
 
 export async function updateAction(id: string, payload: Partial<ActionPayload>) {
-  const updatedPayload = { ...payload };
-  if (payload.scheduledDate && payload.sortOrder === undefined) {
-    updatedPayload.sortOrder = -Date.now();
-  }
-  await pushEvent(id, EVENT_TYPES.ACTION_UPDATED, updatedPayload);
+  await pushEvent(id, EVENT_TYPES.ACTION_UPDATED, payload);
 }
 
 export async function completeAction(id: string) {

@@ -1,5 +1,6 @@
+import { useState } from "react";
 import type { Action, ActionStatus } from "../types/actions";
-import { Button, cn, Checkbox } from "@kreozalabs/ui";
+import { Button, cn, Checkbox, Input } from "@kreozalabs/ui";
 import {
   Trash2Icon,
   CheckCircle2Icon,
@@ -25,7 +26,7 @@ import {
 } from "@kreozalabs/ui";
 import { NextDayBadge } from "./NextDayBadge";
 import { useSettings } from "../providers/SettingsContext";
-import { formatTime } from "../utils/time";
+import { formatTime, getNextDayString } from "../utils/time";
 import { useCurrentDay } from "../hooks/useCurrentDay";
 import {
   ACTION_STATUS,
@@ -51,6 +52,8 @@ interface ActionItemProps {
   index?: number;
   onMoveUp?: (action: Action) => void;
   onMoveDown?: (action: Action) => void;
+  onMoveToPosition?: (action: Action, targetIndex: number) => void;
+  onQuickReschedule?: (action: Action) => void;
   isFirstActive?: boolean;
   isLastActive?: boolean;
 }
@@ -69,17 +72,45 @@ export function ActionItem({
   index,
   onMoveUp,
   onMoveDown,
+  onMoveToPosition,
+  onQuickReschedule,
   isFirstActive = false,
   isLastActive = false,
 }: ActionItemProps) {
   const { settings } = useSettings();
   const timeFormat = settings.time_format;
 
+  const [isEditingIndex, setIsEditingIndex] = useState(false);
+  const [editIndexValue, setEditIndexValue] = useState(String(index || ""));
+  const [prevIndex, setPrevIndex] = useState(index);
+
+  if (index !== prevIndex) {
+    setPrevIndex(index);
+    setEditIndexValue(String(index || ""));
+  }
+
   const energyConfig = ENERGY_OPTIONS.find((opt) => opt.value === action.energy?.toLowerCase());
   const intentionConfig =
     INTENTION_OPTIONS.find((opt) => opt.value === action.intention) || INTENTION_OPTIONS[0];
   const todayString = useCurrentDay();
   const isOverdue = action.scheduledDate < todayString;
+
+  const rescheduleLabel = (() => {
+    if (isOverdue) {
+      return "Reschedule to Today";
+    }
+    if (action.scheduledDate === todayString) {
+      return "Reschedule to Tomorrow";
+    }
+    try {
+      const nextDateStr = getNextDayString(action.scheduledDate);
+      const nextDate = new Date(nextDateStr + "T12:00:00");
+      const weekday = nextDate.toLocaleDateString("en-US", { weekday: "long" });
+      return `Reschedule to ${weekday}`;
+    } catch {
+      return "Reschedule to Next Day";
+    }
+  })();
 
   return (
     <motion.div
@@ -116,11 +147,15 @@ export function ActionItem({
             size="icon-xs"
             onClick={(e) => {
               e.stopPropagation();
-              onMoveUp?.(action);
+              if (e.shiftKey) {
+                onMoveToPosition?.(action, 1);
+              } else {
+                onMoveUp?.(action);
+              }
             }}
             disabled={isFirstActive}
             className="size-5 text-muted-foreground/50 hover:text-primary hover:bg-primary/10 disabled:opacity-0 rounded-md transition-all active:scale-90"
-            title="Move up"
+            title="Move up (Shift-click to move to top)"
           >
             <ChevronUp className="size-3.5" />
           </Button>
@@ -129,11 +164,15 @@ export function ActionItem({
             size="icon-xs"
             onClick={(e) => {
               e.stopPropagation();
-              onMoveDown?.(action);
+              if (e.shiftKey) {
+                onMoveToPosition?.(action, Infinity);
+              } else {
+                onMoveDown?.(action);
+              }
             }}
             disabled={isLastActive}
             className="size-5 text-muted-foreground/50 hover:text-primary hover:bg-primary/10 disabled:opacity-0 rounded-md transition-all active:scale-90"
-            title="Move down"
+            title="Move down (Shift-click to move to bottom)"
           >
             <ChevronDown className="size-3.5" />
           </Button>
@@ -233,8 +272,58 @@ export function ActionItem({
                 )}
               >
                 {index !== undefined && (
-                  <span className="text-[11px] font-bold text-muted-foreground/40 tabular-nums mr-1.5 select-none inline-block w-4">
-                    {index}
+                  <span
+                    className="mr-1.5 select-none inline-block w-5 shrink-0"
+                    onClick={(e) => {
+                      if (type === ACTION_STATUS.ACTIVE) {
+                        e.stopPropagation();
+                        setIsEditingIndex(true);
+                      }
+                    }}
+                  >
+                    {isEditingIndex ? (
+                      <Input
+                        type="text"
+                        value={editIndexValue}
+                        onChange={(e) => setEditIndexValue(e.target.value)}
+                        onBlur={() => {
+                          setIsEditingIndex(false);
+                          const val = parseInt(editIndexValue, 10);
+                          if (!isNaN(val) && val !== index) {
+                            onMoveToPosition?.(action, val);
+                          } else {
+                            setEditIndexValue(String(index));
+                          }
+                        }}
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter") {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            setIsEditingIndex(false);
+                            const val = parseInt(editIndexValue, 10);
+                            if (!isNaN(val) && val !== index) {
+                              onMoveToPosition?.(action, val);
+                            } else {
+                              setEditIndexValue(String(index));
+                            }
+                          } else if (e.key === "Escape") {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            setIsEditingIndex(false);
+                            setEditIndexValue(String(index));
+                          }
+                        }}
+                        autoFocus
+                        className="h-5 w-6 text-[10px] font-black text-center p-0 border border-primary bg-background focus-visible:ring-0 rounded"
+                      />
+                    ) : (
+                      <span
+                        className="text-[11px] font-bold text-muted-foreground/40 hover:text-primary hover:font-black tabular-nums cursor-pointer transition-colors"
+                        title="Click to change order position"
+                      >
+                        {index}
+                      </span>
+                    )}
                   </span>
                 )}
                 {action.title}
@@ -358,6 +447,20 @@ export function ActionItem({
       {type === ACTION_STATUS.ACTIVE && (
         <div className="flex items-center gap-0.5 shrink-0 ml-1">
           {/* Desktop Hover Actions */}
+          {type === ACTION_STATUS.ACTIVE && (
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={(e) => {
+                e.stopPropagation();
+                onQuickReschedule?.(action);
+              }}
+              className="hidden lg:flex opacity-0 group-hover:opacity-100 transition-all duration-200 size-7 text-muted-foreground/40 hover:text-primary hover:bg-primary/10 select-none active:scale-90 hover:scale-110"
+              title={rescheduleLabel}
+            >
+              <CalendarIcon className="size-3.5" />
+            </Button>
+          )}
           <Button
             variant="ghost"
             size="icon"
@@ -398,8 +501,20 @@ export function ActionItem({
               </DropdownMenuTrigger>
               <DropdownMenuContent
                 align="end"
-                className="w-32 bg-background border-border/40 shadow-xl p-1 animate-in fade-in zoom-in-95 duration-200 ring-0"
+                className="w-48 bg-background border-border/40 shadow-xl p-1 animate-in fade-in zoom-in-95 duration-200 ring-0"
               >
+                {type === ACTION_STATUS.ACTIVE && (
+                  <DropdownMenuItem
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onQuickReschedule?.(action);
+                    }}
+                    className="flex items-center gap-2 px-2 py-1.5 text-[13px] font-medium hover:bg-muted/50 rounded-md transition-colors"
+                  >
+                    <CalendarIcon className="size-3.5 text-muted-foreground/60" />
+                    {rescheduleLabel}
+                  </DropdownMenuItem>
+                )}
                 <DropdownMenuItem
                   onClick={(e) => {
                     e.stopPropagation();
