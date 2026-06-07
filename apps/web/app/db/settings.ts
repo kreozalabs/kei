@@ -17,16 +17,27 @@ export async function getSetting<T>(key: SettingKey): Promise<T | null> {
 }
 
 export async function setSetting(key: SettingKey, value: unknown) {
-  // 1. Persist the event globally
-  await persistEvent(GLOBAL_SETTINGS_ID, EVENT_TYPES.SETTING_UPDATED, { key, value });
+  if (typeof window !== "undefined") {
+    window.__activeWrites = (window.__activeWrites || 0) + 1;
+    window.dispatchEvent(new CustomEvent("kei_active_writes_change"));
+  }
+  try {
+    // 1. Persist the event globally
+    await persistEvent(GLOBAL_SETTINGS_ID, EVENT_TYPES.SETTING_UPDATED, { key, value });
 
-  // 2. Update the materialized view
-  await db.query(
-    "INSERT INTO settings (key, value) VALUES ($1, $2) ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value",
-    [key, JSON.stringify(value)]
-  );
+    // 2. Update the materialized view
+    await db.query(
+      "INSERT INTO settings (key, value) VALUES ($1, $2) ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value",
+      [key, JSON.stringify(value)]
+    );
 
-  broadcastDbUpdate("settings");
+    broadcastDbUpdate("settings");
+  } finally {
+    if (typeof window !== "undefined") {
+      window.__activeWrites = Math.max(0, (window.__activeWrites || 0) - 1);
+      window.dispatchEvent(new CustomEvent("kei_active_writes_change"));
+    }
+  }
 }
 
 export async function initDefaultSettings(defaults: Record<string, unknown>) {

@@ -59,7 +59,18 @@ class Mutex {
 const importMutex = new Mutex();
 
 export async function importEvents(events: Event[]): Promise<number> {
-  return importMutex.run(() => executeImportEvents(events));
+  if (typeof window !== "undefined") {
+    window.__activeWrites = (window.__activeWrites || 0) + 1;
+    window.dispatchEvent(new CustomEvent("kei_active_writes_change"));
+  }
+  try {
+    return await importMutex.run(() => executeImportEvents(events));
+  } finally {
+    if (typeof window !== "undefined") {
+      window.__activeWrites = Math.max(0, (window.__activeWrites || 0) - 1);
+      window.dispatchEvent(new CustomEvent("kei_active_writes_change"));
+    }
+  }
 }
 
 async function executeImportEvents(events: Event[]): Promise<number> {
