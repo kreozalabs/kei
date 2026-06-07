@@ -46,7 +46,10 @@ export function AppHeader({ title, subtitle, left, center, right }: AppHeaderPro
           <h1 className="text-lg md:text-xl font-bold tracking-tight leading-none mb-2 flex items-center gap-2">
             <span>{title}</span>
             {isLoading && (
-              <Loader2Icon className="size-4 animate-spin text-muted-foreground/60 shrink-0" aria-hidden="true" />
+              <Loader2Icon
+                className="size-4 animate-spin text-muted-foreground/60 shrink-0"
+                aria-hidden="true"
+              />
             )}
           </h1>
           <div className="h-4 flex items-center overflow-hidden">
