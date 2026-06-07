@@ -120,7 +120,12 @@ export function ActionsSettings() {
             Applied to new actions
           </span>
         </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 px-2">
+        <div
+          className={cn(
+            "grid grid-cols-1 gap-4 px-2",
+            settings.show_intentions ? "sm:grid-cols-2" : "max-w-md"
+          )}
+        >
           <div className="space-y-2">
             <label className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground/40 px-1">
               Default Energy
@@ -141,26 +146,28 @@ export function ActionsSettings() {
               </SelectContent>
             </Select>
           </div>
-          <div className="space-y-2">
-            <label className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground/40 px-1">
-              Default Intention
-            </label>
-            <Select
-              value={settings.default_intention}
-              onValueChange={(v) => updateSetting("default_intention", v)}
-            >
-              <SelectTrigger className="h-9 text-xs bg-muted/20 border-border/30 rounded-xl">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {INTENTION_OPTIONS.map((opt) => (
-                  <SelectItem key={opt.value} value={opt.value}>
-                    <span className={cn("flex items-center gap-2", opt.color)}>{opt.label}</span>
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
+          {settings.show_intentions && (
+            <div className="space-y-2">
+              <label className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground/40 px-1">
+                Default Intention
+              </label>
+              <Select
+                value={settings.default_intention}
+                onValueChange={(v) => updateSetting("default_intention", v)}
+              >
+                <SelectTrigger className="h-9 text-xs bg-muted/20 border-border/30 rounded-xl">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {INTENTION_OPTIONS.map((opt) => (
+                    <SelectItem key={opt.value} value={opt.value}>
+                      <span className={cn("flex items-center gap-2", opt.color)}>{opt.label}</span>
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          )}
         </div>
       </div>
 

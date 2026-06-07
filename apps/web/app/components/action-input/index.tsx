@@ -1,5 +1,4 @@
 import {
-  AlertCircle,
   ArrowDownToLine,
   ArrowUpToLine,
   BatteryFull,
@@ -7,7 +6,6 @@ import {
   BatteryMedium,
   ChevronsUpDown,
   Clock,
-  Heart,
   Star,
 } from "lucide-react";
 import { ActionSelector } from "../ActionSelector";
@@ -38,16 +36,12 @@ import {
   INTENTIONS,
   TIME,
   ENERGY_OPTIONS,
-  INTENTION_OPTIONS,
-  IMPORTANT_CONFIG,
   TIMEZONES,
 } from "../../config/constants";
 import { DurationInputs } from "./DurationInputs";
 import { DiscardDialog } from "./DiscardDialog";
 import { forwardRef, useEffect, useImperativeHandle, useMemo, useRef, useState } from "react";
-import { Button, cn, Input, Textarea } from "@kreozalabs/ui";
-
-// TODO: Somehow we should allow user to move between input fields, so it is frictionless and requires less effort. Maybe enter, or arrows?
+import { Button, cn, Input, Textarea, Checkbox } from "@kreozalabs/ui";
 
 export interface ActionInputProps {
   onSuccess?: () => void;
@@ -157,45 +151,6 @@ export const ActionInput = forwardRef<ActionInputHandle, ActionInputProps>(
           return BatteryMedium;
       }
     }, [energy]);
-
-    const intentionConfig = useMemo(
-      () => INTENTION_OPTIONS.find((opt) => opt.value === intention) || INTENTION_OPTIONS[0],
-      [intention]
-    );
-
-    const intentionOptionsWithIcons = useMemo(
-      () =>
-        INTENTION_OPTIONS.map((opt) => ({
-          ...opt,
-          icon:
-            opt.value === INTENTIONS.MUST ? (
-              <AlertCircle className={cn("size-4", opt.color)} />
-            ) : (
-              <Heart className={cn("size-4", opt.color)} />
-            ),
-        })),
-      []
-    );
-
-    const importantOptionsWithIcons = useMemo(
-      () => [
-        {
-          label: "Regular",
-          value: false,
-          icon: <Star className={cn("size-4", IMPORTANT_CONFIG.inactive.color)} />,
-        },
-        {
-          label: "Important",
-          value: true,
-          icon: (
-            <Star
-              className={cn("size-4", IMPORTANT_CONFIG.active.color, IMPORTANT_CONFIG.active.fill)}
-            />
-          ),
-        },
-      ],
-      []
-    );
 
     const isCalculatingRef = useRef(false);
 
@@ -655,84 +610,75 @@ export const ActionInput = forwardRef<ActionInputHandle, ActionInputProps>(
 
           {/* Footer */}
           <div className="px-4 sm:px-5 py-4 flex flex-wrap items-center justify-between gap-4 bg-muted/5">
-            <div className="flex items-center gap-1">
-              <ActionSelector
-                variant="ghost"
-                icon={
-                  <div
+            <div className="flex items-center gap-1.5 flex-wrap">
+              {settings.show_intentions && (
+                <div
+                  onClick={() =>
+                    setIntention(intention === INTENTIONS.WANT ? INTENTIONS.MUST : INTENTIONS.WANT)
+                  }
+                  className={cn(
+                    "flex items-center gap-2 px-2.5 h-8.5 rounded-lg border transition-all cursor-pointer select-none active:scale-[0.98]",
+                    intention === INTENTIONS.WANT
+                      ? "bg-pink-500/10 border-pink-500/30 text-pink-500 hover:bg-pink-500/15"
+                      : "bg-muted/30 border-border/20 text-muted-foreground/80 hover:bg-muted/50 hover:text-foreground"
+                  )}
+                >
+                  <Checkbox
+                    checked={intention === INTENTIONS.WANT}
+                    onCheckedChange={(checked) =>
+                      setIntention(checked ? INTENTIONS.WANT : INTENTIONS.MUST)
+                    }
+                    onClick={(e) => e.stopPropagation()}
                     className={cn(
-                      "size-5 rounded-md flex items-center justify-center border",
-                      intentionConfig.bg
+                      "size-4 rounded",
+                      intention === INTENTIONS.WANT && "bg-pink-500 border-pink-500"
                     )}
-                  >
-                    {intention === INTENTIONS.MUST ? (
-                      <AlertCircle className={cn("size-3.5", intentionConfig.color)} />
-                    ) : (
-                      <Heart className={cn("size-3.5", intentionConfig.color)} />
-                    )}
-                  </div>
-                }
-                label={intentionConfig.label}
-                options={intentionOptionsWithIcons}
-                onSelect={setIntention as (v: unknown) => void}
-                value={intention}
-                triggerClassName="h-9 px-2 sm:px-3 rounded-xl hover:bg-muted/50 font-bold text-muted-foreground/70 hover:text-foreground border-none"
-              />
+                  />
+                  <span className="text-[12px] font-bold">Want to do</span>
+                </div>
+              )}
 
-              <ActionSelector
+              <Button
+                type="button"
                 variant="ghost"
-                icon={
-                  <div
-                    className={cn(
-                      "size-5 rounded-md flex items-center justify-center",
-                      isImportant ? IMPORTANT_CONFIG.active.bg : IMPORTANT_CONFIG.inactive.bg
-                    )}
-                  >
-                    <Star
-                      className={cn(
-                        "size-3.5 mb-0.5",
-                        isImportant
-                          ? cn(IMPORTANT_CONFIG.active.color, IMPORTANT_CONFIG.active.fill)
-                          : IMPORTANT_CONFIG.inactive.color
-                      )}
-                    />
-                  </div>
-                }
-                label={isImportant ? "Important" : ""}
-                options={importantOptionsWithIcons}
-                onSelect={setIsImportant as (v: unknown) => void}
-                value={isImportant}
-                triggerClassName="h-9 px-2 sm:px-3 rounded-xl hover:bg-muted/50 font-bold text-muted-foreground/70 hover:text-foreground border-none"
-              />
+                onClick={() => setIsImportant((prev) => !prev)}
+                className={cn(
+                  "h-8.5 px-2.5 rounded-lg hover:bg-muted/50 text-muted-foreground/70 hover:text-foreground border border-transparent transition-all gap-1.5 active:scale-[0.98]",
+                  isImportant &&
+                    "bg-yellow-500/10 border-yellow-500/20 text-yellow-600 hover:bg-yellow-500/15 hover:text-yellow-700"
+                )}
+                title={isImportant ? "Mark as regular" : "Mark as important"}
+              >
+                <Star
+                  className={cn(
+                    "size-4 transition-all",
+                    isImportant ? "fill-yellow-500 text-yellow-500" : "text-muted-foreground/60"
+                  )}
+                />
+                <span className="text-[12px] font-bold hidden sm:inline">Important</span>
+              </Button>
 
               {!actionToEdit && (
                 <Button
                   type="button"
                   variant="ghost"
                   onClick={() => setInsertAtTop((prev) => !prev)}
-                  className="h-9 px-2 sm:px-3 rounded-xl hover:bg-muted/50 font-bold text-muted-foreground/70 hover:text-foreground border-none gap-1.5 transition-all"
+                  className="h-8.5 px-2.5 rounded-lg hover:bg-muted/50 text-muted-foreground/70 hover:text-foreground border border-transparent transition-all gap-1.5 active:scale-[0.98]"
                   title={
                     insertAtTop
                       ? "Insert at the top of the list"
                       : "Insert at the bottom of the list"
                   }
                 >
-                  <div
-                    className={cn(
-                      "size-5 rounded-md flex items-center justify-center transition-all",
-                      insertAtTop
-                        ? "bg-primary/10 text-primary"
-                        : "bg-muted/30 text-muted-foreground/50"
-                    )}
-                  >
+                  <div className="size-4 flex items-center justify-center text-muted-foreground/60">
                     {insertAtTop ? (
                       <ArrowUpToLine className="size-3.5" />
                     ) : (
                       <ArrowDownToLine className="size-3.5" />
                     )}
                   </div>
-                  <span className="text-[12.5px] font-bold text-muted-foreground/70 hover:text-foreground hidden sm:inline">
-                    {insertAtTop ? "Top" : "Bottom"}
+                  <span className="text-[12px] font-bold hidden sm:inline">
+                    {insertAtTop ? "Insert Top" : "Insert Bottom"}
                   </span>
                 </Button>
               )}
@@ -745,7 +691,7 @@ export const ActionInput = forwardRef<ActionInputHandle, ActionInputProps>(
                 size="sm"
                 onClick={handleCancelAttempt}
                 disabled={!isDbReady}
-                className="h-10 px-4 sm:px-5 rounded-xl bg-muted/50 hover:bg-muted font-bold text-sm transition-all border-none active:scale-95 disabled:opacity-50"
+                className="h-8.5 px-3 sm:px-4 rounded-lg bg-muted/50 hover:bg-muted font-bold text-xs transition-all border-none active:scale-[0.98] disabled:opacity-50"
               >
                 Cancel
               </Button>
@@ -754,7 +700,7 @@ export const ActionInput = forwardRef<ActionInputHandle, ActionInputProps>(
                 variant="default"
                 size="sm"
                 disabled={isLoading || !title.trim() || isTimeInvalid || !isDbReady}
-                className="h-10 px-4 sm:px-6 rounded-xl font-bold text-sm shadow-xl shadow-primary/10 transition-all bg-primary/10 hover:bg-primary/15 text-primary active:scale-95 disabled:opacity-50 disabled:scale-100"
+                className="h-8.5 px-4 sm:px-5 rounded-lg font-bold text-xs shadow-md shadow-primary/5 transition-all bg-primary/10 hover:bg-primary/15 text-primary active:scale-[0.98] disabled:opacity-50 disabled:scale-100"
               >
                 {actionToEdit ? "Update task" : "Add task"}
               </Button>
