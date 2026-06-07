@@ -42,7 +42,6 @@ import { DiscardDialog } from "./DiscardDialog";
 import { forwardRef, useEffect, useImperativeHandle, useMemo, useRef, useState } from "react";
 import { Button, cn, Input, Textarea, Checkbox, toast } from "@kreozalabs/ui";
 
-
 export interface ActionInputProps {
   onSuccess?: () => void;
   onCancel?: () => void;

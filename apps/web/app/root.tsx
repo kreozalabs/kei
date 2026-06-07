@@ -108,9 +108,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
           <P2PProvider>
             <SettingsProvider storageKey={STORAGE_KEYS.SETTINGS}>
               {children}
-              <Toaster
-                position="bottom-right"
-              />
+              <Toaster position="bottom-right" />
             </SettingsProvider>
           </P2PProvider>
         </DbProvider>
