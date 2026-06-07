@@ -9,3 +9,7 @@ It's an offline-first app for your notes and tasks.
 ## Mission
 
 To empower intentional living by turning every moment into an opportunity for conscious choice.
+
+## Documentation
+
+- [User Guide: Managing Your Tasks and Schedule](docs/user-guide.md)
