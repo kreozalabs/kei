@@ -614,27 +614,27 @@ export const ActionInput = forwardRef<ActionInputHandle, ActionInputProps>(
               {settings.show_intentions && (
                 <div
                   onClick={() =>
-                    setIntention(intention === INTENTIONS.MUST ? INTENTIONS.WANT : INTENTIONS.MUST)
+                    setIntention(intention === INTENTIONS.WANT ? INTENTIONS.MUST : INTENTIONS.WANT)
                   }
                   className={cn(
                     "flex items-center gap-2 px-2.5 h-8.5 rounded-lg border transition-all cursor-pointer select-none active:scale-[0.98]",
-                    intention === INTENTIONS.MUST
-                      ? "bg-amber-500/10 border-amber-500/30 text-amber-500 hover:bg-amber-500/15"
+                    intention === INTENTIONS.WANT
+                      ? "bg-pink-500/10 border-pink-500/30 text-pink-500 hover:bg-pink-500/15"
                       : "bg-muted/30 border-border/20 text-muted-foreground/80 hover:bg-muted/50 hover:text-foreground"
                   )}
                 >
                   <Checkbox
-                    checked={intention === INTENTIONS.MUST}
+                    checked={intention === INTENTIONS.WANT}
                     onCheckedChange={(checked) =>
-                      setIntention(checked ? INTENTIONS.MUST : INTENTIONS.WANT)
+                      setIntention(checked ? INTENTIONS.WANT : INTENTIONS.MUST)
                     }
                     onClick={(e) => e.stopPropagation()}
                     className={cn(
                       "size-4 rounded",
-                      intention === INTENTIONS.MUST && "bg-amber-500 border-amber-500"
+                      intention === INTENTIONS.WANT && "bg-pink-500 border-pink-500"
                     )}
                   />
-                  <span className="text-[12px] font-bold">Must do</span>
+                  <span className="text-[12px] font-bold">Want to do</span>
                 </div>
               )}
 

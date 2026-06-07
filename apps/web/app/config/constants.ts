@@ -137,7 +137,7 @@ export const DEFAULT_SETTINGS = {
   action_duration_options: DURATION_OPTIONS,
   action_timezone_options: MAJOR_TIMEZONES,
   default_energy: ENERGY_LEVELS.MEDIUM,
-  default_intention: INTENTIONS.WANT,
+  default_intention: INTENTIONS.MUST,
   show_overdue: false,
   show_completed: true,
   show_abandoned: false,

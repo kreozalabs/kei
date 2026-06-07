@@ -15,7 +15,6 @@ import {
   BatteryLow,
   BatteryMedium,
   BatteryFull,
-  AlertCircle,
   Heart,
 } from "lucide-react";
 import {
@@ -418,7 +417,7 @@ export function ActionItem({
                 </div>
               </div>
             </div>
-            {settings.show_intentions && (
+            {settings.show_intentions && action.intention === INTENTIONS.WANT && (
               <div className="flex items-center gap-2 shrink-0 pt-0.5">
                 <span
                   className={cn(
@@ -426,22 +425,13 @@ export function ActionItem({
                     intentionConfig.bg,
                     intentionConfig.color
                   )}
-                  title={action.intention === INTENTIONS.MUST ? "Must Do" : "Want to Do"}
+                  title="Want to Do"
                 >
-                  {action.intention === INTENTIONS.MUST ? (
-                    <>
-                      <span className="hidden sm:inline">Must Do</span>
-                      <AlertCircle className="size-3 opacity-60" />
-                    </>
-                  ) : (
-                    <>
-                      <span className="hidden sm:inline">Want to Do</span>
-                      <Heart className="size-3 opacity-60" />
-                    </>
-                  )}
+                  <span className="hidden sm:inline">Want to Do</span>
+                  <Heart className="size-3 opacity-60" />
                 </span>
               </div>
-            )}{" "}
+            )}
           </div>
         </div>
       </div>
