@@ -105,7 +105,7 @@ export const ActionInput = forwardRef<ActionInputHandle, ActionInputProps>(
       actionToEdit?.timezone ||
         (settings.timezone === TIMEZONES.AUTO ? localTimezone : settings.timezone)
     );
-    const [insertAtTop, setInsertAtTop] = useState(false);
+    const [insertAtTop, setInsertAtTop] = useState(settings.default_insert_at_top || false);
 
     const [timezoneOpen, setTimezoneOpen] = useState(false);
     const [isTimeInvalid, setIsTimeInvalid] = useState(false);

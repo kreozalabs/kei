@@ -145,6 +145,7 @@ export const DEFAULT_SETTINGS = {
   enable_undo_toast: true,
   enable_selection: true,
   shift_on_selection_hover: true,
+  default_insert_at_top: false,
 };
 
 export const STORAGE_KEYS = {
@@ -245,4 +246,9 @@ export const SELECTION_OPTIONS = [
 export const SHIFT_ON_HOVER_OPTIONS = [
   { label: "Shift", value: true },
   { label: "Static", value: false },
+];
+
+export const DEFAULT_INSERT_AT_TOP_OPTIONS = [
+  { label: "Top", value: true },
+  { label: "Bottom", value: false },
 ];
