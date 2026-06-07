@@ -1,8 +1,9 @@
 import { forwardRef } from "react";
-import { PlusIcon, SearchIcon, MoreVerticalIcon } from "lucide-react";
+import { PlusIcon, SearchIcon, MoreVerticalIcon, Loader2Icon } from "lucide-react";
 import { Button, cn } from "@kreozalabs/ui";
 import { useSettings } from "@/providers/SettingsContext";
 import { useSubtleOnIdle } from "@/hooks/useSubtleOnIdle";
+import { useDb } from "@/providers/DbContext";
 
 export interface AppHeaderProps {
   title: string;
@@ -20,6 +21,9 @@ export function AppHeader({ title, subtitle, left, center, right }: AppHeaderPro
     disableOnMobile: true,
     disabled: !settings.subtle_on_idle,
   });
+
+  const { isDbReady, isWriting } = useDb();
+  const isLoading = !isDbReady || isWriting;
 
   return (
     <header
@@ -39,7 +43,12 @@ export function AppHeader({ title, subtitle, left, center, right }: AppHeaderPro
 
         {/* 2. Title Area (Reserved space for stability) */}
         <div className="md:ml-12 flex flex-col flex-1 min-w-0 h-10 md:h-16 justify-end gap-1">
-          <h1 className="text-lg md:text-xl font-bold tracking-tight leading-none mb-2">{title}</h1>
+          <h1 className="text-lg md:text-xl font-bold tracking-tight leading-none mb-2 flex items-center gap-2">
+            <span>{title}</span>
+            {isLoading && (
+              <Loader2Icon className="size-4 animate-spin text-muted-foreground/60 shrink-0" aria-hidden="true" />
+            )}
+          </h1>
           <div className="h-4 flex items-center overflow-hidden">
             {subtitle ? (
               <span className="text-[11px] md:text-xs text-muted-foreground font-semibold truncate tracking-wider opacity-70">

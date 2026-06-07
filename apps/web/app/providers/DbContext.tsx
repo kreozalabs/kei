@@ -3,11 +3,13 @@ import { createContext, useContext } from "react";
 export interface DbContextState {
   isDbReady: boolean;
   dbError: Error | null;
+  isWriting: boolean;
 }
 
 export const DbContext = createContext<DbContextState>({
   isDbReady: false,
   dbError: null,
+  isWriting: false,
 });
 
 export const useDb = () => {

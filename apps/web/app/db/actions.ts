@@ -72,6 +72,7 @@ function applyEventToAction(action: Action | null, event: Event<ActionPayload>):
 async function pushEvent(actionId: string, type: string, payload: ActionPayload) {
   if (typeof window !== "undefined") {
     window.__activeWrites = (window.__activeWrites || 0) + 1;
+    window.dispatchEvent(new CustomEvent("kei_active_writes_change"));
   }
   try {
     await db.query("BEGIN");
@@ -169,6 +170,7 @@ async function pushEvent(actionId: string, type: string, payload: ActionPayload)
   } finally {
     if (typeof window !== "undefined") {
       window.__activeWrites = Math.max(0, (window.__activeWrites || 0) - 1);
+      window.dispatchEvent(new CustomEvent("kei_active_writes_change"));
     }
   }
 }
@@ -176,6 +178,7 @@ async function pushEvent(actionId: string, type: string, payload: ActionPayload)
 async function bulkPushEvents(updates: { id: string; type: string; payload: ActionPayload }[]) {
   if (typeof window !== "undefined") {
     window.__activeWrites = (window.__activeWrites || 0) + 1;
+    window.dispatchEvent(new CustomEvent("kei_active_writes_change"));
   }
   try {
     await db.query("BEGIN");
@@ -267,6 +270,7 @@ async function bulkPushEvents(updates: { id: string; type: string; payload: Acti
   } finally {
     if (typeof window !== "undefined") {
       window.__activeWrites = Math.max(0, (window.__activeWrites || 0) - 1);
+      window.dispatchEvent(new CustomEvent("kei_active_writes_change"));
     }
   }
 }

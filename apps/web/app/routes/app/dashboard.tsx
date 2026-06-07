@@ -107,6 +107,7 @@ export default function Dashboard() {
         val = newVal;
         if (typeof window !== "undefined") {
           window.__activeWrites = Math.max(0, (window.__activeWrites || 0) + diff);
+          window.dispatchEvent(new CustomEvent("kei_active_writes_change"));
         }
       },
       configurable: true,
