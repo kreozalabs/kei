@@ -1,9 +1,8 @@
 import { useState, useRef } from "react";
-import { Button, Input } from "@kreozalabs/ui";
+import { Button, Input, toast } from "@kreozalabs/ui";
 import { Loader2, Database, RefreshCw, Download, Upload } from "lucide-react";
 import { rebuildActions } from "@/db/actions";
 import { rebuildSettings } from "@/db/settings";
-import { toast } from "sonner";
 import { exportEvents, importEvents } from "@/db/backup";
 import { SyncSettings } from "./SyncSettings";
 

@@ -49,3 +49,41 @@
     font-size: var(--font-size-h5);
   }
 }
+
+/* Sonner Toast overrides */
+[data-sonner-toast] {
+  --normal-bg: var(--background) !important;
+  --normal-border: var(--border) !important;
+  --normal-text: var(--foreground) !important;
+  --success-bg: oklch(0.95 0.05 140.0) !important;
+  --success-border: oklch(0.85 0.1 140.0) !important;
+  --success-text: oklch(0.25 0.1 140.0) !important;
+  --error-bg: oklch(0.95 0.05 20.0) !important;
+  --error-border: oklch(0.85 0.1 20.0) !important;
+  --error-text: oklch(0.25 0.1 20.0) !important;
+  --info-bg: oklch(0.95 0.05 250.0) !important;
+  --info-border: oklch(0.85 0.1 250.0) !important;
+  --info-text: oklch(0.25 0.1 250.0) !important;
+  --warning-bg: oklch(0.95 0.05 70.0) !important;
+  --warning-border: oklch(0.85 0.1 70.0) !important;
+  --warning-text: oklch(0.25 0.1 70.0) !important;
+}
+
+.dark [data-sonner-toast] {
+  --normal-bg: var(--card) !important;
+  --normal-border: var(--border) !important;
+  --normal-text: var(--foreground) !important;
+  --success-bg: oklch(0.2 0.05 140.0) !important;
+  --success-border: oklch(0.3 0.1 140.0) !important;
+  --success-text: oklch(0.85 0.1 140.0) !important;
+  --error-bg: oklch(0.2 0.05 20.0) !important;
+  --error-border: oklch(0.3 0.1 20.0) !important;
+  --error-text: oklch(0.85 0.1 20.0) !important;
+  --info-bg: oklch(0.2 0.05 250.0) !important;
+  --info-border: oklch(0.3 0.1 250.0) !important;
+  --info-text: oklch(0.85 0.1 250.0) !important;
+  --warning-bg: oklch(0.2 0.05 70.0) !important;
+  --warning-border: oklch(0.3 0.1 70.0) !important;
+  --warning-text: oklch(0.85 0.1 70.0) !important;
+}
+

@@ -12,6 +12,7 @@ export * from "./components/label";
 export * from "./components/popover";
 export * from "./components/select";
 export * from "./components/sheet";
+export * from "./components/sonner";
 export * from "./components/table";
 export * from "./components/textarea";
 export * from "./lib/utils";

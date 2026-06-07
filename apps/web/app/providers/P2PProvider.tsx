@@ -2,9 +2,8 @@
 import React, { createContext, useContext, useState, useEffect, useRef, useCallback } from "react";
 import { getLocalWatermarks, getEventsSince } from "@/db/sync";
 import { importEvents } from "@/db/backup";
-import { toast } from "sonner";
 import { getOrCreateDeviceIdentity, getDeviceName } from "@/utils/device";
-import { Button } from "@kreozalabs/ui";
+import { Button, toast } from "@kreozalabs/ui";
 import type { Event as DBEvent } from "@/types/events";
 
 export interface Peer {

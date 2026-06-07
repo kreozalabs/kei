@@ -18,7 +18,6 @@ import {
   bulkStatusUpdateActions,
   bulkUpdateMultipleActions,
 } from "@/db/actions";
-import { toast } from "sonner";
 import { useCurrentDay } from "@/hooks/useCurrentDay";
 import {
   getTodayString,
@@ -38,6 +37,7 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuCheckboxItem,
+  toast,
 } from "@kreozalabs/ui";
 import {
   LockIcon,
