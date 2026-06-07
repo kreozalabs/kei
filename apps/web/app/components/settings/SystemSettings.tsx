@@ -1,9 +1,8 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router";
-import { Button, cn } from "@kreozalabs/ui";
+import { Button, cn, toast } from "@kreozalabs/ui";
 import { useP2P } from "@/providers/P2PProvider";
 import { db } from "@/db";
-import { toast } from "sonner";
 import {
   Check,
   X,

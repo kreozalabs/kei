@@ -8,9 +8,8 @@ import {
   useRouteError,
 } from "react-router";
 
-import { Toaster, toast } from "sonner";
 import { useEffect } from "react";
-import { Button } from "@kreozalabs/ui";
+import { Button, Toaster, toast } from "@kreozalabs/ui";
 import "./index.css";
 import { QueryProvider } from "./providers/QueryProvider";
 import { SettingsProvider } from "./providers/SettingsProvider";
@@ -109,12 +108,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
           <P2PProvider>
             <SettingsProvider storageKey={STORAGE_KEYS.SETTINGS}>
               {children}
-              <Toaster
-                position="bottom-right"
-                toastOptions={{
-                  className: "rounded-2xl border-border bg-background text-foreground shadow-lg",
-                }}
-              />
+              <Toaster position="bottom-right" />
             </SettingsProvider>
           </P2PProvider>
         </DbProvider>

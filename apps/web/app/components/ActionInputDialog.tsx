@@ -6,6 +6,7 @@ import {
   DialogTitle,
   DialogDescription,
   DialogTrigger,
+  toast,
 } from "@kreozalabs/ui";
 import { useQueryClient } from "@tanstack/react-query";
 import type { Action } from "../types/actions";
@@ -72,7 +73,6 @@ export function ActionInputDialog({
       queryClient.invalidateQueries({ queryKey: ["actions"] });
 
       if (settings.enable_undo_toast) {
-        const { toast } = await import("sonner");
         toast.success(
           isCompleted ? `"${action.title}" reactivated` : `"${action.title}" completed`,
           {
@@ -125,7 +125,6 @@ export function ActionInputDialog({
       queryClient.invalidateQueries({ queryKey: ["actions"] });
 
       if (settings.enable_undo_toast) {
-        const { toast } = await import("sonner");
         toast.success(`"${action.title}" abandoned`, {
           action: {
             label: "Undo",
@@ -171,7 +170,6 @@ export function ActionInputDialog({
       queryClient.invalidateQueries({ queryKey: ["actions"] });
 
       if (settings.enable_undo_toast) {
-        const { toast } = await import("sonner");
         toast.success(`"${action.title}" reactivated`, {
           action: {
             label: "Undo",
@@ -217,7 +215,6 @@ export function ActionInputDialog({
       queryClient.invalidateQueries({ queryKey: ["actions"] });
 
       if (settings.enable_undo_toast) {
-        const { toast } = await import("sonner");
         toast.success(`"${action.title}" deleted permanently`, {
           action: {
             label: "Undo",

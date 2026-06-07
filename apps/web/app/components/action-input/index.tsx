@@ -17,7 +17,6 @@ import { useDiscardGuard } from "../../hooks/useDiscardGuard";
 import { useSettings } from "../../providers/SettingsContext";
 import { useDb } from "../../providers/DbContext";
 import { MicroCalendar } from "../MicroCalendar";
-import { toast } from "sonner";
 import { TimezoneSelector } from "../TimezoneSelector";
 import {
   formatTime,
@@ -41,7 +40,7 @@ import {
 import { DurationInputs } from "./DurationInputs";
 import { DiscardDialog } from "./DiscardDialog";
 import { forwardRef, useEffect, useImperativeHandle, useMemo, useRef, useState } from "react";
-import { Button, cn, Input, Textarea, Checkbox } from "@kreozalabs/ui";
+import { Button, cn, Input, Textarea, Checkbox, toast } from "@kreozalabs/ui";
 
 export interface ActionInputProps {
   onSuccess?: () => void;
