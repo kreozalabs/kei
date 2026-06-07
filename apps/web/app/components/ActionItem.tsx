@@ -393,12 +393,12 @@ export function ActionItem({
                       : `${action.duration[0]}-${action.duration[1]}m`}
                   </span>
                 )}
-
                 <div
                   className={cn(
-                    "px-2 py-0.5 rounded-full text-[10px] font-bold border flex items-center gap-1.5",
+                    "px-1.5 sm:px-2 py-0.5 rounded-full text-[10px] font-bold border flex items-center gap-1 sm:gap-1.5",
                     energyConfig?.bg || "bg-muted/50 border-border/50"
                   )}
+                  title={`Energy: ${action.energy}`}
                 >
                   {action.energy === ENERGY_LEVELS.HIGH ? (
                     <BatteryFull className={cn("size-3", energyConfig?.color)} />
@@ -409,7 +409,7 @@ export function ActionItem({
                   )}
                   <span
                     className={cn(
-                      "uppercase tracking-wider",
+                      "uppercase tracking-wider hidden sm:inline",
                       energyConfig?.color || "text-muted-foreground"
                     )}
                   >
@@ -418,28 +418,30 @@ export function ActionItem({
                 </div>
               </div>
             </div>
-
-            <div className="flex items-center gap-2 shrink-0 pt-0.5">
-              <span
-                className={cn(
-                  "text-[10px] uppercase tracking-widest font-bold transition-colors flex items-center gap-1.5 group/project px-2 py-1 rounded-lg border",
-                  intentionConfig.bg,
-                  intentionConfig.color
-                )}
-              >
-                {action.intention === INTENTIONS.MUST ? (
-                  <>
-                    Must Do
-                    <AlertCircle className="size-3 opacity-60" />
-                  </>
-                ) : (
-                  <>
-                    Want to Do
-                    <Heart className="size-3 opacity-60" />
-                  </>
-                )}
-              </span>
-            </div>
+            {settings.show_intentions && (
+              <div className="flex items-center gap-2 shrink-0 pt-0.5">
+                <span
+                  className={cn(
+                    "text-[10px] uppercase tracking-widest font-bold transition-colors flex items-center gap-1 sm:gap-1.5 group/project px-1.5 sm:px-2 py-0.5 sm:py-1 rounded-lg border",
+                    intentionConfig.bg,
+                    intentionConfig.color
+                  )}
+                  title={action.intention === INTENTIONS.MUST ? "Must Do" : "Want to Do"}
+                >
+                  {action.intention === INTENTIONS.MUST ? (
+                    <>
+                      <span className="hidden sm:inline">Must Do</span>
+                      <AlertCircle className="size-3 opacity-60" />
+                    </>
+                  ) : (
+                    <>
+                      <span className="hidden sm:inline">Want to Do</span>
+                      <Heart className="size-3 opacity-60" />
+                    </>
+                  )}
+                </span>
+              </div>
+            )}{" "}
           </div>
         </div>
       </div>

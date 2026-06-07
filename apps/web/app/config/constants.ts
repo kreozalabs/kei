@@ -146,6 +146,7 @@ export const DEFAULT_SETTINGS = {
   enable_selection: true,
   shift_on_selection_hover: true,
   default_insert_at_top: false,
+  show_intentions: true,
 };
 
 export const STORAGE_KEYS = {
@@ -251,4 +252,9 @@ export const SHIFT_ON_HOVER_OPTIONS = [
 export const DEFAULT_INSERT_AT_TOP_OPTIONS = [
   { label: "Top", value: true },
   { label: "Bottom", value: false },
+];
+
+export const SHOW_INTENTIONS_OPTIONS = [
+  { label: "Show", value: true },
+  { label: "Hide", value: false },
 ];
