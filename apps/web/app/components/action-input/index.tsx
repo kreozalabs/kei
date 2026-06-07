@@ -1,5 +1,7 @@
 import {
   AlertCircle,
+  ArrowDownToLine,
+  ArrowUpToLine,
   BatteryFull,
   BatteryLow,
   BatteryMedium,
@@ -103,6 +105,7 @@ export const ActionInput = forwardRef<ActionInputHandle, ActionInputProps>(
       actionToEdit?.timezone ||
         (settings.timezone === TIMEZONES.AUTO ? localTimezone : settings.timezone)
     );
+    const [insertAtTop, setInsertAtTop] = useState(false);
 
     const [timezoneOpen, setTimezoneOpen] = useState(false);
     const [isTimeInvalid, setIsTimeInvalid] = useState(false);
@@ -331,6 +334,7 @@ export const ActionInput = forwardRef<ActionInputHandle, ActionInputProps>(
           startTime: startTime || undefined,
           endTime: endTime || undefined,
           timezone,
+          insertAtTop,
         };
 
         const previousQueries = queryClient.getQueriesData<Action[]>({ queryKey: ["actions"] });
@@ -344,6 +348,7 @@ export const ActionInput = forwardRef<ActionInputHandle, ActionInputProps>(
         // Reset the input state immediately for a fast responsive feel
         setTitle("");
         setNote("");
+        setInsertAtTop(false);
         setIsLoading(false);
         onSuccess?.();
 
@@ -699,6 +704,38 @@ export const ActionInput = forwardRef<ActionInputHandle, ActionInputProps>(
                 value={isImportant}
                 triggerClassName="h-9 px-2 sm:px-3 rounded-xl hover:bg-muted/50 font-bold text-muted-foreground/70 hover:text-foreground border-none"
               />
+
+              {!actionToEdit && (
+                <Button
+                  type="button"
+                  variant="ghost"
+                  onClick={() => setInsertAtTop((prev) => !prev)}
+                  className="h-9 px-2 sm:px-3 rounded-xl hover:bg-muted/50 font-bold text-muted-foreground/70 hover:text-foreground border-none gap-1.5 transition-all"
+                  title={
+                    insertAtTop
+                      ? "Insert at the top of the list"
+                      : "Insert at the bottom of the list"
+                  }
+                >
+                  <div
+                    className={cn(
+                      "size-5 rounded-md flex items-center justify-center transition-all",
+                      insertAtTop
+                        ? "bg-primary/10 text-primary"
+                        : "bg-muted/30 text-muted-foreground/50"
+                    )}
+                  >
+                    {insertAtTop ? (
+                      <ArrowUpToLine className="size-3.5" />
+                    ) : (
+                      <ArrowDownToLine className="size-3.5" />
+                    )}
+                  </div>
+                  <span className="text-[12.5px] font-bold text-muted-foreground/70 hover:text-foreground hidden sm:inline">
+                    {insertAtTop ? "Top" : "Bottom"}
+                  </span>
+                </Button>
+              )}
             </div>
 
             <div className="flex items-center gap-2">

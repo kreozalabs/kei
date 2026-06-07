@@ -14,7 +14,7 @@ import {
   bulkCompleteActions,
   bulkActivateActions,
   bulkAbandonActions,
-  bulkUpdateActions,
+  updateAction,
   bulkStatusUpdateActions,
   bulkUpdateMultipleActions,
 } from "@/db/actions";
@@ -813,7 +813,6 @@ export default function Dashboard() {
   const handleBulkReschedule = async (newDate: string) => {
     const idsToReschedule = Array.from(visibleSelectedActionIds);
     const previousQueries = queryClient.getQueriesData<Action[]>({ queryKey: ["actions"] });
-    const now = Date.now();
 
     if (settings.enable_undo_toast) {
       toast.success(`Rescheduled ${idsToReschedule.length} actions`, {
@@ -851,16 +850,38 @@ export default function Dashboard() {
       });
     }
 
-    updateActionsQueriesCache(idsToReschedule, ACTION_STATUS.ACTIVE, {
-      scheduledDate: newDate,
-      sortOrder: -now,
+    // Calculate unique sortOrders preserving relative order
+    const actionsOnNewDate = allActions.filter(
+      (a) => a.scheduledDate === newDate && a.status === ACTION_STATUS.ACTIVE
+    );
+    let baseSortOrder = -Date.now();
+    if (actionsOnNewDate.length > 0) {
+      baseSortOrder = Math.min(...actionsOnNewDate.map((a) => a.sortOrder));
+    }
+
+    const sortedRescheduledActions = [...selectedActions].sort((a, b) => b.sortOrder - a.sortOrder);
+
+    // Apply optimistic updates to query cache
+    sortedRescheduledActions.forEach((sa, index) => {
+      updateActionsQueriesCache(sa.id, ACTION_STATUS.ACTIVE, {
+        scheduledDate: newDate,
+        sortOrder: baseSortOrder - (index + 1),
+      });
     });
+
     setSelectedActionIds(new Set());
 
     activeWritesRef.current++;
     await queryClient.cancelQueries({ queryKey: ["actions"] });
     try {
-      await bulkUpdateActions(idsToReschedule, { scheduledDate: newDate, sortOrder: -now });
+      const updates = sortedRescheduledActions.map((sa, index) => ({
+        id: sa.id,
+        payload: {
+          scheduledDate: newDate,
+          sortOrder: baseSortOrder - (index + 1),
+        },
+      }));
+      await bulkUpdateMultipleActions(updates);
     } catch (error) {
       console.error("Failed to bulk reschedule actions:", error);
       previousQueries.forEach(([queryKey, data]) => {
@@ -1017,6 +1038,143 @@ export default function Dashboard() {
     }
   };
 
+  const handleMoveActionToPosition = async (action: Action, targetIndex: number) => {
+    // 1. Get all active actions for the same day, sorted descending by sortOrder
+    const actionsInDay = allActions
+      .filter((a) => a.scheduledDate === action.scheduledDate && a.status === ACTION_STATUS.ACTIVE)
+      .sort((a, b) => b.sortOrder - a.sortOrder);
+
+    const remaining = actionsInDay.filter((a) => a.id !== action.id);
+    let finalSortOrder = 0;
+
+    if (remaining.length === 0) {
+      finalSortOrder = action.sortOrder;
+    } else if (targetIndex <= 1) {
+      finalSortOrder = remaining[0].sortOrder + 1;
+    } else if (targetIndex > remaining.length) {
+      finalSortOrder = remaining[remaining.length - 1].sortOrder - 1;
+    } else {
+      const prevAction = remaining[targetIndex - 2];
+      const nextAction = remaining[targetIndex - 1];
+      if (prevAction.sortOrder === nextAction.sortOrder) {
+        finalSortOrder = prevAction.sortOrder - 0.5;
+      } else {
+        finalSortOrder = (prevAction.sortOrder + nextAction.sortOrder) / 2;
+      }
+    }
+
+    // --- Optimistic Update ---
+    const previousQueries = queryClient.getQueriesData<Action[]>({ queryKey: ["actions"] });
+
+    queryClient.setQueriesData<Action[]>({ queryKey: ["actions"] }, (oldData) => {
+      if (!oldData) return [];
+      return oldData.map((a) => {
+        if (a.id === action.id) {
+          return { ...a, sortOrder: finalSortOrder };
+        }
+        return a;
+      });
+    });
+
+    activeWritesRef.current++;
+    await queryClient.cancelQueries({ queryKey: ["actions"] });
+    try {
+      await updateAction(action.id, { sortOrder: finalSortOrder });
+    } catch (error) {
+      console.error(`Failed to move action to position:`, error);
+      previousQueries.forEach(([queryKey, data]) => {
+        queryClient.setQueryData(queryKey, data);
+      });
+      toast.error(`Failed to move action to position`);
+    } finally {
+      activeWritesRef.current--;
+      if (activeWritesRef.current === 0) {
+        queryClient.invalidateQueries({ queryKey: ["actions"] });
+      }
+    }
+  };
+
+  const handleQuickReschedule = async (action: Action) => {
+    const isOverdue = action.scheduledDate < todayStr;
+    let newDate = todayStr;
+    if (!isOverdue) {
+      const current = parseDateString(action.scheduledDate);
+      current.setDate(current.getDate() + 1);
+      newDate = formatDate(current);
+    }
+
+    const previousQueries = queryClient.getQueriesData<Action[]>({ queryKey: ["actions"] });
+
+    // Calculate new sortOrder for the bottom of the new date
+    const actionsOnNewDate = allActions.filter(
+      (a) => a.scheduledDate === newDate && a.status === ACTION_STATUS.ACTIVE
+    );
+    const finalSortOrder =
+      actionsOnNewDate.length > 0
+        ? Math.min(...actionsOnNewDate.map((a) => a.sortOrder)) - 1
+        : -Date.now();
+
+    if (settings.enable_undo_toast) {
+      toast.success(`Rescheduled "${action.title}" to ${isOverdue ? "Today" : "Tomorrow"}`, {
+        action: {
+          label: "Undo",
+          onClick: async () => {
+            const revertedQueries = queryClient.getQueriesData<Action[]>({ queryKey: ["actions"] });
+            previousQueries.forEach(([queryKey, data]) => {
+              queryClient.setQueryData(queryKey, data);
+            });
+            activeWritesRef.current++;
+            await queryClient.cancelQueries({ queryKey: ["actions"] });
+            try {
+              await updateAction(action.id, {
+                scheduledDate: action.scheduledDate,
+                sortOrder: action.sortOrder,
+              });
+              toast.success("Reverted rescheduling");
+            } catch (err) {
+              console.error(err);
+              revertedQueries.forEach(([queryKey, data]) => {
+                queryClient.setQueryData(queryKey, data);
+              });
+              toast.error("Failed to revert rescheduling");
+            } finally {
+              activeWritesRef.current--;
+              if (activeWritesRef.current === 0) {
+                queryClient.invalidateQueries({ queryKey: ["actions"] });
+              }
+            }
+          },
+        },
+      });
+    }
+
+    // Optimistic update
+    updateActionsQueriesCache(action.id, ACTION_STATUS.ACTIVE, {
+      scheduledDate: newDate,
+      sortOrder: finalSortOrder,
+    });
+
+    activeWritesRef.current++;
+    await queryClient.cancelQueries({ queryKey: ["actions"] });
+    try {
+      await updateAction(action.id, {
+        scheduledDate: newDate,
+        sortOrder: finalSortOrder,
+      });
+    } catch (error) {
+      console.error("Failed to quick reschedule action:", error);
+      previousQueries.forEach(([queryKey, data]) => {
+        queryClient.setQueryData(queryKey, data);
+      });
+      toast.error("Failed to reschedule action");
+    } finally {
+      activeWritesRef.current--;
+      if (activeWritesRef.current === 0) {
+        queryClient.invalidateQueries({ queryKey: ["actions"] });
+      }
+    }
+  };
+
   if (dbError) {
     return (
       <div className="flex flex-col items-center justify-center p-12 border-2 border-destructive/20 rounded-3xl bg-destructive/5 gap-4">
@@ -1054,6 +1212,8 @@ export default function Dashboard() {
           isBulkModeActive={isBulkModeActive}
           onMoveUp={(action) => handleMoveAction(action, "up")}
           onMoveDown={(action) => handleMoveAction(action, "down")}
+          onMoveToPosition={handleMoveActionToPosition}
+          onQuickReschedule={handleQuickReschedule}
         />
       )}
 
@@ -1097,6 +1257,8 @@ export default function Dashboard() {
                 isBulkModeActive={isBulkModeActive}
                 onMoveUp={(action) => handleMoveAction(action, "up")}
                 onMoveDown={(action) => handleMoveAction(action, "down")}
+                onMoveToPosition={handleMoveActionToPosition}
+                onQuickReschedule={handleQuickReschedule}
               />
             ))}
           </motion.div>

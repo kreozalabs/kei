@@ -18,6 +18,7 @@ export interface ActionPayload {
   endTime?: string | null; // HH:mm
   timezone?: string;
   sortOrder?: number;
+  insertAtTop?: boolean;
 }
 
 // Action represents the primary unit of work in the application.

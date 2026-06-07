@@ -25,6 +25,8 @@ interface ActionSectionProps {
   isBulkModeActive?: boolean;
   onMoveUp?: (action: Action) => void;
   onMoveDown?: (action: Action) => void;
+  onMoveToPosition?: (action: Action, targetIndex: number) => void;
+  onQuickReschedule?: (action: Action) => void;
 }
 
 export function ActionSection({
@@ -44,6 +46,8 @@ export function ActionSection({
   isBulkModeActive,
   onMoveUp,
   onMoveDown,
+  onMoveToPosition,
+  onQuickReschedule,
 }: ActionSectionProps) {
   const [isAdding, setIsAdding] = useState(false);
   const { settings } = useSettings();
@@ -159,6 +163,8 @@ export function ActionSection({
                         isBulkModeActive={isBulkModeActive}
                         onMoveUp={onMoveUp}
                         onMoveDown={onMoveDown}
+                        onMoveToPosition={onMoveToPosition}
+                        onQuickReschedule={onQuickReschedule}
                         isFirstActive={isActive && activeCount === 1}
                         isLastActive={isActive && activeCount === totalActiveCount}
                       />
