@@ -5,6 +5,7 @@ import { PersonalizationSettings } from "@/components/settings/PersonalizationSe
 import { BehaviorSettings } from "@/components/settings/BehaviorSettings";
 import { ActionsSettings } from "@/components/settings/ActionsSettings";
 import { MaintenanceSettings } from "@/components/settings/MaintenanceSettings";
+import { SystemSettings } from "@/components/settings/SystemSettings";
 
 export default function Settings() {
   const { setTitle, setSubtitle, setHeaderActions } = useOutletContext<AppLayoutContext>();
@@ -55,13 +56,12 @@ export default function Settings() {
             <MaintenanceSettings />
           </div>
         </div>
-        {/* <div className="bg-card/50 border border-border/40 rounded-4xl p-8 space-y-8 overflow-hidden relative group">
+        <div className="bg-card/50 border border-border/40 rounded-4xl p-8 space-y-8 overflow-hidden relative group">
           <div className="relative">
-            <h3 className="text-lg font-bold tracking-tight mb-8">System Information</h3>
-            // TODO: This should be a page where user can see app info, version, PWA status, if offline mode is ready, if database age, db size, syncs, last backup, peer-to-peer connections, cloud connections, where data is stored, overall size, internet connection status, storage usage, notifications status, etc. 
-            // TODO: Or move it somewhere else. Maybe make separate page for that, or move things that should be moved to separate tage, and keep those that need to be kept?
+            <h3 className="text-lg font-bold tracking-tight mb-8">System Settings</h3>
+            <SystemSettings />
           </div>
-        </div> */}
+        </div>
       </div>
     </div>
   );
