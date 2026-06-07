@@ -28,6 +28,8 @@ export interface Settings {
   default_insert_at_top: boolean;
   show_intentions: boolean;
   show_default_energy: boolean;
+  enable_hover_preview: boolean;
+  hover_preview_delay: number;
 }
 
 export type SettingKey = keyof Settings;

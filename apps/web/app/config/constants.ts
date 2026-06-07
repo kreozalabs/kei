@@ -148,6 +148,8 @@ export const DEFAULT_SETTINGS = {
   default_insert_at_top: false,
   show_intentions: true,
   show_default_energy: false,
+  enable_hover_preview: true,
+  hover_preview_delay: 0.8,
 };
 
 export const STORAGE_KEYS = {
@@ -263,4 +265,16 @@ export const SHOW_INTENTIONS_OPTIONS = [
 export const SHOW_DEFAULT_ENERGY_OPTIONS = [
   { label: "Show", value: true },
   { label: "Hide", value: false },
+];
+
+export const HOVER_PREVIEW_OPTIONS = [
+  { label: "On", value: true },
+  { label: "Off", value: false },
+];
+
+export const HOVER_DELAY_OPTIONS = [
+  { label: "0.5s", value: 0.5 },
+  { label: "0.8s", value: 0.8 },
+  { label: "1.2s", value: 1.2 },
+  { label: "2.0s", value: 2.0 },
 ];
