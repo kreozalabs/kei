@@ -7,10 +7,11 @@ function Toaster({ ...props }: ToasterProps) {
   return (
     <Sonner
       className="toaster group"
+      richColors
       toastOptions={{
         classNames: {
           toast:
-            "group toast group-[.toaster]:bg-background group-[.toaster]:text-foreground group-[.toaster]:border-border group-[.toaster]:shadow-lg group-[.toaster]:rounded-2xl group-[.toaster]:border group-[.toaster]:font-sans group-[.toaster]:p-4 group-[.toaster]:gap-3",
+            "group toast group-[.toaster]:shadow-lg group-[.toaster]:rounded-2xl group-[.toaster]:border group-[.toaster]:font-sans group-[.toaster]:p-4 group-[.toaster]:gap-3",
           title: "group-[.toast]:font-semibold group-[.toast]:text-sm",
           description: "group-[.toast]:text-muted-foreground group-[.toast]:text-xs",
           actionButton:
