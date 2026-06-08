@@ -132,7 +132,7 @@ export function ActionItem({
         height: { duration: 0.2 },
       }}
       className={cn(
-        "group flex items-start gap-1 py-2.5 border-b border-border/40 last:border-none transition-colors px-1 sm:px-2 cursor-default relative overflow-hidden",
+        "group flex items-start gap-2 py-2.5 border-b border-border/40 last:border-none transition-colors px-1 sm:px-2 cursor-default relative overflow-hidden",
         type === ACTION_STATUS.COMPLETED
           ? "opacity-50"
           : type === ACTION_STATUS.ABANDONED
@@ -146,8 +146,8 @@ export function ActionItem({
           className={cn(
             "flex flex-col items-center gap-0.5 shrink-0 transition-all duration-200 overflow-hidden h-10.5",
             isBulkModeActive
-              ? "opacity-0 pointer-events-none w-0 mr-0 md:w-5 md:mr-1"
-              : "opacity-100 mr-1 lg:opacity-0 lg:group-hover:opacity-100"
+              ? "opacity-0 pointer-events-none w-0 md:w-5"
+              : "opacity-100 lg:opacity-0 lg:group-hover:opacity-100"
           )}
         >
           {!isBulkModeActive && (
@@ -191,16 +191,15 @@ export function ActionItem({
         </div>
       )}
 
-      {/* Floating Checkbox (Gmail style hover / active bulk selection transition) */}
       {settings.enable_selection && (
         <div
           className={cn(
-            "mt-0.5 shrink-0 flex items-center justify-center h-5 w-5 mr-1.5 ml-1 transition-opacity duration-200",
+            "mt-0.5 shrink-0 flex items-center justify-center h-5 transition-all duration-200",
             isBulkModeActive || isSelected
-              ? "opacity-100 pointer-events-auto"
+              ? "w-5 opacity-100 pointer-events-auto"
               : settings.show_checkboxes_on_hover
-                ? "opacity-0 pointer-events-none group-hover:opacity-100 group-hover:pointer-events-auto"
-                : "opacity-0 pointer-events-none"
+                ? "w-0 md:w-5 opacity-0 pointer-events-none group-hover:opacity-100 group-hover:pointer-events-auto"
+                : "w-0 opacity-0 pointer-events-none"
           )}
         >
           <Checkbox checked={isSelected} onCheckedChange={() => onSelectToggle?.(action.id)} />
@@ -210,7 +209,7 @@ export function ActionItem({
       <div
         className={cn(
           "flex items-start flex-1 min-w-0 transition-all duration-200",
-          isBulkModeActive ? "gap-0 md:gap-3" : "gap-3"
+          isBulkModeActive ? "gap-0 md:gap-2" : "gap-2"
         )}
       >
         <div
