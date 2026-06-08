@@ -142,7 +142,7 @@ export function ActionItem({
     >
       {/* Reorder Arrows */}
       {type === ACTION_STATUS.ACTIVE && (
-        <div className="flex flex-col items-center gap-0.5 mr-1 opacity-0 group-hover:opacity-100 transition-opacity shrink-0">
+        <div className="flex flex-col items-center gap-0.5 mr-1 opacity-100 lg:opacity-0 lg:group-hover:opacity-100 transition-opacity shrink-0">
           <Button
             variant="ghost"
             size="icon-xs"
@@ -155,7 +155,7 @@ export function ActionItem({
               }
             }}
             disabled={isFirstActive}
-            className="size-5 text-muted-foreground/50 hover:text-primary hover:bg-primary/10 disabled:opacity-0 rounded-md transition-all active:scale-90"
+            className="size-5 text-muted-foreground/70 lg:text-muted-foreground/50 hover:text-primary hover:bg-primary/10 disabled:opacity-0 rounded-md transition-all active:scale-90"
             title="Move up (Shift-click to move to top)"
           >
             <ChevronUp className="size-3.5" />
@@ -172,7 +172,7 @@ export function ActionItem({
               }
             }}
             disabled={isLastActive}
-            className="size-5 text-muted-foreground/50 hover:text-primary hover:bg-primary/10 disabled:opacity-0 rounded-md transition-all active:scale-90"
+            className="size-5 text-muted-foreground/70 lg:text-muted-foreground/50 hover:text-primary hover:bg-primary/10 disabled:opacity-0 rounded-md transition-all active:scale-90"
             title="Move down (Shift-click to move to bottom)"
           >
             <ChevronDown className="size-3.5" />
@@ -319,7 +319,7 @@ export function ActionItem({
                       />
                     ) : (
                       <span
-                        className="text-[11px] font-bold text-muted-foreground/40 hover:text-primary hover:font-black tabular-nums cursor-pointer transition-colors"
+                        className="text-[11px] font-bold text-muted-foreground/70 lg:text-muted-foreground/40 hover:text-primary hover:font-black tabular-nums cursor-pointer transition-colors"
                         title="Click to change order position"
                       >
                         {index}
@@ -489,7 +489,7 @@ export function ActionItem({
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="size-7 text-muted-foreground/40 hover:text-foreground active:scale-90 transition-all"
+                  className="size-7 text-muted-foreground/70 lg:text-muted-foreground/40 hover:text-foreground active:scale-90 transition-all"
                   onClick={(e) => e.stopPropagation()}
                 >
                   <MoreVertical className="size-3.5" />
@@ -574,7 +574,7 @@ export function ActionItem({
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="size-7 text-muted-foreground/40 hover:text-foreground active:scale-95 transition-all"
+                  className="size-7 text-muted-foreground/70 lg:text-muted-foreground/40 hover:text-foreground active:scale-95 transition-all"
                   onClick={(e) => e.stopPropagation()}
                 >
                   <MoreVertical className="size-3.5" />
