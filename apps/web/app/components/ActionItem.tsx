@@ -141,42 +141,53 @@ export function ActionItem({
       )}
     >
       {/* Reorder Arrows */}
-      {type === ACTION_STATUS.ACTIVE && !isBulkModeActive && (
-        <div className="flex flex-col items-center gap-0.5 mr-1 opacity-100 lg:opacity-0 lg:group-hover:opacity-100 transition-opacity shrink-0">
-          <Button
-            variant="ghost"
-            size="icon-xs"
-            onClick={(e) => {
-              e.stopPropagation();
-              if (e.shiftKey) {
-                onMoveToPosition?.(action, 1);
-              } else {
-                onMoveUp?.(action);
-              }
-            }}
-            disabled={isFirstActive}
-            className="size-5 text-muted-foreground/70 lg:text-muted-foreground/50 hover:text-primary hover:bg-primary/10 disabled:opacity-0 rounded-md transition-all active:scale-90"
-            title="Move up (Shift-click to move to top)"
-          >
-            <ChevronUp className="size-3.5" />
-          </Button>
-          <Button
-            variant="ghost"
-            size="icon-xs"
-            onClick={(e) => {
-              e.stopPropagation();
-              if (e.shiftKey) {
-                onMoveToPosition?.(action, Infinity);
-              } else {
-                onMoveDown?.(action);
-              }
-            }}
-            disabled={isLastActive}
-            className="size-5 text-muted-foreground/70 lg:text-muted-foreground/50 hover:text-primary hover:bg-primary/10 disabled:opacity-0 rounded-md transition-all active:scale-90"
-            title="Move down (Shift-click to move to bottom)"
-          >
-            <ChevronDown className="size-3.5" />
-          </Button>
+      {type === ACTION_STATUS.ACTIVE && (
+        <div
+          className={cn(
+            "flex flex-col items-center gap-0.5 shrink-0 transition-all duration-200 overflow-hidden h-[42px]",
+            isBulkModeActive
+              ? "opacity-0 pointer-events-none w-0 mr-0 md:w-5 md:mr-1"
+              : "opacity-100 mr-1 lg:opacity-0 lg:group-hover:opacity-100"
+          )}
+        >
+          {!isBulkModeActive && (
+            <>
+              <Button
+                variant="ghost"
+                size="icon-xs"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  if (e.shiftKey) {
+                    onMoveToPosition?.(action, 1);
+                  } else {
+                    onMoveUp?.(action);
+                  }
+                }}
+                disabled={isFirstActive}
+                className="size-5 text-muted-foreground/70 lg:text-muted-foreground/50 hover:text-primary hover:bg-primary/10 disabled:opacity-0 rounded-md transition-all active:scale-90"
+                title="Move up (Shift-click to move to top)"
+              >
+                <ChevronUp className="size-3.5" />
+              </Button>
+              <Button
+                variant="ghost"
+                size="icon-xs"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  if (e.shiftKey) {
+                    onMoveToPosition?.(action, Infinity);
+                  } else {
+                    onMoveDown?.(action);
+                  }
+                }}
+                disabled={isLastActive}
+                className="size-5 text-muted-foreground/70 lg:text-muted-foreground/50 hover:text-primary hover:bg-primary/10 disabled:opacity-0 rounded-md transition-all active:scale-90"
+                title="Move down (Shift-click to move to bottom)"
+              >
+                <ChevronDown className="size-3.5" />
+              </Button>
+            </>
+          )}
         </div>
       )}
 
@@ -204,9 +215,21 @@ export function ActionItem({
         </div>
       )}
 
-      <div className="flex items-start gap-3 flex-1 min-w-0">
-        {!isBulkModeActive && (
-          type === ACTION_STATUS.ACTIVE ? (
+      <div
+        className={cn(
+          "flex items-start flex-1 min-w-0 transition-all duration-200",
+          isBulkModeActive ? "gap-0 md:gap-3" : "gap-3"
+        )}
+      >
+        <div
+          className={cn(
+            "shrink-0 flex items-center justify-center transition-all duration-200 overflow-hidden",
+            isBulkModeActive
+              ? "opacity-0 pointer-events-none w-0 md:size-5"
+              : "opacity-100 size-5"
+          )}
+        >
+          {type === ACTION_STATUS.ACTIVE ? (
             <Button
               variant="outline"
               size="icon"
@@ -255,8 +278,8 @@ export function ActionItem({
               <CheckCircle2Icon className="size-4 text-primary group-hover/uncheck:hidden animate-in zoom-in duration-300" />
               <RotateCcw className="size-3.5 text-primary hidden group-hover/uncheck:block animate-in spin-in-180 duration-300" />
             </Button>
-          )
-        )}
+          )}
+        </div>
 
         <div
           className="flex-1 min-w-0 flex flex-col gap-0.5 cursor-pointer"
