@@ -144,7 +144,7 @@ export const DEFAULT_SETTINGS = {
   direct_edit_mode: false,
   enable_undo_toast: true,
   enable_selection: true,
-  show_checkboxes_on_hover: true,
+  show_checkboxes_on_hover: false,
   default_insert_at_top: false,
   show_intentions: true,
   show_default_energy: false,
