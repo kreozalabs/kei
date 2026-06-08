@@ -144,7 +144,7 @@ export function ActionItem({
       {type === ACTION_STATUS.ACTIVE && (
         <div
           className={cn(
-            "flex flex-col items-center gap-0.5 shrink-0 transition-all duration-200 overflow-hidden h-[42px]",
+            "flex flex-col items-center gap-0.5 shrink-0 transition-all duration-200 overflow-hidden h-10.5",
             isBulkModeActive
               ? "opacity-0 pointer-events-none w-0 mr-0 md:w-5 md:mr-1"
               : "opacity-100 mr-1 lg:opacity-0 lg:group-hover:opacity-100"
@@ -195,20 +195,8 @@ export function ActionItem({
       {settings.enable_selection && (
         <div
           className={cn(
-            "mt-0.5 shrink-0 flex items-center justify-center h-5",
-            settings.shift_on_selection_hover
-              ? cn(
-                  "transition-all duration-200",
-                  isBulkModeActive || isSelected
-                    ? "w-5 opacity-100 mr-1.5 ml-1"
-                    : "w-0 opacity-0 overflow-hidden group-hover:w-5 group-hover:opacity-100 group-hover:mr-1.5 group-hover:ml-1"
-                )
-              : cn(
-                  "w-5 mr-1.5 ml-1 transition-opacity duration-200",
-                  isBulkModeActive || isSelected
-                    ? "opacity-100"
-                    : "opacity-0 group-hover:opacity-100"
-                )
+            "mt-0.5 shrink-0 flex items-center justify-center h-5 w-5 mr-1.5 ml-1 transition-opacity duration-200",
+            isBulkModeActive || isSelected ? "opacity-100" : "opacity-0 group-hover:opacity-100"
           )}
         >
           <Checkbox checked={isSelected} onCheckedChange={() => onSelectToggle?.(action.id)} />
@@ -224,9 +212,7 @@ export function ActionItem({
         <div
           className={cn(
             "shrink-0 flex items-center justify-center transition-all duration-200 overflow-hidden",
-            isBulkModeActive
-              ? "opacity-0 pointer-events-none w-0 md:size-5"
-              : "opacity-100 size-5"
+            isBulkModeActive ? "opacity-0 pointer-events-none w-0 md:size-5" : "opacity-100 size-5"
           )}
         >
           {type === ACTION_STATUS.ACTIVE ? (

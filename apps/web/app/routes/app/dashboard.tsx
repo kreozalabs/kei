@@ -602,7 +602,7 @@ export default function Dashboard() {
                         : "text-muted-foreground"
                     )}
                   />
-                  <span>Batch Selection</span>
+                  <span>Selection Mode</span>
                 </DropdownMenuCheckboxItem>
               )}
               <DropdownMenuCheckboxItem
