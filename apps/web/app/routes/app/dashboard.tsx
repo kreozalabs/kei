@@ -1,4 +1,4 @@
-import { useEffect, useState, useMemo, useRef } from "react";
+import { useEffect, useState, useMemo, useRef, useCallback } from "react";
 import { useOutletContext } from "react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import type { AppLayoutContext } from "@/components/layout/AppLayout";
@@ -48,6 +48,7 @@ import {
   CalendarIcon,
   RotateCcw,
   MoreVertical,
+  CheckSquare,
 } from "lucide-react";
 import type { Action, ActionStatus } from "@/types/actions";
 import { motion, AnimatePresence } from "framer-motion";
@@ -127,114 +128,7 @@ export default function Dashboard() {
     return formatDate(d);
   }, [isTodayLocked, selectedDate, todayStr]);
 
-  useEffect(() => {
-    setTitle("Timeline");
-    setSubtitle(formatTitleDate(parseDateString(startDate)));
 
-    setHeaderActions({
-      center: (
-        <div className="flex items-center gap-2">
-          {/* Sticky Today Button */}
-          {!isTodayLocked && selectedDate !== todayStr && (
-            <div className="animate-in fade-in slide-in-from-top-4 duration-200">
-              <Button
-                onClick={() => setSelectedDate(todayStr)}
-                className="flex items-center gap-1.5 px-4 py-2 bg-primary text-primary-foreground font-black text-[11px] uppercase tracking-wider rounded-full shadow-lg hover:scale-105 active:scale-95 transition-all border-none"
-              >
-                Today
-              </Button>
-            </div>
-          )}
-          <HeaderSearch />
-        </div>
-      ),
-      right: (
-        <div className="flex items-center gap-2">
-          <ActionInputDialog
-            open={isDialogOpen}
-            onOpenChange={(open) => {
-              setIsDialogOpen(open);
-              if (!open) {
-                setDialogPreDate(null);
-                setActionToEdit(null);
-              }
-            }}
-            trigger={<HeaderNewAction />}
-            initialDate={dialogPreDate}
-            selectedDate={selectedDate}
-            actionToEdit={actionToEdit ?? undefined}
-          />
-
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => setIsTodayLocked((prev) => !prev)}
-            className="size-8 border-none rounded-full text-muted-foreground hover:text-primary hover:bg-primary/10 transition-all active:scale-95"
-            title={isTodayLocked ? "Unlock Timeline" : "Lock to Today"}
-          >
-            {isTodayLocked ? <LockIcon className="size-4" /> : <UnlockIcon className="size-4" />}
-          </Button>
-
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button
-                variant="ghost"
-                size="icon"
-                className="size-8 border-none rounded-full text-muted-foreground hover:text-primary hover:bg-primary/10 transition-all active:scale-95"
-                title="More Actions"
-              >
-                <MoreVertical className="size-4" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-48 bg-background border-border/40">
-              <DropdownMenuCheckboxItem
-                checked={settings.show_completed}
-                onCheckedChange={(checked) => updateSetting("show_completed", checked)}
-                className="flex items-center gap-2 cursor-pointer text-xs"
-              >
-                <CheckCircle2Icon
-                  className={cn(
-                    "size-3.5 mr-1",
-                    settings.show_completed ? "text-primary" : "text-muted-foreground"
-                  )}
-                />
-                <span>Show Completed</span>
-              </DropdownMenuCheckboxItem>
-              <DropdownMenuCheckboxItem
-                checked={settings.show_abandoned}
-                onCheckedChange={(checked) => updateSetting("show_abandoned", checked)}
-                className="flex items-center gap-2 cursor-pointer text-xs"
-              >
-                <Trash2Icon
-                  className={cn(
-                    "size-3.5 mr-1",
-                    settings.show_abandoned ? "text-primary" : "text-muted-foreground"
-                  )}
-                />
-                <span>Show Abandoned</span>
-              </DropdownMenuCheckboxItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-        </div>
-      ),
-    });
-
-    return () => setHeaderActions(undefined);
-  }, [
-    setTitle,
-    setSubtitle,
-    setHeaderActions,
-    actionToEdit,
-    isDialogOpen,
-    isTodayLocked,
-    todayStr,
-    selectedDate,
-    dialogPreDate,
-    startDate,
-    settings.show_completed,
-    settings.show_abandoned,
-    updateSetting,
-  ]);
 
   const { data: activeActions = [] } = useQuery({
     queryKey: ["actions", { status: ACTION_STATUS.ACTIVE, endDate }],
@@ -583,6 +477,7 @@ export default function Dashboard() {
 
   // Multi-select & Bulk actions state
   const [selectedActionIds, setSelectedActionIds] = useState<Set<string>>(new Set());
+  const [isSelectionModeForced, setIsSelectionModeForced] = useState(false);
 
   // Filter selected IDs to only valid visible actions to prevent ghost selections
   const visibleSelectedActionIds = useMemo(() => {
@@ -597,7 +492,7 @@ export default function Dashboard() {
     return validIds;
   }, [selectedActionIds, allActions, settings.enable_selection]);
 
-  const isBulkModeActive = visibleSelectedActionIds.size > 0;
+  const isBulkModeActive = visibleSelectedActionIds.size > 0 || isSelectionModeForced;
 
   const selectedActions = useMemo(() => {
     return allActions.filter((a) => visibleSelectedActionIds.has(a.id));
@@ -623,9 +518,146 @@ export default function Dashboard() {
     });
   };
 
-  const handleClearSelection = () => {
+  const handleClearSelection = useCallback(() => {
     setSelectedActionIds(new Set());
-  };
+    setIsSelectionModeForced(false);
+  }, []);
+
+  useEffect(() => {
+    setTitle("Timeline");
+    setSubtitle(formatTitleDate(parseDateString(startDate)));
+
+    setHeaderActions({
+      center: (
+        <div className="flex items-center gap-2">
+          {/* Sticky Today Button */}
+          {!isTodayLocked && selectedDate !== todayStr && (
+            <div className="animate-in fade-in slide-in-from-top-4 duration-200">
+              <Button
+                onClick={() => setSelectedDate(todayStr)}
+                className="flex items-center gap-1.5 px-4 py-2 bg-primary text-primary-foreground font-black text-[11px] uppercase tracking-wider rounded-full shadow-lg hover:scale-105 active:scale-95 transition-all border-none"
+              >
+                Today
+              </Button>
+            </div>
+          )}
+          <HeaderSearch />
+        </div>
+      ),
+      right: (
+        <div className="flex items-center gap-2">
+          <ActionInputDialog
+            open={isDialogOpen}
+            onOpenChange={(open) => {
+              setIsDialogOpen(open);
+              if (!open) {
+                setDialogPreDate(null);
+                setActionToEdit(null);
+              }
+            }}
+            trigger={<HeaderNewAction />}
+            initialDate={dialogPreDate}
+            selectedDate={selectedDate}
+            actionToEdit={actionToEdit ?? undefined}
+          />
+
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => setIsTodayLocked((prev) => !prev)}
+            className="size-8 border-none rounded-full text-muted-foreground hover:text-primary hover:bg-primary/10 transition-all active:scale-95"
+            title={isTodayLocked ? "Unlock Timeline" : "Lock to Today"}
+          >
+            {isTodayLocked ? <LockIcon className="size-4" /> : <UnlockIcon className="size-4" />}
+          </Button>
+
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="size-8 border-none rounded-full text-muted-foreground hover:text-primary hover:bg-primary/10 transition-all active:scale-95"
+                title="More Actions"
+              >
+                <MoreVertical className="size-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-48 bg-background border-border/40">
+              {settings.enable_selection && (
+                <DropdownMenuCheckboxItem
+                  checked={isSelectionModeForced || visibleSelectedActionIds.size > 0}
+                  onCheckedChange={(checked) => {
+                    if (checked) {
+                      setIsSelectionModeForced(true);
+                    } else {
+                      handleClearSelection();
+                    }
+                  }}
+                  className="flex items-center gap-2 cursor-pointer text-xs"
+                >
+                  <CheckSquare
+                    className={cn(
+                      "size-3.5 mr-1",
+                      isSelectionModeForced || visibleSelectedActionIds.size > 0
+                        ? "text-primary"
+                        : "text-muted-foreground"
+                    )}
+                  />
+                  <span>Batch Selection</span>
+                </DropdownMenuCheckboxItem>
+              )}
+              <DropdownMenuCheckboxItem
+                checked={settings.show_completed}
+                onCheckedChange={(checked) => updateSetting("show_completed", checked)}
+                className="flex items-center gap-2 cursor-pointer text-xs"
+              >
+                <CheckCircle2Icon
+                  className={cn(
+                    "size-3.5 mr-1",
+                    settings.show_completed ? "text-primary" : "text-muted-foreground"
+                  )}
+                />
+                <span>Show Completed</span>
+              </DropdownMenuCheckboxItem>
+              <DropdownMenuCheckboxItem
+                checked={settings.show_abandoned}
+                onCheckedChange={(checked) => updateSetting("show_abandoned", checked)}
+                className="flex items-center gap-2 cursor-pointer text-xs"
+              >
+                <Trash2Icon
+                  className={cn(
+                    "size-3.5 mr-1",
+                    settings.show_abandoned ? "text-primary" : "text-muted-foreground"
+                  )}
+                />
+                <span>Show Abandoned</span>
+              </DropdownMenuCheckboxItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
+      ),
+    });
+
+    return () => setHeaderActions(undefined);
+  }, [
+    setTitle,
+    setSubtitle,
+    setHeaderActions,
+    actionToEdit,
+    isDialogOpen,
+    isTodayLocked,
+    todayStr,
+    selectedDate,
+    dialogPreDate,
+    startDate,
+    settings.show_completed,
+    settings.show_abandoned,
+    updateSetting,
+    settings.enable_selection,
+    isSelectionModeForced,
+    visibleSelectedActionIds.size,
+    handleClearSelection,
+  ]);
 
   const handleBulkComplete = async () => {
     const idsToComplete = Array.from(visibleSelectedActionIds);
