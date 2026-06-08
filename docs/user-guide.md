@@ -64,3 +64,26 @@ When you edit a task's title or mark it as important, Kei remembers its position
 If you select multiple tasks using the check circles on the left, you can reschedule them all at once to a new day using the bulk action bar at the bottom:
 - When they move to the new day, they will **keep their relative order** (the task that was higher up on your list will still be higher up on the new day).
 - They will not get jumbled or crowd the bottom of the list.
+
+### Selecting Tasks on Mobile
+Since hover is not available on mobile devices, you can activate selection checkboxes by opening the header dropdown menu and selecting **Selection Mode**. Once active, checkboxes will be displayed next to all tasks.
+
+---
+
+## 6. Customizing Checkbox Visibility
+
+By default, checkboxes appear dynamically when you hover over a task row. If you prefer a cleaner or more static interface:
+1. Go to the **Settings** page.
+2. Scroll to the **Behavior** section.
+3. Under **Multi-Select & Bulk Actions**, find the **Checkbox Visibility** setting:
+   - **On Hover:** Checkboxes appear when hovering over a task row on desktop for quick selection.
+   - **Mode Only:** Checkboxes only appear when Selection Mode is explicitly turned on from the header dropdown menu, keeping your lists completely clean during daily navigation.
+
+---
+
+## 7. Previewing Tasks on Hover
+
+You can quickly preview additional details of a task (like long descriptions, projects, and metadata) without opening the full edit view:
+- **How to view:** Hover your mouse cursor over any task in your list.
+- **Wikipedia-style interaction:** The preview popover stays open as long as your cursor remains over the task row or the popover itself, allowing you to read or interact with it comfortably.
+- **Smooth exit:** Moving your mouse away from both the task and the popover will close it gracefully after a brief delay.
