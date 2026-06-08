@@ -1,4 +1,4 @@
-import { useEffect, useState, useMemo, useRef } from "react";
+import { useEffect, useState, useMemo, useRef, useCallback } from "react";
 import { useOutletContext } from "react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import type { AppLayoutContext } from "@/components/layout/AppLayout";
@@ -48,6 +48,8 @@ import {
   CalendarIcon,
   RotateCcw,
   MoreVertical,
+  CheckSquare,
+  X,
 } from "lucide-react";
 import type { Action, ActionStatus } from "@/types/actions";
 import { motion, AnimatePresence } from "framer-motion";
@@ -126,115 +128,6 @@ export default function Dashboard() {
     d.setDate(d.getDate() + TIME.TIMELINE_DAYS);
     return formatDate(d);
   }, [isTodayLocked, selectedDate, todayStr]);
-
-  useEffect(() => {
-    setTitle("Timeline");
-    setSubtitle(formatTitleDate(parseDateString(startDate)));
-
-    setHeaderActions({
-      center: (
-        <div className="flex items-center gap-2">
-          {/* Sticky Today Button */}
-          {!isTodayLocked && selectedDate !== todayStr && (
-            <div className="animate-in fade-in slide-in-from-top-4 duration-200">
-              <Button
-                onClick={() => setSelectedDate(todayStr)}
-                className="flex items-center gap-1.5 px-4 py-2 bg-primary text-primary-foreground font-black text-[11px] uppercase tracking-wider rounded-full shadow-lg hover:scale-105 active:scale-95 transition-all border-none"
-              >
-                Today
-              </Button>
-            </div>
-          )}
-          <HeaderSearch />
-        </div>
-      ),
-      right: (
-        <div className="flex items-center gap-2">
-          <ActionInputDialog
-            open={isDialogOpen}
-            onOpenChange={(open) => {
-              setIsDialogOpen(open);
-              if (!open) {
-                setDialogPreDate(null);
-                setActionToEdit(null);
-              }
-            }}
-            trigger={<HeaderNewAction />}
-            initialDate={dialogPreDate}
-            selectedDate={selectedDate}
-            actionToEdit={actionToEdit ?? undefined}
-          />
-
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => setIsTodayLocked((prev) => !prev)}
-            className="size-8 border-none rounded-full text-muted-foreground hover:text-primary hover:bg-primary/10 transition-all active:scale-95"
-            title={isTodayLocked ? "Unlock Timeline" : "Lock to Today"}
-          >
-            {isTodayLocked ? <LockIcon className="size-4" /> : <UnlockIcon className="size-4" />}
-          </Button>
-
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button
-                variant="ghost"
-                size="icon"
-                className="size-8 border-none rounded-full text-muted-foreground hover:text-primary hover:bg-primary/10 transition-all active:scale-95"
-                title="More Actions"
-              >
-                <MoreVertical className="size-4" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-48 bg-background border-border/40">
-              <DropdownMenuCheckboxItem
-                checked={settings.show_completed}
-                onCheckedChange={(checked) => updateSetting("show_completed", checked)}
-                className="flex items-center gap-2 cursor-pointer text-xs"
-              >
-                <CheckCircle2Icon
-                  className={cn(
-                    "size-3.5 mr-1",
-                    settings.show_completed ? "text-primary" : "text-muted-foreground"
-                  )}
-                />
-                <span>Show Completed</span>
-              </DropdownMenuCheckboxItem>
-              <DropdownMenuCheckboxItem
-                checked={settings.show_abandoned}
-                onCheckedChange={(checked) => updateSetting("show_abandoned", checked)}
-                className="flex items-center gap-2 cursor-pointer text-xs"
-              >
-                <Trash2Icon
-                  className={cn(
-                    "size-3.5 mr-1",
-                    settings.show_abandoned ? "text-primary" : "text-muted-foreground"
-                  )}
-                />
-                <span>Show Abandoned</span>
-              </DropdownMenuCheckboxItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-        </div>
-      ),
-    });
-
-    return () => setHeaderActions(undefined);
-  }, [
-    setTitle,
-    setSubtitle,
-    setHeaderActions,
-    actionToEdit,
-    isDialogOpen,
-    isTodayLocked,
-    todayStr,
-    selectedDate,
-    dialogPreDate,
-    startDate,
-    settings.show_completed,
-    settings.show_abandoned,
-    updateSetting,
-  ]);
 
   const { data: activeActions = [] } = useQuery({
     queryKey: ["actions", { status: ACTION_STATUS.ACTIVE, endDate }],
@@ -583,6 +476,7 @@ export default function Dashboard() {
 
   // Multi-select & Bulk actions state
   const [selectedActionIds, setSelectedActionIds] = useState<Set<string>>(new Set());
+  const [isSelectionModeForced, setIsSelectionModeForced] = useState(false);
 
   // Filter selected IDs to only valid visible actions to prevent ghost selections
   const visibleSelectedActionIds = useMemo(() => {
@@ -597,7 +491,7 @@ export default function Dashboard() {
     return validIds;
   }, [selectedActionIds, allActions, settings.enable_selection]);
 
-  const isBulkModeActive = visibleSelectedActionIds.size > 0;
+  const isBulkModeActive = visibleSelectedActionIds.size > 0 || isSelectionModeForced;
 
   const selectedActions = useMemo(() => {
     return allActions.filter((a) => visibleSelectedActionIds.has(a.id));
@@ -623,9 +517,146 @@ export default function Dashboard() {
     });
   };
 
-  const handleClearSelection = () => {
+  const handleClearSelection = useCallback(() => {
     setSelectedActionIds(new Set());
-  };
+    setIsSelectionModeForced(false);
+  }, []);
+
+  useEffect(() => {
+    setTitle("Timeline");
+    setSubtitle(formatTitleDate(parseDateString(startDate)));
+
+    setHeaderActions({
+      center: (
+        <div className="flex items-center gap-2">
+          {/* Sticky Today Button */}
+          {!isTodayLocked && selectedDate !== todayStr && (
+            <div className="animate-in fade-in slide-in-from-top-4 duration-200">
+              <Button
+                onClick={() => setSelectedDate(todayStr)}
+                className="flex items-center gap-1.5 px-4 py-2 bg-primary text-primary-foreground font-black text-[11px] uppercase tracking-wider rounded-full shadow-lg hover:scale-105 active:scale-95 transition-all border-none"
+              >
+                Today
+              </Button>
+            </div>
+          )}
+          <HeaderSearch />
+        </div>
+      ),
+      right: (
+        <div className="flex items-center gap-2">
+          <ActionInputDialog
+            open={isDialogOpen}
+            onOpenChange={(open) => {
+              setIsDialogOpen(open);
+              if (!open) {
+                setDialogPreDate(null);
+                setActionToEdit(null);
+              }
+            }}
+            trigger={<HeaderNewAction />}
+            initialDate={dialogPreDate}
+            selectedDate={selectedDate}
+            actionToEdit={actionToEdit ?? undefined}
+          />
+
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => setIsTodayLocked((prev) => !prev)}
+            className="size-8 border-none rounded-full text-muted-foreground hover:text-primary hover:bg-primary/10 transition-all active:scale-95"
+            title={isTodayLocked ? "Unlock Timeline" : "Lock to Today"}
+          >
+            {isTodayLocked ? <LockIcon className="size-4" /> : <UnlockIcon className="size-4" />}
+          </Button>
+
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="size-8 border-none rounded-full text-muted-foreground hover:text-primary hover:bg-primary/10 transition-all active:scale-95"
+                title="More Actions"
+              >
+                <MoreVertical className="size-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-48 bg-background border-border/40">
+              {settings.enable_selection && (
+                <DropdownMenuCheckboxItem
+                  checked={isSelectionModeForced || visibleSelectedActionIds.size > 0}
+                  onCheckedChange={(checked) => {
+                    if (checked) {
+                      setIsSelectionModeForced(true);
+                    } else {
+                      handleClearSelection();
+                    }
+                  }}
+                  className="flex items-center gap-2 cursor-pointer text-xs"
+                >
+                  <CheckSquare
+                    className={cn(
+                      "size-3.5 mr-1",
+                      isSelectionModeForced || visibleSelectedActionIds.size > 0
+                        ? "text-primary"
+                        : "text-muted-foreground"
+                    )}
+                  />
+                  <span>Selection Mode</span>
+                </DropdownMenuCheckboxItem>
+              )}
+              <DropdownMenuCheckboxItem
+                checked={settings.show_completed}
+                onCheckedChange={(checked) => updateSetting("show_completed", checked)}
+                className="flex items-center gap-2 cursor-pointer text-xs"
+              >
+                <CheckCircle2Icon
+                  className={cn(
+                    "size-3.5 mr-1",
+                    settings.show_completed ? "text-primary" : "text-muted-foreground"
+                  )}
+                />
+                <span>Show Completed</span>
+              </DropdownMenuCheckboxItem>
+              <DropdownMenuCheckboxItem
+                checked={settings.show_abandoned}
+                onCheckedChange={(checked) => updateSetting("show_abandoned", checked)}
+                className="flex items-center gap-2 cursor-pointer text-xs"
+              >
+                <Trash2Icon
+                  className={cn(
+                    "size-3.5 mr-1",
+                    settings.show_abandoned ? "text-primary" : "text-muted-foreground"
+                  )}
+                />
+                <span>Show Abandoned</span>
+              </DropdownMenuCheckboxItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
+      ),
+    });
+
+    return () => setHeaderActions(undefined);
+  }, [
+    setTitle,
+    setSubtitle,
+    setHeaderActions,
+    actionToEdit,
+    isDialogOpen,
+    isTodayLocked,
+    todayStr,
+    selectedDate,
+    dialogPreDate,
+    startDate,
+    settings.show_completed,
+    settings.show_abandoned,
+    updateSetting,
+    settings.enable_selection,
+    isSelectionModeForced,
+    visibleSelectedActionIds.size,
+    handleClearSelection,
+  ]);
 
   const handleBulkComplete = async () => {
     const idsToComplete = Array.from(visibleSelectedActionIds);
@@ -1273,7 +1304,7 @@ export default function Dashboard() {
           <div className="flex items-center gap-3 px-4 py-2 border border-primary/20 bg-background/80 backdrop-blur-md rounded-2xl shadow-2xl">
             <Loader2Icon className="size-4 text-primary animate-spin" />
             <span className="text-[10px] font-bold uppercase tracking-[0.15em] text-primary/80">
-              Synchronizing Engine
+              Synchronizing
             </span>
           </div>
         </div>
@@ -1287,37 +1318,41 @@ export default function Dashboard() {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 50, scale: 0.95 }}
             transition={{ type: "spring", stiffness: 350, damping: 25 }}
-            className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 flex items-center gap-4 px-5 py-3 border border-border/40 bg-background/70 backdrop-blur-xl rounded-full shadow-2xl"
+            className="fixed bottom-20 md:bottom-6 left-1/2 -translate-x-1/2 z-50 flex items-center gap-2 sm:gap-4 px-3 py-2 sm:px-5 sm:py-3 border border-border/40 bg-background/70 backdrop-blur-xl rounded-full shadow-2xl max-w-[95vw] md:max-w-none"
           >
-            <div className="flex items-center gap-1.5 border-r border-border/20 pr-4 shrink-0">
+            <div className="flex items-center gap-1.5 border-r border-border/20 pr-2 sm:pr-4 shrink-0">
               <span className="flex items-center justify-center size-5 bg-primary text-primary-foreground font-black text-[10px] rounded-full">
                 {visibleSelectedActionIds.size}
               </span>
-              <span className="text-xs font-black tracking-wider uppercase text-muted-foreground">
+              <span className="text-xs font-black tracking-wider uppercase text-muted-foreground hidden sm:inline">
                 Selected
               </span>
             </div>
 
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1.5 sm:gap-2">
               {areAllSelectedCompleted ? (
                 <Button
                   variant="ghost"
                   size="sm"
                   onClick={handleBulkReactivate}
-                  className="h-8 text-xs font-bold hover:bg-amber-500/10 hover:text-amber-500 hover:border-amber-500/20 text-muted-foreground gap-1.5 rounded-full px-3 transition-all border-none"
+                  disabled={visibleSelectedActionIds.size === 0}
+                  className="h-8 text-xs font-bold hover:bg-amber-500/10 hover:text-amber-500 hover:border-amber-500/20 text-muted-foreground gap-1.5 rounded-full px-2 sm:px-3 transition-all border-none disabled:opacity-40"
+                  title="Reactivate selected"
                 >
                   <RotateCcw className="size-3.5 text-amber-500" />
-                  Reactivate
+                  <span className="hidden sm:inline">Reactivate</span>
                 </Button>
               ) : (
                 <Button
                   variant="ghost"
                   size="sm"
                   onClick={handleBulkComplete}
-                  className="h-8 text-xs font-bold hover:bg-emerald-500/10 hover:text-emerald-500 hover:border-emerald-500/20 text-muted-foreground gap-1.5 rounded-full px-3 transition-all border-none"
+                  disabled={visibleSelectedActionIds.size === 0}
+                  className="h-8 text-xs font-bold hover:bg-emerald-500/10 hover:text-emerald-500 hover:border-emerald-500/20 text-muted-foreground gap-1.5 rounded-full px-2 sm:px-3 transition-all border-none disabled:opacity-40"
+                  title="Complete selected"
                 >
                   <CheckCircle2Icon className="size-3.5 text-emerald-500" />
-                  Complete
+                  <span className="hidden sm:inline">Complete</span>
                 </Button>
               )}
 
@@ -1326,10 +1361,12 @@ export default function Dashboard() {
                   <Button
                     variant="ghost"
                     size="sm"
-                    className="h-8 text-xs font-bold hover:bg-primary/10 hover:text-primary text-muted-foreground gap-1.5 rounded-full px-3 transition-all border-none"
+                    disabled={visibleSelectedActionIds.size === 0}
+                    className="h-8 text-xs font-bold hover:bg-primary/10 hover:text-primary text-muted-foreground gap-1.5 rounded-full px-2 sm:px-3 transition-all border-none disabled:opacity-40"
+                    title="Reschedule selected"
                   >
                     <CalendarIcon className="size-3.5" />
-                    Reschedule
+                    <span className="hidden sm:inline">Reschedule</span>
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent
@@ -1369,10 +1406,12 @@ export default function Dashboard() {
                 variant="ghost"
                 size="sm"
                 onClick={handleBulkAbandon}
-                className="h-8 text-xs font-bold hover:bg-rose-500/10 hover:text-rose-500 hover:border-rose-500/20 text-muted-foreground gap-1.5 rounded-full px-3 transition-all border-none"
+                disabled={visibleSelectedActionIds.size === 0}
+                className="h-8 text-xs font-bold hover:bg-rose-500/10 hover:text-rose-500 hover:border-rose-500/20 text-muted-foreground gap-1.5 rounded-full px-2 sm:px-3 transition-all border-none disabled:opacity-40"
+                title="Abandon selected"
               >
                 <Trash2Icon className="size-3.5" />
-                Abandon
+                <span className="hidden sm:inline">Abandon</span>
               </Button>
             </div>
 
@@ -1381,9 +1420,11 @@ export default function Dashboard() {
                 variant="ghost"
                 size="sm"
                 onClick={handleClearSelection}
-                className="h-7 text-[10px] font-black uppercase tracking-wider text-muted-foreground/60 hover:text-foreground hover:bg-muted/50 rounded-full px-2.5 transition-all border-none"
+                className="h-7 text-[10px] font-black uppercase tracking-wider text-muted-foreground/60 hover:text-foreground hover:bg-muted/50 rounded-full px-2 sm:px-2.5 transition-all border-none"
+                title="Clear selection"
               >
-                Clear
+                <X className="size-3.5 sm:hidden" />
+                <span className="hidden sm:inline">Clear</span>
               </Button>
             </div>
           </motion.div>

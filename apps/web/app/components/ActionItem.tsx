@@ -132,7 +132,7 @@ export function ActionItem({
         height: { duration: 0.2 },
       }}
       className={cn(
-        "group flex items-start gap-1 py-2.5 border-b border-border/40 last:border-none transition-colors px-1 sm:px-2 cursor-default relative overflow-hidden",
+        "group flex items-start gap-2 py-2.5 border-b border-border/40 last:border-none transition-colors px-1 sm:px-2 cursor-default relative overflow-hidden",
         type === ACTION_STATUS.COMPLETED
           ? "opacity-50"
           : type === ACTION_STATUS.ABANDONED
@@ -142,123 +142,146 @@ export function ActionItem({
     >
       {/* Reorder Arrows */}
       {type === ACTION_STATUS.ACTIVE && (
-        <div className="flex flex-col items-center gap-0.5 mr-1 opacity-0 group-hover:opacity-100 transition-opacity shrink-0">
-          <Button
-            variant="ghost"
-            size="icon-xs"
-            onClick={(e) => {
-              e.stopPropagation();
-              if (e.shiftKey) {
-                onMoveToPosition?.(action, 1);
-              } else {
-                onMoveUp?.(action);
-              }
-            }}
-            disabled={isFirstActive}
-            className="size-5 text-muted-foreground/50 hover:text-primary hover:bg-primary/10 disabled:opacity-0 rounded-md transition-all active:scale-90"
-            title="Move up (Shift-click to move to top)"
-          >
-            <ChevronUp className="size-3.5" />
-          </Button>
-          <Button
-            variant="ghost"
-            size="icon-xs"
-            onClick={(e) => {
-              e.stopPropagation();
-              if (e.shiftKey) {
-                onMoveToPosition?.(action, Infinity);
-              } else {
-                onMoveDown?.(action);
-              }
-            }}
-            disabled={isLastActive}
-            className="size-5 text-muted-foreground/50 hover:text-primary hover:bg-primary/10 disabled:opacity-0 rounded-md transition-all active:scale-90"
-            title="Move down (Shift-click to move to bottom)"
-          >
-            <ChevronDown className="size-3.5" />
-          </Button>
+        <div
+          className={cn(
+            "flex flex-col items-center gap-0.5 shrink-0 transition-all duration-200 overflow-hidden h-10.5",
+            isBulkModeActive
+              ? "opacity-0 pointer-events-none w-0 md:w-5"
+              : "opacity-100 lg:opacity-0 lg:group-hover:opacity-100"
+          )}
+        >
+          {!isBulkModeActive && (
+            <>
+              <Button
+                variant="ghost"
+                size="icon-xs"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  if (e.shiftKey) {
+                    onMoveToPosition?.(action, 1);
+                  } else {
+                    onMoveUp?.(action);
+                  }
+                }}
+                disabled={isFirstActive}
+                className="size-5 text-muted-foreground/70 lg:text-muted-foreground/50 hover:text-primary hover:bg-primary/10 disabled:opacity-0 rounded-md transition-all active:scale-90"
+                title="Move up (Shift-click to move to top)"
+              >
+                <ChevronUp className="size-3.5" />
+              </Button>
+              <Button
+                variant="ghost"
+                size="icon-xs"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  if (e.shiftKey) {
+                    onMoveToPosition?.(action, Infinity);
+                  } else {
+                    onMoveDown?.(action);
+                  }
+                }}
+                disabled={isLastActive}
+                className="size-5 text-muted-foreground/70 lg:text-muted-foreground/50 hover:text-primary hover:bg-primary/10 disabled:opacity-0 rounded-md transition-all active:scale-90"
+                title="Move down (Shift-click to move to bottom)"
+              >
+                <ChevronDown className="size-3.5" />
+              </Button>
+            </>
+          )}
         </div>
       )}
 
-      {/* Floating Checkbox (Gmail style hover / active bulk selection transition) */}
       {settings.enable_selection && (
         <div
           className={cn(
-            "mt-0.5 shrink-0 flex items-center justify-center h-5",
-            settings.shift_on_selection_hover
-              ? cn(
-                  "transition-all duration-200",
-                  isBulkModeActive || isSelected
-                    ? "w-5 opacity-100 mr-1.5 ml-1"
-                    : "w-0 opacity-0 overflow-hidden group-hover:w-5 group-hover:opacity-100 group-hover:mr-1.5 group-hover:ml-1"
-                )
-              : cn(
-                  "w-5 mr-1.5 ml-1 transition-opacity duration-200",
-                  isBulkModeActive || isSelected
-                    ? "opacity-100"
-                    : "opacity-0 group-hover:opacity-100"
-                )
+            "mt-0.5 shrink-0 flex items-center justify-center h-5 transition-all duration-200",
+            isBulkModeActive || isSelected
+              ? "w-5 opacity-100 pointer-events-auto"
+              : settings.show_checkboxes_on_hover
+                ? "w-0 md:w-5 opacity-0 pointer-events-none group-hover:opacity-100 group-hover:pointer-events-auto"
+                : "w-0 opacity-0 pointer-events-none"
           )}
         >
           <Checkbox checked={isSelected} onCheckedChange={() => onSelectToggle?.(action.id)} />
         </div>
       )}
 
-      <div className="flex items-start gap-3 flex-1 min-w-0">
-        {type === ACTION_STATUS.ACTIVE ? (
-          <Button
-            variant="outline"
-            size="icon"
-            onClick={(e) => {
-              e.stopPropagation();
-              onComplete(action);
-            }}
-            className={cn(
-              "mt-0.5 size-5 rounded-full transition-all shrink-0 bg-transparent border-[1.5px] p-0 shadow-none flex items-center justify-center group/check hover:scale-110",
-              energyConfig?.color || "text-muted-foreground",
-              energyConfig?.bg.split(" ")[1] || "border-border/40"
-            )}
-            title="Mark as completed"
-          >
-            <CheckCircle2Icon
-              className={cn(
-                "size-3.5 opacity-0 group-hover/check:opacity-100 transition-all duration-300",
-                "group-hover/check:scale-110 group-active/check:scale-90"
-              )}
-            />
-          </Button>
-        ) : type === ACTION_STATUS.ABANDONED ? (
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={(e) => {
-              e.stopPropagation();
-              onReactivate?.(action);
-            }}
-            className="mt-0.5 size-5 shrink-0 flex items-center justify-center hover:bg-primary/10 rounded-full transition-all duration-300 p-0 active:scale-90"
-            title="Reactivate task"
-          >
-            <RotateCcw className="size-3.5 text-rose-500" />
-          </Button>
-        ) : (
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={(e) => {
-              e.stopPropagation();
-              onComplete(action);
-            }}
-            className="mt-0.5 size-5 shrink-0 flex items-center justify-center hover:bg-primary/10 rounded-full transition-all duration-300 p-0 group/uncheck active:scale-90"
-            title="Unmark as completed"
-          >
-            <CheckCircle2Icon className="size-4 text-primary group-hover/uncheck:hidden animate-in zoom-in duration-300" />
-            <RotateCcw className="size-3.5 text-primary hidden group-hover/uncheck:block animate-in spin-in-180 duration-300" />
-          </Button>
+      <div
+        className={cn(
+          "flex items-start flex-1 min-w-0 transition-all duration-200",
+          isBulkModeActive ? "gap-0 md:gap-2" : "gap-2"
         )}
+      >
+        <div
+          className={cn(
+            "shrink-0 flex items-center justify-center transition-all duration-200 mt-0.5",
+            isBulkModeActive
+              ? "opacity-0 pointer-events-none w-0 overflow-hidden md:size-5 md:overflow-visible"
+              : "opacity-100 size-5 overflow-visible"
+          )}
+        >
+          {type === ACTION_STATUS.ACTIVE ? (
+            <Button
+              variant="outline"
+              size="icon"
+              onClick={(e) => {
+                e.stopPropagation();
+                onComplete(action);
+              }}
+              className={cn(
+                "size-5 rounded-full transition-all shrink-0 bg-transparent border-[1.5px] p-0 shadow-none flex items-center justify-center group/check hover:scale-110",
+                energyConfig?.color || "text-muted-foreground",
+                energyConfig?.bg.split(" ")[1] || "border-border/40"
+              )}
+              title="Mark as completed"
+            >
+              <CheckCircle2Icon
+                className={cn(
+                  "size-3.5 opacity-0 group-hover/check:opacity-100 transition-all duration-300",
+                  "group-hover/check:scale-110 group-active/check:scale-90"
+                )}
+              />
+            </Button>
+          ) : type === ACTION_STATUS.ABANDONED ? (
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={(e) => {
+                e.stopPropagation();
+                onReactivate?.(action);
+              }}
+              className="size-5 shrink-0 flex items-center justify-center hover:bg-primary/10 rounded-full transition-all duration-300 p-0 active:scale-90"
+              title="Reactivate task"
+            >
+              <RotateCcw className="size-3.5 text-rose-500" />
+            </Button>
+          ) : (
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={(e) => {
+                e.stopPropagation();
+                onComplete(action);
+              }}
+              className="size-5 shrink-0 flex items-center justify-center hover:bg-primary/10 rounded-full transition-all duration-300 p-0 group/uncheck active:scale-90"
+              title="Unmark as completed"
+            >
+              <CheckCircle2Icon className="size-4 text-primary group-hover/uncheck:hidden animate-in zoom-in duration-300" />
+              <RotateCcw className="size-3.5 text-primary hidden group-hover/uncheck:block animate-in spin-in-180 duration-300" />
+            </Button>
+          )}
+        </div>
 
         <div
           className="flex-1 min-w-0 flex flex-col gap-0.5 cursor-pointer"
-          onClick={() => onEdit(action)}
+          onClick={(e) => {
+            if (isBulkModeActive && onSelectToggle) {
+              e.stopPropagation();
+              onSelectToggle(action.id);
+            } else {
+              onEdit(action);
+            }
+          }}
         >
           <div className="flex items-start justify-between gap-4">
             <div className="flex flex-col flex-1 min-w-0">
@@ -276,7 +299,7 @@ export function ActionItem({
                   <span
                     className="mr-1.5 select-none inline-block w-5 shrink-0"
                     onClick={(e) => {
-                      if (type === ACTION_STATUS.ACTIVE) {
+                      if (type === ACTION_STATUS.ACTIVE && !isBulkModeActive) {
                         e.stopPropagation();
                         setIsEditingIndex(true);
                       }
@@ -319,8 +342,11 @@ export function ActionItem({
                       />
                     ) : (
                       <span
-                        className="text-[11px] font-bold text-muted-foreground/40 hover:text-primary hover:font-black tabular-nums cursor-pointer transition-colors"
-                        title="Click to change order position"
+                        className={cn(
+                          "text-[11px] font-bold text-muted-foreground/70 lg:text-muted-foreground/40 tabular-nums transition-colors",
+                          !isBulkModeActive && "hover:text-primary hover:font-black cursor-pointer"
+                        )}
+                        title={!isBulkModeActive ? "Click to change order position" : undefined}
                       >
                         {index}
                       </span>
@@ -440,7 +466,7 @@ export function ActionItem({
         </div>
       </div>
 
-      {type === ACTION_STATUS.ACTIVE && (
+      {type === ACTION_STATUS.ACTIVE && !isBulkModeActive && (
         <div className="flex items-center gap-0.5 shrink-0 ml-1">
           {/* Desktop Hover Actions */}
           {type === ACTION_STATUS.ACTIVE && (
@@ -489,7 +515,7 @@ export function ActionItem({
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="size-7 text-muted-foreground/40 hover:text-foreground active:scale-90 transition-all"
+                  className="size-7 text-muted-foreground/70 lg:text-muted-foreground/40 hover:text-foreground active:scale-90 transition-all"
                   onClick={(e) => e.stopPropagation()}
                 >
                   <MoreVertical className="size-3.5" />
@@ -537,7 +563,7 @@ export function ActionItem({
         </div>
       )}
 
-      {type === ACTION_STATUS.ABANDONED && (
+      {type === ACTION_STATUS.ABANDONED && !isBulkModeActive && (
         <div className="flex items-center gap-0.5 shrink-0 ml-1">
           {/* Desktop Hover Actions */}
           <Button
@@ -574,7 +600,7 @@ export function ActionItem({
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="size-7 text-muted-foreground/40 hover:text-foreground active:scale-95 transition-all"
+                  className="size-7 text-muted-foreground/70 lg:text-muted-foreground/40 hover:text-foreground active:scale-95 transition-all"
                   onClick={(e) => e.stopPropagation()}
                 >
                   <MoreVertical className="size-3.5" />

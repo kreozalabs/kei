@@ -12,7 +12,7 @@ import {
   DIRECT_EDIT_OPTIONS,
   UNDO_TOAST_OPTIONS,
   SELECTION_OPTIONS,
-  SHIFT_ON_HOVER_OPTIONS,
+  SHOW_CHECKBOXES_ON_HOVER_OPTIONS,
   DEFAULT_INSERT_AT_TOP_OPTIONS,
   SHOW_INTENTIONS_OPTIONS,
   SHOW_DEFAULT_ENERGY_OPTIONS,
@@ -348,22 +348,22 @@ export function BehaviorSettings() {
         <div className="space-y-3 animate-in fade-in slide-in-from-top-2 duration-300">
           <div className="flex items-center justify-between px-2">
             <h4 className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground/50">
-              Selection Checkbox Animation
+              Checkbox Visibility
             </h4>
             <span className="text-[10px] text-muted-foreground/40 font-medium">
-              Choose whether checkboxes shift content when hovered
+              Choose when selection checkboxes are displayed
             </span>
           </div>
           <div className="flex items-center gap-1.5 p-1 bg-muted/40 rounded-xl">
-            {SHIFT_ON_HOVER_OPTIONS.map((opt) => (
+            {SHOW_CHECKBOXES_ON_HOVER_OPTIONS.map((opt) => (
               <Button
                 key={opt.label}
                 variant="ghost"
                 size="sm"
-                onClick={() => updateSetting("shift_on_selection_hover", opt.value)}
+                onClick={() => updateSetting("show_checkboxes_on_hover", opt.value)}
                 className={cn(
                   "flex-1 flex flex-row items-center justify-center h-8 rounded-lg text-[12px] font-medium transition-colors border-none",
-                  settings.shift_on_selection_hover === opt.value
+                  settings.show_checkboxes_on_hover === opt.value
                     ? "bg-background text-foreground shadow-sm hover:bg-background"
                     : "text-muted-foreground hover:text-foreground hover:bg-muted/80"
                 )}
