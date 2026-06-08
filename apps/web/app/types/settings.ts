@@ -24,6 +24,7 @@ export interface Settings {
   direct_edit_mode: boolean;
   enable_undo_toast: boolean;
   enable_selection: boolean;
+  show_checkboxes_on_hover: boolean;
   default_insert_at_top: boolean;
   show_intentions: boolean;
   show_default_energy: boolean;
