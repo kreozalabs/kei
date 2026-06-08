@@ -141,7 +141,7 @@ export function ActionItem({
       )}
     >
       {/* Reorder Arrows */}
-      {type === ACTION_STATUS.ACTIVE && (
+      {type === ACTION_STATUS.ACTIVE && !isBulkModeActive && (
         <div className="flex flex-col items-center gap-0.5 mr-1 opacity-100 lg:opacity-0 lg:group-hover:opacity-100 transition-opacity shrink-0">
           <Button
             variant="ghost"
@@ -205,60 +205,69 @@ export function ActionItem({
       )}
 
       <div className="flex items-start gap-3 flex-1 min-w-0">
-        {type === ACTION_STATUS.ACTIVE ? (
-          <Button
-            variant="outline"
-            size="icon"
-            onClick={(e) => {
-              e.stopPropagation();
-              onComplete(action);
-            }}
-            className={cn(
-              "mt-0.5 size-5 rounded-full transition-all shrink-0 bg-transparent border-[1.5px] p-0 shadow-none flex items-center justify-center group/check hover:scale-110",
-              energyConfig?.color || "text-muted-foreground",
-              energyConfig?.bg.split(" ")[1] || "border-border/40"
-            )}
-            title="Mark as completed"
-          >
-            <CheckCircle2Icon
+        {!isBulkModeActive && (
+          type === ACTION_STATUS.ACTIVE ? (
+            <Button
+              variant="outline"
+              size="icon"
+              onClick={(e) => {
+                e.stopPropagation();
+                onComplete(action);
+              }}
               className={cn(
-                "size-3.5 opacity-0 group-hover/check:opacity-100 transition-all duration-300",
-                "group-hover/check:scale-110 group-active/check:scale-90"
+                "mt-0.5 size-5 rounded-full transition-all shrink-0 bg-transparent border-[1.5px] p-0 shadow-none flex items-center justify-center group/check hover:scale-110",
+                energyConfig?.color || "text-muted-foreground",
+                energyConfig?.bg.split(" ")[1] || "border-border/40"
               )}
-            />
-          </Button>
-        ) : type === ACTION_STATUS.ABANDONED ? (
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={(e) => {
-              e.stopPropagation();
-              onReactivate?.(action);
-            }}
-            className="mt-0.5 size-5 shrink-0 flex items-center justify-center hover:bg-primary/10 rounded-full transition-all duration-300 p-0 active:scale-90"
-            title="Reactivate task"
-          >
-            <RotateCcw className="size-3.5 text-rose-500" />
-          </Button>
-        ) : (
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={(e) => {
-              e.stopPropagation();
-              onComplete(action);
-            }}
-            className="mt-0.5 size-5 shrink-0 flex items-center justify-center hover:bg-primary/10 rounded-full transition-all duration-300 p-0 group/uncheck active:scale-90"
-            title="Unmark as completed"
-          >
-            <CheckCircle2Icon className="size-4 text-primary group-hover/uncheck:hidden animate-in zoom-in duration-300" />
-            <RotateCcw className="size-3.5 text-primary hidden group-hover/uncheck:block animate-in spin-in-180 duration-300" />
-          </Button>
+              title="Mark as completed"
+            >
+              <CheckCircle2Icon
+                className={cn(
+                  "size-3.5 opacity-0 group-hover/check:opacity-100 transition-all duration-300",
+                  "group-hover/check:scale-110 group-active/check:scale-90"
+                )}
+              />
+            </Button>
+          ) : type === ACTION_STATUS.ABANDONED ? (
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={(e) => {
+                e.stopPropagation();
+                onReactivate?.(action);
+              }}
+              className="mt-0.5 size-5 shrink-0 flex items-center justify-center hover:bg-primary/10 rounded-full transition-all duration-300 p-0 active:scale-90"
+              title="Reactivate task"
+            >
+              <RotateCcw className="size-3.5 text-rose-500" />
+            </Button>
+          ) : (
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={(e) => {
+                e.stopPropagation();
+                onComplete(action);
+              }}
+              className="mt-0.5 size-5 shrink-0 flex items-center justify-center hover:bg-primary/10 rounded-full transition-all duration-300 p-0 group/uncheck active:scale-90"
+              title="Unmark as completed"
+            >
+              <CheckCircle2Icon className="size-4 text-primary group-hover/uncheck:hidden animate-in zoom-in duration-300" />
+              <RotateCcw className="size-3.5 text-primary hidden group-hover/uncheck:block animate-in spin-in-180 duration-300" />
+            </Button>
+          )
         )}
 
         <div
           className="flex-1 min-w-0 flex flex-col gap-0.5 cursor-pointer"
-          onClick={() => onEdit(action)}
+          onClick={(e) => {
+            if (isBulkModeActive && onSelectToggle) {
+              e.stopPropagation();
+              onSelectToggle(action.id);
+            } else {
+              onEdit(action);
+            }
+          }}
         >
           <div className="flex items-start justify-between gap-4">
             <div className="flex flex-col flex-1 min-w-0">
@@ -276,7 +285,7 @@ export function ActionItem({
                   <span
                     className="mr-1.5 select-none inline-block w-5 shrink-0"
                     onClick={(e) => {
-                      if (type === ACTION_STATUS.ACTIVE) {
+                      if (type === ACTION_STATUS.ACTIVE && !isBulkModeActive) {
                         e.stopPropagation();
                         setIsEditingIndex(true);
                       }
@@ -319,8 +328,11 @@ export function ActionItem({
                       />
                     ) : (
                       <span
-                        className="text-[11px] font-bold text-muted-foreground/70 lg:text-muted-foreground/40 hover:text-primary hover:font-black tabular-nums cursor-pointer transition-colors"
-                        title="Click to change order position"
+                        className={cn(
+                          "text-[11px] font-bold text-muted-foreground/70 lg:text-muted-foreground/40 tabular-nums transition-colors",
+                          !isBulkModeActive && "hover:text-primary hover:font-black cursor-pointer"
+                        )}
+                        title={!isBulkModeActive ? "Click to change order position" : undefined}
                       >
                         {index}
                       </span>
@@ -440,7 +452,7 @@ export function ActionItem({
         </div>
       </div>
 
-      {type === ACTION_STATUS.ACTIVE && (
+      {type === ACTION_STATUS.ACTIVE && !isBulkModeActive && (
         <div className="flex items-center gap-0.5 shrink-0 ml-1">
           {/* Desktop Hover Actions */}
           {type === ACTION_STATUS.ACTIVE && (
@@ -537,7 +549,7 @@ export function ActionItem({
         </div>
       )}
 
-      {type === ACTION_STATUS.ABANDONED && (
+      {type === ACTION_STATUS.ABANDONED && !isBulkModeActive && (
         <div className="flex items-center gap-0.5 shrink-0 ml-1">
           {/* Desktop Hover Actions */}
           <Button
