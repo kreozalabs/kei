@@ -215,8 +215,10 @@ export function ActionItem({
       >
         <div
           className={cn(
-            "shrink-0 flex items-center justify-center transition-all duration-200 overflow-hidden",
-            isBulkModeActive ? "opacity-0 pointer-events-none w-0 md:size-5" : "opacity-100 size-5"
+            "shrink-0 flex items-center justify-center transition-all duration-200 mt-0.5",
+            isBulkModeActive
+              ? "opacity-0 pointer-events-none w-0 overflow-hidden md:size-5 md:overflow-visible"
+              : "opacity-100 size-5 overflow-visible"
           )}
         >
           {type === ACTION_STATUS.ACTIVE ? (
@@ -228,7 +230,7 @@ export function ActionItem({
                 onComplete(action);
               }}
               className={cn(
-                "mt-0.5 size-5 rounded-full transition-all shrink-0 bg-transparent border-[1.5px] p-0 shadow-none flex items-center justify-center group/check hover:scale-110",
+                "size-5 rounded-full transition-all shrink-0 bg-transparent border-[1.5px] p-0 shadow-none flex items-center justify-center group/check hover:scale-110",
                 energyConfig?.color || "text-muted-foreground",
                 energyConfig?.bg.split(" ")[1] || "border-border/40"
               )}
@@ -249,7 +251,7 @@ export function ActionItem({
                 e.stopPropagation();
                 onReactivate?.(action);
               }}
-              className="mt-0.5 size-5 shrink-0 flex items-center justify-center hover:bg-primary/10 rounded-full transition-all duration-300 p-0 active:scale-90"
+              className="size-5 shrink-0 flex items-center justify-center hover:bg-primary/10 rounded-full transition-all duration-300 p-0 active:scale-90"
               title="Reactivate task"
             >
               <RotateCcw className="size-3.5 text-rose-500" />
@@ -262,7 +264,7 @@ export function ActionItem({
                 e.stopPropagation();
                 onComplete(action);
               }}
-              className="mt-0.5 size-5 shrink-0 flex items-center justify-center hover:bg-primary/10 rounded-full transition-all duration-300 p-0 group/uncheck active:scale-90"
+              className="size-5 shrink-0 flex items-center justify-center hover:bg-primary/10 rounded-full transition-all duration-300 p-0 group/uncheck active:scale-90"
               title="Unmark as completed"
             >
               <CheckCircle2Icon className="size-4 text-primary group-hover/uncheck:hidden animate-in zoom-in duration-300" />
