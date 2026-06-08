@@ -92,19 +92,20 @@ export function ActionItem({
   }
 
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
-  const [hoverTimeout, setHoverTimeout] = useState<NodeJS.Timeout | null>(null);
+  const [showTimeout, setShowTimeout] = useState<NodeJS.Timeout | null>(null);
+  const [hideTimeout, setHideTimeout] = useState<NodeJS.Timeout | null>(null);
+  const [mouseCoords, setMouseCoords] = useState<{ x: number; y: number } | null>(null);
 
   useEffect(() => {
     return () => {
-      if (hoverTimeout) {
-        clearTimeout(hoverTimeout);
-      }
+      if (showTimeout) clearTimeout(showTimeout);
+      if (hideTimeout) clearTimeout(hideTimeout);
     };
-  }, [hoverTimeout]);
+  }, [showTimeout, hideTimeout]);
 
   const handleMouseEnter = () => {
     if (!settings.enable_hover_preview) return;
-    
+
     // Disable hover previews on touch devices to avoid sticky popups on tap
     const isTouchDevice =
       typeof window !== "undefined" && window.matchMedia("(pointer: coarse)").matches;
@@ -113,27 +114,70 @@ export function ActionItem({
     // Disable preview if editing index or bulk selection mode is active
     if (isEditingIndex || isBulkModeActive) return;
 
-    if (hoverTimeout) clearTimeout(hoverTimeout);
-    const timeout = setTimeout(() => {
-      setIsPreviewOpen(true);
-    }, settings.hover_preview_delay * 1000);
-    setHoverTimeout(timeout);
+    if (hideTimeout) {
+      clearTimeout(hideTimeout);
+      setHideTimeout(null);
+    }
+
+    if (!isPreviewOpen && !showTimeout) {
+      const timeout = setTimeout(() => {
+        setIsPreviewOpen(true);
+      }, settings.hover_preview_delay * 1000);
+      setShowTimeout(timeout);
+    }
   };
 
   const handleMouseLeave = () => {
-    if (hoverTimeout) {
-      clearTimeout(hoverTimeout);
-      setHoverTimeout(null);
+    if (showTimeout) {
+      clearTimeout(showTimeout);
+      setShowTimeout(null);
+    }
+
+    if (isPreviewOpen && !hideTimeout) {
+      const timeout = setTimeout(() => {
+        setIsPreviewOpen(false);
+        setHideTimeout(null);
+      }, 300); // 300ms bridge window to move cursor onto the preview card
+      setHideTimeout(timeout);
+    }
+  };
+
+  const handlePopoverMouseEnter = () => {
+    if (hideTimeout) {
+      clearTimeout(hideTimeout);
+      setHideTimeout(null);
+    }
+  };
+
+  const handlePopoverMouseLeave = () => {
+    if (!hideTimeout) {
+      const timeout = setTimeout(() => {
+        setIsPreviewOpen(false);
+        setHideTimeout(null);
+      }, 300);
+      setHideTimeout(timeout);
+    }
+  };
+
+  const dismissPreview = () => {
+    if (showTimeout) {
+      clearTimeout(showTimeout);
+      setShowTimeout(null);
+    }
+    if (hideTimeout) {
+      clearTimeout(hideTimeout);
+      setHideTimeout(null);
     }
     setIsPreviewOpen(false);
   };
 
-  const dismissPreview = () => {
-    if (hoverTimeout) {
-      clearTimeout(hoverTimeout);
-      setHoverTimeout(null);
-    }
-    setIsPreviewOpen(false);
+  const handleMouseMove = (e: React.MouseEvent) => {
+    if (isPreviewOpen) return;
+    const rect = e.currentTarget.getBoundingClientRect();
+    setMouseCoords({
+      x: e.clientX - rect.left,
+      y: e.clientY - rect.top,
+    });
   };
 
   const formattedScheduledDate = (() => {
@@ -177,36 +221,47 @@ export function ActionItem({
 
   return (
     <Popover open={isPreviewOpen} onOpenChange={setIsPreviewOpen}>
-      <PopoverAnchor asChild>
-        <motion.div
-          layout
-          initial={{ opacity: 0, height: 0, y: -10 }}
-          animate={{
-            opacity:
-              type === ACTION_STATUS.COMPLETED ? 0.5 : type === ACTION_STATUS.ABANDONED ? 0.45 : 1,
-            height: "auto",
-            y: 0,
-          }}
-          exit={{ opacity: 0, height: 0, y: 10 }}
-          transition={{
-            type: "spring",
-            stiffness: 500,
-            damping: 30,
-            opacity: { duration: 0.15 },
-            height: { duration: 0.2 },
-          }}
-          onMouseEnter={handleMouseEnter}
-          onMouseLeave={handleMouseLeave}
-          onClickCapture={dismissPreview}
-          className={cn(
-            "group flex items-start gap-1 py-2.5 border-b border-border/40 last:border-none transition-colors px-1 sm:px-2 cursor-default relative overflow-hidden",
-            type === ACTION_STATUS.COMPLETED
-              ? "opacity-50"
-              : type === ACTION_STATUS.ABANDONED
-                ? "opacity-45 italic bg-rose-500/1"
-                : "hover:bg-muted/10"
-          )}
-        >
+      <motion.div
+        layout
+        initial={{ opacity: 0, height: 0, y: -10 }}
+        animate={{
+          opacity:
+            type === ACTION_STATUS.COMPLETED ? 0.5 : type === ACTION_STATUS.ABANDONED ? 0.45 : 1,
+          height: "auto",
+          y: 0,
+        }}
+        exit={{ opacity: 0, height: 0, y: 10 }}
+        transition={{
+          type: "spring",
+          stiffness: 500,
+          damping: 30,
+          opacity: { duration: 0.15 },
+          height: { duration: 0.2 },
+        }}
+        onMouseEnter={handleMouseEnter}
+        onMouseLeave={handleMouseLeave}
+        onMouseMove={handleMouseMove}
+        onClickCapture={dismissPreview}
+        className={cn(
+          "group flex items-start gap-1 py-2.5 border-b border-border/40 last:border-none transition-colors px-1 sm:px-2 cursor-default relative overflow-hidden",
+          type === ACTION_STATUS.COMPLETED
+            ? "opacity-50"
+            : type === ACTION_STATUS.ABANDONED
+              ? "opacity-45 italic bg-rose-500/1"
+              : "hover:bg-muted/10"
+        )}
+      >
+        <PopoverAnchor asChild>
+          <div
+            className="absolute pointer-events-none"
+            style={{
+              left: mouseCoords ? `${mouseCoords.x}px` : "50%",
+              top: mouseCoords ? `${mouseCoords.y}px` : "50%",
+              width: "1px",
+              height: "1px",
+            }}
+          />
+        </PopoverAnchor>
           {/* Reorder Arrows */}
           {type === ACTION_STATUS.ACTIVE && (
             <div className="flex flex-col items-center gap-0.5 mr-1 opacity-0 group-hover:opacity-100 transition-opacity shrink-0">
@@ -679,36 +734,44 @@ export function ActionItem({
             </div>
           )}
         </motion.div>
-      </PopoverAnchor>
+
       <PopoverContent
         side="right"
         align="start"
-        sideOffset={12}
-        className="z-50 w-80 p-4 bg-background/95 backdrop-blur-md border border-border/40 shadow-2xl rounded-2xl pointer-events-none select-none animate-in fade-in zoom-in-95 duration-150"
+        sideOffset={16}
+        className="z-50 w-[380px] p-5 bg-background/98 backdrop-blur-md border border-border/60 shadow-2xl rounded-2xl select-text animate-in fade-in zoom-in-95 duration-200"
+        onMouseEnter={handlePopoverMouseEnter}
+        onMouseLeave={handlePopoverMouseLeave}
       >
-        <div className="flex flex-col gap-3 text-left">
+        <div className="flex flex-col gap-4 text-left">
           {/* Header with status/importance/intention */}
           <div className="flex items-center justify-between gap-2">
-            <span className={cn(
-              "text-[10px] uppercase tracking-widest font-bold px-1.5 py-0.5 rounded-md border",
-              isOverdue ? "text-red-500 bg-red-500/10 border-red-500/20" : "text-muted-foreground bg-muted/40 border-border/20"
-            )}>
+            <span
+              className={cn(
+                "text-[10px] uppercase tracking-wider font-bold px-2 py-0.5 rounded-lg border",
+                isOverdue
+                  ? "text-red-500 bg-red-500/10 border-red-500/20"
+                  : "text-muted-foreground bg-muted/40 border-border/20"
+              )}
+            >
               {isOverdue ? "Overdue" : "Scheduled"}
             </span>
 
             <div className="flex items-center gap-1.5">
               {action.important && (
-                <span className="flex items-center gap-1 text-[10px] font-bold text-amber-500 bg-amber-500/10 border border-amber-500/20 px-1.5 py-0.5 rounded-md">
-                  <Star className="size-3 fill-amber-500" />
+                <span className="flex items-center gap-1 text-[10px] font-bold text-amber-500 bg-amber-500/10 border border-amber-500/20 px-2 py-0.5 rounded-lg">
+                  <Star className="size-3 fill-amber-500 text-amber-500" />
                   <span>Important</span>
                 </span>
               )}
               {settings.show_intentions && (
-                <span className={cn(
-                  "text-[10px] uppercase tracking-widest font-bold px-1.5 py-0.5 rounded-md border",
-                  intentionConfig.bg,
-                  intentionConfig.color
-                )}>
+                <span
+                  className={cn(
+                    "text-[10px] uppercase tracking-wider font-bold px-2 py-0.5 rounded-lg border",
+                    intentionConfig.bg,
+                    intentionConfig.color
+                  )}
+                >
                   {intentionConfig.label}
                 </span>
               )}
@@ -717,44 +780,46 @@ export function ActionItem({
 
           {/* Title */}
           <div className="flex flex-col gap-1">
-            <h4 className={cn(
-              "text-[15px] font-bold leading-snug break-words",
-              type === ACTION_STATUS.COMPLETED
-                ? "text-muted-foreground line-through decoration-muted-foreground/40"
-                : type === ACTION_STATUS.ABANDONED
-                  ? "text-rose-500/60 italic line-through decoration-rose-500/30"
-                  : "text-foreground"
-            )}>
+            <h4
+              className={cn(
+                "text-[16px] font-bold leading-snug break-words",
+                type === ACTION_STATUS.COMPLETED
+                  ? "text-muted-foreground line-through decoration-muted-foreground/40"
+                  : type === ACTION_STATUS.ABANDONED
+                    ? "text-rose-500/60 italic line-through decoration-rose-500/30"
+                    : "text-foreground"
+              )}
+            >
               {action.title}
             </h4>
           </div>
 
           {/* Note / Description */}
           {action.note && (
-            <div className="text-[12.5px] text-muted-foreground/80 leading-relaxed border-t border-border/20 pt-2.5 whitespace-pre-wrap break-words">
+            <div className="text-[13px] text-muted-foreground/90 leading-relaxed border border-border/30 bg-muted/20 p-3 rounded-xl whitespace-pre-wrap break-words">
               {action.note}
             </div>
           )}
 
           {/* Metadata Footer: Date, Time, Duration, Energy */}
-          <div className="flex flex-col gap-1.5 border-t border-border/20 pt-2.5">
-            <div className="flex items-center justify-between text-[11px] text-muted-foreground/70">
+          <div className="flex flex-col gap-2 border-t border-border/20 pt-3">
+            <div className="flex items-center justify-between text-[11.5px] text-muted-foreground/75">
               <span className="flex items-center gap-1.5">
-                <CalendarIcon className="size-3.5 shrink-0 text-muted-foreground/60" />
+                <CalendarIcon className="size-4 shrink-0 text-sky-500" />
                 <span>Date:</span>
               </span>
-              <span className="font-medium text-foreground">{formattedScheduledDate}</span>
+              <span className="font-semibold text-foreground">{formattedScheduledDate}</span>
             </div>
 
             {(action.startTime || action.duration || shouldShowEnergy) && (
-              <div className="flex flex-col gap-1.5 mt-0.5">
+              <div className="flex flex-col gap-2">
                 {action.startTime && (
-                  <div className="flex items-center justify-between text-[11px] text-muted-foreground/70">
+                  <div className="flex items-center justify-between text-[11.5px] text-muted-foreground/75">
                     <span className="flex items-center gap-1.5">
-                      <Clock className="size-3.5 shrink-0 text-muted-foreground/60" />
+                      <Clock className="size-4 shrink-0 text-indigo-500" />
                       <span>Time:</span>
                     </span>
-                    <span className="font-medium text-foreground">
+                    <span className="font-semibold text-foreground">
                       {formatTime(action.startTime, timeFormat)}
                       {action.endTime && ` - ${formatTime(action.endTime, timeFormat)}`}
                     </span>
@@ -762,12 +827,12 @@ export function ActionItem({
                 )}
 
                 {action.duration && (
-                  <div className="flex items-center justify-between text-[11px] text-muted-foreground/70">
+                  <div className="flex items-center justify-between text-[11.5px] text-muted-foreground/75">
                     <span className="flex items-center gap-1.5">
-                      <Clock className="size-3.5 shrink-0 text-muted-foreground/60" />
+                      <Clock className="size-4 shrink-0 text-indigo-400" />
                       <span>Duration:</span>
                     </span>
-                    <span className="font-medium text-foreground">
+                    <span className="font-semibold text-foreground">
                       {!action.duration[1] || action.duration[0] === action.duration[1]
                         ? `${action.duration[0]}m`
                         : `${action.duration[0]}-${action.duration[1]}m`}
@@ -776,18 +841,23 @@ export function ActionItem({
                 )}
 
                 {shouldShowEnergy && (
-                  <div className="flex items-center justify-between text-[11px] text-muted-foreground/70">
+                  <div className="flex items-center justify-between text-[11.5px] text-muted-foreground/75">
                     <span className="flex items-center gap-1.5">
                       {action.energy === ENERGY_LEVELS.HIGH ? (
-                        <BatteryFull className="size-3.5 shrink-0 text-red-500" />
+                        <BatteryFull className="size-4 shrink-0 text-red-500" />
                       ) : action.energy === ENERGY_LEVELS.MEDIUM ? (
-                        <BatteryMedium className="size-3.5 shrink-0 text-orange-500" />
+                        <BatteryMedium className="size-4 shrink-0 text-amber-500" />
                       ) : (
-                        <BatteryLow className="size-3.5 shrink-0 text-emerald-500" />
+                        <BatteryLow className="size-4 shrink-0 text-emerald-500" />
                       )}
                       <span>Energy:</span>
                     </span>
-                    <span className={cn("font-medium uppercase tracking-wider", energyConfig?.color)}>
+                    <span
+                      className={cn(
+                        "font-bold uppercase tracking-wider text-[11px]",
+                        energyConfig?.color
+                      )}
+                    >
                       {action.energy}
                     </span>
                   </div>
