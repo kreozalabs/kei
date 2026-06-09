@@ -5,6 +5,8 @@ import { VitePWA } from "vite-plugin-pwa";
 import checker from "vite-plugin-checker";
 import path from "path";
 
+const MAX_CACHE_SIZE_BYTES = 15 * 1024 * 1024;
+
 export default defineConfig(({ command }) => ({
   server: {
     host: true,
@@ -62,7 +64,7 @@ export default defineConfig(({ command }) => ({
       },
       workbox: {
         globPatterns: ["**/*.{js,css,html,ico,png,svg,wasm,data}"],
-        maximumFileSizeToCacheInBytes: 15 * 1024 * 1024,
+        maximumFileSizeToCacheInBytes: MAX_CACHE_SIZE_BYTES,
         navigateFallback: "/__spa-fallback.html",
       },
       devOptions: {
@@ -70,11 +72,14 @@ export default defineConfig(({ command }) => ({
         suppressWarnings: true,
       },
     }),
-    command === "serve" &&
-      checker({
-        typescript: true,
-      }),
-  ].filter(Boolean),
+    ...(command === "serve"
+      ? [
+          checker({
+            typescript: true,
+          }),
+        ]
+      : []),
+  ],
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./app"),
