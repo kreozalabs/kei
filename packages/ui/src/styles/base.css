@@ -26,7 +26,7 @@
   h4,
   h5,
   h6 {
-    font-family: var(--font-heading);
+    font-family: var(--font-heading, var(--font-family-sans));
     font-weight: 700;
     line-height: 1.2;
     letter-spacing: -0.02em;
