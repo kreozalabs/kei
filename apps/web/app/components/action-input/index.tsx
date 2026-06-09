@@ -184,6 +184,24 @@ export const ActionInput = forwardRef<ActionInputHandle, ActionInputProps>(
       }
     };
 
+    const initialFormValues = useMemo(
+      () => ({
+        title: actionToEdit?.title || DEFAULT_CONFIG.TITLE,
+        note: actionToEdit?.note || "",
+        intention:
+          actionToEdit?.intention || settings.default_intention || DEFAULT_CONFIG.INTENTION,
+        energy: actionToEdit?.energy || settings.default_energy || DEFAULT_CONFIG.ENERGY,
+        important: actionToEdit?.important || false,
+        durationMin: actionToEdit?.duration?.[0] ?? DEFAULT_CONFIG.DURATION[0],
+        durationMax: actionToEdit?.duration?.[1] ?? DEFAULT_CONFIG.DURATION[1],
+        scheduledDate: actionToEdit?.scheduledDate || initialDate || getTodayString(),
+        startTime: actionToEdit?.startTime || "",
+        endTime: actionToEdit?.endTime || "",
+        timezone: actionToEdit?.timezone || Intl.DateTimeFormat().resolvedOptions().timeZone,
+      }),
+      [actionToEdit, initialDate, settings.default_energy, settings.default_intention],
+    );
+
     const hasChanges = useMemo(() => {
       // Define the "Empty State" check for New Actions
       const isNewAction = !actionToEdit;
@@ -193,31 +211,18 @@ export const ActionInput = forwardRef<ActionInputHandle, ActionInputProps>(
       // regardless of other setting changes (Energy, Intention, etc.)
       if (isNewAction && isBaseEmpty) return false;
 
-      const initialTitle = actionToEdit?.title || DEFAULT_CONFIG.TITLE;
-      const initialNote = actionToEdit?.note || "";
-      const initialIntention = actionToEdit?.intention || DEFAULT_CONFIG.INTENTION;
-      const initialEnergy = actionToEdit?.energy || DEFAULT_CONFIG.ENERGY;
-      const initialImportant = actionToEdit?.important || false;
-      const initialDurationMin = actionToEdit?.duration?.[0] ?? DEFAULT_CONFIG.DURATION[0];
-      const initialDurationMax = actionToEdit?.duration?.[1] ?? DEFAULT_CONFIG.DURATION[1];
-      const initialScheduledDate = actionToEdit?.scheduledDate || initialDate || getTodayString();
-      const initialStartTime = actionToEdit?.startTime || "";
-      const initialEndTime = actionToEdit?.endTime || "";
-      const initialTimezone =
-        actionToEdit?.timezone || Intl.DateTimeFormat().resolvedOptions().timeZone;
-
       return (
-        title.trim() !== initialTitle ||
-        note.trim() !== initialNote ||
-        intention !== initialIntention ||
-        energy !== initialEnergy ||
-        isImportant !== initialImportant ||
-        duration[0] !== initialDurationMin ||
-        (duration[1] ?? duration[0]) !== initialDurationMax ||
-        scheduledDate !== initialScheduledDate ||
-        startTime !== initialStartTime ||
-        endTime !== initialEndTime ||
-        timezone !== initialTimezone
+        title.trim() !== initialFormValues.title ||
+        note.trim() !== initialFormValues.note ||
+        intention !== initialFormValues.intention ||
+        energy !== initialFormValues.energy ||
+        isImportant !== initialFormValues.important ||
+        duration[0] !== initialFormValues.durationMin ||
+        (duration[1] ?? duration[0]) !== initialFormValues.durationMax ||
+        scheduledDate !== initialFormValues.scheduledDate ||
+        startTime !== initialFormValues.startTime ||
+        endTime !== initialFormValues.endTime ||
+        timezone !== initialFormValues.timezone
       );
     }, [
       title,
