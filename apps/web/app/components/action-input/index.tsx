@@ -693,3 +693,5 @@ export const ActionInput = forwardRef<ActionInputHandle, ActionInputProps>(
     );
   }
 );
+
+ActionInput.displayName = "ActionInput";
