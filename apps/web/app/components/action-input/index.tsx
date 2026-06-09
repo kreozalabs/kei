@@ -387,7 +387,7 @@ export const ActionInput = forwardRef<ActionInputHandle, ActionInputProps>(
                     }
                   }}
                   placeholder="What do you want to accomplish?"
-                  className="h-8 p-0 text-[17px] font-bold bg-transparent border-none dark:bg-transparent dark:border-none focus-visible:ring-0 placeholder:text-muted-foreground/30 selection:bg-primary/20 resize-none overflow-y-auto w-full break-all custom-scrollbar"
+                  className="h-8 p-0 text-[17px] font-bold bg-transparent border-none focus-visible:ring-0 placeholder:text-muted-foreground/30 selection:bg-primary/20 resize-none overflow-y-auto w-full break-all custom-scrollbar"
                   disabled={isLoading || !isDbReady}
                 />
                 <Textarea
