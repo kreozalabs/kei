@@ -13,7 +13,7 @@ import {
   BellOff,
   Layers,
   Activity,
-  Github,
+  Github as GitHub,
   ShieldCheck,
   ShieldAlert,
 } from "lucide-react";
@@ -315,7 +315,7 @@ export function SystemSettings() {
   return (
     <div className="space-y-6 animate-in fade-in slide-in-from-top-3 duration-300">
       {/* App Identity Banner */}
-      <div className="bg-linear-to-r from-primary/10 to-accent/10 border border-border/40 rounded-2xl p-6 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+      <div className="bg-gradient-to-r from-primary/10 to-accent/10 border border-border/40 rounded-2xl p-6 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
         <div className="flex items-start md:items-center gap-3 w-full md:w-auto">
           <div className="p-3 bg-primary/15 rounded-xl border border-primary/25 shadow-[0_0_12px_rgba(244,63,94,0.15)] shrink-0">
             <Layers className="size-6 text-primary" />
