@@ -297,9 +297,6 @@ export const ActionInput = forwardRef<ActionInputHandle, ActionInputProps>(
                       const revertedQueries = queryClient.getQueriesData<Action[]>({
                         queryKey: ["actions"],
                       });
-                      previousQueries.forEach(([queryKey, data]) => {
-                        queryClient.setQueryData(queryKey, data);
-                      });
                       try {
                         const revertPayload = {
                           title: originalAction.title,
@@ -315,6 +312,9 @@ export const ActionInput = forwardRef<ActionInputHandle, ActionInputProps>(
                           sortOrder: originalAction.sortOrder,
                         };
                         await updateAction(originalAction.id, revertPayload);
+                        previousQueries.forEach(([queryKey, data]) => {
+                          queryClient.setQueryData(queryKey, data);
+                        });
                         queryClient.invalidateQueries({ queryKey: ["actions"] });
                         toast.success("Reverted updates");
                       } catch (err) {
