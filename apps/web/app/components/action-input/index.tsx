@@ -401,7 +401,7 @@ export const ActionInput = forwardRef<ActionInputHandle, ActionInputProps>(
                     }
                   }}
                   placeholder="Any notes or constraints?"
-                  className="h-20 p-0 text-[14px] leading-relaxed bg-transparent border-none dark:bg-transparent dark:border-none focus-visible:ring-0 placeholder:text-muted-foreground/20 resize-none overflow-y-auto w-full break-all custom-scrollbar"
+                  className="h-20 p-0 text-[14px] leading-relaxed bg-transparent border-none focus-visible:ring-0 placeholder:text-muted-foreground/20 resize-none overflow-y-auto w-full break-all custom-scrollbar"
                   disabled={isLoading || !isDbReady}
                 />
               </div>
