@@ -13,7 +13,7 @@ import {
   BellOff,
   Layers,
   Activity,
-  Github,
+  Github as GitHub,
   ShieldCheck,
   ShieldAlert,
 } from "lucide-react";
