@@ -33,7 +33,6 @@ import {
   DEFAULT_CONFIG,
   ENERGY_LEVELS,
   INTENTIONS,
-  TIME,
   ENERGY_OPTIONS,
   TIMEZONES,
 } from "../../config/constants";
@@ -153,18 +152,6 @@ export const ActionInput = forwardRef<ActionInputHandle, ActionInputProps>(
 
     const isCalculatingRef = useRef(false);
 
-    const syncDurationFromTimes = (start: string, end: string) => {
-      if (!start || !end || isCalculatingRef.current) return;
-      const startTotal = timeToMinutes(start);
-      let endTotal = timeToMinutes(end);
-      if (endTotal < startTotal) endTotal += TIME.MINUTES_IN_DAY;
-      const diff = endTotal - startTotal;
-
-      isCalculatingRef.current = true;
-      setDuration([diff, diff]);
-      setTimeout(() => (isCalculatingRef.current = false), 0);
-    };
-
     const handleStartTimeChange = (newStart: string) => {
       setStartTime(newStart);
       if (isCalculatingRef.current) return;
@@ -181,7 +168,6 @@ export const ActionInput = forwardRef<ActionInputHandle, ActionInputProps>(
 
     const handleEndTimeChange = (newEnd: string) => {
       setEndTime(newEnd);
-      syncDurationFromTimes(startTime, newEnd);
     };
 
     const handleDurationChange = (newDuration: [number, number | null]) => {
@@ -268,22 +254,13 @@ export const ActionInput = forwardRef<ActionInputHandle, ActionInputProps>(
 
       setIsLoading(true);
       try {
-        let finalDuration = duration;
-        if (startTime && endTime) {
-          const startTotal = timeToMinutes(startTime);
-          let endTotal = timeToMinutes(endTime);
-          if (endTotal < startTotal) endTotal += TIME.MINUTES_IN_DAY;
-          const diff = endTotal - startTotal;
-          finalDuration = [diff, diff];
-        }
-
         const payload = {
           title: title.trim(),
           note: note.trim(),
           intention,
           important: isImportant,
           energy,
-          duration: [finalDuration[0], finalDuration[1] ?? finalDuration[0]] as [number, number],
+          duration: [duration[0], duration[1] ?? duration[0]] as [number, number],
           scheduledDate,
           startTime: startTime || undefined,
           endTime: endTime || undefined,
