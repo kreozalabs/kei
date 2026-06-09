@@ -482,41 +482,44 @@ export async function rebuildActions() {
 
     const actions = Array.from(actionsMap.values()).filter(Boolean);
     if (actions.length > 0) {
-      // Batch insert all actions
-      const valueStrings: string[] = [];
-      const values: unknown[] = [];
-      let paramIdx = 1;
+      const chunkSize = 50;
+      for (let i = 0; i < actions.length; i += chunkSize) {
+        const chunk = actions.slice(i, i + chunkSize);
+        const valueStrings: string[] = [];
+        const values: unknown[] = [];
+        let paramIdx = 1;
 
-      for (const action of actions) {
-        valueStrings.push(
-          `($${paramIdx++}, $${paramIdx++}, $${paramIdx++}, $${paramIdx++}, $${paramIdx++}, $${paramIdx++}, $${paramIdx++}, $${paramIdx++}, $${paramIdx++}, $${paramIdx++}, $${paramIdx++}, $${paramIdx++}, $${paramIdx++}, $${paramIdx++})`
-        );
-        values.push(
-          action.id,
-          action.title,
-          action.note,
-          action.intention,
-          action.important,
-          action.energy,
-          JSON.stringify(action.duration),
-          action.scheduledDate,
-          action.startTime,
-          action.endTime,
-          action.timezone,
-          action.status,
-          action.createdAt,
-          action.sortOrder
-        );
+        for (const action of chunk) {
+          valueStrings.push(
+            `($${paramIdx++}, $${paramIdx++}, $${paramIdx++}, $${paramIdx++}, $${paramIdx++}, $${paramIdx++}, $${paramIdx++}, $${paramIdx++}, $${paramIdx++}, $${paramIdx++}, $${paramIdx++}, $${paramIdx++}, $${paramIdx++}, $${paramIdx++})`
+          );
+          values.push(
+            action.id,
+            action.title,
+            action.note,
+            action.intention,
+            action.important,
+            action.energy,
+            JSON.stringify(action.duration),
+            action.scheduledDate,
+            action.startTime,
+            action.endTime,
+            action.timezone,
+            action.status,
+            action.createdAt,
+            action.sortOrder
+          );
+        }
+
+        const insertQuery = `
+          INSERT INTO actions (
+            id, title, note, intention, important, energy, duration, 
+            scheduled_date, start_time, end_time, timezone, status, created_at, sort_order
+          ) VALUES ${valueStrings.join(", ")}
+        `;
+
+        await db.query(insertQuery, values);
       }
-
-      const insertQuery = `
-        INSERT INTO actions (
-          id, title, note, intention, important, energy, duration, 
-          scheduled_date, start_time, end_time, timezone, status, created_at, sort_order
-        ) VALUES ${valueStrings.join(", ")}
-      `;
-
-      await db.query(insertQuery, values);
     }
     await db.query("COMMIT");
   } catch (error) {

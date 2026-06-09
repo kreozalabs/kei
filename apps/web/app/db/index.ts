@@ -111,6 +111,10 @@ async function ensureSchema() {
       sequence_number BIGINT
     );
 
+    CREATE INDEX IF NOT EXISTS idx_events_id ON events(id);
+    CREATE INDEX IF NOT EXISTS idx_events_timestamp ON events(timestamp);
+    CREATE INDEX IF NOT EXISTS idx_events_type_timestamp ON events(type, timestamp);
+
     CREATE TABLE IF NOT EXISTS settings (
       key TEXT PRIMARY KEY,
       value JSONB NOT NULL
@@ -158,26 +162,42 @@ async function ensureDerivedData() {
   }
 
   // 2. Rebuild settings from settings-related events if needed
-  // Check if we have custom setting updates in the event log
-  const hasSettingsEvents = await db.query(
-    "SELECT 1 FROM events WHERE type = 'SETTING_UPDATED' LIMIT 1"
-  );
+  // Check if settings table is empty, and rebuild only then
+  const settingsExist = await db.query("SELECT 1 FROM settings LIMIT 1");
+  if (settingsExist.rows.length === 0) {
+    const hasSettingsEvents = await db.query(
+      "SELECT 1 FROM events WHERE type = 'SETTING_UPDATED' LIMIT 1"
+    );
 
-  if (hasSettingsEvents.rows.length > 0) {
-    // If we have custom settings in the event log, we should rebuild them
-    // to ensure they overlay correctly on top of the defaults.
-    console.log("Settings events found. Syncing configurations from event log...");
-    const { rebuildSettings } = await import("./settings");
-    await rebuildSettings();
+    if (hasSettingsEvents.rows.length > 0) {
+      console.log("Settings table is empty but event log has settings events. Rebuilding...");
+      const { rebuildSettings } = await import("./settings");
+      await rebuildSettings();
+    }
   }
 }
 
 export const initDb = async () => {
   if (typeof window === "undefined") return;
+  console.time("DB: initDb total");
+
+  console.time("DB: ensureSchema");
   await ensureSchema();
+  console.timeEnd("DB: ensureSchema");
+
+  console.time("DB: runMigrations");
   await runMigrations();
+  console.timeEnd("DB: runMigrations");
+
+  console.time("DB: ensureDefaults");
   await ensureDefaults();
+  console.timeEnd("DB: ensureDefaults");
+
+  console.time("DB: ensureDerivedData");
   await ensureDerivedData();
+  console.timeEnd("DB: ensureDerivedData");
+
+  console.timeEnd("DB: initDb total");
 };
 
 // Start initialization immediately
