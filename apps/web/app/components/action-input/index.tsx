@@ -199,7 +199,7 @@ export const ActionInput = forwardRef<ActionInputHandle, ActionInputProps>(
         endTime: actionToEdit?.endTime || "",
         timezone: actionToEdit?.timezone || Intl.DateTimeFormat().resolvedOptions().timeZone,
       }),
-      [actionToEdit, initialDate, settings.default_energy, settings.default_intention],
+      [actionToEdit, initialDate, settings.default_energy, settings.default_intention]
     );
 
     const hasChanges = useMemo(() => {
