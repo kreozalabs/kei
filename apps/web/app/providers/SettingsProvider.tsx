@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { SettingsProviderContext } from "./SettingsContext";
 import type { Settings } from "../types/settings";
 import { DEFAULT_SETTINGS, STORAGE_KEYS } from "../config/constants";
-import { getSetting, setSetting } from "../db/settings";
+import { getAllSettings, setSetting } from "../db/settings";
 import { initPromise } from "../db";
 
 interface ThemeProviderProps {
@@ -57,10 +57,10 @@ export function SettingsProvider({
       await initPromise;
       const dbSettings: Partial<Settings> = {};
 
+      const allSettings = await getAllSettings();
       for (const key of Object.keys(DEFAULT_SETTINGS) as (keyof Settings)[]) {
-        const dbValue = await getSetting<Settings[keyof Settings]>(key);
-        if (dbValue !== null) {
-          dbSettings[key] = dbValue as never;
+        if (allSettings[key] !== undefined && allSettings[key] !== null) {
+          dbSettings[key] = allSettings[key] as never;
         }
       }
 

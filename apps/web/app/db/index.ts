@@ -15,37 +15,47 @@ export const db =
 async function runMigrations() {
   if (!db) return;
   try {
-    // 1. Core Event Migration (from old schema without event_id)
-    const tableInfo = await db.query(`
-      SELECT column_name 
-      FROM information_schema.columns 
-      WHERE table_name = 'events' AND column_name = 'event_id'
+    const checkTableAndColumn = await db.query(`
+      SELECT 
+        EXISTS (
+          SELECT 1 FROM pg_class c
+          JOIN pg_namespace n ON c.relnamespace = n.oid
+          WHERE n.nspname = 'public' AND c.relname = 'events'
+        ) as table_exists,
+        EXISTS (
+          SELECT 1 FROM pg_class c
+          JOIN pg_attribute a ON a.attrelid = c.oid
+          JOIN pg_namespace n ON c.relnamespace = n.oid
+          WHERE n.nspname = 'public' 
+            AND c.relname = 'events' 
+            AND a.attname = 'event_id'
+            AND NOT a.attisdropped
+        ) as column_exists;
     `);
 
-    if (tableInfo.rows.length === 0) {
-      const checkTable = await db.query(`
-        SELECT table_name FROM information_schema.tables WHERE table_name = 'events'
-      `);
+    const { table_exists, column_exists } = checkTableAndColumn.rows[0] as {
+      table_exists: boolean;
+      column_exists: boolean;
+    };
 
-      if (checkTable.rows.length > 0) {
-        console.log("Migrating events table to new schema...");
-        await db.exec(`
-          ALTER TABLE events RENAME TO events_old;
-          CREATE TABLE events (
-            event_id UUID PRIMARY KEY,
-            id TEXT NOT NULL,
-            type TEXT NOT NULL,
-            timestamp BIGINT NOT NULL,
-            payload JSONB NOT NULL
-          );
-          INSERT INTO events (event_id, id, type, timestamp, payload)
-          SELECT gen_random_uuid(), id, type, timestamp, payload FROM events_old;
-          DROP TABLE events_old;
-          CREATE INDEX idx_events_id ON events(id);
-          CREATE INDEX idx_events_timestamp ON events(timestamp);
-        `);
-        console.log("Migration complete.");
-      }
+    if (table_exists && !column_exists) {
+      console.log("Migrating events table to new schema...");
+      await db.exec(`
+        ALTER TABLE events RENAME TO events_old;
+        CREATE TABLE events (
+          event_id UUID PRIMARY KEY,
+          id TEXT NOT NULL,
+          type TEXT NOT NULL,
+          timestamp BIGINT NOT NULL,
+          payload JSONB NOT NULL
+        );
+        INSERT INTO events (event_id, id, type, timestamp, payload)
+        SELECT gen_random_uuid(), id, type, timestamp, payload FROM events_old;
+        DROP TABLE events_old;
+        CREATE INDEX idx_events_id ON events(id);
+        CREATE INDEX idx_events_timestamp ON events(timestamp);
+      `);
+      console.log("Migration complete.");
     }
 
     // 2. Additive Migrations for other tables
@@ -122,6 +132,9 @@ async function ensureSchema() {
       created_at BIGINT NOT NULL,
       sort_order DOUBLE PRECISION NOT NULL
     );
+
+    CREATE INDEX IF NOT EXISTS idx_actions_scheduled_status 
+    ON actions (scheduled_date, status);
   `);
 }
 

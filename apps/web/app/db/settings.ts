@@ -16,6 +16,24 @@ export async function getSetting<T>(key: SettingKey): Promise<T | null> {
   }
 }
 
+export async function getAllSettings(): Promise<Record<string, unknown>> {
+  const result = await db.query("SELECT key, value FROM settings");
+  const settings: Record<string, unknown> = {};
+  for (const row of result.rows) {
+    const r = row as { key: string; value: unknown };
+    let parsedValue = r.value;
+    if (typeof r.value === "string") {
+      try {
+        parsedValue = JSON.parse(r.value);
+      } catch {
+        parsedValue = r.value;
+      }
+    }
+    settings[r.key] = parsedValue;
+  }
+  return settings;
+}
+
 export async function setSetting(key: SettingKey, value: unknown) {
   if (typeof window !== "undefined") {
     window.__activeWrites = (window.__activeWrites || 0) + 1;
