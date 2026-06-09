@@ -70,11 +70,14 @@ export default defineConfig(({ command }) => ({
         suppressWarnings: true,
       },
     }),
-    command === "serve" &&
-      checker({
-        typescript: true,
-      }),
-  ].filter(Boolean),
+    ...(command === "serve"
+      ? [
+          checker({
+            typescript: true,
+          }),
+        ]
+      : []),
+  ],
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./app"),
