@@ -43,7 +43,7 @@ export function TelemetryCard({ title, icon, children, className }: TelemetryCar
   return (
     <div
       className={cn(
-        "p-5 rounded-2xl bg-muted/10 border border-border/40 space-y-4 hover:border-border/60 transition-all duration-300",
+        "p-5 rounded-2xl bg-muted/10 border border-border/40 space-y-4 hover:border-border/60 transition-all duration-300 @container",
         className
       )}
     >
@@ -67,15 +67,17 @@ export function TelemetryRow({ label, value, borderTop }: TelemetryRowProps) {
   return (
     <div
       className={cn(
-        "flex items-center justify-between text-xs",
+        "flex flex-col @sm:flex-row @sm:items-center justify-between text-xs gap-1 @sm:gap-4",
         borderTop && "pt-1.5 border-t border-border/30"
       )}
     >
-      <span className="text-muted-foreground">{label}</span>
+      <span className="text-muted-foreground shrink-0">{label}</span>
       {typeof value === "string" ? (
-        <span className="font-semibold text-foreground">{value}</span>
+        <span className="font-semibold text-foreground text-left @sm:text-right min-w-0">
+          {value}
+        </span>
       ) : (
-        value
+        <div className="min-w-0 flex items-center justify-start @sm:justify-end">{value}</div>
       )}
     </div>
   );
@@ -314,16 +316,16 @@ export function SystemSettings() {
     <div className="space-y-6 animate-in fade-in slide-in-from-top-3 duration-300">
       {/* App Identity Banner */}
       <div className="bg-linear-to-r from-primary/10 to-accent/10 border border-border/40 rounded-2xl p-6 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
-        <div className="flex items-center gap-3">
-          <div className="p-3 bg-primary/15 rounded-xl border border-primary/25 shadow-[0_0_12px_rgba(244,63,94,0.15)]">
+        <div className="flex items-start md:items-center gap-3 w-full md:w-auto">
+          <div className="p-3 bg-primary/15 rounded-xl border border-primary/25 shadow-[0_0_12px_rgba(244,63,94,0.15)] shrink-0">
             <Layers className="size-6 text-primary" />
           </div>
-          <div>
-            <div className="flex items-center gap-2">
+          <div className="min-w-0">
+            <div className="flex flex-wrap items-center gap-2">
               <h4 className="text-base font-bold tracking-tight text-foreground">
                 Kei Productivity Engine
               </h4>
-              <span className="text-[10px] font-bold px-2 py-0.5 bg-primary/20 text-primary rounded-full border border-primary/30 uppercase tracking-widest">
+              <span className="text-[10px] font-bold px-2 py-0.5 bg-primary/20 text-primary rounded-full border border-primary/30 uppercase tracking-widest shrink-0">
                 v1.1.0
               </span>
             </div>
@@ -333,15 +335,15 @@ export function SystemSettings() {
           </div>
         </div>
 
-        <div className="flex items-center gap-2 w-full md:w-auto">
+        <div className="flex flex-col md:flex-row items-stretch md:items-center gap-2 w-full md:w-auto">
           <Button
             asChild
             variant="outline"
             size="sm"
-            className="flex-1 md:flex-none rounded-xl h-9 px-3 bg-background hover:bg-muted border-border/50 text-foreground gap-1.5 transition-all text-xs font-semibold"
+            className="w-full md:w-auto rounded-xl h-9 px-3 bg-background hover:bg-muted border-border/50 text-foreground gap-1.5 transition-all text-xs font-semibold"
           >
             <Link to="https://github.com/kreozalabs/kei" target="_blank" rel="noopener noreferrer">
-              <Github className="size-3.5" />
+              <Github className="size-3.5 shrink-0" />
               <span>Source Code</span>
             </Link>
           </Button>
@@ -351,9 +353,9 @@ export function SystemSettings() {
             disabled={isCheckingUpdates}
             variant="outline"
             size="sm"
-            className="flex-1 md:flex-none rounded-xl h-9 px-3 bg-background hover:bg-muted border-border/50 text-foreground gap-1.5 transition-all text-xs font-semibold"
+            className="w-full md:w-auto rounded-xl h-9 px-3 bg-background hover:bg-muted border-border/50 text-foreground gap-1.5 transition-all text-xs font-semibold"
           >
-            <RefreshCw className={cn("size-3.5", isCheckingUpdates && "animate-spin")} />
+            <RefreshCw className={cn("size-3.5 shrink-0", isCheckingUpdates && "animate-spin")} />
             <span>Check for Updates</span>
           </Button>
 
@@ -361,7 +363,7 @@ export function SystemSettings() {
             onClick={() => setIsOpen(false)}
             variant="ghost"
             size="sm"
-            className="flex-1 md:flex-none rounded-xl h-9 px-3 hover:bg-muted/80 text-muted-foreground hover:text-foreground text-xs font-semibold"
+            className="w-full md:w-auto rounded-xl h-9 px-3 hover:bg-muted/80 text-muted-foreground hover:text-foreground text-xs font-semibold"
           >
             Hide
           </Button>
