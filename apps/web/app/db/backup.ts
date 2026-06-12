@@ -1,8 +1,8 @@
 import { db } from "./index";
-import { rebuildActions } from "./actions";
 import { rebuildSettings } from "./settings";
 import type { Event, EventType } from "../types/events";
 import { broadcastDbUpdate } from "../utils/broadcast";
+import { EVENT_TYPES } from "@/config/constants";
 
 /**
  * Queries and exports all event records chronologically from the local event log.
@@ -126,13 +126,22 @@ async function executeImportEvents(events: Event[]): Promise<number> {
     }
     await db.query("COMMIT");
 
-    // 1. Rebuild actions and settings derived projection tables
-    await rebuildActions();
-    await rebuildSettings();
+    // 1. Get unique action IDs and setting keys from the imported events
+    const actionIds = validEvents
+      .filter((e) => e.type !== EVENT_TYPES.SETTING_UPDATED)
+      .map((e) => e.id);
+    const hasSettingEvents = validEvents.some((e) => e.type === EVENT_TYPES.SETTING_UPDATED);
 
-    // 2. Notify all tabs that the database was updated
-    broadcastDbUpdate("actions");
-    broadcastDbUpdate("settings");
+    // 2. Incremental projection updates
+    if (actionIds.length > 0) {
+      const { applyEventsToActionsProjection } = await import("./actions");
+      await applyEventsToActionsProjection(actionIds);
+      broadcastDbUpdate("actions");
+    }
+    if (hasSettingEvents) {
+      await rebuildSettings();
+      broadcastDbUpdate("settings");
+    }
 
     return importedCount;
   } catch (error) {

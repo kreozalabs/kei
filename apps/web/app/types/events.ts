@@ -5,7 +5,8 @@ export type EventType =
   | "ACTION_ACTIVATED"
   | "ACTION_ABANDONED"
   | "ACTION_DELETED"
-  | "TRANSITION_STARTED";
+  | "TRANSITION_STARTED"
+  | "SETTING_UPDATED";
 
 // Events are the immutable source of truth for the application.
 // Every state change is recorded as an event, allowing for a complete audit trail

@@ -177,21 +177,46 @@ async function ensureDerivedData() {
   }
 }
 
+async function isSchemaInitialized(): Promise<boolean> {
+  if (!db) return false;
+  try {
+    const res = await db.query(`
+      SELECT EXISTS (
+        SELECT 1 FROM pg_class c
+        JOIN pg_namespace n ON c.relnamespace = n.oid
+        WHERE n.nspname = 'public' AND c.relname = 'actions'
+      ) as exists;
+    `);
+    return !!res.rows[0]?.exists;
+  } catch {
+    return false;
+  }
+}
+
 export const initDb = async () => {
   if (typeof window === "undefined") return;
   console.time("DB: initDb total");
 
-  console.time("DB: ensureSchema");
-  await ensureSchema();
-  console.timeEnd("DB: ensureSchema");
+  console.time("DB: checkSchemaExists");
+  const isInitialized = await isSchemaInitialized();
+  console.timeEnd("DB: checkSchemaExists");
 
-  console.time("DB: runMigrations");
-  await runMigrations();
-  console.timeEnd("DB: runMigrations");
+  if (!isInitialized) {
+    console.log("DB: Schema not initialized. Running full setup...");
+    console.time("DB: ensureSchema");
+    await ensureSchema();
+    console.timeEnd("DB: ensureSchema");
 
-  console.time("DB: ensureDefaults");
-  await ensureDefaults();
-  console.timeEnd("DB: ensureDefaults");
+    console.time("DB: runMigrations");
+    await runMigrations();
+    console.timeEnd("DB: runMigrations");
+
+    console.time("DB: ensureDefaults");
+    await ensureDefaults();
+    console.timeEnd("DB: ensureDefaults");
+  } else {
+    console.log("DB: Schema already initialized. Skipping schema, migrations, and defaults.");
+  }
 
   console.time("DB: ensureDerivedData");
   await ensureDerivedData();

@@ -527,3 +527,109 @@ export async function rebuildActions() {
     throw error;
   }
 }
+
+export async function applyEventsToActionsProjection(actionIds: string[]) {
+  if (actionIds.length === 0) return;
+
+  const uniqueIds = Array.from(new Set(actionIds));
+  const chunkSize = 50;
+
+  const toUpsert: Action[] = [];
+  const toDelete: string[] = [];
+
+  for (let i = 0; i < uniqueIds.length; i += chunkSize) {
+    const chunk = uniqueIds.slice(i, i + chunkSize);
+    const placeholders = chunk.map((_, idx) => `$${idx + 1}`).join(", ");
+    
+    // Fetch all events for these action IDs ordered by timestamp
+    const result = await db.query(
+      `SELECT * FROM events WHERE id IN (${placeholders}) ORDER BY timestamp ASC`,
+      chunk
+    );
+    const events = result.rows as Event<ActionPayload>[];
+
+    // Group events by action ID
+    const eventsByAction = new Map<string, Event<ActionPayload>[]>();
+    for (const event of events) {
+      const list = eventsByAction.get(event.id) || [];
+      list.push(event);
+      eventsByAction.set(event.id, list);
+    }
+
+    // Compute final snapshot for each action ID in the chunk
+    for (const actionId of chunk) {
+      const actionEvents = eventsByAction.get(actionId) || [];
+      let currentAction: Action | null = null;
+      for (const event of actionEvents) {
+        try {
+          currentAction = applyEventToAction(currentAction, event);
+        } catch (e) {
+          console.warn(`Skipping event for action ${actionId}: ${e}`);
+        }
+      }
+      if (currentAction) {
+        toUpsert.push(currentAction);
+      } else {
+        toDelete.push(actionId);
+      }
+    }
+  }
+
+  // Apply changes in a transaction
+  await db.query("BEGIN");
+  try {
+    // 1. Delete removed actions
+    if (toDelete.length > 0) {
+      for (let i = 0; i < toDelete.length; i += chunkSize) {
+        const chunk = toDelete.slice(i, i + chunkSize);
+        const placeholders = chunk.map((_, idx) => `$${idx + 1}`).join(", ");
+        await db.query(`DELETE FROM actions WHERE id IN (${placeholders})`, chunk);
+      }
+    }
+
+    // 2. Upsert updated actions
+    if (toUpsert.length > 0) {
+      for (const action of toUpsert) {
+        await db.query(
+          `INSERT INTO actions (
+            id, title, note, intention, important, energy, duration, 
+            scheduled_date, start_time, end_time, timezone, status, created_at, sort_order
+          ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)
+          ON CONFLICT (id) DO UPDATE SET
+            title = EXCLUDED.title,
+            note = EXCLUDED.note,
+            intention = EXCLUDED.intention,
+            important = EXCLUDED.important,
+            energy = EXCLUDED.energy,
+            duration = EXCLUDED.duration,
+            scheduled_date = EXCLUDED.scheduled_date,
+            start_time = EXCLUDED.start_time,
+            end_time = EXCLUDED.end_time,
+            timezone = EXCLUDED.timezone,
+            status = EXCLUDED.status,
+            sort_order = EXCLUDED.sort_order`,
+          [
+            action.id,
+            action.title,
+            action.note,
+            action.intention,
+            action.important,
+            action.energy,
+            JSON.stringify(action.duration),
+            action.scheduledDate,
+            action.startTime,
+            action.endTime,
+            action.timezone,
+            action.status,
+            action.createdAt,
+            action.sortOrder,
+          ]
+        );
+      }
+    }
+    await db.query("COMMIT");
+  } catch (error) {
+    await db.query("ROLLBACK");
+    throw error;
+  }
+}
