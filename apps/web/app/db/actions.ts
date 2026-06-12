@@ -540,7 +540,7 @@ export async function applyEventsToActionsProjection(actionIds: string[]) {
   for (let i = 0; i < uniqueIds.length; i += chunkSize) {
     const chunk = uniqueIds.slice(i, i + chunkSize);
     const placeholders = chunk.map((_, idx) => `$${idx + 1}`).join(", ");
-    
+
     // Fetch all events for these action IDs ordered by timestamp
     const result = await db.query(
       `SELECT * FROM events WHERE id IN (${placeholders}) ORDER BY timestamp ASC`,
