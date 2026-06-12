@@ -343,7 +343,7 @@ export function SystemSettings() {
             className="w-full md:w-auto rounded-xl h-9 px-3 bg-background hover:bg-muted border-border/50 text-foreground gap-1.5 transition-all text-xs font-semibold"
           >
             <Link to="https://github.com/kreozalabs/kei" target="_blank" rel="noopener noreferrer">
-              <Github className="size-3.5 shrink-0" />
+              <GitHub className="size-3.5 shrink-0" />
               <span>Source Code</span>
             </Link>
           </Button>
