@@ -10,7 +10,8 @@
     "lint": "turbo lint",
     "typecheck": "turbo typecheck",
     "format": "prettier --write .",
-    "clean": "pnpm exec rm -rf node_modules .turbo && pnpm -r exec rm -rf node_modules .turbo .react-router dev-dist build dist"
+    "clean": "pnpm exec rm -rf node_modules .turbo && pnpm -r exec rm -rf node_modules .turbo .react-router dev-dist build dist",
+    "full-reset": "pnpm clean && pnpm install && pnpm build && pnpm typecheck && pnpm lint && pnpm format"
   },
   "keywords": [],
   "author": "",

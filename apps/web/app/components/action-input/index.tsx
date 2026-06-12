@@ -202,6 +202,20 @@ export const ActionInput = forwardRef<ActionInputHandle, ActionInputProps>(
       [actionToEdit, initialDate, settings.default_energy, settings.default_intention]
     );
 
+    const {
+      title: initialTitle,
+      note: initialNote,
+      intention: initialIntention,
+      energy: initialEnergy,
+      important: initialImportant,
+      durationMin: initialDurationMin,
+      durationMax: initialDurationMax,
+      scheduledDate: initialScheduledDate,
+      startTime: initialStartTime,
+      endTime: initialEndTime,
+      timezone: initialTimezone,
+    } = initialFormValues;
+
     const hasChanges = useMemo(() => {
       // Define the "Empty State" check for New Actions
       const isNewAction = !actionToEdit;
@@ -212,17 +226,17 @@ export const ActionInput = forwardRef<ActionInputHandle, ActionInputProps>(
       if (isNewAction && isBaseEmpty) return false;
 
       return (
-        title.trim() !== initialFormValues.title ||
-        note.trim() !== initialFormValues.note ||
-        intention !== initialFormValues.intention ||
-        energy !== initialFormValues.energy ||
-        isImportant !== initialFormValues.important ||
-        duration[0] !== initialFormValues.durationMin ||
-        (duration[1] ?? duration[0]) !== initialFormValues.durationMax ||
-        scheduledDate !== initialFormValues.scheduledDate ||
-        startTime !== initialFormValues.startTime ||
-        endTime !== initialFormValues.endTime ||
-        timezone !== initialFormValues.timezone
+        title.trim() !== initialTitle ||
+        note.trim() !== initialNote ||
+        intention !== initialIntention ||
+        energy !== initialEnergy ||
+        isImportant !== initialImportant ||
+        duration[0] !== initialDurationMin ||
+        (duration[1] ?? duration[0]) !== initialDurationMax ||
+        scheduledDate !== initialScheduledDate ||
+        startTime !== initialStartTime ||
+        endTime !== initialEndTime ||
+        timezone !== initialTimezone
       );
     }, [
       title,
@@ -236,7 +250,17 @@ export const ActionInput = forwardRef<ActionInputHandle, ActionInputProps>(
       endTime,
       timezone,
       actionToEdit,
-      initialDate,
+      initialTitle,
+      initialNote,
+      initialIntention,
+      initialEnergy,
+      initialImportant,
+      initialDurationMin,
+      initialDurationMax,
+      initialScheduledDate,
+      initialStartTime,
+      initialEndTime,
+      initialTimezone,
     ]);
 
     const { showConfirmDialog, setShowConfirmDialog, handleCancelAttempt, handleConfirmDiscard } =
