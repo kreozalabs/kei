@@ -1,5 +1,26 @@
 # Changelog
 
+## [1.2.0](https://github.com/kreozalabs/kei/compare/kei-v1.1.0...kei-v1.2.0) (2026-06-12)
+
+
+### Features
+
+* add db activity indicator in header ([b13c042](https://github.com/kreozalabs/kei/commit/b13c042c58de0a8a6212c5b667028f07747e11f5))
+* add setting to toggle visibility of default energy badge on action items ([948cee3](https://github.com/kreozalabs/kei/commit/948cee38bbbd2840077ea07d6b4534bf1cca9d1e))
+* implement system settings telemetry dashboard ([29cf183](https://github.com/kreozalabs/kei/commit/29cf1835aaaf7cbd37db8b5bfe01f3f9456f6bda))
+* optimize intention inputs and mobile spacing ([c44ac89](https://github.com/kreozalabs/kei/commit/c44ac896690cbb1555ceaba8b4f69c20588253a9))
+* optimize task ordering and reschedule workflow ([458ec85](https://github.com/kreozalabs/kei/commit/458ec85b3eeaa04e793dda53f47b0ce16899a163))
+* stabilize bulk selection layout and enhance task hover preview ([3808cea](https://github.com/kreozalabs/kei/commit/3808ceae392962de2ecbff452461f8b84ed54fc2))
+* style and standardize sonner toast notifications ([49a77b9](https://github.com/kreozalabs/kei/commit/49a77b9418ee909a8fa6e2771a90dd3f67b1aab6))
+
+
+### Bug Fixes
+
+* preserve task duration range when assigning start and end times ([b918605](https://github.com/kreozalabs/kei/commit/b918605cd8640468bd28afc7a61daa9bbe9f1980))
+* resolve mobile and desktop layouts in system settings component ([2aa64f9](https://github.com/kreozalabs/kei/commit/2aa64f9e8038ba358aae47745867531f97f1ec79))
+* update configs to enable offline-mode ([0e3f281](https://github.com/kreozalabs/kei/commit/0e3f28100a527db8c2d1124133df949b1bc2b488))
+* update Github icon import to GitHub in SystemSettings component ([27d17a8](https://github.com/kreozalabs/kei/commit/27d17a8f16b8505cc2a3152872706b10073cfb60))
+
 ## [1.1.0](https://github.com/kreozalabs/kei/compare/kei-v1.0.0...kei-v1.1.0) (2026-06-05)
 
 ### Features
