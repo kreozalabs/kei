@@ -16,7 +16,7 @@ import {
   DEFAULT_INSERT_AT_TOP_OPTIONS,
   SHOW_INTENTIONS_OPTIONS,
   SHOW_DEFAULT_ENERGY_OPTIONS,
-} from "../../config/constants";
+} from "@kreozalabs/core";
 import { MapPin } from "lucide-react";
 import { TimezoneSelector } from "../TimezoneSelector";
 

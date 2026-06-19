@@ -11,7 +11,7 @@ import {
 import { ActionSelector } from "../ActionSelector";
 import { NextDayBadge } from "../NextDayBadge";
 import { addAction, updateAction } from "../../db/actions";
-import type { Action, EnergyType, IntentionType } from "../../types/actions";
+import type { Action, EnergyType, IntentionType } from "@kreozalabs/core";
 import { useQueryClient } from "@tanstack/react-query";
 import { useDiscardGuard } from "../../hooks/useDiscardGuard";
 import { useSettings } from "../../providers/SettingsContext";
@@ -28,14 +28,14 @@ import {
   getTimeOptions,
   parseManualTime,
   formatDuration,
-} from "../../utils/time";
+} from "@kreozalabs/core";
 import {
   DEFAULT_CONFIG,
   ENERGY_LEVELS,
   INTENTIONS,
   ENERGY_OPTIONS,
   TIMEZONES,
-} from "../../config/constants";
+} from "@kreozalabs/core";
 import { DurationInputs } from "./DurationInputs";
 import { DiscardDialog } from "./DiscardDialog";
 import { forwardRef, useEffect, useImperativeHandle, useMemo, useRef, useState } from "react";

@@ -1,6 +1,6 @@
 import { db } from "./index";
 import { v7 as uuidv7 } from "uuid";
-import type { Event, EventType } from "../types/events";
+import type { Event, EventType } from "@kreozalabs/core";
 import { getOrCreateDeviceIdentity } from "@/utils/device";
 
 let localSequenceCounter: number | null = null;

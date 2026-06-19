@@ -1,6 +1,6 @@
 import { createContext, useContext } from "react";
-import { DEFAULT_SETTINGS } from "../config/constants";
-import type { Settings } from "../types/settings";
+import { DEFAULT_SETTINGS } from "@kreozalabs/core";
+import type { Settings } from "@kreozalabs/core";
 
 export interface SettingsProviderState {
   settings: Settings;

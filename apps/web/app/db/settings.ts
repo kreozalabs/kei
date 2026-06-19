@@ -1,7 +1,7 @@
 import { db } from "./index";
-import type { SettingKey } from "../types/settings";
+import type { SettingKey } from "@kreozalabs/core";
 import { persistEvent } from "./events";
-import { EVENT_TYPES, GLOBAL_SETTINGS_ID } from "../config/constants";
+import { EVENT_TYPES, GLOBAL_SETTINGS_ID } from "@kreozalabs/core";
 import { broadcastDbUpdate } from "../utils/broadcast";
 
 export async function getSetting<T>(key: SettingKey): Promise<T | null> {

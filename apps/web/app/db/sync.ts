@@ -1,5 +1,5 @@
 import { db } from "./index";
-import type { Event, EventType } from "../types/events";
+import type { Event, EventType } from "@kreozalabs/core";
 
 /**
  * Retrieves the local watermark map (highest known sequence_number for each known device).

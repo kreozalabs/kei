@@ -12,7 +12,10 @@ import { getTodayString } from "../utils/time";
 /**
  * Reconstructs or updates an Action state based on an event.
  */
-export function applyEventToAction(action: Action | null, event: Event<ActionPayload>): Action | null {
+export function applyEventToAction(
+  action: Action | null,
+  event: Event<ActionPayload>
+): Action | null {
   const { type, payload, timestamp, id: actionId } = event;
 
   if (type === EVENT_TYPES.ACTION_DELETED) {

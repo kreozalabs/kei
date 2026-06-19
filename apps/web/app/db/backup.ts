@@ -1,7 +1,7 @@
 import { db } from "./index";
 import { rebuildActions } from "./actions";
 import { rebuildSettings } from "./settings";
-import type { Event, EventType } from "../types/events";
+import type { Event, EventType } from "@kreozalabs/core";
 import { broadcastDbUpdate } from "../utils/broadcast";
 
 /**

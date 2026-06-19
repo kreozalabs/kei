@@ -1,11 +1,11 @@
 import { Button, cn } from "@kreozalabs/ui";
-import type { Action } from "../types/actions";
+import type { Action } from "@kreozalabs/core";
 import { ActionItem } from "./ActionItem";
 import { useState, useEffect } from "react";
 import { ChevronDownIcon, PlusIcon } from "lucide-react";
 import { ActionInput } from "./action-input";
 import { AnimatePresence } from "framer-motion";
-import { ACTION_STATUS, STORAGE_KEYS } from "@/config/constants";
+import { ACTION_STATUS, STORAGE_KEYS } from "@kreozalabs/core";
 import { useSettings } from "@/providers/SettingsContext";
 
 interface ActionSectionProps {

@@ -10,11 +10,11 @@ import {
   Pencil,
   Loader2,
 } from "lucide-react";
-import type { Action } from "../types/actions";
-import type { Event } from "../types/events";
+import type { Action } from "@kreozalabs/core";
+import type { Event } from "@kreozalabs/core";
 import { getActionEvents } from "../db/events";
-import { EVENT_TYPES, ACTION_STATUS, ENERGY_OPTIONS, INTENTION_OPTIONS } from "../config/constants";
-import { formatGoogleDate } from "../utils/time";
+import { EVENT_TYPES, ACTION_STATUS, ENERGY_OPTIONS, INTENTION_OPTIONS } from "@kreozalabs/core";
+import { formatGoogleDate } from "@kreozalabs/core";
 
 const STATUS_BADGE_STYLES: Record<string, string> = {
   [ACTION_STATUS.COMPLETED]: "bg-emerald-500/10 text-emerald-500 border-emerald-500/20",

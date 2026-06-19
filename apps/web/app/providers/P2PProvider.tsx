@@ -4,7 +4,7 @@ import { getLocalWatermarks, getEventsSince } from "@/db/sync";
 import { importEvents } from "@/db/backup";
 import { getOrCreateDeviceIdentity, getDeviceName } from "@/utils/device";
 import { Button, toast } from "@kreozalabs/ui";
-import type { Event as DBEvent } from "@/types/events";
+import type { Event as DBEvent } from "@kreozalabs/core";
 
 export interface Peer {
   name: string;

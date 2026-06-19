@@ -15,8 +15,9 @@ import { QueryProvider } from "./providers/QueryProvider";
 import { SettingsProvider } from "./providers/SettingsProvider";
 import { DbProvider } from "./providers/DbProvider";
 import { P2PProvider } from "./providers/P2PProvider";
-import { STORAGE_KEYS } from "./config/constants";
+
 import { ErrorPage } from "./components/ErrorPage";
+import { STORAGE_KEYS } from "@kreozalabs/core";
 
 export function Layout({ children }: { children: React.ReactNode }) {
   useEffect(() => {

@@ -1,4 +1,4 @@
-import { DEFAULT_SETTINGS } from "@/config/constants";
+import { DEFAULT_SETTINGS } from "@kreozalabs/core";
 import { PGliteWorker } from "@electric-sql/pglite/worker";
 import { getOrCreateDeviceIdentity } from "@/utils/device";
 

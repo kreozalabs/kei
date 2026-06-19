@@ -1,8 +1,8 @@
 import * as React from "react";
 import { useEffect, useState } from "react";
 import { SettingsProviderContext } from "./SettingsContext";
-import type { Settings } from "../types/settings";
-import { DEFAULT_SETTINGS, STORAGE_KEYS } from "../config/constants";
+import type { Settings } from "@kreozalabs/core";
+import { DEFAULT_SETTINGS, STORAGE_KEYS } from "@kreozalabs/core";
 import { getSetting, setSetting } from "../db/settings";
 import { initPromise } from "../db";
 

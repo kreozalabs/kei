@@ -9,8 +9,8 @@ import {
   SelectValue,
 } from "@kreozalabs/ui";
 import { useSettings } from "../../providers/SettingsContext";
-import type { Theme } from "../../types/settings";
-import { TIME_FORMATS, ACCENTS, LANGUAGES, LANGUAGE_LABELS } from "../../config/constants";
+import type { Theme } from "@kreozalabs/core";
+import { TIME_FORMATS, ACCENTS, LANGUAGES, LANGUAGE_LABELS } from "@kreozalabs/core";
 
 export function PersonalizationSettings() {
   const { settings, updateSetting } = useSettings();
