@@ -10,7 +10,13 @@
       "default": "./src/index.ts"
     }
   },
+  "scripts": {
+    "test": "vitest run"
+  },
   "dependencies": {
     "zod": "^3.22.0"
+  },
+  "devDependencies": {
+    "vitest": "^4.1.9"
   }
 }

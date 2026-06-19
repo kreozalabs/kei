@@ -16,6 +16,7 @@
     "@dnd-kit/utilities": "^3.2.2",
     "@electric-sql/pglite": "^0.4.3",
     "@icons-pack/react-simple-icons": "^13.13.0",
+    "@kreozalabs/core": "workspace:*",
     "@kreozalabs/icons": "^1.0.0",
     "@kreozalabs/ui": "workspace:*",
     "@react-router/node": "^7.17.0",
