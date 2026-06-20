@@ -126,7 +126,7 @@ async function ensureSchema() {
 }
 
 async function ensureDefaults() {
-  const { initDefaultSettings } = await import("./settings");
+  const { initDefaultSettings } = await import("../../../../packages/core/src/db/settings");
   await initDefaultSettings(DEFAULT_SETTINGS);
 }
 
@@ -140,7 +140,7 @@ async function ensureDerivedData() {
   const actionsExist = await db.query("SELECT 1 FROM actions LIMIT 1");
   if (actionsExist.rows.length === 0) {
     console.log("Actions table is empty. Rebuilding from event log...");
-    const { rebuildActions } = await import("./actions");
+    const { rebuildActions } = await import("../../../../packages/core/src/db/actions");
     await rebuildActions();
   }
 
@@ -154,7 +154,7 @@ async function ensureDerivedData() {
     // If we have custom settings in the event log, we should rebuild them
     // to ensure they overlay correctly on top of the defaults.
     console.log("Settings events found. Syncing configurations from event log...");
-    const { rebuildSettings } = await import("./settings");
+    const { rebuildSettings } = await import("../../../../packages/core/src/db/settings");
     await rebuildSettings();
   }
 }

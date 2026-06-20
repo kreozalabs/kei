@@ -1,4 +1,4 @@
-import { db } from "./index";
+import { db } from "../../../../apps/web/app/db/index";
 import { rebuildActions } from "./actions";
 import { rebuildSettings } from "./settings";
 import type { Event, EventType } from "@kreozalabs/core";

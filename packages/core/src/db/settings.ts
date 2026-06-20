@@ -1,4 +1,4 @@
-import { db } from "./index";
+import { db } from "../../../../apps/web/app/db/index";
 import type { SettingKey } from "@kreozalabs/core";
 import { persistEvent } from "./events";
 import { EVENT_TYPES, GLOBAL_SETTINGS_ID } from "@kreozalabs/core";
