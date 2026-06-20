@@ -10,3 +10,4 @@ export * from "./db/backup";
 export * from "./db/events";
 export * from "./db/settings";
 export * from "./db/sync";
+export * from "./db/init";

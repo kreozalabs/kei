@@ -1,5 +1,3 @@
-// FIXME: PGlite Worker
-import { DEFAULT_SETTINGS } from "@kreozalabs/core";
 import { PGliteWorker } from "@electric-sql/pglite/worker";
 import { getOrCreateDeviceIdentity } from "@/utils/device";
 
@@ -126,46 +124,15 @@ async function ensureSchema() {
   `);
 }
 
-async function ensureDefaults() {
-  const { initDefaultSettings } = await import("../../../../packages/core/src/db/settings");
-  await initDefaultSettings(DEFAULT_SETTINGS);
-}
-
-async function ensureDerivedData() {
-  if (!db) return;
-
-  const eventsExist = await db.query("SELECT 1 FROM events LIMIT 1");
-  if (eventsExist.rows.length === 0) return;
-
-  // 1. Rebuild actions if actions table is empty
-  const actionsExist = await db.query("SELECT 1 FROM actions LIMIT 1");
-  if (actionsExist.rows.length === 0) {
-    console.log("Actions table is empty. Rebuilding from event log...");
-    const { rebuildActions } = await import("../../../../packages/core/src/db/actions");
-    await rebuildActions();
-  }
-
-  // 2. Rebuild settings from settings-related events if needed
-  // Check if we have custom setting updates in the event log
-  const hasSettingsEvents = await db.query(
-    "SELECT 1 FROM events WHERE type = 'SETTING_UPDATED' LIMIT 1"
-  );
-
-  if (hasSettingsEvents.rows.length > 0) {
-    // If we have custom settings in the event log, we should rebuild them
-    // to ensure they overlay correctly on top of the defaults.
-    console.log("Settings events found. Syncing configurations from event log...");
-    const { rebuildSettings } = await import("../../../../packages/core/src/db/settings");
-    await rebuildSettings();
-  }
-}
+// Domain logic has been moved to core
+import { initializeDomainData } from "@kreozalabs/core";
+import { webDatabaseAdapter } from "./webDatabaseAdapter";
 
 export const initDb = async () => {
   if (typeof window === "undefined") return;
   await ensureSchema();
   await runMigrations();
-  await ensureDefaults();
-  await ensureDerivedData();
+  await initializeDomainData(webDatabaseAdapter);
 };
 
 // Start initialization immediately

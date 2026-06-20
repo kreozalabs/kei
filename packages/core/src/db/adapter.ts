@@ -26,6 +26,10 @@ export interface DatabaseAdapter {
   saveSettingsBatch(settings: [string, unknown][]): Promise<void>;
   clearSettings(): Promise<void>;
 
+  // Syncing methods
+  getLocalWatermarks(): Promise<Record<string, number>>;
+  getEventsSince(watermarks: Record<string, number>): Promise<Event[]>;
+
   // Transaction
   transaction<T>(callback: (txAdapter: DatabaseAdapter) => Promise<T>): Promise<T>;
 
