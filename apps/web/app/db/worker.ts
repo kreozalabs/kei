@@ -1,3 +1,4 @@
+// FIXME: not using that now?
 import { PGlite } from "@electric-sql/pglite";
 import { worker } from "@electric-sql/pglite/worker";
 

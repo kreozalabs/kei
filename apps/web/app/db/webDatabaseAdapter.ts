@@ -58,6 +58,53 @@ export const webDatabaseAdapter: DatabaseAdapter = {
     );
   },
 
+  async saveEventsBatch(events: Event<any>[]): Promise<number> {
+    const chunkSize = 100;
+    let importedCount = 0;
+
+    await db.query("BEGIN");
+    try {
+      for (let i = 0; i < events.length; i += chunkSize) {
+        const chunk = events.slice(i, i + chunkSize);
+        const valueStrings: string[] = [];
+        const values: unknown[] = [];
+        let paramIdx = 1;
+
+        for (const event of chunk) {
+          valueStrings.push(
+            `($${paramIdx++}, $${paramIdx++}, $${paramIdx++}, $${paramIdx++}, $${paramIdx++}, $${paramIdx++}, $${paramIdx++})`
+          );
+          const payloadString =
+            typeof event.payload === "string" ? event.payload : JSON.stringify(event.payload);
+
+          values.push(
+            event.eventId,
+            event.id,
+            event.type,
+            event.timestamp,
+            payloadString,
+            event.originDeviceId || null,
+            event.sequenceNumber || null
+          );
+          importedCount++;
+        }
+
+        const insertQuery = `
+          INSERT INTO events (event_id, id, type, timestamp, payload, origin_device_id, sequence_number)
+          VALUES ${valueStrings.join(", ")}
+          ON CONFLICT (event_id) DO NOTHING
+        `;
+
+        await db.query(insertQuery, values);
+      }
+      await db.query("COMMIT");
+      return importedCount;
+    } catch (error) {
+      await db.query("ROLLBACK");
+      throw error;
+    }
+  },
+
   async getNextSequenceNumber(deviceId: string) {
     const result = await db.query(
       "SELECT MAX(sequence_number) as max_seq FROM events WHERE origin_device_id = $1",
@@ -263,6 +310,48 @@ export const webDatabaseAdapter: DatabaseAdapter = {
     await db.query(insertQuery, values);
   },
 
+  async getSetting<T>(key: string): Promise<T | null> {
+    const result = await db.query("SELECT value FROM settings WHERE key = $1", [key]);
+    if (result.rows.length === 0) return null;
+    const value = (result.rows[0] as { value: unknown }).value;
+    if (typeof value !== "string") return value as T;
+    try {
+      return JSON.parse(value);
+    } catch {
+      return value as unknown as T;
+    }
+  },
+
+  async upsertSetting(key: string, value: unknown): Promise<void> {
+    await db.query(
+      "INSERT INTO settings (key, value) VALUES ($1, $2) ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value",
+      [key, JSON.stringify(value)]
+    );
+  },
+
+  async clearSettings(): Promise<void> {
+    await db.query("DELETE FROM settings");
+  },
+
+  async saveSettingsBatch(settings: [string, unknown][]): Promise<void> {
+    const valueStrings: string[] = [];
+    const values: unknown[] = [];
+    let paramIdx = 1;
+
+    for (const [key, value] of settings) {
+      valueStrings.push(`($${paramIdx++}, $${paramIdx++})`);
+      values.push(key, JSON.stringify(value));
+    }
+
+    // Notice we DO UPDATE here so rebuildSettings works properly when overriding
+    const insertQuery = `
+      INSERT INTO settings (key, value) 
+      VALUES ${valueStrings.join(", ")} 
+      ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value
+    `;
+    await db.query(insertQuery, values);
+  },
+
   async transaction<T>(callback: (txAdapter: DatabaseAdapter) => Promise<T>): Promise<T> {
     await db.query("BEGIN");
     try {
@@ -298,5 +387,5 @@ export const webDatabaseAdapter: DatabaseAdapter = {
       window.__activeWrites = Math.max(0, (window.__activeWrites || 0) - 1);
       window.dispatchEvent(new CustomEvent("kei_active_writes_change"));
     }
-  }
+  },
 };

@@ -1,43 +1,7 @@
-import { db } from "../../../../apps/web/app/db/index";
+import type { DatabaseAdapter, Event, EventType } from "@kreozalabs/core";
 import { rebuildActions } from "./actions";
 import { rebuildSettings } from "./settings";
-import type { Event, EventType } from "@kreozalabs/core";
-import { broadcastDbUpdate } from "../utils/broadcast";
 
-/**
- * Queries and exports all event records chronologically from the local event log.
- */
-export async function exportEvents(): Promise<Event[]> {
-  const result = await db.query(
-    "SELECT event_id, id, type, timestamp, payload, origin_device_id, sequence_number FROM events ORDER BY timestamp ASC"
-  );
-
-  return result.rows.map((row) => {
-    const r = row as Record<string, unknown>;
-    let payload = r.payload;
-    if (typeof payload === "string") {
-      try {
-        payload = JSON.parse(payload);
-      } catch {
-        // Keep raw value if parsing fails
-      }
-    }
-    return {
-      eventId: r.event_id as string,
-      id: r.id as string,
-      type: r.type as EventType,
-      timestamp: Number(r.timestamp),
-      payload,
-      originDeviceId: r.origin_device_id as string | undefined,
-      sequenceNumber: r.sequence_number ? Number(r.sequence_number) : undefined,
-    };
-  });
-}
-
-/**
- * Processes a batch of events and returns the count of newly inserted events.
- * Events are inserted using a single SQL transaction with ON CONFLICT DO NOTHING to ensure idempotency.
- */
 class Mutex {
   private queue = Promise.resolve();
 
@@ -58,22 +22,20 @@ class Mutex {
 
 const importMutex = new Mutex();
 
-export async function importEvents(events: Event[]): Promise<number> {
-  if (typeof window !== "undefined") {
-    window.__activeWrites = (window.__activeWrites || 0) + 1;
-    window.dispatchEvent(new CustomEvent("kei_active_writes_change"));
-  }
+export async function exportEvents(adapter: DatabaseAdapter): Promise<Event[]> {
+  return await adapter.getEvents();
+}
+
+export async function importEvents(events: Event[], adapter: DatabaseAdapter): Promise<number> {
+  adapter.incrementActiveWrites();
   try {
-    return await importMutex.run(() => executeImportEvents(events));
+    return await importMutex.run(() => executeImportEvents(events, adapter));
   } finally {
-    if (typeof window !== "undefined") {
-      window.__activeWrites = Math.max(0, (window.__activeWrites || 0) - 1);
-      window.dispatchEvent(new CustomEvent("kei_active_writes_change"));
-    }
+    adapter.decrementActiveWrites();
   }
 }
 
-async function executeImportEvents(events: Event[]): Promise<number> {
+async function executeImportEvents(events: Event[], adapter: DatabaseAdapter): Promise<number> {
   console.log("[P2P/Import] Received events to import:", events);
   if (!Array.isArray(events)) {
     throw new Error("Invalid backup format: data is not a list of events.");
@@ -86,57 +48,15 @@ async function executeImportEvents(events: Event[]): Promise<number> {
     return 0;
   }
 
-  const chunkSize = 100;
-  let importedCount = 0;
+  const importedCount = await adapter.saveEventsBatch(validEvents);
 
-  await db.query("BEGIN");
-  try {
-    for (let i = 0; i < validEvents.length; i += chunkSize) {
-      const chunk = validEvents.slice(i, i + chunkSize);
-      const valueStrings: string[] = [];
-      const values: unknown[] = [];
-      let paramIdx = 1;
+  // 1. Rebuild actions and settings derived projection tables
+  await rebuildActions(adapter);
+  await rebuildSettings(adapter);
 
-      for (const event of chunk) {
-        valueStrings.push(
-          `($${paramIdx++}, $${paramIdx++}, $${paramIdx++}, $${paramIdx++}, $${paramIdx++}, $${paramIdx++}, $${paramIdx++})`
-        );
-        const payloadString =
-          typeof event.payload === "string" ? event.payload : JSON.stringify(event.payload);
+  // 2. Notify all tabs that the database was updated
+  adapter.notifyUpdate("actions");
+  adapter.notifyUpdate("settings");
 
-        values.push(
-          event.eventId,
-          event.id,
-          event.type,
-          event.timestamp,
-          payloadString,
-          event.originDeviceId || null,
-          event.sequenceNumber || null
-        );
-        importedCount++;
-      }
-
-      const insertQuery = `
-        INSERT INTO events (event_id, id, type, timestamp, payload, origin_device_id, sequence_number)
-        VALUES ${valueStrings.join(", ")}
-        ON CONFLICT (event_id) DO NOTHING
-      `;
-
-      await db.query(insertQuery, values);
-    }
-    await db.query("COMMIT");
-
-    // 1. Rebuild actions and settings derived projection tables
-    await rebuildActions();
-    await rebuildSettings();
-
-    // 2. Notify all tabs that the database was updated
-    broadcastDbUpdate("actions");
-    broadcastDbUpdate("settings");
-
-    return importedCount;
-  } catch (error) {
-    await db.query("ROLLBACK");
-    throw error;
-  }
+  return importedCount;
 }
