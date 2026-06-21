@@ -146,6 +146,10 @@ export const webDatabaseAdapter: DatabaseAdapter = {
     }
   },
 
+  getDeviceId() {
+    return getOrCreateDeviceIdentity();
+  },
+
   async getEventsForEntity(entityId: string): Promise<Event[]> {
     const result = await db.query("SELECT * FROM events WHERE id = $1 ORDER BY timestamp ASC", [
       entityId,

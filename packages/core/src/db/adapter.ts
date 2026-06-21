@@ -3,6 +3,7 @@ import type { Event, Action, ActionStatus } from "@kreozalabs/core";
 export interface DatabaseAdapter {
   connect?(): Promise<void>;
   disconnect?(): Promise<void>;
+  getDeviceId(): string;
   saveEvent(event: Event<unknown>): Promise<void>;
   saveEventsBatch(events: Event<unknown>[]): Promise<number>;
   getEventsForEntity(entityId: string): Promise<Event[]>;
