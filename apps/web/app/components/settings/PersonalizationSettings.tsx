@@ -27,7 +27,7 @@ export function PersonalizationSettings() {
               key={a.name}
               variant="ghost"
               className={cn(
-                "size-5 p-0 min-w-0 border-none transition-transform hover:scale-110 active:scale-95",
+                "size-5 p-0 min-w-0 rounded-full border-none transition-transform hover:scale-110 active:scale-95",
                 a.color,
                 a.hover,
                 settings.accent === a.name

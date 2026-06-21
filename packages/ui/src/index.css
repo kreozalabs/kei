@@ -2,5 +2,6 @@
 @import "tw-animate-css";
 @import "./styles/base.css";
 
-@source "../../../apps/web/src/**/*.{ts,tsx}";
+@source "../../../apps/web/app/**/*.{ts,tsx}";
 @source "../../ui/src/**/*.{ts,tsx}";
+@source "../../core/src/**/*.{ts,tsx}";
