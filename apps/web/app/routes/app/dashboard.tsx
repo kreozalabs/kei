@@ -427,7 +427,7 @@ export default function Dashboard() {
             activeWritesRef.current++;
             await queryClient.cancelQueries({ queryKey: ["actions"] });
             try {
-              await restoreAction(action);
+              await restoreAction(action); // FIXME: should we not just provide id?
               toast.success("Action restored");
             } catch (err) {
               console.error(err);

@@ -10,7 +10,6 @@ import {
 } from "lucide-react";
 import { ActionSelector } from "../ActionSelector";
 import { NextDayBadge } from "../NextDayBadge";
-import { addAction, updateAction } from "../../db/actions";
 import type { Action, EnergyType, IntentionType } from "@kreozalabs/core";
 import { useQueryClient } from "@tanstack/react-query";
 import { useDiscardGuard } from "../../hooks/useDiscardGuard";
@@ -28,14 +27,13 @@ import {
   getTimeOptions,
   parseManualTime,
   formatDuration,
-} from "@kreozalabs/core";
-import {
   DEFAULT_CONFIG,
   ENERGY_LEVELS,
   INTENTIONS,
   ENERGY_OPTIONS,
   TIMEZONES,
 } from "@kreozalabs/core";
+import { addAction, updateAction } from "@/db/actions";
 import { DurationInputs } from "./DurationInputs";
 import { DiscardDialog } from "./DiscardDialog";
 import { forwardRef, useEffect, useImperativeHandle, useMemo, useRef, useState } from "react";
@@ -364,7 +362,7 @@ export const ActionInput = forwardRef<ActionInputHandle, ActionInputProps>(
               });
             });
         } else {
-          addAction(payload)
+          await addAction(payload)
             .then(() => {
               queryClient.invalidateQueries({ queryKey: ["actions"] });
             })

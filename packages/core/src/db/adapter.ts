@@ -1,8 +1,10 @@
 import type { Event, Action, ActionStatus } from "@kreozalabs/core";
 
 export interface DatabaseAdapter {
-  saveEvent(event: Event<any>): Promise<void>;
-  saveEventsBatch(events: Event<any>[]): Promise<number>;
+  connect?(): Promise<void>;
+  disconnect?(): Promise<void>;
+  saveEvent(event: Event<unknown>): Promise<void>;
+  saveEventsBatch(events: Event<unknown>[]): Promise<number>;
   getEventsForEntity(entityId: string): Promise<Event[]>;
   getNextSequenceNumber(deviceId: string): Promise<number>;
   getEvents(): Promise<Event[]>;

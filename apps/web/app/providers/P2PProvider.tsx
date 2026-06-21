@@ -1,10 +1,10 @@
 /* eslint-disable react-refresh/only-export-components */
 import React, { createContext, useContext, useState, useEffect, useRef, useCallback } from "react";
-import { getLocalWatermarks, getEventsSince } from "@/db/sync";
-import { importEvents } from "@/db/backup";
-import { getOrCreateDeviceIdentity, getDeviceName } from "@/utils/device";
 import { Button, toast } from "@kreozalabs/ui";
 import type { Event as DBEvent } from "@kreozalabs/core";
+import { getLocalWatermarks, getEventsSince } from "@/db/sync";
+import { importEvents } from "@/db/backup";
+import { getOrCreateDeviceIdentity, getDeviceName } from "../utils/device";
 
 export interface Peer {
   name: string;

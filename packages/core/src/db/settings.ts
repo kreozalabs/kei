@@ -50,8 +50,8 @@ export async function rebuildSettings(adapter: DatabaseAdapter) {
 
   const finalSettings = new Map<string, unknown>();
   for (const event of settingEvents) {
-    const payload = event.payload as any;
-    if (payload && payload.key && payload.value !== undefined) {
+    const payload = event.payload as Record<string, unknown> | null | undefined;
+    if (payload && typeof payload.key === "string" && payload.value !== undefined) {
       finalSettings.set(payload.key, payload.value);
     }
   }

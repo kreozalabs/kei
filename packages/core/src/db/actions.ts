@@ -1,5 +1,5 @@
 import { v7 as uuidv7 } from "uuid";
-import type { Action, ActionPayload, ActionStatus } from "@kreozalabs/core";
+import type { Action, ActionPayload, ActionStatus, Event } from "@kreozalabs/core";
 import { EVENT_TYPES, ACTION_STATUS } from "@kreozalabs/core";
 import { persistEvent } from "./events";
 import { getTodayString, applyEventToAction } from "@kreozalabs/core";
@@ -269,7 +269,7 @@ export async function rebuildActions(adapter: DatabaseAdapter) {
     const actionId = event.id;
     const existing = actionsMap.get(actionId) || null;
     try {
-      const updated = applyEventToAction(existing, event);
+      const updated = applyEventToAction(existing, event as Event<ActionPayload>);
       if (updated) {
         actionsMap.set(actionId, updated);
       } else {

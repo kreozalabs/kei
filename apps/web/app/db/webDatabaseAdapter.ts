@@ -5,7 +5,123 @@ import {
   type Action,
   type ActionStatus,
 } from "@kreozalabs/core";
-import { db } from "./index";
+import { PGliteWorker } from "@electric-sql/pglite/worker";
+import { getOrCreateDeviceIdentity } from "@/utils/device";
+
+export let db: PGliteWorker;
+
+async function runMigrations() {
+  if (!db) return;
+  try {
+    // 1. Core Event Migration (from old schema without event_id)
+    const tableInfo = await db.query(`
+      SELECT column_name 
+      FROM information_schema.columns 
+      WHERE table_name = 'events' AND column_name = 'event_id'
+    `);
+
+    if (tableInfo.rows.length === 0) {
+      const checkTable = await db.query(`
+        SELECT table_name FROM information_schema.tables WHERE table_name = 'events'
+      `);
+
+      if (checkTable.rows.length > 0) {
+        console.log("Migrating events table to new schema...");
+        await db.exec(`
+          ALTER TABLE events RENAME TO events_old;
+          CREATE TABLE events (
+            event_id UUID PRIMARY KEY,
+            id TEXT NOT NULL,
+            type TEXT NOT NULL,
+            timestamp BIGINT NOT NULL,
+            payload JSONB NOT NULL
+          );
+          INSERT INTO events (event_id, id, type, timestamp, payload)
+          SELECT gen_random_uuid(), id, type, timestamp, payload FROM events_old;
+          DROP TABLE events_old;
+          CREATE INDEX idx_events_id ON events(id);
+          CREATE INDEX idx_events_timestamp ON events(timestamp);
+        `);
+        console.log("Migration complete.");
+      }
+    }
+
+    // 2. Additive Migrations for other tables
+    // We use native ALTER TABLE ADD COLUMN IF NOT EXISTS for atomic, bulletproof execution
+    await db.exec(`
+      ALTER TABLE events ADD COLUMN IF NOT EXISTS origin_device_id TEXT;
+      ALTER TABLE events ADD COLUMN IF NOT EXISTS sequence_number BIGINT;
+      CREATE UNIQUE INDEX IF NOT EXISTS idx_device_sequence 
+      ON events (origin_device_id, sequence_number);
+    `);
+
+    // 3. Backfill legacy events with default device identity and monotonic sequences
+    const legacyEvents = await db.query(
+      "SELECT event_id FROM events WHERE origin_device_id IS NULL LIMIT 1"
+    );
+
+    if (legacyEvents.rows.length > 0) {
+      console.log("Backfilling legacy events with device identity...");
+      const localId = getOrCreateDeviceIdentity();
+
+      await db.query(
+        `
+        WITH numbered_events AS (
+          SELECT event_id, ROW_NUMBER() OVER (ORDER BY timestamp ASC) as seq
+          FROM events
+          WHERE origin_device_id IS NULL
+        )
+        UPDATE events
+        SET origin_device_id = $1,
+            sequence_number = numbered_events.seq
+        FROM numbered_events
+        WHERE events.event_id = numbered_events.event_id
+      `,
+        [localId]
+      );
+      console.log("Backfill complete.");
+    }
+  } catch (e) {
+    console.error("Migration check failed:", e);
+  }
+}
+
+async function ensureSchema() {
+  if (!db) return;
+  await db.exec(`
+    CREATE TABLE IF NOT EXISTS events (
+      event_id UUID PRIMARY KEY,
+      id TEXT NOT NULL,
+      type TEXT NOT NULL,
+      timestamp BIGINT NOT NULL,
+      payload JSONB NOT NULL,
+      origin_device_id TEXT,
+      sequence_number BIGINT
+    );
+
+    CREATE TABLE IF NOT EXISTS settings (
+      key TEXT PRIMARY KEY,
+      value JSONB NOT NULL
+    );
+
+    CREATE TABLE IF NOT EXISTS actions (
+      id TEXT PRIMARY KEY,
+      title TEXT NOT NULL,
+      note TEXT,
+      intention TEXT NOT NULL,
+      important BOOLEAN NOT NULL,
+      energy TEXT NOT NULL,
+      duration JSONB,
+      scheduled_date TEXT NOT NULL,
+      start_time TEXT,
+      end_time TEXT,
+      timezone TEXT,
+      status TEXT NOT NULL,
+      created_at BIGINT NOT NULL,
+      sort_order DOUBLE PRECISION NOT NULL
+    );
+  `);
+}
 
 // The BroadcastChannel only exists in the browser
 const channel = typeof window !== "undefined" ? new BroadcastChannel("kei_db_sync") : null;
@@ -17,6 +133,19 @@ declare global {
 }
 
 export const webDatabaseAdapter: DatabaseAdapter = {
+  async connect() {
+    if (db) return;
+    if (typeof window !== "undefined") {
+      db = new PGliteWorker(
+        new Worker(new URL("./worker.ts", import.meta.url), {
+          type: "module",
+        })
+      );
+      await ensureSchema();
+      await runMigrations();
+    }
+  },
+
   async getEventsForEntity(entityId: string): Promise<Event[]> {
     const result = await db.query("SELECT * FROM events WHERE id = $1 ORDER BY timestamp ASC", [
       entityId,
@@ -43,7 +172,7 @@ export const webDatabaseAdapter: DatabaseAdapter = {
     });
   },
 
-  async saveEvent(event: Event<any>) {
+  async saveEvent(event: Event<unknown>) {
     await db.query(
       "INSERT INTO events (event_id, id, type, timestamp, payload, origin_device_id, sequence_number) VALUES ($1, $2, $3, $4, $5, $6, $7)",
       [
@@ -58,7 +187,7 @@ export const webDatabaseAdapter: DatabaseAdapter = {
     );
   },
 
-  async saveEventsBatch(events: Event<any>[]): Promise<number> {
+  async saveEventsBatch(events: Event<unknown>[]): Promise<number> {
     const chunkSize = 100;
     let importedCount = 0;
 
@@ -110,7 +239,8 @@ export const webDatabaseAdapter: DatabaseAdapter = {
       "SELECT MAX(sequence_number) as max_seq FROM events WHERE origin_device_id = $1",
       [deviceId]
     );
-    return Number(result.rows[0]?.max_seq || 0) + 1;
+    const row = result.rows[0] as { max_seq?: number | null } | undefined;
+    return Number(row?.max_seq || 0) + 1;
   },
 
   async getEvents(): Promise<Event[]> {

@@ -1,9 +1,9 @@
 import * as React from "react";
 import { useEffect, useState } from "react";
 import { SettingsProviderContext } from "./SettingsContext";
-import type { Settings } from "@kreozalabs/core";
 import { DEFAULT_SETTINGS, STORAGE_KEYS } from "@kreozalabs/core";
-import { getSetting, setSetting } from "../db/settings";
+import { getSetting, setSetting } from "@/db/settings";
+import type { Settings } from "@kreozalabs/core";
 import { initPromise } from "../db";
 
 interface ThemeProviderProps {

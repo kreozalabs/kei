@@ -226,7 +226,7 @@ export function ActionInputDialog({
                 queryClient.setQueryData(queryKey, data);
               });
               try {
-                await restoreAction(action);
+                await restoreAction(action); // FIXME: should we not just provide id?
                 queryClient.invalidateQueries({ queryKey: ["actions"] });
                 toast.success("Action restored");
               } catch (err) {
