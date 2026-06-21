@@ -1,3 +1,4 @@
+// FIXME: Avoid hard-coding mins, hrs and others. Use standard format that UI will render according to the selected language and theme.
 import { TIME_FORMATS } from "../constants";
 
 export const timeToMinutes = (time24: string): number => {
