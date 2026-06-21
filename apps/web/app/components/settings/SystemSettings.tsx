@@ -325,8 +325,9 @@ export function SystemSettings() {
               <h4 className="text-base font-bold tracking-tight text-foreground">
                 Kei Productivity Engine
               </h4>
+              {/* TODO: Remove manual versioning*/}
               <span className="text-[10px] font-bold px-2 py-0.5 bg-primary/20 text-primary rounded-full border border-primary/30 uppercase tracking-widest shrink-0">
-                v1.1.0
+                v2.0.0
               </span>
             </div>
             <p className="text-xs text-muted-foreground/80 mt-0.5 leading-relaxed">

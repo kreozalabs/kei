@@ -27,7 +27,7 @@ import {
   formatFullWeekday,
   formatTitleDate,
   parseDateString,
-} from "@/utils/time";
+} from "@kreozalabs/core";
 import {
   Button,
   cn,
@@ -51,7 +51,7 @@ import {
   CheckSquare,
   X,
 } from "lucide-react";
-import type { Action, ActionStatus } from "@/types/actions";
+import type { Action, ActionStatus } from "@kreozalabs/core";
 import { motion, AnimatePresence } from "framer-motion";
 
 declare global {
@@ -64,7 +64,7 @@ import { ActionInputDialog } from "@/components/ActionInputDialog";
 import { TimelineCalendar } from "@/components/TimelineCalendar";
 import { ActionSectionSkeleton } from "@/components/ActionSkeleton";
 import { useSettings } from "@/providers/SettingsContext";
-import { STORAGE_KEYS, ACTION_STATUS, TIME } from "@/config/constants";
+import { STORAGE_KEYS, ACTION_STATUS, TIME } from "@kreozalabs/core";
 
 export default function Dashboard() {
   const { settings, updateSetting } = useSettings();
@@ -427,7 +427,7 @@ export default function Dashboard() {
             activeWritesRef.current++;
             await queryClient.cancelQueries({ queryKey: ["actions"] });
             try {
-              await restoreAction(action);
+              await restoreAction(action); // FIXME: should we not just provide id?
               toast.success("Action restored");
             } catch (err) {
               console.error(err);

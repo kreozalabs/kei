@@ -7,6 +7,11 @@ import path from "path";
 
 const MAX_CACHE_SIZE_BYTES = 15 * 1024 * 1024;
 
+const isTauriBuild =
+  process.env.TAURI_ENV_PLATFORM !== undefined || process.env.TAURI_BUILD === "true";
+
+console.log("Vite Config - isTauriBuild:", isTauriBuild);
+
 export default defineConfig(({ command }) => ({
   server: {
     host: true,
@@ -81,9 +86,17 @@ export default defineConfig(({ command }) => ({
       : []),
   ],
   resolve: {
-    alias: {
-      "@": path.resolve(__dirname, "./app"),
-    },
+    alias: [
+      { find: "@", replacement: path.resolve(__dirname, "./app") },
+      ...(isTauriBuild
+        ? [
+            {
+              find: /.*webDatabaseAdapter$/,
+              replacement: path.resolve(__dirname, "./app/db/webDatabaseAdapter.stub.ts"),
+            },
+          ]
+        : []),
+    ],
   },
   optimizeDeps: {
     exclude: ["@electric-sql/pglite"],
