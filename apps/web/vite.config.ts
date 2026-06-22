@@ -92,7 +92,7 @@ export default defineConfig(({ command }) => ({
         navigateFallback: "/__spa-fallback.html",
       },
       devOptions: {
-        enabled: true,
+        enabled: false,
         suppressWarnings: true,
       },
     }),
