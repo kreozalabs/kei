@@ -405,10 +405,10 @@ export const webDatabaseAdapter: WebDatabaseAdapter = {
   },
 
   async upsertSetting(key: string, value: unknown): Promise<void> {
-    await this.query(
-      "INSERT OR REPLACE INTO settings (key, value) VALUES (?, ?)",
-      [key, JSON.stringify(value)]
-    );
+    await this.query("INSERT OR REPLACE INTO settings (key, value) VALUES (?, ?)", [
+      key,
+      JSON.stringify(value),
+    ]);
   },
 
   async clearSettings(): Promise<void> {
@@ -420,10 +420,10 @@ export const webDatabaseAdapter: WebDatabaseAdapter = {
 
     const execute = async (adapterToUse: any) => {
       for (const [key, value] of settings) {
-        await adapterToUse.query(
-          "INSERT OR REPLACE INTO settings (key, value) VALUES (?, ?)",
-          [key, JSON.stringify(value)]
-        );
+        await adapterToUse.query("INSERT OR REPLACE INTO settings (key, value) VALUES (?, ?)", [
+          key,
+          JSON.stringify(value),
+        ]);
       }
     };
 
@@ -602,13 +602,13 @@ export async function runDbBenchmark(): Promise<BenchmarkResult> {
     }
   });
   const t3 = performance.now();
-  const batchWriteTimeMs = (t3 - t2); // total for 100 writes
+  const batchWriteTimeMs = t3 - t2; // total for 100 writes
 
   // 3. Measure read time (select all 110 rows)
   const t4 = performance.now();
   await adapter.query(`SELECT * FROM benchmark_test`);
   const t5 = performance.now();
-  const readTimeMs = (t5 - t4);
+  const readTimeMs = t5 - t4;
 
   // Clean up
   await adapter.query(`DROP TABLE benchmark_test`);

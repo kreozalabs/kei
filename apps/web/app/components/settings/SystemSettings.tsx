@@ -592,10 +592,12 @@ export function SystemSettings() {
                 <TelemetryRow
                   label="Single Write Latency"
                   value={
-                    <span className={cn(
-                      "font-semibold",
-                      benchmarkResult.writeTimeMs < 10 ? "text-emerald-500" : "text-amber-500"
-                    )}>
+                    <span
+                      className={cn(
+                        "font-semibold",
+                        benchmarkResult.writeTimeMs < 10 ? "text-emerald-500" : "text-amber-500"
+                      )}
+                    >
                       {benchmarkResult.writeTimeMs.toFixed(2)} ms
                     </span>
                   }
@@ -603,10 +605,14 @@ export function SystemSettings() {
                 <TelemetryRow
                   label="Batch Write Latency (100 rows)"
                   value={
-                    <span className={cn(
-                      "font-semibold",
-                      benchmarkResult.batchWriteTimeMs < 20 ? "text-emerald-500" : "text-amber-500"
-                    )}>
+                    <span
+                      className={cn(
+                        "font-semibold",
+                        benchmarkResult.batchWriteTimeMs < 20
+                          ? "text-emerald-500"
+                          : "text-amber-500"
+                      )}
+                    >
                       {benchmarkResult.batchWriteTimeMs.toFixed(2)} ms
                     </span>
                   }
@@ -614,10 +620,12 @@ export function SystemSettings() {
                 <TelemetryRow
                   label="Read Query Latency"
                   value={
-                    <span className={cn(
-                      "font-semibold",
-                      benchmarkResult.readTimeMs < 5 ? "text-emerald-500" : "text-amber-500"
-                    )}>
+                    <span
+                      className={cn(
+                        "font-semibold",
+                        benchmarkResult.readTimeMs < 5 ? "text-emerald-500" : "text-amber-500"
+                      )}
+                    >
                       {benchmarkResult.readTimeMs.toFixed(2)} ms
                     </span>
                   }
