@@ -2,10 +2,9 @@
 
 ## [1.2.0](https://github.com/kreozalabs/kei/compare/@kreozalabs/ui-v1.1.0...@kreozalabs/ui-v1.2.0) (2026-06-12)
 
-
 ### Features
 
-* style and standardize sonner toast notifications ([49a77b9](https://github.com/kreozalabs/kei/commit/49a77b9418ee909a8fa6e2771a90dd3f67b1aab6))
+- style and standardize sonner toast notifications ([49a77b9](https://github.com/kreozalabs/kei/commit/49a77b9418ee909a8fa6e2771a90dd3f67b1aab6))
 
 ## [1.1.0](https://github.com/kreozalabs/kei/compare/@kreozalabs/ui-v1.0.0...@kreozalabs/ui-v1.1.0) (2026-06-05)
 
