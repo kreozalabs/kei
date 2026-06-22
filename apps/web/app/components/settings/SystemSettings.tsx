@@ -3,6 +3,7 @@ import { Link } from "react-router";
 import { Button, cn, toast } from "@kreozalabs/ui";
 import { useP2P } from "@/providers/P2PProvider";
 import { db } from "@/db";
+import type { BenchmarkResult } from "@/db/webDatabaseAdapter";
 import {
   Check,
   X,
@@ -97,6 +98,27 @@ export function SystemSettings() {
   const [dbStats, setDbStats] = useState<DbStats | null>(null);
   const [storageStats, setStorageStats] = useState<StorageStats | null>(null);
   const [isRequestingPersistence, setIsRequestingPersistence] = useState(false);
+  const [benchmarkResult, setBenchmarkResult] = useState<BenchmarkResult | null>(null);
+  const [isBenchmarking, setIsBenchmarking] = useState(false);
+
+  const handleRunBenchmark = async () => {
+    setIsBenchmarking(true);
+    try {
+      const { runDbBenchmark } = await import("@/db/webDatabaseAdapter");
+      const result = await runDbBenchmark();
+      setBenchmarkResult(result);
+      toast.success("Benchmark completed", {
+        description: `Read: ${result.readTimeMs.toFixed(2)}ms | Write: ${result.writeTimeMs.toFixed(2)}ms | Batch: ${result.batchWriteTimeMs.toFixed(2)}ms`,
+      });
+    } catch (err) {
+      console.error("Failed to run benchmark:", err);
+      toast.error("Benchmark failed", {
+        description: err instanceof Error ? err.message : String(err),
+      });
+    } finally {
+      setIsBenchmarking(false);
+    }
+  };
 
   // Reactive listener for online status
   useEffect(() => {
@@ -375,12 +397,12 @@ export function SystemSettings() {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* Storage & Local Cache */}
         <TelemetryCard title="Storage & Cache" icon={<HardDrive className="size-4" />}>
-          <TelemetryRow label="Location" value="Browser Local (IndexedDB)" />
+          <TelemetryRow label="Location" value="Browser Origin Private File System (OPFS)" />
           <TelemetryRow
             label="Datastore Path"
             value={
               <span className="font-mono text-[11px] bg-muted/30 px-1.5 py-0.5 rounded text-foreground">
-                idb://kei-db
+                /kei.sqlite3
               </span>
             }
           />
@@ -442,7 +464,7 @@ export function SystemSettings() {
 
         {/* Database Telemetry */}
         <TelemetryCard title="Database Telemetry" icon={<Database className="size-4" />}>
-          <TelemetryRow label="Database Engine" value="PGlite (Postgres WASM)" />
+          <TelemetryRow label="Database Engine" value="SQLite" />
           <TelemetryRow
             label="Total Logged Operations"
             value={dbStats ? dbStats.eventsCount.toLocaleString() : "Loading..."}
@@ -557,6 +579,64 @@ export function SystemSettings() {
               </div>
             }
           />
+        </TelemetryCard>
+
+        {/* Database Benchmark Diagnostics */}
+        <TelemetryCard title="Database Diagnostics" icon={<Activity className="size-4" />}>
+          <div className="flex flex-col space-y-3">
+            <p className="text-xs text-muted-foreground/80 leading-relaxed">
+              Measure local SQLite database query latency and write performance.
+            </p>
+            {benchmarkResult ? (
+              <div className="space-y-2 border-t border-border/30 pt-2.5">
+                <TelemetryRow
+                  label="Single Write Latency"
+                  value={
+                    <span className={cn(
+                      "font-semibold",
+                      benchmarkResult.writeTimeMs < 10 ? "text-emerald-500" : "text-amber-500"
+                    )}>
+                      {benchmarkResult.writeTimeMs.toFixed(2)} ms
+                    </span>
+                  }
+                />
+                <TelemetryRow
+                  label="Batch Write Latency (100 rows)"
+                  value={
+                    <span className={cn(
+                      "font-semibold",
+                      benchmarkResult.batchWriteTimeMs < 20 ? "text-emerald-500" : "text-amber-500"
+                    )}>
+                      {benchmarkResult.batchWriteTimeMs.toFixed(2)} ms
+                    </span>
+                  }
+                />
+                <TelemetryRow
+                  label="Read Query Latency"
+                  value={
+                    <span className={cn(
+                      "font-semibold",
+                      benchmarkResult.readTimeMs < 5 ? "text-emerald-500" : "text-amber-500"
+                    )}>
+                      {benchmarkResult.readTimeMs.toFixed(2)} ms
+                    </span>
+                  }
+                />
+              </div>
+            ) : null}
+            <div className="pt-1.5 flex justify-end">
+              <Button
+                onClick={handleRunBenchmark}
+                disabled={isBenchmarking}
+                variant="outline"
+                size="sm"
+                className="h-8 text-xs font-semibold rounded-xl bg-background hover:bg-muted text-foreground gap-1.5"
+              >
+                <RefreshCw className={cn("size-3.5", isBenchmarking && "animate-spin")} />
+                {isBenchmarking ? "Running Benchmark..." : "Run Benchmark"}
+              </Button>
+            </div>
+          </div>
         </TelemetryCard>
       </div>
     </div>

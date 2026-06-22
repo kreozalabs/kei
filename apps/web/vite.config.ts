@@ -1,4 +1,4 @@
-import { defineConfig } from "vite";
+import { defineConfig, type Plugin } from "vite";
 import { reactRouter } from "@react-router/dev/vite";
 import tailwindcss from "@tailwindcss/vite";
 import { VitePWA } from "vite-plugin-pwa";
@@ -12,11 +12,30 @@ const isTauriBuild =
 
 console.log("Vite Config - isTauriBuild:", isTauriBuild);
 
+const crossOriginIsolation = (): Plugin => ({
+  name: "cross-origin-isolation",
+  configureServer(server) {
+    server.middlewares.use((_req, res, next) => {
+      res.setHeader("Cross-Origin-Opener-Policy", "same-origin");
+      res.setHeader("Cross-Origin-Embedder-Policy", "require-corp");
+      next();
+    });
+  },
+  configurePreviewServer(server) {
+    server.middlewares.use((_req, res, next) => {
+      res.setHeader("Cross-Origin-Opener-Policy", "same-origin");
+      res.setHeader("Cross-Origin-Embedder-Policy", "require-corp");
+      next();
+    });
+  },
+});
+
 export default defineConfig(({ command }) => ({
   server: {
     host: true,
   },
   plugins: [
+    crossOriginIsolation(),
     reactRouter(),
     tailwindcss(),
     VitePWA({
@@ -99,7 +118,7 @@ export default defineConfig(({ command }) => ({
     ],
   },
   optimizeDeps: {
-    exclude: ["@electric-sql/pglite"],
+    exclude: ["@sqlite.org/sqlite-wasm"],
   },
   worker: {
     format: "es",
