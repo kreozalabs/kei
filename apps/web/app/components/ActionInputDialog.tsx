@@ -1,4 +1,4 @@
-import { useRef, useState, useEffect } from "react";
+import { useRef, useState, useEffect, useCallback } from "react";
 import {
   Dialog,
   DialogContent,
@@ -7,8 +7,10 @@ import {
   DialogDescription,
   DialogTrigger,
   toast,
+  Button,
 } from "@kreozalabs/ui";
 import { useQueryClient } from "@tanstack/react-query";
+import { createPortal } from "react-dom";
 import type { Action } from "@kreozalabs/core";
 import { ActionInput, type ActionInputHandle } from "./action-input";
 import { ActionDetailView } from "./ActionDetailView";
@@ -21,6 +23,7 @@ interface ActionInputDialogProps {
   initialDate?: string | null;
   selectedDate?: string;
   actionToEdit?: Action;
+  onDockChange?: (isDocked: boolean) => void;
 }
 
 export function ActionInputDialog({
@@ -30,11 +33,31 @@ export function ActionInputDialog({
   initialDate,
   selectedDate,
   actionToEdit,
+  onDockChange,
 }: ActionInputDialogProps) {
   const { settings } = useSettings();
   const queryClient = useQueryClient();
   const actionInputRef = useRef<ActionInputHandle>(null);
   const [isEditing, setIsEditing] = useState(true);
+  const [mode, setModeState] = useState<"floating" | "docked" | "drawer">("floating");
+  const [dockContainer, setDockContainer] = useState<HTMLElement | null>(null);
+
+  const setMode = useCallback((newMode: "floating" | "docked" | "drawer") => {
+    setModeState(newMode);
+    if (onDockChange) {
+      onDockChange(newMode === "docked");
+    }
+  }, [onDockChange]);
+
+  useEffect(() => {
+    if (!open) {
+      setMode("floating");
+    }
+  }, [open, setMode]);
+
+  useEffect(() => {
+    setDockContainer(document.getElementById("dock-container"));
+  }, []);
 
   useEffect(() => {
     if (open) {
@@ -47,9 +70,9 @@ export function ActionInputDialog({
   }, [open, actionToEdit, settings.direct_edit_mode]);
 
   const handleCloseAttempt = (e: Event) => {
-    if (isEditing) {
+    if (isEditing && actionInputRef.current?.handleCancelAttempt) {
       e.preventDefault();
-      actionInputRef.current?.handleCancelAttempt();
+      actionInputRef.current.handleCancelAttempt();
     }
   };
 
@@ -247,6 +270,67 @@ export function ActionInputDialog({
     }
   };
 
+  if (open && mode === "docked" && dockContainer) {
+    return (
+      <>
+        {trigger}
+        {createPortal(
+          isEditing ? (
+            <ActionInput
+              key={actionToEdit?.id || "new"}
+              ref={actionInputRef}
+              variant="dialog"
+              onSuccess={() => onOpenChange(false)}
+              onCancel={() => {
+                if (actionToEdit && !settings.direct_edit_mode) {
+                  setIsEditing(false);
+                } else {
+                  onOpenChange(false);
+                }
+              }}
+              initialDate={initialDate || selectedDate}
+              actionToEdit={actionToEdit}
+              mode={mode}
+              onModeChange={setMode}
+            />
+          ) : (
+            actionToEdit && (
+              <div className="w-80 h-full border-l border-border bg-card overflow-y-auto">
+                <div className="p-4 flex items-center justify-between border-b border-border">
+                  <span className="font-semibold text-sm">Action Details</span>
+                  <div className="flex gap-2">
+                    <Button size="sm" variant="ghost" onClick={() => setMode("floating")}>
+                      Float
+                    </Button>
+                    <Button
+                      size="icon"
+                      variant="ghost"
+                      className="size-6"
+                      onClick={() => onOpenChange(false)}
+                    >
+                      <span className="sr-only">Close</span>
+                      &times;
+                    </Button>
+                  </div>
+                </div>
+                <ActionDetailView
+                  action={actionToEdit}
+                  onEdit={() => setIsEditing(true)}
+                  onClose={() => onOpenChange(false)}
+                  onComplete={handleComplete}
+                  onAbandon={handleAbandon}
+                  onReactivate={handleReactivate}
+                  onDeletePermanently={handleDeletePermanently}
+                />
+              </div>
+            )
+          ),
+          dockContainer
+        )}
+      </>
+    );
+  }
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       {trigger && <DialogTrigger asChild>{trigger}</DialogTrigger>}
@@ -255,6 +339,7 @@ export function ActionInputDialog({
         showCloseButton={!isEditing}
         onPointerDownOutside={handleCloseAttempt}
         onEscapeKeyDown={handleCloseAttempt}
+        onOpenAutoFocus={(e) => e.preventDefault()}
       >
         <DialogHeader className="p-6 pb-2">
           <DialogTitle className="text-xl font-bold tracking-tight text-foreground/90">
@@ -281,6 +366,8 @@ export function ActionInputDialog({
               }}
               initialDate={initialDate || selectedDate}
               actionToEdit={actionToEdit}
+              mode={mode}
+              onModeChange={setMode}
             />
           </div>
         ) : (

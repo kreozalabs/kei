@@ -120,7 +120,8 @@ export default function Dashboard() {
     window.sessionStorage.setItem(STORAGE_KEYS.SESSION.TIMELINE_LOCKED, String(isTodayLocked));
   }, [isTodayLocked]);
 
-  const { setTitle, setSubtitle, setHeaderActions } = useOutletContext<AppLayoutContext>();
+  const { setTitle, setSubtitle, setHeaderActions, setIsDocked } =
+    useOutletContext<AppLayoutContext>();
   const startDate = isTodayLocked ? todayStr : selectedDate;
   const endDate = useMemo(() => {
     if (isTodayLocked) return todayStr;
@@ -558,6 +559,7 @@ export default function Dashboard() {
             initialDate={dialogPreDate}
             selectedDate={selectedDate}
             actionToEdit={actionToEdit ?? undefined}
+            onDockChange={setIsDocked}
           />
 
           <Button

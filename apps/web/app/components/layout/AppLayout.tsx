@@ -20,6 +20,7 @@ export interface AppLayoutContext {
     actions: { center?: React.ReactNode; right?: React.ReactNode } | undefined
   ) => void;
   openActionInput: () => void;
+  setIsDocked: (isDocked: boolean) => void;
 }
 
 export function AppLayout({ error }: { error?: unknown }) {
@@ -27,6 +28,7 @@ export function AppLayout({ error }: { error?: unknown }) {
   const [subtitle, setSubtitle] = useState<string | undefined>();
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [isActionInputOpen, setIsActionInputOpen] = useState(false);
+  const [isDocked, setIsDocked] = useState(false);
   const [isDesktopAddMenuOpen, setIsDesktopAddMenuOpen] = useState(false);
   const [isMobileAddMenuOpen, setIsMobileAddMenuOpen] = useState(false);
 
@@ -86,6 +88,7 @@ export function AppLayout({ error }: { error?: unknown }) {
       setOnFabClick,
       setHeaderActions,
       openActionInput,
+      setIsDocked: setIsDocked,
     }),
     [openActionInput]
   );
@@ -97,7 +100,13 @@ export function AppLayout({ error }: { error?: unknown }) {
   return (
     <div className="flex flex-col md:flex-row h-dvh w-full overflow-hidden bg-background md:bg-muted text-foreground">
       {/* Desktop Sidebar */}
-      <AppSidebar isOpen={isSidebarOpen} onToggle={toggleSidebar} />
+      {!isDocked && <AppSidebar isOpen={isSidebarOpen} onToggle={toggleSidebar} />}
+
+      {/* Dock Container for Portaled components */}
+      <div
+        id="dock-container"
+        className="flex-shrink-0 h-full empty:hidden transition-all duration-300 z-20"
+      />
 
       {/* Main Content Area */}
       <main className="flex-1 flex flex-col min-w-0 relative overflow-hidden bg-background">
@@ -117,14 +126,16 @@ export function AppLayout({ error }: { error?: unknown }) {
           title={title}
           subtitle={subtitle}
           left={
-            <div
-              className={cn(
-                "transition-all duration-500 ease-[cubic-bezier(0.32,0.72,0,1)] flex items-center overflow-hidden",
-                isSidebarOpen ? "w-0 opacity-0 invisible" : "w-10 opacity-100 visible mr-2"
-              )}
-            >
-              <SidebarToggle onClick={toggleSidebar} />
-            </div>
+            isDocked ? null : (
+              <div
+                className={cn(
+                  "transition-all duration-500 ease-[cubic-bezier(0.32,0.72,0,1)] flex items-center overflow-hidden",
+                  isSidebarOpen ? "w-0 opacity-0 invisible" : "w-10 opacity-100 visible mr-2"
+                )}
+              >
+                <SidebarToggle onClick={toggleSidebar} />
+              </div>
+            )
           }
           center={
             headerActions?.center !== undefined ? (
@@ -205,7 +216,11 @@ export function AppLayout({ error }: { error?: unknown }) {
         <MobileNav />
 
         {/* Global Action Input Dialog */}
-        <ActionInputDialog open={isActionInputOpen} onOpenChange={setIsActionInputOpen} />
+        <ActionInputDialog
+          open={isActionInputOpen}
+          onOpenChange={setIsActionInputOpen}
+          onDockChange={setIsDocked}
+        />
 
         {/* Global Sync Listener */}
         <SyncListener />
