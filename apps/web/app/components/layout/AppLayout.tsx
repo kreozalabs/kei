@@ -9,8 +9,10 @@ import { AppSidebar } from "./AppSidebar";
 import { AppHeader, HeaderSearch, HeaderNewAction, HeaderMore } from "./AppHeader";
 import { MobileNav } from "./MobileNav";
 import { ErrorPage } from "../ErrorPage";
-import { ActionInputDialog } from "../ActionInputDialog";
+import { DragResizeWrapper } from "../DragResizeWrapper";
+import { ActionInput } from "../action-input";
 import { SyncListener } from "../SyncListener";
+import { AnimatePresence } from "framer-motion";
 
 export interface AppLayoutContext {
   setTitle: (title: string) => void;
@@ -28,6 +30,7 @@ export function AppLayout({ error }: { error?: unknown }) {
   const [subtitle, setSubtitle] = useState<string | undefined>();
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [isActionInputOpen, setIsActionInputOpen] = useState(false);
+  const [editorMode, setEditorMode] = useState<"floating" | "docked" | "drawer">("floating");
   const [isDocked, setIsDocked] = useState(false);
   const [isDesktopAddMenuOpen, setIsDesktopAddMenuOpen] = useState(false);
   const [isMobileAddMenuOpen, setIsMobileAddMenuOpen] = useState(false);
@@ -88,7 +91,7 @@ export function AppLayout({ error }: { error?: unknown }) {
       setOnFabClick,
       setHeaderActions,
       openActionInput,
-      setIsDocked: setIsDocked,
+      setIsDocked,
     }),
     [openActionInput]
   );
@@ -216,11 +219,32 @@ export function AppLayout({ error }: { error?: unknown }) {
         <MobileNav />
 
         {/* Global Action Input Dialog */}
-        <ActionInputDialog
-          open={isActionInputOpen}
-          onOpenChange={setIsActionInputOpen}
-          onDockChange={setIsDocked}
-        />
+        <AnimatePresence>
+          {isActionInputOpen && (
+            <DragResizeWrapper
+              mode={editorMode}
+              onModeChange={(newMode) => {
+                setEditorMode(newMode);
+                setIsDocked(newMode === "docked");
+              }}
+              onClose={() => {
+                setIsActionInputOpen(false);
+                setIsDocked(false);
+              }}
+            >
+              <ActionInput
+                onSuccess={() => {
+                  setIsActionInputOpen(false);
+                  setIsDocked(false);
+                }}
+                onCancel={() => {
+                  setIsActionInputOpen(false);
+                  setIsDocked(false);
+                }}
+              />
+            </DragResizeWrapper>
+          )}
+        </AnimatePresence>
 
         {/* Global Sync Listener */}
         <SyncListener />

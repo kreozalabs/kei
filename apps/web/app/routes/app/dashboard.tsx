@@ -60,7 +60,9 @@ declare global {
   }
 }
 import { ActionSection } from "@/components/ActionSection";
-import { ActionInputDialog } from "@/components/ActionInputDialog";
+import { DragResizeWrapper } from "@/components/DragResizeWrapper";
+import { ActionDetailView } from "@/components/ActionDetailView";
+import { ActionInput } from "@/components/action-input";
 import { TimelineCalendar } from "@/components/TimelineCalendar";
 import { ActionSectionSkeleton } from "@/components/ActionSkeleton";
 import { useSettings } from "@/providers/SettingsContext";
@@ -96,6 +98,7 @@ export default function Dashboard() {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [dialogPreDate, setDialogPreDate] = useState<string | null>(null);
   const [actionToEdit, setActionToEdit] = useState<Action | null>(null);
+  const [editorMode, setEditorMode] = useState<"floating" | "docked" | "drawer">("floating");
   const activeWritesRef = useRef(0);
 
   useMemo(() => {
@@ -546,21 +549,13 @@ export default function Dashboard() {
       ),
       right: (
         <div className="flex items-center gap-2">
-          <ActionInputDialog
-            open={isDialogOpen}
-            onOpenChange={(open) => {
-              setIsDialogOpen(open);
-              if (!open) {
-                setDialogPreDate(null);
-                setActionToEdit(null);
-              }
-            }}
-            trigger={<HeaderNewAction />}
-            initialDate={dialogPreDate}
-            selectedDate={selectedDate}
-            actionToEdit={actionToEdit ?? undefined}
-            onDockChange={setIsDocked}
-          />
+          <div onClick={() => {
+            setDialogPreDate(null);
+            setActionToEdit(null);
+            setIsDialogOpen(true);
+          }}>
+            <HeaderNewAction />
+          </div>
 
           <Button
             variant="ghost"
@@ -1430,6 +1425,52 @@ export default function Dashboard() {
               </Button>
             </div>
           </motion.div>
+        )}
+      </AnimatePresence>
+
+      <AnimatePresence>
+        {isDialogOpen && (
+          <DragResizeWrapper
+            mode={editorMode}
+            onModeChange={(newMode) => {
+              setEditorMode(newMode);
+              setIsDocked(newMode === "docked");
+            }}
+            onClose={() => {
+              setIsDialogOpen(false);
+              setActionToEdit(null);
+              setIsDocked(false);
+            }}
+          >
+            {actionToEdit ? (
+              <ActionDetailView
+                action={actionToEdit}
+                onClose={() => {
+                  setIsDialogOpen(false);
+                  setActionToEdit(null);
+                  setIsDocked(false);
+                }}
+                onComplete={handleComplete}
+                onAbandon={handleAbandon}
+                onReactivate={handleReactivate}
+                onDeletePermanently={handleDeletePermanently}
+              />
+            ) : (
+              <ActionInput
+                onSuccess={() => {
+                  setIsDialogOpen(false);
+                  setActionToEdit(null);
+                  setIsDocked(false);
+                }}
+                onCancel={() => {
+                  setIsDialogOpen(false);
+                  setActionToEdit(null);
+                  setIsDocked(false);
+                }}
+                initialDate={dialogPreDate || undefined}
+              />
+            )}
+          </DragResizeWrapper>
         )}
       </AnimatePresence>
     </div>

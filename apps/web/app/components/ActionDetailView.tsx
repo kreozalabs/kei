@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Button, cn } from "@kreozalabs/ui";
+import { Button, cn, toast } from "@kreozalabs/ui";
 import {
   Calendar,
   Clock,
@@ -14,7 +14,11 @@ import type { Action } from "@kreozalabs/core";
 import type { Event } from "@kreozalabs/core";
 import { EVENT_TYPES, ACTION_STATUS, ENERGY_OPTIONS, INTENTION_OPTIONS } from "@kreozalabs/core";
 import { formatGoogleDate } from "@kreozalabs/core";
-import { getEventsForEntity } from "@/db/actions";
+import { getEventsForEntity, updateAction } from "@/db/actions";
+import { EditableTitle } from "./action-input/EditableTitle";
+import { EditableNote } from "./action-input/EditableNote";
+import { useQueryClient } from "@tanstack/react-query";
+import { useSettings } from "@/providers/SettingsContext";
 
 const STATUS_BADGE_STYLES: Record<string, string> = {
   [ACTION_STATUS.COMPLETED]: "bg-emerald-500/10 text-emerald-500 border-emerald-500/20",
@@ -63,16 +67,50 @@ interface ActionDetailViewProps {
 
 export function ActionDetailView({
   action,
-  onEdit,
   onClose,
   onComplete,
   onAbandon,
   onReactivate,
   onDeletePermanently,
-}: ActionDetailViewProps) {
+}: Omit<ActionDetailViewProps, "onEdit">) {
+  const queryClient = useQueryClient();
   const [events, setEvents] = useState<Event[]>([]);
   const [loadingEvents, setLoadingEvents] = useState(true);
   const [prevActionId, setPrevActionId] = useState(action.id);
+
+  const handleFieldUpdate = async (field: keyof Action, value: any) => {
+    if (action[field] === value) return;
+
+    const previousActions = queryClient.getQueryData<Action[]>(["actions"]);
+    if (previousActions) {
+      queryClient.setQueryData<Action[]>(
+        ["actions"],
+        previousActions.map((a) => (a.id === action.id ? { ...a, [field]: value } : a))
+      );
+    }
+
+    try {
+      await updateAction(action.id, { [field]: value });
+      toast.success("Action updated", {
+        description: "Your changes have been saved.",
+        action: {
+          label: "Undo",
+          onClick: async () => {
+            if (previousActions) {
+              queryClient.setQueryData(["actions"], previousActions);
+            }
+            await updateAction(action.id, { [field]: action[field] });
+            toast.success("Action restored");
+          },
+        },
+      });
+    } catch (error) {
+      if (previousActions) {
+        queryClient.setQueryData(["actions"], previousActions);
+      }
+      toast.error("Failed to update action");
+    }
+  };
 
   if (action.id !== prevActionId) {
     setPrevActionId(action.id);
@@ -146,12 +184,15 @@ export function ActionDetailView({
       {/* Title & Status */}
       <div className="flex flex-col gap-2">
         <div className="flex items-start justify-between gap-4">
-          <h3 className="text-xl font-bold tracking-tight text-foreground leading-snug wrap-break-word flex-1">
-            {action.title}
-          </h3>
+          <div className="flex-1 min-w-0">
+            <EditableTitle
+              value={action.title}
+              onChange={(val) => handleFieldUpdate("title", val)}
+            />
+          </div>
           <span
             className={cn(
-              "text-[10px] font-black uppercase tracking-widest px-2.5 py-1 rounded-full shrink-0 border",
+              "text-[10px] font-black uppercase tracking-widest px-2.5 py-1 rounded-full shrink-0 border mt-1",
               STATUS_BADGE_STYLES[action.status] || STATUS_BADGE_STYLES[ACTION_STATUS.ACTIVE]
             )}
           >
@@ -159,15 +200,12 @@ export function ActionDetailView({
           </span>
         </div>
 
-        {action.note ? (
-          <p className="text-sm text-muted-foreground/80 leading-relaxed bg-muted/20 border border-border/5 p-4 rounded-2xl whitespace-pre-wrap mt-2">
-            {action.note}
-          </p>
-        ) : (
-          <p className="text-xs italic text-muted-foreground/45 mt-1 px-1">
-            No notes or subtasks attached to this action.
-          </p>
-        )}
+        <div className="mt-2">
+          <EditableNote
+            value={action.note || ""}
+            onChange={(val) => handleFieldUpdate("note", val)}
+          />
+        </div>
       </div>
 
       {/* Metadata Badges */}
@@ -332,11 +370,6 @@ export function ActionDetailView({
             </Button>
           </>
         )}
-
-        <Button variant="outline" size="sm" onClick={onEdit} className={BUTTON_STYLES.EDIT}>
-          <Pencil className="size-3.5" />
-          Edit Details
-        </Button>
 
         <Button
           variant="outline"

@@ -1,6 +1,5 @@
 import type { Action } from "@kreozalabs/core";
 import { forwardRef, useEffect, useRef, useState } from "react";
-import { DragResizeWrapper } from "../DragResizeWrapper";
 
 export interface ActionInputProps {
   onSuccess?: () => void;
@@ -9,8 +8,6 @@ export interface ActionInputProps {
   className?: string;
   variant?: "inline" | "dialog";
   actionToEdit?: Action;
-  mode?: "floating" | "docked" | "drawer";
-  onModeChange?: (mode: "floating" | "docked" | "drawer") => void;
 }
 
 export interface ActionInputHandle {
@@ -26,8 +23,6 @@ export const ActionInput = forwardRef<ActionInputHandle, ActionInputProps>(
       className,
       variant = "inline",
       actionToEdit,
-      mode,
-      onModeChange,
     },
     ref
   ) => {
@@ -37,6 +32,7 @@ export const ActionInput = forwardRef<ActionInputHandle, ActionInputProps>(
       if (e.key === "Escape") {
         e.preventDefault();
         e.stopPropagation();
+        onCancel?.();
         // TODO: Save as draft
       }
     };
@@ -53,9 +49,11 @@ export const ActionInput = forwardRef<ActionInputHandle, ActionInputProps>(
     };
 
     return (
-      <DragResizeWrapper mode={mode} onModeChange={onModeChange} onClose={onCancel}>
-        <form onSubmit={handleSubmit} onKeyDown={handleKeyDown} className="flex flex-col"></form>
-      </DragResizeWrapper>
+      <form onSubmit={handleSubmit} onKeyDown={handleKeyDown} className="flex flex-col p-6 h-full">
+         <h2 className="text-xl font-bold mb-4">Create New Action</h2>
+         {/* Simple placeholder for the actual form for now */}
+         <p className="text-muted-foreground text-sm">Form goes here...</p>
+      </form>
     );
   }
 );

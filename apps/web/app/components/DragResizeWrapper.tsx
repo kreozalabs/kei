@@ -1,4 +1,5 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
+import { createPortal } from "react-dom";
 import { motion } from "framer-motion";
 import { Button, cn, Tooltip, TooltipContent, TooltipTrigger, useMediaQuery } from "@kreozalabs/ui";
 import { Grip, PanelLeft, X } from "lucide-react";
@@ -8,6 +9,7 @@ interface DragResizeWrapperProps {
   mode?: "floating" | "docked" | "drawer";
   onModeChange?: (mode: "floating" | "docked" | "drawer") => void;
   onClose?: () => void;
+  portalTargetId?: string;
 }
 
 export const DragResizeWrapper = ({
@@ -15,6 +17,7 @@ export const DragResizeWrapper = ({
   mode: controlledMode,
   onModeChange,
   onClose,
+  portalTargetId = "dock-container",
 }: DragResizeWrapperProps) => {
   const [internalMode, setInternalMode] = useState<"floating" | "docked" | "drawer">("floating");
   const mode = controlledMode !== undefined ? controlledMode : internalMode;
@@ -26,7 +29,48 @@ export const DragResizeWrapper = ({
   const [size, setSize] = useState({ width: 450, height: 500 });
   const [position, setPosition] = useState({ x: -260, y: -100 });
   const [isInteracting, setIsInteracting] = useState(false);
+  const [portalTarget, setPortalTarget] = useState<HTMLElement | null>(null);
   const wrapperRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (typeof window !== "undefined" && portalTargetId) {
+      setPortalTarget(document.getElementById(portalTargetId));
+    }
+  }, [portalTargetId]);
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape" && mode === "floating" && onClose) {
+        onClose();
+      }
+    };
+    
+    const handlePointerDown = (e: PointerEvent) => {
+      if (
+        mode === "floating" && 
+        wrapperRef.current && 
+        !wrapperRef.current.contains(e.target as Node) &&
+        onClose
+      ) {
+        // Prevent closing if clicking inside a toast, dialog, or popover
+        const target = e.target as HTMLElement;
+        if (target.closest('[role="dialog"]') || target.closest('[data-radix-popper-content-wrapper]')) {
+          return;
+        }
+        onClose();
+      }
+    };
+
+    if (mode === "floating") {
+      document.addEventListener("keydown", handleKeyDown);
+      document.addEventListener("pointerdown", handlePointerDown);
+    }
+
+    return () => {
+      document.removeEventListener("keydown", handleKeyDown);
+      document.removeEventListener("pointerdown", handlePointerDown);
+    };
+  }, [mode, onClose]);
 
   // Mobile layout check
   const isMobile = useMediaQuery("(max-width: 768px)");
@@ -162,26 +206,32 @@ export const DragResizeWrapper = ({
     document.addEventListener("mouseup", stopDrag);
   };
 
-  return (
+  const content = (
     <motion.div
       ref={wrapperRef}
-      style={
-        currentMode === "floating"
-          ? {
-              width: size.width,
-              height: size.height,
-              left: position.x,
-              top: position.y,
-            }
-          : undefined
+      initial={isMobile ? { y: "100%" } : { opacity: 0, scale: 0.95 }}
+      animate={isMobile ? { y: 0 } : { opacity: 1, scale: 1 }}
+      exit={isMobile ? { y: "100%" } : { opacity: 0, scale: 0.95 }}
+      transition={
+        isInteracting ? { duration: 0 } : { type: "spring", damping: 25, stiffness: 300 }
       }
+      style={{
+        width: currentMode === "floating" ? size.width : "100%",
+        height: currentMode === "floating" ? size.height : "100%",
+        ...(currentMode === "floating"
+          ? {
+              left: "50%",
+              top: "50%",
+              x: position.x,
+              y: position.y,
+            }
+          : {}),
+      }}
       className={cn(
-        "flex flex-col bg-card border border-border shadow-lg overflow-hidden",
-        !isInteracting && "transition-all duration-200",
-        currentMode === "floating" && "fixed z-50 rounded-xl",
-        currentMode === "docked" && "relative border-r border-border h-screen w-120 shrink-0",
-        currentMode === "drawer" &&
-          "fixed bottom-0 left-0 right-0 rounded-t-2xl max-h-[85vh] z-50 w-full"
+        "bg-background overflow-hidden flex flex-col z-[100]",
+        currentMode === "floating" && "fixed shadow-2xl rounded-2xl border border-border/50",
+        currentMode === "docked" && "w-full h-full rounded-none border-l border-border",
+        currentMode === "drawer" && "fixed bottom-0 left-0 right-0 h-[85vh] rounded-t-2xl border-t border-border shadow-[0_-10px_40px_rgba(0,0,0,0.1)]"
       )}
     >
       {/* Header / Drag Handle */}
@@ -242,4 +292,10 @@ export const DragResizeWrapper = ({
       )}
     </motion.div>
   );
+
+  if (currentMode === "docked" && portalTarget) {
+    return createPortal(content, portalTarget);
+  }
+
+  return content;
 };
