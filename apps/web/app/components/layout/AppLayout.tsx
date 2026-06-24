@@ -100,6 +100,7 @@ export function AppLayout({ error }: { error?: unknown }) {
     document.title = `${title}${subtitle ? ` - ${subtitle}` : ""} - Kei`;
   }, [title, subtitle]);
 
+
   return (
     <div className="flex flex-col md:flex-row h-dvh w-full overflow-hidden bg-background md:bg-muted text-foreground">
       {/* Desktop Sidebar */}
@@ -230,16 +231,19 @@ export function AppLayout({ error }: { error?: unknown }) {
               onClose={() => {
                 setIsActionInputOpen(false);
                 setIsDocked(false);
+                setEditorMode("floating");
               }}
             >
               <ActionInput
                 onSuccess={() => {
                   setIsActionInputOpen(false);
                   setIsDocked(false);
+                  setEditorMode("floating");
                 }}
                 onCancel={() => {
                   setIsActionInputOpen(false);
                   setIsDocked(false);
+                  setEditorMode("floating");
                 }}
               />
             </DragResizeWrapper>

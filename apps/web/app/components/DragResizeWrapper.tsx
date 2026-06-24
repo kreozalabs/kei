@@ -34,7 +34,11 @@ export const DragResizeWrapper = ({
 
   useEffect(() => {
     if (typeof window !== "undefined" && portalTargetId) {
-      setPortalTarget(document.getElementById(portalTargetId));
+      // Defer the state update to avoid synchronous cascading renders
+      const frameId = requestAnimationFrame(() => {
+        setPortalTarget(document.getElementById(portalTargetId));
+      });
+      return () => cancelAnimationFrame(frameId);
     }
   }, [portalTargetId]);
 
@@ -44,17 +48,20 @@ export const DragResizeWrapper = ({
         onClose();
       }
     };
-    
+
     const handlePointerDown = (e: PointerEvent) => {
       if (
-        mode === "floating" && 
-        wrapperRef.current && 
+        mode === "floating" &&
+        wrapperRef.current &&
         !wrapperRef.current.contains(e.target as Node) &&
         onClose
       ) {
         // Prevent closing if clicking inside a toast, dialog, or popover
         const target = e.target as HTMLElement;
-        if (target.closest('[role="dialog"]') || target.closest('[data-radix-popper-content-wrapper]')) {
+        if (
+          target.closest('[role="dialog"]') ||
+          target.closest("[data-radix-popper-content-wrapper]")
+        ) {
           return;
         }
         onClose();
@@ -212,9 +219,7 @@ export const DragResizeWrapper = ({
       initial={isMobile ? { y: "100%" } : { opacity: 0, scale: 0.95 }}
       animate={isMobile ? { y: 0 } : { opacity: 1, scale: 1 }}
       exit={isMobile ? { y: "100%" } : { opacity: 0, scale: 0.95 }}
-      transition={
-        isInteracting ? { duration: 0 } : { type: "spring", damping: 25, stiffness: 300 }
-      }
+      transition={isInteracting ? { duration: 0 } : { type: "spring", damping: 25, stiffness: 300 }}
       style={{
         width: currentMode === "floating" ? size.width : "100%",
         height: currentMode === "floating" ? size.height : "100%",
@@ -228,10 +233,11 @@ export const DragResizeWrapper = ({
           : {}),
       }}
       className={cn(
-        "bg-background overflow-hidden flex flex-col z-[100]",
+        "bg-background overflow-hidden flex flex-col z-100",
         currentMode === "floating" && "fixed shadow-2xl rounded-2xl border border-border/50",
         currentMode === "docked" && "w-full h-full rounded-none border-l border-border",
-        currentMode === "drawer" && "fixed bottom-0 left-0 right-0 h-[85vh] rounded-t-2xl border-t border-border shadow-[0_-10px_40px_rgba(0,0,0,0.1)]"
+        currentMode === "drawer" &&
+          "fixed bottom-0 left-0 right-0 h-[85vh] rounded-t-2xl border-t border-border shadow-[0_-10px_40px_rgba(0,0,0,0.1)]"
       )}
     >
       {/* Header / Drag Handle */}
@@ -239,7 +245,9 @@ export const DragResizeWrapper = ({
         onMouseDown={currentMode === "floating" ? handleDragStart : undefined}
         className={cn(
           "h-10 bg-muted flex items-center justify-between px-4 select-none border-b border-border",
-          currentMode === "floating" ? "cursor-grab active:cursor-grabbing" : ""
+          currentMode === "floating"
+            ? "cursor-grab active:cursor-grabbing hover:bg-muted-foreground/15 transition-colors"
+            : ""
         )}
       >
         {!isMobile && (
@@ -257,7 +265,6 @@ export const DragResizeWrapper = ({
                 </Button>
               </TooltipTrigger>
               <TooltipContent>
-                {/* FIXME: WHY IS THIS TEXT SHOWN EVEN IF IT IS NOT HOVERED OVER? */}
                 <p>{mode === "floating" ? "Dock to sidebar" : "Float to top of page"}</p>
               </TooltipContent>
             </Tooltip>

@@ -15,17 +15,7 @@ export interface ActionInputHandle {
 }
 
 export const ActionInput = forwardRef<ActionInputHandle, ActionInputProps>(
-  (
-    {
-      onSuccess,
-      onCancel,
-      initialDate,
-      className,
-      variant = "inline",
-      actionToEdit,
-    },
-    ref
-  ) => {
+  ({ onSuccess, onCancel, initialDate, className, variant = "inline", actionToEdit }, ref) => {
     const [isLoading, setIsLoading] = useState(false);
 
     const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -50,9 +40,9 @@ export const ActionInput = forwardRef<ActionInputHandle, ActionInputProps>(
 
     return (
       <form onSubmit={handleSubmit} onKeyDown={handleKeyDown} className="flex flex-col p-6 h-full">
-         <h2 className="text-xl font-bold mb-4">Create New Action</h2>
-         {/* Simple placeholder for the actual form for now */}
-         <p className="text-muted-foreground text-sm">Form goes here...</p>
+        <h2 className="text-xl font-bold mb-4">Create New Action</h2>
+        {/* Simple placeholder for the actual form for now */}
+        <p className="text-muted-foreground text-sm">Form goes here...</p>
       </form>
     );
   }

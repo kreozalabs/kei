@@ -123,6 +123,7 @@ export default function Dashboard() {
     window.sessionStorage.setItem(STORAGE_KEYS.SESSION.TIMELINE_LOCKED, String(isTodayLocked));
   }, [isTodayLocked]);
 
+
   const { setTitle, setSubtitle, setHeaderActions, setIsDocked } =
     useOutletContext<AppLayoutContext>();
   const startDate = isTodayLocked ? todayStr : selectedDate;
@@ -549,11 +550,13 @@ export default function Dashboard() {
       ),
       right: (
         <div className="flex items-center gap-2">
-          <div onClick={() => {
-            setDialogPreDate(null);
-            setActionToEdit(null);
-            setIsDialogOpen(true);
-          }}>
+          <div
+            onClick={() => {
+              setDialogPreDate(null);
+              setActionToEdit(null);
+              setIsDialogOpen(true);
+            }}
+          >
             <HeaderNewAction />
           </div>
 
@@ -1440,6 +1443,7 @@ export default function Dashboard() {
               setIsDialogOpen(false);
               setActionToEdit(null);
               setIsDocked(false);
+              setEditorMode("floating");
             }}
           >
             {actionToEdit ? (
@@ -1449,6 +1453,7 @@ export default function Dashboard() {
                   setIsDialogOpen(false);
                   setActionToEdit(null);
                   setIsDocked(false);
+                  setEditorMode("floating");
                 }}
                 onComplete={handleComplete}
                 onAbandon={handleAbandon}
@@ -1461,11 +1466,13 @@ export default function Dashboard() {
                   setIsDialogOpen(false);
                   setActionToEdit(null);
                   setIsDocked(false);
+                  setEditorMode("floating");
                 }}
                 onCancel={() => {
                   setIsDialogOpen(false);
                   setActionToEdit(null);
                   setIsDocked(false);
+                  setEditorMode("floating");
                 }}
                 initialDate={dialogPreDate || undefined}
               />
