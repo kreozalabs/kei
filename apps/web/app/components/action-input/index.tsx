@@ -10,6 +10,14 @@ import { EditableImportant } from "./EditableImportant";
 import { PropertyButton } from "./PropertyButton";
 import { Badge, Button, cn } from "@kreozalabs/ui";
 import {
+  CoreGroup,
+  TimeGroup,
+  ContextGroup,
+  AttachmentsGroup,
+  AppearanceGroup,
+  FooterGroup,
+} from "./sections";
+import {
   SendHorizontal,
   Calendar,
   Bell,
@@ -83,6 +91,9 @@ export const ActionInput = forwardRef<ActionInputHandle, ActionInputProps>(
     const [duration, setDuration] = useState<[number, number | null]>([0, null]); // FIXME: Use TYPE
     const [important, setImportant] = useState(false);
     // TODO: Allow user to configure what is shown by default. For that, we should be able to loop over some settings instead of hard-coding what is shown.
+    // TODO: Allow user to keybindings that will activate note and title from quickbar, such as /t <tab> title<key> <tab> note<key>
+    // TODO: Define initial <keys> for fields
+    // TODO: Allow user to set his own <keys>
 
     return (
       <form
@@ -90,8 +101,8 @@ export const ActionInput = forwardRef<ActionInputHandle, ActionInputProps>(
         onKeyDown={handleKeyDown}
         className="flex flex-col gap-3 p-4 bg-background border border-border/40 shadow-xs"
       >
-        {/* Header */}
-        <div className="flex flex-col gap-1">
+        <CoreGroup>
+          {/* FIXME: These should work seamlessly and without problems. UX should be great on any device, whether touch, mouse or keyboard or virtual keyboard, or even voice command. It should be like rich editor. */}
           {/* Under creation: starts editing automatically */}
           <EditableTitle
             value={title}
@@ -100,11 +111,11 @@ export const ActionInput = forwardRef<ActionInputHandle, ActionInputProps>(
             placeholder="What needs to be done?"
           />
           <EditableNote value={note} onChange={setNote} />
-        </div>
-
+        </CoreGroup>
         {/* Active Properties (Only shows what has been explicitly set or changed from defaults in user settings) */}
         {!isAdvancedMode && (
           <div className="flex flex-wrap items-center gap-2 mt-1">
+            {/* TODO: Implement user-configured Quick Bar here */}
             {intention !== settings.default_intention && (
               <EditableIntention value={intention} onChange={setIntention} />
             )}
@@ -128,124 +139,69 @@ export const ActionInput = forwardRef<ActionInputHandle, ActionInputProps>(
               settings.action_duration_options.find((doOpt) => doOpt.default === true)?.value && (
               <EditableDuration value={duration} onChange={setDuration} />
             )}
+            {/* TODO: Make this own dynamic, so any included field is show hier and we should not need to write comps here. They just appear if user set component or subcomponent. */}
           </div>
         )}
+        <div className="flex flex-col gap-6 mt-2 pt-3 border-t border-border/40">
+          {/* TODO: Each group should be like dropdown or dialog or something. It should just appear and extend. Disappear when user chooses something else (NOT SURE ABOUT IT)??? */}
+          <TimeGroup>
+            <EditableDuration value={duration} onChange={setDuration} />
+            {/* Tooltip: Duration of the action. Use <key> in title or note to configure using keyboard. */}
+            <PropertyButton icon={<Calendar className="size-3.5" />} label="Date & Time" />
+            {/* Tooltip: Date and time of the action. Use <key> in title or note to configure using keyboard. */}
+            <PropertyButton icon={<Target className="size-3.5" />} label="Deadline" />
+            {/* Tooltip: Deadline for the action. Use <key> in title or note to configure using keyboard. */}
+            <PropertyButton icon={<Bell className="size-3.5" />} label="Reminder" />
+            {/* Tooltip: Reminder for the action. Use <key> in title or note to configure using keyboard. */}
+          </TimeGroup>
 
-        {/* Advanced Properties View */}
-        {isAdvancedMode && (
-          <div className="flex flex-col gap-4 mt-2 pt-3 border-t border-border/40">
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
-              <EditableStatus value={status} onChange={setStatus} />
-              {/* Tooltip: Status of the action. Use <key> in title or note to configure using keyboard. */}
-              <EditableIntention value={intention} onChange={setIntention} />
-              {/* Tooltip: Intention of the action. Use <key> in title or note to configure using keyboard. */}
-              <EditableEnergy value={energy} onChange={setEnergy} />
-              {/* Tooltip: Energy of the action. Use <key> in title or note to configure using keyboard. */}
-              <EditableDuration value={duration} onChange={setDuration} />
-              {/* Tooltip: Duration of the action. Use <key> in title or note to configure using keyboard. */}
-              <EditableImportant value={important} onChange={setImportant} />
-              {/* Tooltip: Important of the action. Use <key> in title or note to configure using keyboard. */}
-              <PropertyButton icon={<Calendar className="size-3.5" />} label="Date & Time" />{" "}
-              {/* Tooltip: Date and time of the action. Use <key> in title or note to configure using keyboard. */}
-              <PropertyButton icon={<Bell className="size-3.5" />} label="Reminder" />{" "}
-              {/* Tooltip: Reminder for the action. Use <key> in title or note to configure using keyboard. */}
-              <PropertyButton icon={<Target className="size-3.5" />} label="Deadline" />{" "}
-              {/* Tooltip: Deadline for the action. Use <key> in title or note to configure using keyboard. */}
-              <PropertyButton icon={<Folder className="size-3.5" />} label="Project" />{" "}
-              {/* Tooltip: Project of the action. Use <key> in title or note to configure using keyboard. */}
-              <PropertyButton icon={<MapPin className="size-3.5" />} label="Location" />{" "}
-              {/* Tooltip: Location of the action. Use <key> in title or note to configure using keyboard. */}
-              <PropertyButton icon={<Palette className="size-3.5" />} label="Color" />{" "}
-              {/* Tooltip: Color of the action. Use <key> in title or note to configure using keyboard. */}
-              <PropertyButton icon={<Tags className="size-3.5" />} label="Labels" />{" "}
-              {/* Tooltip: Labels for the action. Use <key> in title or note to configure using keyboard. */}
-              <PropertyButton icon={<Users className="size-3.5" />} label="People" />{" "}
-              {/* Tooltip: People associated with the action. Use <key> in title or note to configure using keyboard. */}
-              <PropertyButton icon={<Paperclip className="size-3.5" />} label="Attachments" />{" "}
-              {/* Tooltip: Attachments to the action. Use <key> in title or note to configure using keyboard. */}
-              <PropertyButton icon={<Layers className="size-3.5" />} label="Type" />{" "}
-              {/* Tooltip: Type of the action. Use <key> in title or note to configure using keyboard. */}
-              <PropertyButton icon={<Share2 className="size-3.5" />} label="Shared" />
-              {/* Tooltip: Share to another user. Use <key> in title or note to configure using keyboard. */}
-              <PropertyButton icon={<Link2 className="size-3.5" />} label="Link" />{" "}
-              {/* Tooltip: Link to another action or object. Use <key> in title or note to configure using keyboard. */}
-              <PropertyButton icon={<ArrowDownUp className="size-3.5" />} label="Order" />{" "}
-              {/* Tooltip: Order of the action. Use <key> in title or note to configure using keyboard. */}
-            </div>
-          </div>
-        )}
+          <ContextGroup>
+            <PropertyButton icon={<Folder className="size-3.5" />} label="Project" />
+            {/* Tooltip: Project of the action. Use <key> in title or note to configure using keyboard. */}
+            <PropertyButton icon={<MapPin className="size-3.5" />} label="Location" />
+            {/* Tooltip: Location of the action. Use <key> in title or note to configure using keyboard. */}
+            <EditableEnergy value={energy} onChange={setEnergy} />
+            {/* Tooltip: Energy of the action. Use <key> in title or note to configure using keyboard. */}
+            <PropertyButton icon={<Tags className="size-3.5" />} label="Labels" />
+            {/* Tooltip: Labels for the action. Use <key> in title or note to configure using keyboard. */}
+            <PropertyButton icon={<Users className="size-3.5" />} label="People" />
+            {/* Tooltip: People associated with the action. Use <key> in title or note to configure using keyboard. */}
+            <EditableStatus value={status} onChange={setStatus} />
+            {/* Tooltip: Status of the action. Use <key> in title or note to configure using keyboard. */}
 
+            <PropertyButton icon={<Layers className="size-3.5" />} label="Type" />
+            {/* Tooltip: Type of the action. Use <key> in title or note to configure using keyboard. */}
+            <PropertyButton icon={<Share2 className="size-3.5" />} label="Shared" />
+            {/* Tooltip: Share to another user. Use <key> in title or note to configure using keyboard. */}
+            <PropertyButton icon={<Link2 className="size-3.5" />} label="Link" />
+            {/* Tooltip: Link to another action or object. Use <key> in title or note to configure using keyboard. */}
+          </ContextGroup>
+
+          <AttachmentsGroup>
+            <PropertyButton icon={<Paperclip className="size-3.5" />} label="Attachments" />
+            {/* Tooltip: Attachments to the action. Use <key> in title or note to configure using keyboard. */}
+          </AttachmentsGroup>
+
+          <AppearanceGroup>
+            <PropertyButton icon={<Palette className="size-3.5" />} label="Color" />
+            {/* Tooltip: Color of the action. Use <key> in title or note to configure using keyboard. */}
+          </AppearanceGroup>
+        </div>
         {/* Footer */}
-        <div className="flex items-center justify-between mt-2 pt-2 border-t border-border/10">
-          <div className="flex items-center gap-1">
-            {!isAdvancedMode && (
-              <>
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="icon"
-                  className="size-8 text-muted-foreground"
-                  title="Date & Time"
-                >
-                  <Calendar className="size-4" />
-                </Button>
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="icon"
-                  className="size-8 text-muted-foreground"
-                  title="Project"
-                >
-                  <Folder className="size-4" />
-                </Button>
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="icon"
-                  className="size-8 text-muted-foreground"
-                  title="Energy"
-                >
-                  <BatteryMedium className="size-4" />
-                </Button>
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="icon"
-                  className="size-8 text-muted-foreground"
-                  title="People"
-                >
-                  <Users className="size-4" />
-                </Button>
-                <div className="w-[1px] h-4 bg-border/50 mx-1" />
-              </>
-            )}
+        <FooterGroup>
+          <PropertyButton icon={<ArrowDownUp className="size-3.5" />} label="Order" />
+          {/* Tooltip: Order of the action. Use <key> in title or note to configure using keyboard. */}
 
-            <Button
-              type="button"
-              variant="ghost"
-              size="sm"
-              className={cn(
-                "h-8 px-2 text-muted-foreground",
-                isAdvancedMode ? "text-primary bg-primary/10 hover:bg-primary/15" : ""
-              )}
-              onClick={() => setIsAdvancedMode(!isAdvancedMode)}
-            >
-              {isAdvancedMode ? (
-                <>Less Options</>
-              ) : (
-                <>
-                  <MoreHorizontal className="size-4 mr-1.5" />
-                  <span>More</span>
-                </>
-              )}
-            </Button>
-          </div>
-
-          <div className="flex items-center gap-3">
-            <div className="text-xs text-muted-foreground/60 hidden sm:block">
+          <div className="flex items-center gap-3 mt-2 sm:mt-0">
+            <div className="text-xs text-muted-foreground/60 hidden md:block">
               Draft saved automatically
             </div>
             <div className="flex items-center gap-2">
+              <EditableIntention value={intention} onChange={setIntention} />
+              {/* Tooltip: Intention of the action. Use <key> in title or note to configure using keyboard. */}
+              <EditableImportant value={important} onChange={setImportant} />
+              {/* Tooltip: Important of the action. Use <key> in title or note to configure using keyboard. */}
+
               <Button type="button" variant="ghost" size="sm" onClick={onCancel}>
                 Cancel
               </Button>
@@ -260,7 +216,7 @@ export const ActionInput = forwardRef<ActionInputHandle, ActionInputProps>(
               </Button>
             </div>
           </div>
-        </div>
+        </FooterGroup>
       </form>
     );
   }
