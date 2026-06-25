@@ -6,13 +6,19 @@ import path from "node:path";
 const srcDir = path.resolve(__dirname, "src");
 const componentsDir = path.resolve(srcDir, "components");
 const utilsFile = path.resolve(srcDir, "lib/utils.ts");
+const hooksDir = path.resolve(srcDir, "hooks");
 
 const components = fs
   .readdirSync(componentsDir)
   .filter((f) => f.endsWith(".tsx") && f !== "index.ts")
   .map((f) => `export * from "./components/${f.replace(".tsx", "")}";`);
 
-const exports = [...components];
+const hooks = fs
+  .readdirSync(hooksDir)
+  .filter((f) => f.endsWith(".ts") && f !== "index.ts")
+  .map((f) => `export * from "./hooks/${f.replace(".ts", "")}";`);
+
+const exports = [...components, ...hooks];
 if (fs.existsSync(utilsFile)) {
   exports.push('export * from "./lib/utils";');
 }

@@ -1,43 +1,42 @@
-import { useState, useRef, useEffect } from "react";
 import { cn, Input } from "@kreozalabs/ui";
+import { useEditableField } from "./useEditableField";
 
 interface EditableTitleProps {
   value: string;
   onChange: (value: string) => void;
   className?: string;
+  defaultEditing?: boolean;
+  placeholder?: string;
 }
 
-export function EditableTitle({ value, onChange, className }: EditableTitleProps) {
-  const [isEditing, setIsEditing] = useState(false);
-  const [currentValue, setCurrentValue] = useState(value);
-  const inputRef = useRef<HTMLInputElement>(null);
-
-  useEffect(() => {
-    setCurrentValue(value);
-  }, [value]);
-
-  useEffect(() => {
-    if (isEditing) {
-      inputRef.current?.focus();
-    }
-  }, [isEditing]);
-
-  const handleBlur = () => {
-    setIsEditing(false);
-    if (currentValue !== value && currentValue.trim() !== "") {
-      onChange(currentValue.trim());
-    } else {
-      setCurrentValue(value); // Revert if empty
-    }
-  };
+export function EditableTitle({
+  value,
+  onChange,
+  className,
+  defaultEditing = false,
+  placeholder = "Untitled Action",
+}: EditableTitleProps) {
+  const {
+    isEditing,
+    setIsEditing,
+    currentValue,
+    setCurrentValue,
+    ref: inputRef,
+    handleBlur,
+    handleEscape,
+  } = useEditableField(value, onChange, { defaultEditing });
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === "Enter") {
       e.preventDefault();
-      inputRef.current?.blur();
+      if (!defaultEditing) {
+        inputRef.current?.blur();
+      } else {
+        // In creation view, Enter might submit the whole form, handled by the parent
+        onChange(currentValue.trim());
+      }
     } else if (e.key === "Escape") {
-      setCurrentValue(value);
-      setIsEditing(false);
+      handleEscape();
     }
   };
 
@@ -46,6 +45,7 @@ export function EditableTitle({ value, onChange, className }: EditableTitleProps
       <Input
         ref={inputRef}
         value={currentValue}
+        placeholder={placeholder}
         onChange={(e) => setCurrentValue(e.target.value)}
         onBlur={handleBlur}
         onKeyDown={handleKeyDown}
@@ -65,7 +65,7 @@ export function EditableTitle({ value, onChange, className }: EditableTitleProps
         className
       )}
     >
-      {value || "Untitled Action"}
+      {value || placeholder}
     </h3>
   );
 }

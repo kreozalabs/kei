@@ -1,5 +1,5 @@
-import { useState, useRef, useEffect } from "react";
 import { cn, Textarea } from "@kreozalabs/ui";
+import { useEditableField } from "./useEditableField";
 
 interface EditableNoteProps {
   value: string;
@@ -8,31 +8,19 @@ interface EditableNoteProps {
 }
 
 export function EditableNote({ value, onChange, className }: EditableNoteProps) {
-  const [isEditing, setIsEditing] = useState(false);
-  const [currentValue, setCurrentValue] = useState(value);
-  const inputRef = useRef<HTMLTextAreaElement>(null);
-
-  useEffect(() => {
-    setCurrentValue(value);
-  }, [value]);
-
-  useEffect(() => {
-    if (isEditing) {
-      inputRef.current?.focus();
-    }
-  }, [isEditing]);
-
-  const handleBlur = () => {
-    setIsEditing(false);
-    if (currentValue !== value) {
-      onChange(currentValue.trim());
-    }
-  };
+  const {
+    isEditing,
+    setIsEditing,
+    currentValue,
+    setCurrentValue,
+    ref: inputRef,
+    handleBlur,
+    handleEscape,
+  } = useEditableField(value, onChange);
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === "Escape") {
-      setCurrentValue(value);
-      setIsEditing(false);
+      handleEscape();
     }
   };
 

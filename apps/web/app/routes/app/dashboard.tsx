@@ -123,7 +123,6 @@ export default function Dashboard() {
     window.sessionStorage.setItem(STORAGE_KEYS.SESSION.TIMELINE_LOCKED, String(isTodayLocked));
   }, [isTodayLocked]);
 
-
   const { setTitle, setSubtitle, setHeaderActions, setIsDocked } =
     useOutletContext<AppLayoutContext>();
   const startDate = isTodayLocked ? todayStr : selectedDate;

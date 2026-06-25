@@ -94,11 +94,12 @@ export const IMPORTANT_CONFIG = {
 };
 
 export const DURATION_OPTIONS = [
-  { label: "<15 mins", value: [0, 15] as [number, number] },
-  { label: "15 mins", value: [15, 15] as [number, number] },
-  { label: "15 - 30 mins", value: [15, 30] as [number, number] },
-  { label: "30 - 60 mins", value: [30, 60] as [number, number] },
-  { label: "1 - 2 hours", value: [60, 120] as [number, number] },
+  { label: null, value: [0, null], default: true },
+  { label: "<15 mins", value: [0, 15] as [number, number], default: false },
+  { label: "15 mins", value: [15, 15] as [number, number], default: false },
+  { label: "15 - 30 mins", value: [15, 30] as [number, number], default: false },
+  { label: "30 - 60 mins", value: [30, 60] as [number, number], default: false },
+  { label: "1 - 2 hours", value: [60, 120] as [number, number], default: false },
 ];
 
 export const MAJOR_TIMEZONES = [
