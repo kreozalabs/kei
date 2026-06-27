@@ -10,6 +10,8 @@ export * from "./components/input-group";
 export * from "./components/input";
 export * from "./components/label";
 export * from "./components/popover";
+export * from "./components/rich-editor/RichEditor";
+export * from "./components/rich-editor/plugins/TitleEnforcementPlugin";
 export * from "./components/select";
 export * from "./components/sheet";
 export * from "./components/sonner";

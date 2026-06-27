@@ -1,12 +1,12 @@
-import { Zap } from "lucide-react";
+import { BatteryFull, BatteryLow, BatteryMedium } from "lucide-react";
 import { EditableDropdown } from "./EditableDropdown";
 
 export type EnergyType = "low" | "medium" | "high";
 
 const ENERGY_OPTIONS = [
-  { value: "low", label: "Low Energy" },
-  { value: "medium", label: "Medium Energy" },
-  { value: "high", label: "High Energy" },
+  { value: "low", label: "Low", icon: <BatteryLow /> },
+  { value: "medium", label: "Medium", icon: <BatteryMedium /> },
+  { value: "high", label: "High", icon: <BatteryFull /> },
 ] as const;
 
 export function EditableEnergy({
@@ -21,7 +21,7 @@ export function EditableEnergy({
       value={value}
       options={[...ENERGY_OPTIONS]}
       onChange={onChange}
-      icon={<Zap className="size-3.5" />}
+      icon={ENERGY_OPTIONS.find((option) => option.value === value)?.icon}
       placeholder="Energy"
     />
   );
