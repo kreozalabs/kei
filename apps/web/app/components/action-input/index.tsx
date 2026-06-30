@@ -1,12 +1,11 @@
-import { IMPORTANT_CONFIG, type Action } from "@kreozalabs/core";
+import type { Action } from "@kreozalabs/core";
 import { forwardRef, useEffect, useRef, useState } from "react";
 import { RichEditor, TitleEnforcementPlugin } from "@kreozalabs/ui";
+import { Button } from "@kreozalabs/ui";
 import { $getRoot, type EditorState } from "lexical";
 import { EditableIntention, type IntentionType } from "./EditableIntention";
-import { EditableDuration } from "./EditableDuration";
 import { EditableImportant } from "./EditableImportant";
 import { PropertyButton } from "./PropertyButton";
-import { Badge, Button, cn } from "@kreozalabs/ui";
 import {
   CoreGroup,
   TimeGroup,
@@ -15,8 +14,7 @@ import {
   AppearanceGroup,
   FooterGroup,
 } from "./sections";
-import { SendHorizontal, Palette, Star, Paperclip, ArrowDownUp } from "lucide-react";
-import { useSettings } from "@/providers/SettingsContext";
+import { SendHorizontal, Palette, Paperclip, ArrowDownUp } from "lucide-react";
 
 export interface ActionInputProps {
   onSuccess?: () => void;
@@ -34,7 +32,6 @@ export interface ActionInputHandle {
 export const ActionInput = forwardRef<ActionInputHandle, ActionInputProps>(
   ({ onSuccess, onCancel, initialDate, className, variant = "inline", actionToEdit }, ref) => {
     const [isLoading, setIsLoading] = useState(false);
-    const { settings } = useSettings();
 
     const handleKeyDown = (e: React.KeyboardEvent) => {
       if (e.key === "Escape") {
@@ -73,7 +70,10 @@ export const ActionInput = forwardRef<ActionInputHandle, ActionInputProps>(
           setTitle(children[0].getTextContent());
         }
         if (children.length > 1) {
-          const noteText = children.slice(1).map(c => c.getTextContent()).join('\n');
+          const noteText = children
+            .slice(1)
+            .map((c) => c.getTextContent())
+            .join("\n");
           setNote(noteText);
         } else {
           setNote("");
@@ -82,7 +82,6 @@ export const ActionInput = forwardRef<ActionInputHandle, ActionInputProps>(
     };
 
     const [intention, setIntention] = useState<IntentionType>("want");
-    const [duration, setDuration] = useState<[number, number | null]>([0, null]); // FIXME: Use TYPE
     const [important, setImportant] = useState(false);
     // TODO: Allow user to configure what is shown by default. For that, we should be able to loop over some settings instead of hard-coding what is shown.
     // TODO: Allow user to keybindings that will activate note and title from quickbar, such as /t <tab> title<key> <tab> note<key>
@@ -97,15 +96,14 @@ export const ActionInput = forwardRef<ActionInputHandle, ActionInputProps>(
       >
         <CoreGroup>
           {/* FIXME: These should work seamlessly and without problems. UX should be great on any device, whether touch, mouse or keyboard or virtual keyboard, or even voice command. It should be like rich editor. */}
-          <RichEditor 
-            onChange={handleEditorChange}
-            plugins={<TitleEnforcementPlugin />}
-          />
-          <DetailsGroup>
-            {/* TODO: Implement*/}
-            <PropertyButton icon={<Paperclip className="size-3.5" />} label="Attachments" />
-            {/* Tooltip: Attachments to the action. Use <key> in title or note to configure using keyboard. */}
-          </DetailsGroup>
+          <RichEditor onChange={handleEditorChange} plugins={<TitleEnforcementPlugin />} />
+          <div className="hidden visible:block">
+            <DetailsGroup>
+              {/* TODO: Implement*/}
+              <PropertyButton icon={<Paperclip className="size-3.5" />} label="Attachments" />
+              {/* Tooltip: Attachments to the action. Use <key> in title or note to configure using keyboard. */}
+            </DetailsGroup>
+          </div>
         </CoreGroup>
 
         {/* FIXME: Activate when done with implementation */}

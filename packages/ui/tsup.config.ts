@@ -47,7 +47,7 @@ if (fs.existsSync(utilsFile)) {
 fs.writeFileSync(path.resolve(srcDir, "index.ts"), exports.join("\n") + "\n");
 
 export default defineConfig({
-  entry: ["src/index.ts"],
+  entry: ["src/index.ts", "src/components/rich-editor/ai/ai-worker.ts"],
   format: ["cjs", "esm"],
   dts: true,
   clean: true,

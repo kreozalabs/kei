@@ -13,10 +13,10 @@ export function TitleEnforcementPlugin() {
       const firstChild = root.getFirstChild();
 
       if (!firstChild) {
-        const heading = $createHeadingNode("h3");
+        const heading = $createHeadingNode("h1");
         root.append(heading);
       } else if (!$isHeadingNode(firstChild)) {
-        const heading = $createHeadingNode("h3");
+        const heading = $createHeadingNode("h1");
         if ($isParagraphNode(firstChild)) {
           heading.append(...firstChild.getChildren());
           firstChild.replace(heading);
@@ -26,13 +26,13 @@ export function TitleEnforcementPlugin() {
       }
     });
 
-    // Enforce first node remains h3
+    // Enforce first node remains h1
     const removeHeadingTransform = editor.registerNodeTransform(HeadingNode, (node) => {
       const root = $getRoot();
-      if (node.is(root.getFirstChild()) && node.getTag() !== "h3") {
-        const h3 = $createHeadingNode("h3");
-        h3.append(...node.getChildren());
-        node.replace(h3);
+      if (node.is(root.getFirstChild()) && node.getTag() !== "h1") {
+        const h1 = $createHeadingNode("h1");
+        h1.append(...node.getChildren());
+        node.replace(h1);
       }
     });
 
@@ -40,9 +40,9 @@ export function TitleEnforcementPlugin() {
     const removeParaTransform = editor.registerNodeTransform(ParagraphNode, (node) => {
       const root = $getRoot();
       if (node.is(root.getFirstChild())) {
-        const h3 = $createHeadingNode("h3");
-        h3.append(...node.getChildren());
-        node.replace(h3);
+        const h1 = $createHeadingNode("h1");
+        h1.append(...node.getChildren());
+        node.replace(h1);
       }
     });
 

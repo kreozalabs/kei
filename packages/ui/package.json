@@ -28,11 +28,14 @@
     "typecheck": "tsc -b"
   },
   "dependencies": {
+    "@huggingface/transformers": "^3.0.0",
+    "@lexical/extension": "^0.46.0",
     "@lexical/history": "^0.46.0",
     "@lexical/link": "^0.46.0",
     "@lexical/list": "^0.46.0",
     "@lexical/react": "^0.46.0",
     "@lexical/rich-text": "^0.46.0",
+    "@lexical/selection": "^0.46.0",
     "@lexical/utils": "^0.46.0",
     "@radix-ui/react-select": "^2.2.6",
     "@radix-ui/react-slot": "^1.0.2",

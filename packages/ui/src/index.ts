@@ -11,6 +11,8 @@ export * from "./components/input";
 export * from "./components/label";
 export * from "./components/popover";
 export * from "./components/rich-editor/RichEditor";
+export * from "./components/rich-editor/ToolbarExtension";
+export * from "./components/rich-editor/nodes/EntityNode";
 export * from "./components/rich-editor/plugins/TitleEnforcementPlugin";
 export * from "./components/select";
 export * from "./components/sheet";
