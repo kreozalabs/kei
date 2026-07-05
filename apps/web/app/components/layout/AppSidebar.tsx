@@ -110,17 +110,6 @@ export function AppSidebar({ isOpen = true, onToggle }: AppSidebarProps) {
                             />
                             <span className="tracking-tight text-sm">{item.label}</span>
                           </div>
-                          {item.count !== undefined && (
-                            <span
-                              className={cn(
-                                "text-[11px] font-bold tabular-nums",
-                                isActive ? "text-primary/70" : "text-muted-foreground/50",
-                                isToday && !isActive && "text-primary/40"
-                              )}
-                            >
-                              {item.count}
-                            </span>
-                          )}
                         </>
                       )}
                     </NavLink>

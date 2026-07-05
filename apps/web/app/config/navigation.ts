@@ -1,4 +1,4 @@
-import { InboxIcon, CalendarDaysIcon, PersonStandingIcon } from "lucide-react";
+import { CalendarDaysIcon } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 
 export interface NavItem {
@@ -6,7 +6,6 @@ export interface NavItem {
   label: string;
   icon: LucideIcon;
   href: string;
-  count?: number;
   mobileVisible?: boolean;
 }
 
@@ -20,26 +19,10 @@ export const navGroups: NavGroup[] = [
     label: "Core",
     items: [
       {
-        id: "inbox",
-        label: "Inbox",
-        icon: InboxIcon,
-        href: "/app/inbox",
-        count: 5,
-        mobileVisible: true,
-      },
-      {
         id: "days",
         label: "Days",
         icon: CalendarDaysIcon,
         href: "/app",
-        count: 6,
-        mobileVisible: true,
-      },
-      {
-        id: "me",
-        label: "Me",
-        icon: PersonStandingIcon,
-        href: "/app/me",
         mobileVisible: true,
       },
     ],
