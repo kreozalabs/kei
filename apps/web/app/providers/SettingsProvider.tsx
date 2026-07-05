@@ -101,7 +101,7 @@ export function SettingsProvider({
 
     const applyThemeAndAccent = () => {
       root.classList.add("disable-transitions");
-      
+
       // Update theme classes
       root.classList.remove("light", "dark");
       if (settings.theme === "system") {

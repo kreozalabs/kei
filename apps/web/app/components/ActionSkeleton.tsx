@@ -1,3 +1,4 @@
+// FIXME: Refactor !
 export function ActionSkeleton() {
   return (
     <div className="flex items-center gap-4 py-4 px-2 border-b border-border/10 animate-pulse">

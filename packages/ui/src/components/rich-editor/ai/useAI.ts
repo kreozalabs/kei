@@ -6,12 +6,12 @@
  *
  */
 
-import {useExtensionDependency} from '@lexical/react/useExtensionComponent';
-import {useSignalValue} from '@lexical/react/useExtensionSignalValue';
+import { useExtensionDependency } from "@lexical/react/useExtensionComponent";
+import { useSignalValue } from "@lexical/react/useExtensionSignalValue";
 
-import {AIExtension} from './AIExtension';
+import { AIExtension } from "./AIExtension";
 
-type ModelStatus = 'idle' | 'loading' | 'ready' | 'error';
+type ModelStatus = "idle" | "loading" | "ready" | "error";
 
 export interface UseAIReturn {
   abort: () => void;

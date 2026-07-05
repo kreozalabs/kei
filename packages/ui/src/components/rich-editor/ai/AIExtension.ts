@@ -6,7 +6,7 @@
  *
  */
 
-import {effect, signal} from '@lexical/extension';
+import { effect, signal } from "@lexical/extension";
 import {
   $createLineBreakNode,
   $createParagraphNode,
@@ -19,26 +19,22 @@ import {
   KEY_ESCAPE_COMMAND,
   LexicalEditor,
   mergeRegister,
-} from 'lexical';
+} from "lexical";
 
-import {
-  $createAICaretNode,
-  $isAICaretNode,
-  AICaretNodeExtension,
-} from '../nodes/AICaretNode';
-import {$createEntityNode, EntityNodeExtension} from '../nodes/EntityNode';
+import { $createAICaretNode, $isAICaretNode, AICaretNodeExtension } from "../nodes/AICaretNode";
+import { $createEntityNode, EntityNodeExtension } from "../nodes/EntityNode";
 import {
   $collectTextNodeOffsets,
   $replaceTextWithEntityNodes,
   replaceWithEntity,
-} from '../utils/extractEntityNodes';
+} from "../utils/extractEntityNodes";
 
-type ModelStatus = 'idle' | 'loading' | 'ready' | 'error';
+type ModelStatus = "idle" | "loading" | "ready" | "error";
 
-export const AI_GENERATE_START_TAG = 'ai-generate-start';
-export const AI_STREAM_TAG = 'ai-stream';
-export const AI_GENERATE_END_TAG = 'ai-generate-end';
-export const AI_ENTITIES_TAG = 'ai-entities';
+export const AI_GENERATE_START_TAG = "ai-generate-start";
+export const AI_STREAM_TAG = "ai-stream";
+export const AI_GENERATE_END_TAG = "ai-generate-end";
+export const AI_ENTITIES_TAG = "ai-entities";
 
 export interface ExtractedEntity {
   end: number;
@@ -50,7 +46,7 @@ export interface ExtractedEntity {
 
 interface ChatMessage {
   content: string;
-  role: 'system' | 'user' | 'assistant';
+  role: "system" | "user" | "assistant";
 }
 
 function buildGenerateMessages(context: string): ChatMessage[] {
@@ -58,24 +54,24 @@ function buildGenerateMessages(context: string): ChatMessage[] {
     return [
       {
         content:
-          'You are a writing assistant. Continue the text naturally with one new paragraph. Write only the new paragraph, nothing else.',
-        role: 'system',
+          "You are a writing assistant. Continue the text naturally with one new paragraph. Write only the new paragraph, nothing else.",
+        role: "system",
       },
       {
         content: `Continue this text with one paragraph:\n\n${context}`,
-        role: 'user',
+        role: "user",
       },
     ];
   }
   return [
     {
       content:
-        'You are a writing assistant. Write a single interesting opening paragraph for an article. Write only the paragraph, nothing else.',
-      role: 'system',
+        "You are a writing assistant. Write a single interesting opening paragraph for an article. Write only the paragraph, nothing else.",
+      role: "system",
     },
     {
-      content: 'Write an opening paragraph.',
-      role: 'user',
+      content: "Write an opening paragraph.",
+      role: "user",
     },
   ];
 }
@@ -94,9 +90,7 @@ function $appendTokenBeforeCaret(caretKey: string, token: string): void {
     if (match.index > pos) {
       caret.insertBefore($createTextNode(token.slice(pos, match.index)));
     }
-    caret.insertBefore(
-      match[0] === '\n' ? $createLineBreakNode() : $createTabNode(),
-    );
+    caret.insertBefore(match[0] === "\n" ? $createLineBreakNode() : $createTabNode());
     pos = WHITESPACE_RE.lastIndex;
   }
   if (pos < token.length) {
@@ -118,7 +112,7 @@ export interface AIExtensionConfig {
 
 function createAIState(editor: LexicalEditor, config: AIExtensionConfig) {
   const isGenerating = signal(false);
-  const modelStatus = signal<ModelStatus>('idle');
+  const modelStatus = signal<ModelStatus>("idle");
   const loadProgress = signal<number | null>(null);
 
   let worker: Worker | null = null;
@@ -127,7 +121,7 @@ function createAIState(editor: LexicalEditor, config: AIExtensionConfig) {
   let requestCounter = 0;
   const pending = new Map<
     string,
-    {reject: (err: Error) => void; resolve: (text: string | null) => void}
+    { reject: (err: Error) => void; resolve: (text: string | null) => void }
   >();
   const entityPending = new Map<
     string,
@@ -144,36 +138,33 @@ function createAIState(editor: LexicalEditor, config: AIExtensionConfig) {
     const w = config.createWorker();
     w.onmessage = (event: MessageEvent) => {
       const data = event.data;
-      if (data.type === 'status') {
-        if (data.status === 'loading-model') {
-          modelStatus.value = 'loading';
+      if (data.type === "status") {
+        if (data.status === "loading-model") {
+          modelStatus.value = "loading";
           if (data.progress != null) {
             loadProgress.value = Math.round(data.progress);
           }
-        } else if (data.status === 'model-ready') {
-          modelStatus.value = 'ready';
+        } else if (data.status === "model-ready") {
+          modelStatus.value = "ready";
           loadProgress.value = null;
-        } else if (
-          data.status === 'loading-ner' ||
-          data.status === 'ner-ready'
-        ) {
-          if (data.status === 'loading-ner') {
-            modelStatus.value = 'loading';
+        } else if (data.status === "loading-ner" || data.status === "ner-ready") {
+          if (data.status === "loading-ner") {
+            modelStatus.value = "loading";
             if (data.progress != null) {
               loadProgress.value = Math.round(data.progress);
             }
           } else {
-            modelStatus.value = 'ready';
+            modelStatus.value = "ready";
             loadProgress.value = null;
           }
-        } else if (data.status === 'generating') {
+        } else if (data.status === "generating") {
           isGenerating.value = true;
         }
-      } else if (data.type === 'token') {
+      } else if (data.type === "token") {
         if (data.id === activeId && tokenCallback) {
           tokenCallback(data.token);
         }
-      } else if (data.type === 'done') {
+      } else if (data.type === "done") {
         const p = pending.get(data.id);
         if (p) {
           pending.delete(data.id);
@@ -186,7 +177,7 @@ function createAIState(editor: LexicalEditor, config: AIExtensionConfig) {
             p.resolve(null);
           }
         }
-      } else if (data.type === 'aborted') {
+      } else if (data.type === "aborted") {
         const p = pending.get(data.id);
         if (p) {
           pending.delete(data.id);
@@ -197,14 +188,14 @@ function createAIState(editor: LexicalEditor, config: AIExtensionConfig) {
           tokenCallback = null;
           activeId = null;
         }
-      } else if (data.type === 'entities') {
+      } else if (data.type === "entities") {
         const ep = entityPending.get(data.id);
         if (ep) {
           entityPending.delete(data.id);
           isGenerating.value = false;
           ep.resolve(data.entities);
         }
-      } else if (data.type === 'error') {
+      } else if (data.type === "error") {
         const ep = entityPending.get(data.id);
         if (ep) {
           entityPending.delete(data.id);
@@ -219,7 +210,7 @@ function createAIState(editor: LexicalEditor, config: AIExtensionConfig) {
             isGenerating.value = false;
             tokenCallback = null;
             activeId = null;
-            modelStatus.value = 'error';
+            modelStatus.value = "error";
             p.reject(new Error(data.message));
           } else {
             p.resolve(null);
@@ -234,7 +225,7 @@ function createAIState(editor: LexicalEditor, config: AIExtensionConfig) {
   function abort(): void {
     if (activeId) {
       if (worker) {
-        worker.postMessage({type: 'abort'});
+        worker.postMessage({ type: "abort" });
       }
       const p = pending.get(activeId);
       if (p) {
@@ -251,28 +242,28 @@ function createAIState(editor: LexicalEditor, config: AIExtensionConfig) {
     messages: ChatMessage[],
     maxTokens: number,
     onToken?: (token: string) => void,
-    stopAt?: string,
+    stopAt?: string
   ): Promise<string | null> {
     const w = getWorker();
     const id = `req_${++requestCounter}`;
     activeId = id;
     tokenCallback = onToken ?? null;
     return new Promise((resolve, reject) => {
-      pending.set(id, {reject, resolve});
-      w.postMessage({id, maxTokens, messages, stopAt, type: 'generate'});
+      pending.set(id, { reject, resolve });
+      w.postMessage({ id, maxTokens, messages, stopAt, type: "generate" });
     });
   }
 
   function extractEntitiesFromWorker(
     text: string,
-    entityTypes?: string[],
+    entityTypes?: string[]
   ): Promise<ExtractedEntity[]> {
     const w = getWorker();
     const id = `ner_${++requestCounter}`;
     isGenerating.value = true;
     return new Promise((resolve, reject) => {
-      entityPending.set(id, {reject, resolve});
-      w.postMessage({entityTypes, id, text, type: 'extract-entities'});
+      entityPending.set(id, { reject, resolve });
+      w.postMessage({ entityTypes, id, text, type: "extract-entities" });
     });
   }
 
@@ -293,7 +284,7 @@ function createAIState(editor: LexicalEditor, config: AIExtensionConfig) {
         $getRoot().append($createParagraphNode().append(caret));
         caretKey = caret.getKey();
       },
-      {tag: AI_GENERATE_START_TAG},
+      { tag: AI_GENERATE_START_TAG }
     );
 
     try {
@@ -307,7 +298,7 @@ function createAIState(editor: LexicalEditor, config: AIExtensionConfig) {
             });
           }
         },
-        '\n\n',
+        "\n\n"
       );
       return result;
     } finally {
@@ -326,23 +317,19 @@ function createAIState(editor: LexicalEditor, config: AIExtensionConfig) {
       return;
     }
 
-    const entities = await extractEntitiesFromWorker(textInfo.fullText, [
-      'LOC',
-      'PER',
-      'ORG',
-    ]);
+    const entities = await extractEntitiesFromWorker(textInfo.fullText, ["LOC", "PER", "ORG"]);
     if (entities.length === 0) {
       return;
     }
     editor.update(
       () => {
         $replaceTextWithEntityNodes(textInfo.textNodes, entities, {
-          LOC: replaceWithEntity(text => $createEntityNode('LOC', text)),
-          ORG: replaceWithEntity(text => $createEntityNode('ORG', text)),
-          PER: replaceWithEntity(text => $createEntityNode('PER', text)),
+          LOC: replaceWithEntity((text) => $createEntityNode("LOC", text)),
+          ORG: replaceWithEntity((text) => $createEntityNode("ORG", text)),
+          PER: replaceWithEntity((text) => $createEntityNode("PER", text)),
         });
       },
-      {tag: AI_ENTITIES_TAG},
+      { tag: AI_ENTITIES_TAG }
     );
   }
 
@@ -360,16 +347,16 @@ function createAIState(editor: LexicalEditor, config: AIExtensionConfig) {
 export type AIExtensionOutput = ReturnType<typeof createAIState>;
 
 export function defaultCreateWorker(): Worker {
-  return new Worker(new URL('./ai-worker.mjs', import.meta.url), {
-    type: 'module',
+  return new Worker(new URL("./ai-worker.mjs", import.meta.url), {
+    type: "module",
   });
 }
 
 export const AIExtension = defineExtension({
   build: createAIState,
-  config: {createWorker: defaultCreateWorker} as AIExtensionConfig,
+  config: { createWorker: defaultCreateWorker } as AIExtensionConfig,
   dependencies: [AICaretNodeExtension, EntityNodeExtension],
-  name: '@lexical/agent-example/ai',
+  name: "@lexical/agent-example/ai",
   register(editor, _config, state) {
     const output = state.getOutput();
     return mergeRegister(
@@ -382,10 +369,10 @@ export const AIExtension = defineExtension({
               output.abort();
               return true;
             },
-            COMMAND_PRIORITY_LOW,
+            COMMAND_PRIORITY_LOW
           );
         }
-      }),
+      })
     );
   },
 });

@@ -36,14 +36,14 @@ export interface MergedEntity {
  */
 export function computeTokenOffsets(
   tokens: NERToken[],
-  text: string,
-): (NERToken & {end: number; start: number})[] {
-  const result: (NERToken & {end: number; start: number})[] = [];
+  text: string
+): (NERToken & { end: number; start: number })[] {
+  const result: (NERToken & { end: number; start: number })[] = [];
   let cursor = 0;
   const lowerText = text.toLowerCase();
 
   for (const token of tokens) {
-    const isSubword = token.word.startsWith('##');
+    const isSubword = token.word.startsWith("##");
     const stripped = isSubword ? token.word.slice(2) : token.word;
     const lowerStripped = stripped.toLowerCase();
 
@@ -72,7 +72,7 @@ export function computeTokenOffsets(
     const end = cursor + stripped.length;
     cursor = end;
 
-    result.push({...token, end, start});
+    result.push({ ...token, end, start });
   }
   return result;
 }
@@ -91,10 +91,7 @@ export function computeTokenOffsets(
  * [B-LOC "New", I-LOC "York"] → [{text: "New York", start: 0, end: 8, entity: "LOC"}]
  * ```
  */
-export function mergeEntities(
-  tokens: NERToken[],
-  text: string,
-): MergedEntity[] {
+export function mergeEntities(tokens: NERToken[], text: string): MergedEntity[] {
   const withOffsets = computeTokenOffsets(tokens, text);
 
   const merged: {
@@ -107,13 +104,13 @@ export function mergeEntities(
   for (const token of withOffsets) {
     const prefix = token.entity.slice(0, 2); // "B-" or "I-"
     const label = token.entity.slice(2); // "LOC", "PER", etc.
-    const isSubword = token.word.startsWith('##');
+    const isSubword = token.word.startsWith("##");
 
     // WordPiece subword tokens (##prefix) are always continuations of
     // the previous token, even if the NER model incorrectly tags them
     // as B- (beginning). This happens with names like "Maksim" where
     // the model produces B-PER "Ma", B-PER "##ks", B-PER "##im".
-    const isContinuation = prefix === 'I-' || (isSubword && merged.length > 0);
+    const isContinuation = prefix === "I-" || (isSubword && merged.length > 0);
 
     if (!isContinuation) {
       merged.push({
@@ -133,7 +130,7 @@ export function mergeEntities(
     }
   }
 
-  return merged.map(m => ({
+  return merged.map((m) => ({
     end: m.end,
     entity: m.entity,
     score: m.minScore,

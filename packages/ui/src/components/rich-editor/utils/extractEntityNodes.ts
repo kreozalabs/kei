@@ -6,7 +6,7 @@
  *
  */
 
-import {type DecoratorTextNode} from '@lexical/extension';
+import { type DecoratorTextNode } from "@lexical/extension";
 import {
   $getNodeByKey,
   $getRoot,
@@ -14,7 +14,7 @@ import {
   $isTextNode,
   type ElementNode,
   type TextNode,
-} from 'lexical';
+} from "lexical";
 
 export interface TextNodeOffset {
   key: string;
@@ -63,7 +63,7 @@ export function $collectTextNodeOffsets(): {
       } else if ($isElementNode(child)) {
         if (!child.isInline()) {
           if (!isFirstBlock) {
-            chunks.push(' ');
+            chunks.push(" ");
             offset += 1;
           }
           isFirstBlock = false;
@@ -80,7 +80,7 @@ export function $collectTextNodeOffsets(): {
   };
   walk($getRoot());
 
-  return {fullText: chunks.join(''), textNodes};
+  return { fullText: chunks.join(""), textNodes };
 }
 
 /**
@@ -88,9 +88,9 @@ export function $collectTextNodeOffsets(): {
  * the source TextNode and replaces it in the tree.
  */
 export function replaceWithEntity(
-  create: (text: string) => DecoratorTextNode,
+  create: (text: string) => DecoratorTextNode
 ): (textNode: TextNode) => void {
-  return textNode => {
+  return (textNode) => {
     const entity = create(textNode.getTextContent());
     entity.setFormat(textNode.getFormat());
     textNode.replace(entity);
@@ -114,7 +114,7 @@ export function replaceWithEntity(
 export function $replaceTextWithEntityNodes(
   textNodes: TextNodeOffset[],
   entities: EntitySpan[],
-  replacers: Record<string, (textNode: TextNode) => void>,
+  replacers: Record<string, (textNode: TextNode) => void>
 ): void {
   // Group entities by the text node they belong to
   const entitiesByNode = new Map<string, EntitySpan[]>();
@@ -164,8 +164,7 @@ export function $replaceTextWithEntityNodes(
     const splitPoints = [...splitPointSet].sort((a, b) => a - b);
 
     // Split once to get all segments
-    const parts =
-      splitPoints.length > 0 ? node.splitText(...splitPoints) : [node];
+    const parts = splitPoints.length > 0 ? node.splitText(...splitPoints) : [node];
 
     // Build an offset-to-part-index map: parts[0] starts at 0,
     // parts[1] starts at splitPoints[0], etc.
