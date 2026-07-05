@@ -1,6 +1,5 @@
 import type { Action } from "@kreozalabs/core";
 import { forwardRef, useEffect, useRef, useState } from "react";
-import { RichEditor, TitleEnforcementPlugin } from "@kreozalabs/ui";
 import { Button } from "@kreozalabs/ui";
 import { $getRoot, type EditorState } from "lexical";
 import { EditableIntention, type IntentionType } from "./EditableIntention";
@@ -96,7 +95,6 @@ export const ActionInput = forwardRef<ActionInputHandle, ActionInputProps>(
       >
         <CoreGroup>
           {/* FIXME: These should work seamlessly and without problems. UX should be great on any device, whether touch, mouse or keyboard or virtual keyboard, or even voice command. It should be like rich editor. */}
-          <RichEditor onChange={handleEditorChange} plugins={<TitleEnforcementPlugin />} />
           <div className="hidden visible:block">
             <DetailsGroup>
               {/* TODO: Implement*/}
