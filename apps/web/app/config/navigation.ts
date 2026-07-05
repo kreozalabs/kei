@@ -1,4 +1,4 @@
-import { InboxIcon, CalendarDaysIcon, PersonStandingIcon, MenuIcon } from "lucide-react";
+import { InboxIcon, CalendarDaysIcon, PersonStandingIcon } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 
 export interface NavItem {
@@ -46,13 +46,4 @@ export const navGroups: NavGroup[] = [
   },
 ];
 
-export const navItems: NavItem[] = [
-  ...navGroups.flatMap((group) => group.items),
-  {
-    id: "browse",
-    label: "Browse",
-    icon: MenuIcon,
-    href: "/app/browse",
-    mobileVisible: true,
-  },
-];
+export const navItems: NavItem[] = [...navGroups.flatMap((group) => group.items)];
