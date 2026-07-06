@@ -24,7 +24,6 @@
     "@tanstack/react-query": "^5.96.2",
     "framer-motion": "^12.40.0",
     "isbot": "^5",
-    "@huggingface/transformers": "^3.0.0",
     "@lexical/extension": "^0.46.0",
     "@lexical/selection": "^0.46.0",
     "lexical": "^0.46.0",
