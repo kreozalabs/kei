@@ -1,7 +1,7 @@
 import { BatteryFull, BatteryLow, BatteryMedium } from "lucide-react";
 import { EditableDropdown } from "./EditableDropdown";
 
-export type EnergyType = "low" | "medium" | "high";
+type EnergyType = "low" | "medium" | "high";
 
 const ENERGY_OPTIONS = [
   { value: "low", label: "Low", icon: <BatteryLow /> },

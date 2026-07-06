@@ -7,7 +7,7 @@ export { db } from "./webDatabaseAdapter";
 // when this variable is reassigned during initialization.
 export let activeAdapter: DatabaseAdapter = webDatabaseAdapter;
 
-export const initDb = async () => {
+const initDb = async () => {
   if (typeof window === "undefined") return;
 
   // Detect if running inside the Tauri native container

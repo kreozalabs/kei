@@ -102,22 +102,22 @@ export function AppLayout({ error }: { error?: unknown }) {
   }, [title, subtitle]);
 
   return (
-    <div className="flex flex-col md:flex-row h-dvh w-full overflow-hidden bg-background md:bg-muted text-foreground">
+    <div className="bg-background md:bg-muted text-foreground flex h-dvh w-full flex-col overflow-hidden md:flex-row">
       {/* Desktop Sidebar */}
       {!isDocked && <AppSidebar isOpen={isSidebarOpen} onToggle={toggleSidebar} />}
 
       {/* Dock Container for Portaled components */}
       <div
         id="dock-container"
-        className="flex-shrink-0 h-full empty:hidden transition-all duration-300 z-20"
+        className="z-20 h-full flex-shrink-0 transition-all duration-300 empty:hidden"
       />
 
       {/* Main Content Area */}
-      <main className="flex-1 flex flex-col min-w-0 relative overflow-hidden bg-background">
+      <main className="bg-background relative flex min-w-0 flex-1 flex-col overflow-hidden">
         {/* Dimmed Overlay for Add Menu */}
         {(isDesktopAddMenuOpen || isMobileAddMenuOpen) && (
           <div
-            className="fixed inset-0 z-40 bg-background/40 backdrop-blur-sm transition-all duration-500 animate-in fade-in"
+            className="bg-background/40 animate-in fade-in fixed inset-0 z-40 backdrop-blur-sm transition-all duration-500"
             aria-hidden="true"
             onClick={() => {
               setIsDesktopAddMenuOpen(false);
@@ -133,8 +133,8 @@ export function AppLayout({ error }: { error?: unknown }) {
             isDocked ? null : (
               <div
                 className={cn(
-                  "transition-all duration-500 ease-[cubic-bezier(0.32,0.72,0,1)] flex items-center overflow-hidden",
-                  isSidebarOpen ? "w-0 opacity-0 invisible" : "w-10 opacity-100 visible mr-2"
+                  "flex items-center overflow-hidden transition-all duration-500 ease-[cubic-bezier(0.32,0.72,0,1)]",
+                  isSidebarOpen ? "invisible w-0 opacity-0" : "visible mr-2 w-10 opacity-100"
                 )}
               >
                 <SidebarToggle onClick={toggleSidebar} />
@@ -154,13 +154,13 @@ export function AppLayout({ error }: { error?: unknown }) {
             headerActions?.right !== undefined ? (
               headerActions.right
             ) : (
-              <div className="hidden md:flex items-center gap-8">
+              <div className="hidden items-center gap-8 md:flex">
                 {onFabClick === defaultFabClick ? (
                   <HeaderNewAction onClick={openActionInput} />
                 ) : onFabClick ? (
                   <HeaderNewAction onClick={onFabClick} />
                 ) : null}
-                <div className="hidden md:flex items-center gap-1">
+                <div className="hidden items-center gap-1 md:flex">
                   <HeaderMore />
                 </div>
               </div>
@@ -169,9 +169,9 @@ export function AppLayout({ error }: { error?: unknown }) {
         />
 
         {/* Scrollable Content */}
-        <div className="flex-1 overflow-y-auto no-scrollbar pb-24 md:pb-12">
-          <div className="w-full px-4 sm:px-8 md:px-12 pt-4 md:pt-10">
-            <div className="max-w-3xl mx-auto">
+        <div className="no-scrollbar flex-1 overflow-y-auto pb-24 md:pb-12">
+          <div className="w-full px-4 pt-4 sm:px-8 md:px-12 md:pt-10">
+            <div className="mx-auto max-w-3xl">
               {error ? (
                 <ErrorPage
                   status={isRouteErrorResponse(error) ? error.status : 500}
@@ -200,7 +200,7 @@ export function AppLayout({ error }: { error?: unknown }) {
           <Button
             onClick={openActionInput}
             className={cn(
-              "md:hidden fixed bottom-24 right-6 size-14 rounded-2xl bg-primary hover:bg-primary/90 text-primary-foreground shadow-2xl flex items-center justify-center transition-all duration-300 active:scale-95 z-50 group border-none shadow-primary/30"
+              "bg-primary hover:bg-primary/90 text-primary-foreground group shadow-primary/30 fixed right-6 bottom-24 z-50 flex size-14 items-center justify-center rounded-2xl border-none shadow-2xl transition-all duration-300 active:scale-95 md:hidden"
             )}
             aria-label="Add Action"
           >
@@ -209,10 +209,10 @@ export function AppLayout({ error }: { error?: unknown }) {
         ) : onFabClick ? (
           <Button
             onClick={onFabClick}
-            className="md:hidden fixed bottom-24 right-6 size-14 rounded-2xl bg-primary hover:bg-primary/90 text-primary-foreground shadow-2xl shadow-primary/30 flex items-center justify-center transition-all active:scale-95 z-50 group border-none"
+            className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-primary/30 group fixed right-6 bottom-24 z-50 flex size-14 items-center justify-center rounded-2xl border-none shadow-2xl transition-all active:scale-95 md:hidden"
             aria-label="Add Action"
           >
-            <PlusIcon className="size-8 group-hover:rotate-90 transition-transform duration-300" />
+            <PlusIcon className="size-8 transition-transform duration-300 group-hover:rotate-90" />
           </Button>
         ) : null}
 

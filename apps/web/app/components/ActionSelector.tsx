@@ -81,30 +81,30 @@ export function ActionSelector<T = unknown>({
           variant={variant}
           size="sm"
           className={cn(
-            "h-8 flex flex-row items-center justify-center gap-2 rounded-lg border-border/30 hover:bg-muted/50 transition-all outline-none whitespace-nowrap",
+            "border-border/30 hover:bg-muted/50 flex h-8 flex-row items-center justify-center gap-2 rounded-lg whitespace-nowrap transition-all outline-none",
             triggerClassName
           )}
         >
           {icon}
-          <span className="text-[12px] font-medium text-muted-foreground/70">{label}</span>
+          <span className="text-muted-foreground/70 text-[12px] font-medium">{label}</span>
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent
         align={align}
         className={cn(
-          "ring-0 p-1 shadow-xl border-border/40 bg-background w-45 overflow-y-auto overflow-x-hidden max-h-80 custom-scrollbar",
+          "border-border/40 bg-background custom-scrollbar max-h-80 w-45 overflow-x-hidden overflow-y-auto p-1 shadow-xl ring-0",
           contentClassName
         )}
       >
         {children && childrenPosition === "top" && (
           <>
             <div className="p-1">{children}</div>
-            <div className="my-1 border-t border-border/40" />
+            <div className="border-border/40 my-1 border-t" />
           </>
         )}
         <div ref={scrollRef}>
           {title && (
-            <div className="px-2 py-1.5 text-[10px] uppercase font-bold tracking-wider text-muted-foreground/40">
+            <div className="text-muted-foreground/40 px-2 py-1.5 text-[10px] font-bold tracking-wider uppercase">
               {title}
             </div>
           )}
@@ -122,21 +122,21 @@ export function ActionSelector<T = unknown>({
                 onClick={() => onSelect(option.value)}
                 data-selected={isSelected || isScrollTarget}
                 className={cn(
-                  "flex items-center gap-3 px-2.5 py-2 font-medium hover:bg-muted/50 outline-none transition-colors",
+                  "hover:bg-muted/50 flex items-center gap-3 px-2.5 py-2 font-medium transition-colors outline-none",
                   option.className,
                   isScrollTarget && "bg-primary/5"
                 )}
               >
                 <div className="shrink-0">{option.icon}</div>
-                <span className="text-[13px] flex-1 truncate">{option.label}</span>
-                {isSelected && <CheckIcon className="size-3.5 text-primary ml-auto shrink-0" />}
+                <span className="flex-1 truncate text-[13px]">{option.label}</span>
+                {isSelected && <CheckIcon className="text-primary ml-auto size-3.5 shrink-0" />}
               </DropdownMenuItem>
             );
           })}
         </div>
         {children && childrenPosition === "bottom" && (
           <>
-            <div className="my-1 border-t border-border/40" />
+            <div className="border-border/40 my-1 border-t" />
             <div className="p-1">{children}</div>
           </>
         )}

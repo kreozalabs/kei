@@ -60,12 +60,15 @@ export function DashboardProvider({ children }: { children: ReactNode }) {
     });
   }, []);
 
-  const setSelectedDate = useCallback((date: string) => {
-    setSelectedDateState(date);
-    if (settings.remember_layout_on_refresh) {
-      localStorage.setItem(STORAGE_KEYS.LOCAL.SELECTED_DATE, date);
-    }
-  }, [settings.remember_layout_on_refresh]);
+  const setSelectedDate = useCallback(
+    (date: string) => {
+      setSelectedDateState(date);
+      if (settings.remember_layout_on_refresh) {
+        localStorage.setItem(STORAGE_KEYS.LOCAL.SELECTED_DATE, date);
+      }
+    },
+    [settings.remember_layout_on_refresh]
+  );
 
   const startDate = isTodayLocked ? todayStr : selectedDate;
   // Compute endDate appropriately based on view mode or settings. For Day Grid, timeline is +3 days.

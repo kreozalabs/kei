@@ -16,7 +16,7 @@ export function NextDayBadge({ startTime, endTime, className }: NextDayBadgeProp
   return (
     <span
       className={cn(
-        "text-[9px] text-primary bg-primary/10 px-1 rounded-sm font-black leading-none py-0.5",
+        "text-primary bg-primary/10 rounded-sm px-1 py-0.5 text-[9px] leading-none font-black",
         className
       )}
     >

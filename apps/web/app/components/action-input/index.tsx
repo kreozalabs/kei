@@ -15,7 +15,7 @@ import {
 } from "./sections";
 import { SendHorizontal, Palette, Paperclip, ArrowDownUp } from "lucide-react";
 
-export interface ActionInputProps {
+interface ActionInputProps {
   onSuccess?: () => void;
   onCancel?: () => void;
   initialDate?: string;
@@ -24,7 +24,7 @@ export interface ActionInputProps {
   actionToEdit?: Action;
 }
 
-export interface ActionInputHandle {
+interface ActionInputHandle {
   handleCancelAttempt: () => void;
 }
 
@@ -91,11 +91,11 @@ export const ActionInput = forwardRef<ActionInputHandle, ActionInputProps>(
       <form
         onSubmit={handleSubmit}
         onKeyDown={handleKeyDown}
-        className="flex flex-col gap-3 p-4 bg-background border border-border/40 shadow-xs"
+        className="bg-background border-border/40 flex flex-col gap-3 border p-4 shadow-xs"
       >
         <CoreGroup>
           {/* FIXME: These should work seamlessly and without problems. UX should be great on any device, whether touch, mouse or keyboard or virtual keyboard, or even voice command. It should be like rich editor. */}
-          <div className="hidden visible:block">
+          <div className="visible:block hidden">
             <DetailsGroup>
               {/* TODO: Implement*/}
               <PropertyButton icon={<Paperclip className="size-3.5" />} label="Attachments" />
@@ -105,18 +105,18 @@ export const ActionInput = forwardRef<ActionInputHandle, ActionInputProps>(
         </CoreGroup>
 
         {/* FIXME: Activate when done with implementation */}
-        <div className="hidden visible:none">
+        <div className="visible:none hidden">
           {/* Active Properties (Only shows what has been explicitly set or changed from defaults in user settings) */}
-          <div className="flex flex-wrap items-center gap-2 mt-1">
+          <div className="mt-1 flex flex-wrap items-center gap-2">
             {/* TODO: Implement user-configured Quick Bar here */}
             {/* TODO: Make set values dynamic, so any included field is show hier and we should not need to write comps here. They just appear if user set value for component or subcomponent. */}
           </div>
-          <div className="flex flex-col gap-6 mt-2 pt-3 border-t border-border/40">
+          <div className="border-border/40 mt-2 flex flex-col gap-6 border-t pt-3">
             {/* TODO: Each group should be like dropdown or dialog or something. It should just appear and extend. Disappear when user chooses something else (NOT SURE ABOUT IT)??? */}
             <TimeGroup />
 
             <ContextGroup />
-            <div className="hidden visible:block">
+            <div className="visible:block hidden">
               {/* TODO: Implement*/}
               <AppearanceGroup>
                 <PropertyButton icon={<Palette className="size-3.5" />} label="Color" />
@@ -130,8 +130,8 @@ export const ActionInput = forwardRef<ActionInputHandle, ActionInputProps>(
           <PropertyButton icon={<ArrowDownUp className="size-3.5" />} label="Order" />
           {/* Tooltip: Order of the action. Use <key> in title or note to configure using keyboard. */}
 
-          <div className="flex items-center gap-3 mt-2 sm:mt-0">
-            <div className="text-xs text-muted-foreground/60 hidden md:block">
+          <div className="mt-2 flex items-center gap-3 sm:mt-0">
+            <div className="text-muted-foreground/60 hidden text-xs md:block">
               Draft saved automatically
             </div>
             <div className="flex items-center gap-2">

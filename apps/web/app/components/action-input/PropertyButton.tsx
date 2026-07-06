@@ -1,7 +1,7 @@
 import { Button, cn } from "@kreozalabs/ui";
 import { type ReactNode, forwardRef } from "react";
 
-export interface PropertyButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
+interface PropertyButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   icon?: ReactNode;
   label?: string;
   isActive?: boolean;
@@ -17,7 +17,7 @@ export const PropertyButton = forwardRef<HTMLButtonElement, PropertyButtonProps>
         variant="ghost"
         size="sm"
         className={cn(
-          "h-7 px-2 gap-1.5 rounded-md text-xs font-medium transition-colors border border-transparent shadow-none",
+          "h-7 gap-1.5 rounded-md border border-transparent px-2 text-xs font-medium shadow-none transition-colors",
           isActive
             ? "bg-primary/10 text-primary border-primary/20 hover:bg-primary/15"
             : "text-muted-foreground hover:bg-muted/50 hover:text-foreground",
@@ -26,8 +26,8 @@ export const PropertyButton = forwardRef<HTMLButtonElement, PropertyButtonProps>
         {...props}
       >
         {icon && <span className="shrink-0">{icon}</span>}
-        {label && <span className="truncate max-w-[120px]">{label}</span>}
-        {value && <span className="font-semibold text-foreground ml-0.5">{value}</span>}
+        {label && <span className="max-w-[120px] truncate">{label}</span>}
+        {value && <span className="text-foreground ml-0.5 font-semibold">{value}</span>}
       </Button>
     );
   }

@@ -17,7 +17,7 @@ import { Check, ChevronsUpDown, Globe, MapPin } from "lucide-react";
 import { MAJOR_TIMEZONES, ALL_TIMEZONES, TIMEZONES } from "@kreozalabs/core";
 import { useSettings } from "../providers/SettingsContext";
 
-export interface TimezoneSelectorProps {
+interface TimezoneSelectorProps {
   value: string;
   onSelect: (tz: string) => void;
   showAuto?: boolean;
@@ -66,7 +66,7 @@ export function TimezoneSelector({
             role="combobox"
             aria-expanded={open}
             className={cn(
-              "w-full justify-between h-9 bg-muted/20 border border-border/30 rounded-xl px-3 hover:bg-muted/30",
+              "bg-muted/20 border-border/30 hover:bg-muted/30 h-9 w-full justify-between rounded-xl border px-3",
               triggerClassName
             )}
           >

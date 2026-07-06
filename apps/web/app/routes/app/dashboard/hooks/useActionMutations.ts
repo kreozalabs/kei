@@ -16,7 +16,7 @@ import {
   bulkUpdateMultipleActions,
 } from "@/db/actions";
 
-export interface UseActionMutationsProps {
+interface UseActionMutationsProps {
   allActions: Action[];
   enableUndoToast: boolean;
   activeWritesRef: RefObject<number>;

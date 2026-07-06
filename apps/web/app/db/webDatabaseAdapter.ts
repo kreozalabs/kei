@@ -78,7 +78,7 @@ function sendToWorker(type: "init" | "query" | "exec", sql?: string, params?: an
   });
 }
 
-export interface WebDatabaseAdapter extends DatabaseAdapter {
+interface WebDatabaseAdapter extends DatabaseAdapter {
   query(sql: string, params?: any[]): Promise<any[]>;
   queryDirect(sql: string, params?: any[]): Promise<any[]>;
 }

@@ -105,7 +105,7 @@ export function DayView() {
   }, [allActions, selectedDate, isTodayLocked, todayStr]);
 
   return (
-    <div className="max-w-3xl mx-auto px-2 sm:px-0 mt-2">
+    <div className="mx-auto mt-2 max-w-3xl px-2 sm:px-0">
       {overdueActions.length > 0 && !isTodayLocked && selectedDate <= todayStr && (
         <ActionSection
           id="overdue"

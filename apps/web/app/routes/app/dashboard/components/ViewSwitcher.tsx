@@ -27,15 +27,15 @@ export function ViewSwitcher() {
       case "month":
       case "year":
       case "agenda":
-        return <Calendar className="size-4 mr-2" />;
+        return <Calendar className="mr-2 size-4" />;
       case "kanban":
-        return <KanbanSquare className="size-4 mr-2" />;
+        return <KanbanSquare className="mr-2 size-4" />;
       case "inbox":
-        return <Inbox className="size-4 mr-2" />;
+        return <Inbox className="mr-2 size-4" />;
       case "lists":
-        return <ListTodo className="size-4 mr-2" />;
+        return <ListTodo className="mr-2 size-4" />;
       default:
-        return <LayoutGrid className="size-4 mr-2" />;
+        return <LayoutGrid className="mr-2 size-4" />;
     }
   };
 
@@ -45,18 +45,18 @@ export function ViewSwitcher() {
         <Button
           variant="outline"
           size="sm"
-          className="h-8 border-dashed bg-background hover:bg-muted font-medium text-xs rounded-full px-3 gap-1 shadow-sm"
+          className="bg-background hover:bg-muted h-8 gap-1 rounded-full border-dashed px-3 text-xs font-medium shadow-sm"
         >
           {getIcon(currentView.id)}
           <span className="hidden sm:inline">{currentView.label}</span>
-          <ChevronDown className="size-3.5 ml-1 text-muted-foreground" />
+          <ChevronDown className="text-muted-foreground ml-1 size-3.5" />
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent
         align="end"
-        className="w-56 bg-background/95 backdrop-blur-md border border-border/40 shadow-xl rounded-xl"
+        className="bg-background/95 border-border/40 w-56 rounded-xl border shadow-xl backdrop-blur-md"
       >
-        <DropdownMenuLabel className="text-[10px] font-black uppercase tracking-wider text-muted-foreground/60 px-3 py-1.5">
+        <DropdownMenuLabel className="text-muted-foreground/60 px-3 py-1.5 text-[10px] font-black tracking-wider uppercase">
           Chronological
         </DropdownMenuLabel>
         {chronologicalViews.map((view) => (
@@ -64,7 +64,7 @@ export function ViewSwitcher() {
             key={view.id}
             onClick={() => setViewMode(view.id)}
             className={cn(
-              "px-3 py-2 text-xs font-semibold cursor-pointer rounded-lg mx-1 my-0.5",
+              "mx-1 my-0.5 cursor-pointer rounded-lg px-3 py-2 text-xs font-semibold",
               viewMode === view.id ? "bg-primary/10 text-primary" : "hover:bg-muted text-foreground"
             )}
           >
@@ -75,7 +75,7 @@ export function ViewSwitcher() {
 
         <DropdownMenuSeparator className="bg-border/40 my-1" />
 
-        <DropdownMenuLabel className="text-[10px] font-black uppercase tracking-wider text-muted-foreground/60 px-3 py-1.5">
+        <DropdownMenuLabel className="text-muted-foreground/60 px-3 py-1.5 text-[10px] font-black tracking-wider uppercase">
           Structural
         </DropdownMenuLabel>
         {structuralViews.map((view) => (
@@ -83,7 +83,7 @@ export function ViewSwitcher() {
             key={view.id}
             onClick={() => setViewMode(view.id)}
             className={cn(
-              "px-3 py-2 text-xs font-semibold cursor-pointer rounded-lg mx-1 my-0.5",
+              "mx-1 my-0.5 cursor-pointer rounded-lg px-3 py-2 text-xs font-semibold",
               viewMode === view.id ? "bg-primary/10 text-primary" : "hover:bg-muted text-foreground"
             )}
           >

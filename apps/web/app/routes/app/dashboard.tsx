@@ -100,9 +100,9 @@ function DashboardShell() {
 
   if (dbError) {
     return (
-      <div className="flex flex-col items-center justify-center p-12 border-2 border-destructive/20 rounded-3xl bg-destructive/5 gap-4">
+      <div className="border-destructive/20 bg-destructive/5 flex flex-col items-center justify-center gap-4 rounded-3xl border-2 p-12">
         <div className="text-destructive font-bold">Database Error</div>
-        <p className="text-sm text-muted-foreground text-center max-w-md">
+        <p className="text-muted-foreground max-w-md text-center text-sm">
           {dbError.message || "Failed to initialize the local database engine."}
         </p>
         <Button onClick={() => window.location.reload()} variant="outline">
@@ -122,12 +122,12 @@ function DashboardShell() {
       break;
     default:
       Content = (
-        <div className="flex flex-col items-center justify-center p-12 mt-12 text-center text-muted-foreground border-2 border-dashed border-border/40 rounded-3xl">
-          <div className="mb-4 bg-muted p-4 rounded-full">
+        <div className="text-muted-foreground border-border/40 mt-12 flex flex-col items-center justify-center rounded-3xl border-2 border-dashed p-12 text-center">
+          <div className="bg-muted mb-4 rounded-full p-4">
             <LayoutGrid className="size-8 opacity-50" />
           </div>
-          <h3 className="text-lg font-bold text-foreground">View Not Implemented</h3>
-          <p className="text-sm mt-2 max-w-md">
+          <h3 className="text-foreground text-lg font-bold">View Not Implemented</h3>
+          <p className="mt-2 max-w-md text-sm">
             The "{viewMode}" view is currently under development.
           </p>
           <Button
@@ -149,10 +149,10 @@ function DashboardShell() {
           <ViewSwitcher />
           {/* Sticky Today Button for Day Grid */}
           {viewMode === "day" && !isTodayLocked && selectedDate !== todayStr && (
-            <div className="animate-in fade-in slide-in-from-top-4 duration-200 hidden sm:block">
+            <div className="animate-in fade-in slide-in-from-top-4 hidden duration-200 sm:block">
               <Button
                 onClick={() => setSelectedDate(todayStr)}
-                className="flex items-center gap-1.5 px-3 py-1.5 bg-primary text-primary-foreground font-black text-[10px] uppercase tracking-wider rounded-full shadow-lg hover:scale-105 active:scale-95 transition-all border-none"
+                className="bg-primary text-primary-foreground flex items-center gap-1.5 rounded-full border-none px-3 py-1.5 text-[10px] font-black tracking-wider uppercase shadow-lg transition-all hover:scale-105 active:scale-95"
               >
                 Today
               </Button>
@@ -181,7 +181,7 @@ function DashboardShell() {
               variant="ghost"
               size="icon"
               onClick={() => setIsTodayLocked((prev) => !prev)}
-              className="size-8 border-none rounded-full text-muted-foreground hover:text-primary hover:bg-primary/10 transition-all active:scale-95"
+              className="text-muted-foreground hover:text-primary hover:bg-primary/10 size-8 rounded-full border-none transition-all active:scale-95"
               title={isTodayLocked ? "Unlock Timeline" : "Lock to Today"}
             >
               {isTodayLocked ? <LockIcon className="size-4" /> : <UnlockIcon className="size-4" />}
@@ -193,13 +193,13 @@ function DashboardShell() {
               <Button
                 variant="ghost"
                 size="icon"
-                className="size-8 border-none rounded-full text-muted-foreground hover:text-primary hover:bg-primary/10 transition-all active:scale-95"
+                className="text-muted-foreground hover:text-primary hover:bg-primary/10 size-8 rounded-full border-none transition-all active:scale-95"
                 title="More Actions"
               >
                 <MoreVertical className="size-4" />
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-48 bg-background border-border/40">
+            <DropdownMenuContent align="end" className="bg-background border-border/40 w-48">
               {settings.enable_selection && (
                 <DropdownMenuCheckboxItem
                   checked={isSelectionModeForced || visibleSelectedActionIds.size > 0}
@@ -210,11 +210,11 @@ function DashboardShell() {
                       handleClearSelection();
                     }
                   }}
-                  className="flex items-center gap-2 cursor-pointer text-xs"
+                  className="flex cursor-pointer items-center gap-2 text-xs"
                 >
                   <CheckSquare
                     className={cn(
-                      "size-3.5 mr-1",
+                      "mr-1 size-3.5",
                       isSelectionModeForced || visibleSelectedActionIds.size > 0
                         ? "text-primary"
                         : "text-muted-foreground"
@@ -226,11 +226,11 @@ function DashboardShell() {
               <DropdownMenuCheckboxItem
                 checked={settings.show_completed}
                 onCheckedChange={(checked) => updateSetting("show_completed", checked)}
-                className="flex items-center gap-2 cursor-pointer text-xs"
+                className="flex cursor-pointer items-center gap-2 text-xs"
               >
                 <CheckCircle2Icon
                   className={cn(
-                    "size-3.5 mr-1",
+                    "mr-1 size-3.5",
                     settings.show_completed ? "text-primary" : "text-muted-foreground"
                   )}
                 />
@@ -239,11 +239,11 @@ function DashboardShell() {
               <DropdownMenuCheckboxItem
                 checked={settings.show_abandoned}
                 onCheckedChange={(checked) => updateSetting("show_abandoned", checked)}
-                className="flex items-center gap-2 cursor-pointer text-xs"
+                className="flex cursor-pointer items-center gap-2 text-xs"
               >
                 <Trash2Icon
                   className={cn(
-                    "size-3.5 mr-1",
+                    "mr-1 size-3.5",
                     settings.show_abandoned ? "text-primary" : "text-muted-foreground"
                   )}
                 />
@@ -259,10 +259,10 @@ function DashboardShell() {
 
       {/* Sync Status Alert */}
       {!isDbReady && (
-        <div className="fixed bottom-24 right-8 z-50 md:bottom-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
-          <div className="flex items-center gap-3 px-4 py-2 border border-primary/20 bg-background/80 backdrop-blur-md rounded-2xl shadow-2xl">
-            <Loader2Icon className="size-4 text-primary animate-spin" />
-            <span className="text-[10px] font-bold uppercase tracking-[0.15em] text-primary/80">
+        <div className="animate-in fade-in slide-in-from-bottom-4 fixed right-8 bottom-24 z-50 duration-500 md:bottom-8">
+          <div className="border-primary/20 bg-background/80 flex items-center gap-3 rounded-2xl border px-4 py-2 shadow-2xl backdrop-blur-md">
+            <Loader2Icon className="text-primary size-4 animate-spin" />
+            <span className="text-primary/80 text-[10px] font-bold tracking-[0.15em] uppercase">
               Synchronizing
             </span>
           </div>

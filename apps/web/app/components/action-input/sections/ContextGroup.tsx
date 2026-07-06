@@ -10,7 +10,7 @@ export function ContextGroup() {
   const [status, setStatus] = useState<StatusType>("active");
   return (
     <div className="flex flex-col gap-2">
-      <h4 className="text-xs font-medium text-muted-foreground uppercase tracking-wider px-1">
+      <h4 className="text-muted-foreground px-1 text-xs font-medium tracking-wider uppercase">
         Context & Details
       </h4>
       <div className="flex flex-col gap-2">
@@ -18,7 +18,7 @@ export function ContextGroup() {
         {/* Tooltip: Energy of the action. Use <key> in title or note to configure using keyboard. */}
         <EditableStatus value={status} onChange={setStatus} />
         {/* Tooltip: Status of the action. Use <key> in title or note to configure using keyboard. */}
-        <div className="hidden visible:block">
+        <div className="visible:block hidden">
           {/* TODO: Implement*/}
           <PropertyButton icon={<Tags className="size-3.5" />} label="Labels" />
           {/* Tooltip: Labels for the action. Use <key> in title or note to configure using keyboard. */}

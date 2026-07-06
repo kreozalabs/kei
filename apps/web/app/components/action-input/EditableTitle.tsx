@@ -50,7 +50,7 @@ export function EditableTitle({
         onBlur={handleBlur}
         onKeyDown={handleKeyDown}
         className={cn(
-          "w-full bg-transparent border-none shadow-none focus-visible:ring-1 focus-visible:ring-primary/20 rounded-md px-1 py-0 h-auto text-xl font-bold tracking-tight text-foreground leading-snug",
+          "focus-visible:ring-primary/20 text-foreground h-auto w-full rounded-md border-none bg-transparent px-1 py-0 text-xl leading-snug font-bold tracking-tight shadow-none focus-visible:ring-1",
           className
         )}
       />
@@ -61,7 +61,7 @@ export function EditableTitle({
     <h3
       onClick={() => setIsEditing(true)}
       className={cn(
-        "cursor-text hover:bg-muted/50 rounded-md px-1 py-0.5 -ml-1 transition-colors wrap-break-word",
+        "hover:bg-muted/50 -ml-1 cursor-text rounded-md px-1 py-0.5 wrap-break-word transition-colors",
         className
       )}
     >

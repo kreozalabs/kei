@@ -17,7 +17,7 @@ export function EditableImportant({
       onClick={() => onChange(!value)}
       className={cn(
         value &&
-          "bg-yellow-500/10 text-yellow-600 border-yellow-500/20 hover:bg-yellow-500/20 hover:text-yellow-700"
+          "border-yellow-500/20 bg-yellow-500/10 text-yellow-600 hover:bg-yellow-500/20 hover:text-yellow-700"
       )}
     />
   );

@@ -1,0 +1,32 @@
+{
+  "$schema": "https://unpkg.com/knip@latest/schema.json",
+  "eslint": false,
+  "workspaces": {
+    ".": {
+      "ignoreDependencies": [
+        "@eslint/js",
+        "eslint-config-prettier",
+        "eslint-plugin-react-hooks",
+        "eslint-plugin-react-refresh",
+        "globals",
+        "typescript-eslint"
+      ]
+    },
+    "apps/web": {
+      "ignoreDependencies": [
+        "vite-plugin-pwa",
+        "@eslint/js",
+        "eslint-plugin-react-hooks",
+        "eslint-plugin-react-refresh",
+        "globals",
+        "typescript-eslint"
+      ]
+    },
+    "packages/ui": {
+      "ignoreDependencies": [
+        "@tailwindcss/postcss",
+        "tailwindcss"
+      ]
+    }
+  }
+}

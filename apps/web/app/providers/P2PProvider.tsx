@@ -7,7 +7,7 @@ import { getLocalWatermarks, getEventsSince } from "@/db/sync";
 import { importEvents } from "@/db/backup";
 import { getOrCreateDeviceIdentity, getDeviceName } from "../utils/device";
 
-export interface Peer {
+interface Peer {
   name: string;
   peerId: string;
   connectedAt: number | Date;
@@ -524,10 +524,10 @@ export function P2PProvider({ children }: { children: React.ReactNode }) {
 
                 toast.custom(
                   (t) => (
-                    <div className="flex flex-col gap-3 rounded-2xl border border-border bg-background p-4 shadow-lg w-80 md:w-96 text-left animate-in fade-in slide-in-from-bottom-4 duration-300">
+                    <div className="border-border bg-background animate-in fade-in slide-in-from-bottom-4 flex w-80 flex-col gap-3 rounded-2xl border p-4 text-left shadow-lg duration-300 md:w-96">
                       <div className="flex flex-col gap-1">
-                        <h3 className="font-semibold text-sm text-foreground">Pairing Request</h3>
-                        <p className="text-xs text-muted-foreground">
+                        <h3 className="text-foreground text-sm font-semibold">Pairing Request</h3>
+                        <p className="text-muted-foreground text-xs">
                           Device <strong>{msg.name || "Unknown Device"}</strong> is requesting to
                           join your sync chain.
                         </p>
@@ -550,7 +550,7 @@ export function P2PProvider({ children }: { children: React.ReactNode }) {
                               console.error("[P2P] Failed to send pairing denial:", e);
                             }
                           }}
-                          className="rounded-xl px-3 py-1 text-xs border-border/50 hover:bg-muted text-foreground"
+                          className="border-border/50 hover:bg-muted text-foreground rounded-xl px-3 py-1 text-xs"
                         >
                           Deny
                         </Button>
@@ -603,7 +603,7 @@ export function P2PProvider({ children }: { children: React.ReactNode }) {
                               }
                             }, 300);
                           }}
-                          className="rounded-xl px-3 py-1 text-xs bg-primary text-primary-foreground hover:bg-primary/80"
+                          className="bg-primary text-primary-foreground hover:bg-primary/80 rounded-xl px-3 py-1 text-xs"
                         >
                           Approve
                         </Button>

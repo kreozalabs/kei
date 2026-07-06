@@ -30,7 +30,7 @@ const Checkbox = React.forwardRef<HTMLInputElement, CheckboxProps>(
     return (
       <label
         className={cn(
-          "relative flex items-center justify-center shrink-0 select-none",
+          "relative flex shrink-0 items-center justify-center select-none",
           disabled ? "cursor-not-allowed opacity-50" : "cursor-pointer",
           "group"
         )}
@@ -41,15 +41,15 @@ const Checkbox = React.forwardRef<HTMLInputElement, CheckboxProps>(
           checked={internalChecked}
           onChange={handleChange}
           disabled={disabled}
-          className="sr-only peer"
+          className="peer sr-only"
           {...props}
         />
         <div
           className={cn(
-            "size-4.5 rounded-md border transition-all duration-200 flex items-center justify-center shadow-sm",
+            "flex size-4.5 items-center justify-center rounded-md border shadow-sm transition-all duration-200",
             "border-input bg-transparent",
             "group-hover:border-primary/50 group-hover:bg-primary/5",
-            "peer-focus-visible:ring-2 peer-focus-visible:ring-ring peer-focus-visible:ring-offset-2",
+            "peer-focus-visible:ring-ring peer-focus-visible:ring-2 peer-focus-visible:ring-offset-2",
             "active:scale-95",
             internalChecked &&
               "bg-primary border-primary text-primary-foreground group-hover:bg-primary/90 group-hover:border-primary",
@@ -58,8 +58,8 @@ const Checkbox = React.forwardRef<HTMLInputElement, CheckboxProps>(
         >
           <Check
             className={cn(
-              "size-3 stroke-[3px] transition-all scale-0 opacity-0 duration-200",
-              internalChecked && "scale-100 opacity-100 animate-in zoom-in-50"
+              "size-3 scale-0 stroke-[3px] opacity-0 transition-all duration-200",
+              internalChecked && "animate-in zoom-in-50 scale-100 opacity-100"
             )}
           />
         </div>

@@ -42,7 +42,7 @@ export function EditableDuration({
       </PopoverTrigger>
       <PopoverContent className="w-auto p-2" align="start">
         <DurationInputs value={draftValue} onChange={setDraftValue} />
-        <div className="flex justify-end gap-2 mt-2 px-2 pb-2">
+        <div className="mt-2 flex justify-end gap-2 px-2 pb-2">
           <Button variant="ghost" size="sm" onClick={() => setIsOpen(false)}>
             Cancel
           </Button>

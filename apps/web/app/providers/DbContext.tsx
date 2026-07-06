@@ -1,6 +1,6 @@
 import { createContext, useContext } from "react";
 
-export interface DbContextState {
+interface DbContextState {
   isDbReady: boolean;
   dbError: Error | null;
   isWriting: boolean;

@@ -6,7 +6,7 @@ export function MobileNav() {
   const visibleItems = navItems.filter((item) => item.mobileVisible);
 
   return (
-    <nav className="md:hidden fixed bottom-0 left-0 right-0 h-16 bg-card/80 backdrop-blur-2xl border-t z-50 flex items-center justify-around px-2 pb-safe">
+    <nav className="bg-card/80 pb-safe fixed right-0 bottom-0 left-0 z-50 flex h-16 items-center justify-around border-t px-2 backdrop-blur-2xl md:hidden">
       {visibleItems.map((item) => {
         const isDays = item.id === "days";
         return (
@@ -17,7 +17,7 @@ export function MobileNav() {
             draggable={false}
             className={({ isActive }) =>
               cn(
-                "flex flex-col items-center justify-center gap-1 min-w-16 h-full transition-colors rounded-xl",
+                "flex h-full min-w-16 flex-col items-center justify-center gap-1 rounded-xl transition-colors",
                 isActive
                   ? "text-primary"
                   : isDays
@@ -30,7 +30,7 @@ export function MobileNav() {
               <>
                 <div
                   className={cn(
-                    "p-1.5 rounded-full transition-all",
+                    "rounded-full p-1.5 transition-all",
                     isActive ? "bg-primary/10" : isDays ? "bg-primary/5" : ""
                   )}
                 >

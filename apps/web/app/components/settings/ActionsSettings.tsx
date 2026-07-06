@@ -114,10 +114,10 @@ export function ActionsSettings() {
       {/* Defaults Section */}
       <div className="space-y-6">
         <div className="flex items-center justify-between px-2">
-          <h4 className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground/50">
+          <h4 className="text-muted-foreground/50 text-[11px] font-bold tracking-wider uppercase">
             Action Defaults
           </h4>
-          <span className="text-[10px] text-muted-foreground/40 font-medium">
+          <span className="text-muted-foreground/40 text-[10px] font-medium">
             Applied to new actions
           </span>
         </div>
@@ -128,14 +128,14 @@ export function ActionsSettings() {
           )}
         >
           <div className="space-y-2">
-            <label className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground/40 px-1">
+            <label className="text-muted-foreground/40 px-1 text-[10px] font-bold tracking-wider uppercase">
               Default Energy
             </label>
             <Select
               value={settings.default_energy}
               onValueChange={(v) => updateSetting("default_energy", v)}
             >
-              <SelectTrigger className="h-9 text-xs bg-muted/20 border-border/30 rounded-xl">
+              <SelectTrigger className="bg-muted/20 border-border/30 h-9 rounded-xl text-xs">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -149,14 +149,14 @@ export function ActionsSettings() {
           </div>
           {settings.show_intentions && (
             <div className="space-y-2">
-              <label className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground/40 px-1">
+              <label className="text-muted-foreground/40 px-1 text-[10px] font-bold tracking-wider uppercase">
                 Default Intention
               </label>
               <Select
                 value={settings.default_intention}
                 onValueChange={(v) => updateSetting("default_intention", v)}
               >
-                <SelectTrigger className="h-9 text-xs bg-muted/20 border-border/30 rounded-xl">
+                <SelectTrigger className="bg-muted/20 border-border/30 h-9 rounded-xl text-xs">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -176,10 +176,10 @@ export function ActionsSettings() {
       <div className="space-y-4">
         <div className="flex items-center justify-between px-2">
           <div className="space-y-0.5">
-            <h4 className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground/50">
+            <h4 className="text-muted-foreground/50 text-[11px] font-bold tracking-wider uppercase">
               Duration Presets
             </h4>
-            <p className="text-[9px] text-muted-foreground/30 font-medium">
+            <p className="text-muted-foreground/30 text-[9px] font-medium">
               Quickly pick duration when adding actions
             </p>
           </div>
@@ -188,36 +188,36 @@ export function ActionsSettings() {
               <Button
                 variant="ghost"
                 size="sm"
-                className="h-7 px-2 text-[10px] uppercase font-bold tracking-widest text-primary hover:bg-primary/10"
+                className="text-primary hover:bg-primary/10 h-7 px-2 text-[10px] font-bold tracking-widest uppercase"
               >
-                <Plus className="size-3 mr-1" />
+                <Plus className="mr-1 size-3" />
                 Add Preset
               </Button>
             </DialogTrigger>
             <DialogContent className="sm:max-w-[320px]">
               <DialogHeader>
-                <DialogTitle className="text-sm font-bold uppercase tracking-wider">
+                <DialogTitle className="text-sm font-bold tracking-wider uppercase">
                   New Duration Preset
                 </DialogTitle>
               </DialogHeader>
               <div className="space-y-4 py-4">
                 <div className="space-y-2">
-                  <label className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground/40 px-1">
+                  <label className="text-muted-foreground/40 px-1 text-[10px] font-bold tracking-wider uppercase">
                     Label (Optional)
                   </label>
                   <Input
                     value={newPreset.label}
                     onChange={(e) => setNewPreset({ ...newPreset, label: e.target.value })}
                     placeholder="e.short, long, break..."
-                    className="h-9 bg-muted/20 border-border/30 rounded-xl text-xs"
+                    className="bg-muted/20 border-border/30 h-9 rounded-xl text-xs"
                   />
                 </div>
                 <div className="grid grid-cols-2 gap-3">
                   <div className="space-y-2">
-                    <label className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground/40 px-1">
+                    <label className="text-muted-foreground/40 px-1 text-[10px] font-bold tracking-wider uppercase">
                       Min (m)
                     </label>
-                    <InputGroup className="h-9 bg-muted/20 border-border/30 rounded-xl">
+                    <InputGroup className="bg-muted/20 border-border/30 h-9 rounded-xl">
                       <InputGroupButton
                         onClick={() =>
                           setNewPreset({
@@ -237,7 +237,7 @@ export function ActionsSettings() {
                             value: [parseInt(e.target.value) || 0, newPreset.value[1]],
                           })
                         }
-                        className="text-center font-bold text-xs"
+                        className="text-center text-xs font-bold"
                       />
                       <InputGroupButton
                         onClick={() =>
@@ -255,10 +255,10 @@ export function ActionsSettings() {
                     </InputGroup>
                   </div>
                   <div className="space-y-2">
-                    <label className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground/40 px-1">
+                    <label className="text-muted-foreground/40 px-1 text-[10px] font-bold tracking-wider uppercase">
                       Max (m)
                     </label>
-                    <InputGroup className="h-9 bg-muted/20 border-border/30 rounded-xl">
+                    <InputGroup className="bg-muted/20 border-border/30 h-9 rounded-xl">
                       <InputGroupButton
                         onClick={() =>
                           setNewPreset({
@@ -281,7 +281,7 @@ export function ActionsSettings() {
                             value: [newPreset.value[0], parseInt(e.target.value) || 0],
                           })
                         }
-                        className="text-center font-bold text-xs"
+                        className="text-center text-xs font-bold"
                       />
                       <InputGroupButton
                         onClick={() =>
@@ -298,7 +298,7 @@ export function ActionsSettings() {
                 </div>
               </div>
               <DialogFooter>
-                <Button onClick={addDurationPreset} className="w-full rounded-xl font-bold text-xs">
+                <Button onClick={addDurationPreset} className="w-full rounded-xl text-xs font-bold">
                   Create Preset
                 </Button>
               </DialogFooter>
@@ -309,7 +309,7 @@ export function ActionsSettings() {
           {settings.action_duration_options.map((preset, idx) => (
             <div
               key={idx}
-              className="flex items-center gap-3 p-3 bg-muted/20 rounded-2xl border border-border/30 group/preset hover:border-primary/20 hover:bg-primary/2 transition-all"
+              className="bg-muted/20 border-border/30 group/preset hover:border-primary/20 hover:bg-primary/2 flex items-center gap-3 rounded-2xl border p-3 transition-all"
             >
               <div className="flex-1 space-y-2.5">
                 <div className="flex items-center justify-between">
@@ -321,12 +321,12 @@ export function ActionsSettings() {
                         ? `${preset.value[0]}m`
                         : `${preset.value[0]}-${preset.value[1]}m`
                     }
-                    className="h-6 text-xs font-bold bg-transparent border-none p-0 focus-visible:ring-0 placeholder:italic w-full"
+                    className="h-6 w-full border-none bg-transparent p-0 text-xs font-bold placeholder:italic focus-visible:ring-0"
                   />
                 </div>
                 <div className="flex items-center gap-2">
-                  <InputGroup className="h-7 bg-background/50 border-border/30 rounded-lg flex-1">
-                    <InputGroupAddon className="text-[8px] font-bold uppercase tracking-tighter opacity-40 px-1.5">
+                  <InputGroup className="bg-background/50 border-border/30 h-7 flex-1 rounded-lg">
+                    <InputGroupAddon className="px-1.5 text-[8px] font-bold tracking-tighter uppercase opacity-40">
                       Min
                     </InputGroupAddon>
                     <InputGroupButton
@@ -339,7 +339,7 @@ export function ActionsSettings() {
                     >
                       <Minus className="size-2" />
                     </InputGroupButton>
-                    <span className="text-[10px] font-bold w-6 text-center tabular-nums">
+                    <span className="w-6 text-center text-[10px] font-bold tabular-nums">
                       {preset.value[0]}
                     </span>
                     <InputGroupButton
@@ -357,8 +357,8 @@ export function ActionsSettings() {
                     </InputGroupButton>
                   </InputGroup>
 
-                  <InputGroup className="h-7 bg-background/50 border-border/30 rounded-lg flex-1">
-                    <InputGroupAddon className="text-[8px] font-bold uppercase tracking-tighter opacity-40 px-1.5">
+                  <InputGroup className="bg-background/50 border-border/30 h-7 flex-1 rounded-lg">
+                    <InputGroupAddon className="px-1.5 text-[8px] font-bold tracking-tighter uppercase opacity-40">
                       Max
                     </InputGroupAddon>
                     <InputGroupButton
@@ -371,7 +371,7 @@ export function ActionsSettings() {
                     >
                       <Minus className="size-2" />
                     </InputGroupButton>
-                    <span className="text-[10px] font-bold w-6 text-center tabular-nums">
+                    <span className="w-6 text-center text-[10px] font-bold tabular-nums">
                       {preset.value[1]}
                     </span>
                     <InputGroupButton
@@ -387,13 +387,13 @@ export function ActionsSettings() {
                   </InputGroup>
                 </div>
               </div>
-              <div className="flex flex-col items-center gap-0.5 opacity-50 group-hover/preset:opacity-100 transition-opacity">
+              <div className="flex flex-col items-center gap-0.5 opacity-50 transition-opacity group-hover/preset:opacity-100">
                 <Button
                   variant="ghost"
                   size="icon-xs"
                   onClick={() => moveDurationPreset(idx, "up")}
                   disabled={idx === 0}
-                  className="size-6 text-muted-foreground/90 hover:text-primary hover:bg-primary/10 disabled:opacity-0"
+                  className="text-muted-foreground/90 hover:text-primary hover:bg-primary/10 size-6 disabled:opacity-0"
                 >
                   <ChevronUp className="size-3.5" />
                 </Button>
@@ -401,7 +401,7 @@ export function ActionsSettings() {
                   variant="ghost"
                   size="icon-xs"
                   onClick={() => removeDurationPreset(idx)}
-                  className="size-6 text-muted-foreground/40 hover:text-destructive hover:bg-destructive/10"
+                  className="text-muted-foreground/40 hover:text-destructive hover:bg-destructive/10 size-6"
                 >
                   <Trash2 className="size-3.5" />
                 </Button>
@@ -410,7 +410,7 @@ export function ActionsSettings() {
                   size="icon-xs"
                   onClick={() => moveDurationPreset(idx, "down")}
                   disabled={idx === settings.action_duration_options.length - 1}
-                  className="size-6 text-muted-foreground/90 hover:text-primary hover:bg-primary/10 disabled:opacity-0"
+                  className="text-muted-foreground/90 hover:text-primary hover:bg-primary/10 size-6 disabled:opacity-0"
                 >
                   <ChevronDown className="size-3.5" />
                 </Button>
@@ -423,10 +423,10 @@ export function ActionsSettings() {
       {/* Timezone Presets */}
       <div className="space-y-4">
         <div className="flex items-center justify-between px-2">
-          <h4 className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground/50">
+          <h4 className="text-muted-foreground/50 text-[11px] font-bold tracking-wider uppercase">
             Timezone Presets
           </h4>
-          <span className="text-[10px] text-muted-foreground/40 font-medium">
+          <span className="text-muted-foreground/40 text-[10px] font-medium">
             Pinned in Action Input
           </span>
         </div>
@@ -435,14 +435,14 @@ export function ActionsSettings() {
             {settings.action_timezone_options.map((tz) => (
               <div
                 key={tz}
-                className="flex items-center gap-1.5 pl-2.5 pr-1 py-1 bg-primary/5 text-primary border border-primary/20 rounded-lg text-xs font-medium"
+                className="bg-primary/5 text-primary border-primary/20 flex items-center gap-1.5 rounded-lg border py-1 pr-1 pl-2.5 text-xs font-medium"
               >
                 {tz.split("/").pop()?.replace(/_/g, " ")}
                 <Button
                   variant="ghost"
                   size="icon"
                   onClick={() => removeTimezonePreset(tz)}
-                  className="size-5 rounded-md hover:bg-primary/10 text-primary/60 hover:text-primary"
+                  className="hover:bg-primary/10 text-primary/60 hover:text-primary size-5 rounded-md"
                 >
                   <X className="size-3" />
                 </Button>
@@ -460,9 +460,9 @@ export function ActionsSettings() {
                 variant="ghost"
                 role="combobox"
                 aria-expanded={tzPopoverOpen}
-                className="w-full justify-between h-9 bg-muted/20 border border-border/30 rounded-xl px-3 hover:bg-muted/30"
+                className="bg-muted/20 border-border/30 hover:bg-muted/30 h-9 w-full justify-between rounded-xl border px-3"
               >
-                <div className="flex items-center gap-2 text-muted-foreground/60">
+                <div className="text-muted-foreground/60 flex items-center gap-2">
                   <Search className="size-3.5" />
                   <span className="text-xs">Search to add timezone...</span>
                 </div>

@@ -33,7 +33,7 @@ export function EditableNote({ value, onChange, className }: EditableNoteProps) 
         onBlur={handleBlur}
         onKeyDown={handleKeyDown}
         className={cn(
-          "w-full bg-muted/20 border-border/20 focus-visible:ring-1 focus-visible:ring-primary/20 rounded-2xl p-4 min-h-[100px] text-sm text-foreground leading-relaxed resize-y",
+          "bg-muted/20 border-border/20 focus-visible:ring-primary/20 text-foreground min-h-[100px] w-full resize-y rounded-2xl p-4 text-sm leading-relaxed focus-visible:ring-1",
           className
         )}
         placeholder="Add notes or subtasks..."
@@ -45,16 +45,16 @@ export function EditableNote({ value, onChange, className }: EditableNoteProps) 
     <div
       onClick={() => setIsEditing(true)}
       className={cn(
-        "cursor-text hover:bg-muted/40 transition-colors border border-transparent hover:border-border/10 rounded-2xl",
+        "hover:bg-muted/40 hover:border-border/10 cursor-text rounded-2xl border border-transparent transition-colors",
         className
       )}
     >
       {value ? (
-        <p className="text-sm text-muted-foreground/80 leading-relaxed bg-muted/20 border border-border/5 p-4 rounded-2xl whitespace-pre-wrap pointer-events-none">
+        <p className="text-muted-foreground/80 bg-muted/20 border-border/5 pointer-events-none rounded-2xl border p-4 text-sm leading-relaxed whitespace-pre-wrap">
           {value}
         </p>
       ) : (
-        <p className="text-xs italic text-muted-foreground/45 mt-1 px-1 py-2">
+        <p className="text-muted-foreground/45 mt-1 px-1 py-2 text-xs italic">
           No notes or subtasks attached to this action. Click to add.
         </p>
       )}

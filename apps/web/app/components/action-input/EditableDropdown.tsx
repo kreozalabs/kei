@@ -8,7 +8,7 @@ import { PropertyButton } from "./PropertyButton";
 import { type ReactNode } from "react";
 import { Check } from "lucide-react";
 
-export interface DropdownOption<T extends string> {
+interface DropdownOption<T extends string> {
   value: T;
   label: string;
   icon?: ReactNode;
@@ -53,7 +53,7 @@ export function EditableDropdown<T extends string>({
               {option.icon && <span className="text-muted-foreground">{option.icon}</span>}
               <span>{option.label}</span>
             </div>
-            {value === option.value && <Check className="size-3 text-primary ml-2" />}
+            {value === option.value && <Check className="text-primary ml-2 size-3" />}
           </DropdownMenuItem>
         ))}
       </DropdownMenuContent>

@@ -234,20 +234,20 @@ export const DragResizeWrapper = ({
           : {}),
       }}
       className={cn(
-        "bg-background overflow-hidden flex flex-col z-100",
-        currentMode === "floating" && "fixed shadow-2xl rounded-2xl border border-border/50",
-        currentMode === "docked" && "w-full h-full rounded-none border-l border-border",
+        "bg-background z-100 flex flex-col overflow-hidden",
+        currentMode === "floating" && "border-border/50 fixed rounded-2xl border shadow-2xl",
+        currentMode === "docked" && "border-border h-full w-full rounded-none border-l",
         currentMode === "drawer" &&
-          "fixed bottom-0 left-0 right-0 h-[85vh] rounded-t-2xl border-t border-border shadow-[0_-10px_40px_rgba(0,0,0,0.1)]"
+          "border-border fixed right-0 bottom-0 left-0 h-[85vh] rounded-t-2xl border-t shadow-[0_-10px_40px_rgba(0,0,0,0.1)]"
       )}
     >
       {/* Header / Drag Handle */}
       <div
         onMouseDown={currentMode === "floating" ? handleDragStart : undefined}
         className={cn(
-          "h-10 bg-muted flex items-center justify-between px-4 select-none border-b border-border",
+          "bg-muted border-border flex h-10 items-center justify-between border-b px-4 select-none",
           currentMode === "floating"
-            ? "cursor-grab active:cursor-grabbing hover:bg-muted-foreground/15 transition-colors"
+            ? "hover:bg-muted-foreground/15 cursor-grab transition-colors active:cursor-grabbing"
             : ""
         )}
       >
@@ -286,15 +286,15 @@ export const DragResizeWrapper = ({
         <>
           <div
             onMouseDown={handleRightResizeStart}
-            className="absolute right-0 top-0 bottom-0 w-1 cursor-ew-resize hover:bg-primary/25 transition-colors"
+            className="hover:bg-primary/25 absolute top-0 right-0 bottom-0 w-1 cursor-ew-resize transition-colors"
           />
           <div
             onMouseDown={handleBottomResizeStart}
-            className="absolute bottom-0 left-0 right-0 h-1 cursor-ns-resize hover:bg-primary/25 transition-colors"
+            className="hover:bg-primary/25 absolute right-0 bottom-0 left-0 h-1 cursor-ns-resize transition-colors"
           />
           <div
             onMouseDown={handleCornerResizeStart}
-            className="absolute right-0 bottom-0 w-3 h-3 cursor-nwse-resize hover:bg-primary/25 transition-colors"
+            className="hover:bg-primary/25 absolute right-0 bottom-0 h-3 w-3 cursor-nwse-resize transition-colors"
           />
         </>
       )}

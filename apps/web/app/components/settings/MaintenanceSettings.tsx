@@ -126,12 +126,12 @@ export function MaintenanceSettings() {
     <div className="space-y-6">
       <div className="flex flex-col gap-4">
         {/* Rebuild Derived Data */}
-        <div className="p-4 rounded-2xl bg-amber-500/5 border border-amber-500/10 space-y-3">
+        <div className="space-y-3 rounded-2xl border border-amber-500/10 bg-amber-500/5 p-4">
           <div className="flex items-center gap-2 text-amber-500">
             <Database className="size-4" />
-            <h4 className="text-xs font-bold uppercase tracking-wider">Derived Data</h4>
+            <h4 className="text-xs font-bold tracking-wider uppercase">Derived Data</h4>
           </div>
-          <p className="text-[13px] text-muted-foreground leading-relaxed">
+          <p className="text-muted-foreground text-[13px] leading-relaxed">
             Derived data can be reconstructed at any time from the permanent event log. Use this if
             you notice any data inconsistencies.
           </p>
@@ -139,26 +139,26 @@ export function MaintenanceSettings() {
             onClick={handleRebuild}
             disabled={isRebuilding}
             variant="outline"
-            className="w-full justify-start gap-2 h-10 rounded-xl bg-background hover:bg-muted border-border/50 text-foreground"
+            className="bg-background hover:bg-muted border-border/50 text-foreground h-10 w-full justify-start gap-2 rounded-xl"
           >
             {isRebuilding ? (
-              <Loader2 className="size-4 animate-spin text-primary" />
+              <Loader2 className="text-primary size-4 animate-spin" />
             ) : (
-              <RefreshCw className="size-4 text-primary" />
+              <RefreshCw className="text-primary size-4" />
             )}
-            <span className="font-bold text-[12px] uppercase tracking-widest">
+            <span className="text-[12px] font-bold tracking-widest uppercase">
               {isRebuilding ? "Rebuilding..." : "Rebuild Database"}
             </span>
           </Button>
         </div>
 
         {/* Export & Import */}
-        <div className="p-4 rounded-2xl bg-amber-500/5 border border-amber-500/10 space-y-3">
+        <div className="space-y-3 rounded-2xl border border-amber-500/10 bg-amber-500/5 p-4">
           <div className="flex items-center gap-2 text-amber-500">
             <Database className="size-4" />
-            <h4 className="text-xs font-bold uppercase tracking-wider">Export & Import</h4>
+            <h4 className="text-xs font-bold tracking-wider uppercase">Export & Import</h4>
           </div>
-          <p className="text-[13px] text-muted-foreground leading-relaxed">
+          <p className="text-muted-foreground text-[13px] leading-relaxed">
             Export and Import Your Data
           </p>
           <div className="flex flex-col gap-2">
@@ -166,14 +166,14 @@ export function MaintenanceSettings() {
               onClick={handleExport}
               disabled={isExporting}
               variant="outline"
-              className="w-full justify-start gap-2 h-10 rounded-xl bg-background hover:bg-muted border-border/50 text-foreground"
+              className="bg-background hover:bg-muted border-border/50 text-foreground h-10 w-full justify-start gap-2 rounded-xl"
             >
               {isExporting ? (
-                <Loader2 className="size-4 animate-spin text-primary" />
+                <Loader2 className="text-primary size-4 animate-spin" />
               ) : (
-                <Download className="size-4 text-primary" />
+                <Download className="text-primary size-4" />
               )}
-              <span className="font-bold text-[12px] uppercase tracking-widest">
+              <span className="text-[12px] font-bold tracking-widest uppercase">
                 {isExporting ? "Exporting..." : "Export"}
               </span>
             </Button>
@@ -181,14 +181,14 @@ export function MaintenanceSettings() {
               onClick={handleImportClick}
               disabled={isImporting}
               variant="outline"
-              className="w-full justify-start gap-2 h-10 rounded-xl bg-background hover:bg-muted border-border/50 text-foreground"
+              className="bg-background hover:bg-muted border-border/50 text-foreground h-10 w-full justify-start gap-2 rounded-xl"
             >
               {isImporting ? (
-                <Loader2 className="size-4 animate-spin text-primary" />
+                <Loader2 className="text-primary size-4 animate-spin" />
               ) : (
-                <Upload className="size-4 text-primary" />
+                <Upload className="text-primary size-4" />
               )}
-              <span className="font-bold text-[12px] uppercase tracking-widest">
+              <span className="text-[12px] font-bold tracking-widest uppercase">
                 {isImporting ? "Importing..." : "Import"}
               </span>
             </Button>
@@ -203,7 +203,7 @@ export function MaintenanceSettings() {
         </div>
 
         {/* Device Sync (P2P) */}
-        <div className="p-4 rounded-2xl bg-zinc-500/5 border border-border/50 space-y-4">
+        <div className="border-border/50 space-y-4 rounded-2xl border bg-zinc-500/5 p-4">
           <SyncSettings />
         </div>
       </div>

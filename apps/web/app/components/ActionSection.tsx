@@ -74,13 +74,13 @@ export function ActionSection({
   const showContent = isTodayLocked ? true : isExpanded;
 
   return (
-    <div className="mb-8 group/section relative">
-      <div className="sticky top-0 z-20 flex items-center gap-2 px-1 sm:px-2 py-3 border-b border-border/20 bg-background/95 backdrop-blur-sm -mx-1 sm:-mx-2 mb-2 transition-shadow">
-        <div className="flex-1 flex items-center gap-2 overflow-hidden">
-          <h2 className="text-[14px] font-bold tracking-wider text-muted-foreground/60 truncate flex items-center gap-2">
+    <div className="group/section relative mb-8">
+      <div className="border-border/20 bg-background/95 sticky top-0 z-20 -mx-1 mb-2 flex items-center gap-2 border-b px-1 py-3 backdrop-blur-sm transition-shadow sm:-mx-2 sm:px-2">
+        <div className="flex flex-1 items-center gap-2 overflow-hidden">
+          <h2 className="text-muted-foreground/60 flex items-center gap-2 truncate text-[14px] font-bold tracking-wider">
             <span>{sectionTitle}</span>
             {totalActions > 0 && (
-              <span className="text-[10px] font-medium text-muted-foreground/40 tabular-nums px-1.5 py-0.5 bg-muted/30 rounded-md border border-border/10">
+              <span className="text-muted-foreground/40 bg-muted/30 border-border/10 rounded-md border px-1.5 py-0.5 text-[10px] font-medium tabular-nums">
                 {completedActionsCount}/{totalActions}
               </span>
             )}
@@ -92,7 +92,7 @@ export function ActionSection({
               setIsAdding(true);
               setIsExpanded(true);
             }}
-            className="size-6 p-0 rounded-md text-muted-foreground hover:text-primary hover:bg-primary/10 transition-all opacity-50 group-hover/section:opacity-100 flex items-center justify-center shrink-0"
+            className="text-muted-foreground hover:text-primary hover:bg-primary/10 flex size-6 shrink-0 items-center justify-center rounded-md p-0 opacity-50 transition-all group-hover/section:opacity-100"
             title="Add Action"
           >
             <PlusIcon className="size-4" />
@@ -103,7 +103,7 @@ export function ActionSection({
             variant="ghost"
             size="icon"
             onClick={() => setIsExpanded((prev) => !prev)}
-            className="size-6 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted transition-all active:scale-95 opacity-70 group-hover/section:opacity-100 -mr-1"
+            className="text-muted-foreground hover:text-foreground hover:bg-muted -mr-1 size-6 rounded-md opacity-70 transition-all group-hover/section:opacity-100 active:scale-95"
             title={isExpanded ? "Collapse section" : "Expand section"}
           >
             <ChevronDownIcon
@@ -134,8 +134,8 @@ export function ActionSection({
             </div>
           )}
 
-          <div className="flex flex-col min-h-12 rounded-xl border border-dashed transition-all p-1 bg-muted/5 border-transparent hover:border-border/50">
-            <div className="flex flex-col min-h-5">
+          <div className="bg-muted/5 hover:border-border/50 flex min-h-12 flex-col rounded-xl border border-dashed border-transparent p-1 transition-all">
+            <div className="flex min-h-5 flex-col">
               <AnimatePresence initial={false}>
                 {(() => {
                   let activeCount = 0;
@@ -174,7 +174,7 @@ export function ActionSection({
                 })()}
               </AnimatePresence>
               {actions.length === 0 && (
-                <div className="text-[11px] font-medium text-muted-foreground/30 p-3 text-center border border-dashed border-border/20 rounded-lg mx-1 mb-1">
+                <div className="text-muted-foreground/30 border-border/20 mx-1 mb-1 rounded-lg border border-dashed p-3 text-center text-[11px] font-medium">
                   No actions for this day
                 </div>
               )}

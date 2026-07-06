@@ -1,7 +1,7 @@
 import { CalendarDaysIcon } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 
-export interface NavItem {
+interface NavItem {
   id: string;
   label: string;
   icon: LucideIcon;
@@ -9,7 +9,7 @@ export interface NavItem {
   mobileVisible?: boolean;
 }
 
-export interface NavGroup {
+interface NavGroup {
   label: string;
   items: NavItem[];
 }

@@ -1,6 +1,6 @@
 export type ViewMode = "day" | "week" | "month" | "year" | "agenda" | "inbox" | "kanban" | "lists";
 
-export interface ViewModeConfig {
+interface ViewModeConfig {
   id: ViewMode;
   label: string;
   icon?: string;

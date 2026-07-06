@@ -7,7 +7,7 @@ import { FullscreenToggle } from "../FullscreenToggle";
 import { SettingsIcon } from "lucide-react";
 import { useSettings } from "@/providers/SettingsContext";
 
-export interface AppSidebarProps {
+interface AppSidebarProps {
   isOpen?: boolean;
   onToggle?: () => void;
 }
@@ -17,22 +17,22 @@ export function AppSidebar({ isOpen = true, onToggle }: AppSidebarProps) {
   return (
     <aside
       className={cn(
-        "hidden md:flex flex-col shrink-0 transition-[width,opacity] duration-500 ease-[cubic-bezier(0.32,0.72,0,1)] overflow-hidden group",
-        isOpen ? "w-72 opacity-100" : "w-0 opacity-0 invisible"
+        "group hidden shrink-0 flex-col overflow-hidden transition-[width,opacity] duration-500 ease-[cubic-bezier(0.32,0.72,0,1)] md:flex",
+        isOpen ? "w-72 opacity-100" : "invisible w-0 opacity-0"
       )}
     >
       <div
         className={cn(
-          "flex flex-col h-full overflow-y-auto no-scrollbar w-72 transition-transform duration-500 ease-[cubic-bezier(0.32,0.72,0,1)]",
+          "no-scrollbar flex h-full w-72 flex-col overflow-y-auto transition-transform duration-500 ease-[cubic-bezier(0.32,0.72,0,1)]",
           !isOpen && "-translate-x-12"
         )}
       >
         <div
           className={cn(
-            "flex items-end justify-between px-6 md:px-8 pt-4 md:pt-6 pb-2 md:pb-2 shrink-0 border-b border-border/80 mb-2 animate-in fade-in slide-in-from-top-2 animation-duration-[700ms]"
+            "border-border/80 animate-in fade-in slide-in-from-top-2 animation-duration-[700ms] mb-2 flex shrink-0 items-end justify-between border-b px-6 pt-4 pb-2 md:px-8 md:pt-6 md:pb-2"
           )}
         >
-          <div className="flex items-center justify-between w-full h-12">
+          <div className="flex h-12 w-full items-center justify-between">
             <SidebarToggle onClick={onToggle} />
             <div
               className={cn(
@@ -42,37 +42,37 @@ export function AppSidebar({ isOpen = true, onToggle }: AppSidebarProps) {
             >
               <FullscreenToggle
                 size="icon"
-                className="size-8 rounded-lg hover:bg-muted/80 border-none text-muted-foreground/40 hover:text-foreground transition-all active:scale-90"
+                className="hover:bg-muted/80 text-muted-foreground/40 hover:text-foreground size-8 rounded-lg border-none transition-all active:scale-90"
               />
             </div>
           </div>
         </div>
 
-        <div className="flex flex-col p-4 space-y-2 gap-2 flex-1">
+        <div className="flex flex-1 flex-col gap-2 space-y-2 p-4">
           {/* App & Profile Header */}
-          <div className="flex items-center justify-between mb-6 px-0">
+          <div className="mb-6 flex items-center justify-between px-0">
             <Button
               variant="ghost"
-              className="hidden md:flex items-center gap-2.5 px-0 py-1.5 h-auto border-none font-medium hover:bg-muted/50 justify-start flex-1 min-w-0 rounded-lg group"
+              className="hover:bg-muted/50 group hidden h-auto min-w-0 flex-1 items-center justify-start gap-2.5 rounded-lg border-none px-0 py-1.5 font-medium md:flex"
             >
-              <div className="flex items-center justify-center bg-primary/10 text-primary size-8 rounded-lg shrink-0 group-hover:bg-primary/20 transition-colors">
+              <div className="bg-primary/10 text-primary group-hover:bg-primary/20 flex size-8 shrink-0 items-center justify-center rounded-lg transition-colors">
                 <KreozaLogo className="size-5" />
               </div>
-              <div className="flex flex-col items-start min-w-0">
-                <span className="font-bold text-[13px] tracking-tight leading-none text-foreground/90">
+              <div className="flex min-w-0 flex-col items-start">
+                <span className="text-foreground/90 text-[13px] leading-none font-bold tracking-tight">
                   Kei
                 </span>
-                <span className="text-[10.5px] font-medium text-muted-foreground/70 truncate mt-1">
+                <span className="text-muted-foreground/70 mt-1 truncate text-[10.5px] font-medium">
                   {"{user.email} or login"}
                 </span>
               </div>
             </Button>
           </div>
 
-          <div className="flex flex-col space-y-6 flex-1 gap-2.5">
+          <div className="flex flex-1 flex-col gap-2.5 space-y-6">
             {navGroups.map((group) => (
               <div key={group.label} className="flex flex-col space-y-1">
-                <h4 className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground/50 px-3 mb-3">
+                <h4 className="text-muted-foreground/50 mb-3 px-3 text-[11px] font-bold tracking-wider uppercase">
                   {group.label}
                 </h4>
                 {group.items.map((item) => {
@@ -85,7 +85,7 @@ export function AppSidebar({ isOpen = true, onToggle }: AppSidebarProps) {
                       draggable={false}
                       className={({ isActive }) =>
                         cn(
-                          "w-full flex items-center justify-between px-3 py-2 font-medium transition-none border-none rounded-lg group",
+                          "group flex w-full items-center justify-between rounded-lg border-none px-3 py-2 font-medium transition-none",
                           isActive
                             ? cn(
                                 "bg-primary/10 text-primary shadow-none",
@@ -108,7 +108,7 @@ export function AppSidebar({ isOpen = true, onToggle }: AppSidebarProps) {
                                 isToday && !isActive && "opacity-60"
                               )}
                             />
-                            <span className="tracking-tight text-sm">{item.label}</span>
+                            <span className="text-sm tracking-tight">{item.label}</span>
                           </div>
                         </>
                       )}
@@ -119,13 +119,13 @@ export function AppSidebar({ isOpen = true, onToggle }: AppSidebarProps) {
             ))}
           </div>
 
-          <div className="mt-auto pt-4 border-t border-border/40">
+          <div className="border-border/40 mt-auto border-t pt-4">
             <NavLink
               to="/app/settings"
               draggable={false}
               className={({ isActive }) =>
                 cn(
-                  "w-full flex items-center gap-2.5 px-3 py-2 font-medium transition-none border-none rounded-lg group",
+                  "group flex w-full items-center gap-2.5 rounded-lg border-none px-3 py-2 font-medium transition-none",
                   isActive
                     ? "bg-primary/10 text-primary"
                     : "text-muted-foreground hover:bg-muted/60 hover:text-foreground"
@@ -133,7 +133,7 @@ export function AppSidebar({ isOpen = true, onToggle }: AppSidebarProps) {
               }
             >
               <SettingsIcon className="size-4.5" />
-              <span className="tracking-tight text-sm">Settings</span>
+              <span className="text-sm tracking-tight">Settings</span>
             </NavLink>
           </div>
         </div>
