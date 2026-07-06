@@ -23,10 +23,7 @@
       ]
     },
     "packages/ui": {
-      "ignoreDependencies": [
-        "@tailwindcss/postcss",
-        "tailwindcss"
-      ]
+      "ignoreDependencies": ["@tailwindcss/postcss", "tailwindcss"]
     }
   }
 }
