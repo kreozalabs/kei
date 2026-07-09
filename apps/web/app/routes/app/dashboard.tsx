@@ -34,6 +34,7 @@ import { ViewSwitcher } from "./dashboard/components/ViewSwitcher";
 import { BulkActionBar } from "./dashboard/components/BulkActionBar";
 import { DayView } from "./dashboard/views/DayView";
 import { KanbanView } from "./dashboard/views/KanbanView";
+import { CalendarView } from "./dashboard/views/CalendarView";
 
 function HeaderPortal({ to, children }: { to: string; children: React.ReactNode }) {
   const [target, setTarget] = useState<HTMLElement | null>(null);
@@ -83,6 +84,8 @@ function DashboardShell() {
 
   const [editorMode, setEditorMode] = useState<"floating" | "docked" | "drawer">("floating");
 
+  const { setViewMode } = useDashboardContext();
+
   const { setTitle, setSubtitle, setHeaderActions, setIsDocked } =
     useOutletContext<AppLayoutContext>();
 
@@ -115,7 +118,7 @@ function DashboardShell() {
   let Content;
   switch (viewMode) {
     case "day":
-      Content = <DayView />;
+      Content = <CalendarView />;
       break;
     case "kanban":
       Content = <KanbanView />;
@@ -130,11 +133,7 @@ function DashboardShell() {
           <p className="mt-2 max-w-md text-sm">
             The "{viewMode}" view is currently under development.
           </p>
-          <Button
-            variant="outline"
-            className="mt-6"
-            onClick={() => useDashboardContext().setViewMode("day")}
-          >
+          <Button variant="outline" className="mt-6" onClick={() => setViewMode("day")}>
             Return to Day Grid
           </Button>
         </div>

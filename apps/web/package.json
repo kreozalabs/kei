@@ -12,6 +12,7 @@
   },
   "dependencies": {
     "@electric-sql/pglite": "^0.4.3",
+    "@kreozalabs/kei-calendar": "workspace:*",
     "@kreozalabs/kei-core": "workspace:*",
     "@kreozalabs/icons": "^1.0.0",
     "@kreozalabs/kei-ui": "workspace:*",

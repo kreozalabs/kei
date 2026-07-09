@@ -1,9 +1,27 @@
-import { defineConfig, type Plugin } from "vite";
+import { defineConfig, createLogger, type Plugin } from "vite";
 import { reactRouter } from "@react-router/dev/vite";
 import tailwindcss from "@tailwindcss/vite";
 import { VitePWA } from "vite-plugin-pwa";
 import checker from "vite-plugin-checker";
 import path from "path";
+
+const logger = createLogger();
+const originalWarn = logger.warn;
+const originalWarnOnce = logger.warnOnce;
+
+logger.warn = (msg, options) => {
+  if (msg.includes("points to missing source files")) {
+    return;
+  }
+  originalWarn(msg, options);
+};
+
+logger.warnOnce = (msg, options) => {
+  if (msg.includes("points to missing source files")) {
+    return;
+  }
+  originalWarnOnce(msg, options);
+};
 
 const MAX_CACHE_SIZE_BYTES = 15 * 1024 * 1024;
 
@@ -11,6 +29,7 @@ const isTauriBuild =
   process.env.TAURI_ENV_PLATFORM !== undefined || process.env.TAURI_BUILD === "true";
 
 console.log("Vite Config - isTauriBuild:", isTauriBuild);
+
 
 const crossOriginIsolation = (): Plugin => ({
   name: "cross-origin-isolation",
@@ -31,6 +50,7 @@ const crossOriginIsolation = (): Plugin => ({
 });
 
 export default defineConfig(({ command }) => ({
+  customLogger: logger,
   server: {
     host: true,
   },
@@ -116,6 +136,9 @@ export default defineConfig(({ command }) => ({
           ]
         : []),
     ],
+  },
+  ssr: {
+    noExternal: ["rrule", "@kreozalabs/kei-calendar"],
   },
   optimizeDeps: {
     exclude: ["@sqlite.org/sqlite-wasm"],
