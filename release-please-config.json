@@ -13,7 +13,7 @@
     },
     "packages/ui": {
       "release-type": "node",
-      "component": "@kreozalabs/ui",
+      "component": "@kreozalabs/kei-ui",
       "changelog-path": "CHANGELOG.md"
     }
   },
@@ -21,7 +21,7 @@
     {
       "type": "linked-versions",
       "groupName": "kei-workspace",
-      "components": ["kei", "@kreozalabs/kei-web", "@kreozalabs/ui"]
+      "components": ["kei", "@kreozalabs/kei-web", "@kreozalabs/kei-ui"]
     }
   ]
 }

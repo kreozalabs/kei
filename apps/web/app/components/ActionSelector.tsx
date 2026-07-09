@@ -7,7 +7,7 @@ import {
   DropdownMenuItem,
   Button,
   cn,
-} from "@kreozalabs/ui";
+} from "@kreozalabs/kei-ui";
 import { CheckIcon } from "lucide-react";
 
 export interface ActionSelectorOption<T = unknown> {

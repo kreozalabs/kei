@@ -1,6 +1,6 @@
-import type { SettingKey } from "@kreozalabs/core";
+import type { SettingKey } from "@kreozalabs/kei-core";
 import { persistEvent } from "./events";
-import { EVENT_TYPES, GLOBAL_SETTINGS_ID } from "@kreozalabs/core";
+import { EVENT_TYPES, GLOBAL_SETTINGS_ID } from "@kreozalabs/kei-core";
 import type { DatabaseAdapter } from "./adapter";
 
 export async function getSetting<T>(key: SettingKey, adapter: DatabaseAdapter): Promise<T | null> {

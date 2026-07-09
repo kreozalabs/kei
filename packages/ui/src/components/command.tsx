@@ -1,15 +1,15 @@
 import * as React from "react";
 import { Command as CommandPrimitive } from "cmdk";
 
-import { cn } from "@kreozalabs/ui/lib/utils";
+import { cn } from "@kreozalabs/kei-ui/lib/utils";
 import {
   Dialog,
   DialogContent,
   DialogDescription,
   DialogHeader,
   DialogTitle,
-} from "@kreozalabs/ui/components/dialog";
-import { InputGroup, InputGroupAddon } from "@kreozalabs/ui/components/input-group";
+} from "@kreozalabs/kei-ui/components/dialog";
+import { InputGroup, InputGroupAddon } from "@kreozalabs/kei-ui/components/input-group";
 import { SearchIcon, CheckIcon } from "lucide-react";
 
 function Command({ className, ...props }: React.ComponentProps<typeof CommandPrimitive>) {

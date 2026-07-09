@@ -1,7 +1,7 @@
 // FIXME: Refactor !
 import { useState } from "react";
-import type { Action, ActionStatus } from "@kreozalabs/core";
-import { Button, cn, Checkbox, Input } from "@kreozalabs/ui";
+import type { Action, ActionStatus } from "@kreozalabs/kei-core";
+import { Button, cn, Checkbox, Input } from "@kreozalabs/kei-ui";
 import {
   Trash2Icon,
   CheckCircle2Icon,
@@ -23,10 +23,10 @@ import {
   DropdownMenuTrigger,
   DropdownMenuContent,
   DropdownMenuItem,
-} from "@kreozalabs/ui";
+} from "@kreozalabs/kei-ui";
 import { NextDayBadge } from "./NextDayBadge";
 import { useSettings } from "../providers/SettingsContext";
-import { formatTime, getNextDayString } from "@kreozalabs/core";
+import { formatTime, getNextDayString } from "@kreozalabs/kei-core";
 import { useCurrentDay } from "../hooks/useCurrentDay";
 import {
   ACTION_STATUS,
@@ -35,7 +35,7 @@ import {
   INTENTIONS,
   INTENTION_OPTIONS,
   IMPORTANT_CONFIG,
-} from "@kreozalabs/core";
+} from "@kreozalabs/kei-core";
 import { motion } from "framer-motion";
 
 interface ActionItemProps {

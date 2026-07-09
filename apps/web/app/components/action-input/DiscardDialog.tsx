@@ -6,7 +6,7 @@ import {
   DialogHeader,
   DialogTitle,
   Button,
-} from "@kreozalabs/ui";
+} from "@kreozalabs/kei-ui";
 
 interface DiscardDialogProps {
   open: boolean;

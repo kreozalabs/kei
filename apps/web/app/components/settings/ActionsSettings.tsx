@@ -29,9 +29,9 @@ import {
   InputGroupAddon,
   InputGroupButton,
   InputGroupInput,
-} from "@kreozalabs/ui";
+} from "@kreozalabs/kei-ui";
 import { useSettings } from "../../providers/SettingsContext";
-import { DEFAULT_CONFIG, ENERGY_OPTIONS, INTENTION_OPTIONS } from "@kreozalabs/core";
+import { DEFAULT_CONFIG, ENERGY_OPTIONS, INTENTION_OPTIONS } from "@kreozalabs/kei-core";
 import { TimezoneSelector } from "../TimezoneSelector";
 
 export function ActionsSettings() {

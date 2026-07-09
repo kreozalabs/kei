@@ -1,6 +1,6 @@
 import { Star } from "lucide-react";
 import { PropertyButton } from "./PropertyButton";
-import { cn } from "@kreozalabs/ui";
+import { cn } from "@kreozalabs/kei-ui";
 
 export function EditableImportant({
   value,

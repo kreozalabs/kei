@@ -9,7 +9,7 @@ import {
   DropdownMenuTrigger,
   DropdownMenuContent,
   DropdownMenuCheckboxItem,
-} from "@kreozalabs/ui";
+} from "@kreozalabs/kei-ui";
 import {
   LockIcon,
   UnlockIcon,
@@ -20,7 +20,7 @@ import {
   Loader2Icon,
   LayoutGrid,
 } from "lucide-react";
-import { parseDateString, formatTitleDate } from "@kreozalabs/core";
+import { parseDateString, formatTitleDate } from "@kreozalabs/kei-core";
 import { AnimatePresence } from "framer-motion";
 import { ActionInput } from "@/components/action-input";
 import { ActionDetailView } from "@/components/ActionDetailView";

@@ -1,4 +1,4 @@
-import { initializeDomainData, type DatabaseAdapter } from "@kreozalabs/core";
+import { initializeDomainData, type DatabaseAdapter } from "@kreozalabs/kei-core";
 import { webDatabaseAdapter } from "./webDatabaseAdapter";
 
 export { db } from "./webDatabaseAdapter";

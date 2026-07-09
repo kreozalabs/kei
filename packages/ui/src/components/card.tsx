@@ -1,6 +1,6 @@
 import * as React from "react";
 
-import { cn } from "@kreozalabs/ui/lib/utils";
+import { cn } from "@kreozalabs/kei-ui/lib/utils";
 
 function Card({
   className,

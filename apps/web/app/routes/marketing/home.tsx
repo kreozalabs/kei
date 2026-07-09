@@ -1,5 +1,5 @@
 import { useNavigate } from "react-router";
-import { Button } from "@kreozalabs/ui";
+import { Button } from "@kreozalabs/kei-ui";
 import { ArrowRightIcon, ZapIcon, RefreshCcwIcon, CompassIcon } from "lucide-react";
 import { Logo as KreozaLogo } from "@kreozalabs/icons";
 

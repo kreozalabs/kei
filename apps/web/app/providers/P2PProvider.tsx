@@ -1,8 +1,8 @@
 // FIXME: Refactor !
 /* eslint-disable react-refresh/only-export-components */
 import React, { createContext, useContext, useState, useEffect, useRef, useCallback } from "react";
-import { Button, toast } from "@kreozalabs/ui";
-import type { Event as DBEvent } from "@kreozalabs/core";
+import { Button, toast } from "@kreozalabs/kei-ui";
+import type { Event as DBEvent } from "@kreozalabs/kei-core";
 import { getLocalWatermarks, getEventsSince } from "@/db/sync";
 import { importEvents } from "@/db/backup";
 import { getOrCreateDeviceIdentity, getDeviceName } from "../utils/device";

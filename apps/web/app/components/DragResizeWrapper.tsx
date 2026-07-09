@@ -2,7 +2,14 @@
 import React, { useState, useRef, useEffect } from "react";
 import { createPortal } from "react-dom";
 import { motion } from "framer-motion";
-import { Button, cn, Tooltip, TooltipContent, TooltipTrigger, useMediaQuery } from "@kreozalabs/ui";
+import {
+  Button,
+  cn,
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+  useMediaQuery,
+} from "@kreozalabs/kei-ui";
 import { Grip, PanelLeft, X } from "lucide-react";
 
 interface DragResizeWrapperProps {

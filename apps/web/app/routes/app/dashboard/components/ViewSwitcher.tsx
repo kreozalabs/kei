@@ -9,7 +9,7 @@ import {
   DropdownMenuSeparator,
   Button,
   cn,
-} from "@kreozalabs/ui";
+} from "@kreozalabs/kei-ui";
 import { LayoutGrid, ChevronDown, Calendar, KanbanSquare, Inbox, ListTodo } from "lucide-react";
 
 export function ViewSwitcher() {

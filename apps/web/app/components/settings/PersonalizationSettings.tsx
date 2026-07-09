@@ -8,10 +8,10 @@ import {
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@kreozalabs/ui";
+} from "@kreozalabs/kei-ui";
 import { useSettings } from "../../providers/SettingsContext";
-import type { Theme } from "@kreozalabs/core";
-import { TIME_FORMATS, ACCENTS, LANGUAGES, LANGUAGE_LABELS } from "@kreozalabs/core";
+import type { Theme } from "@kreozalabs/kei-core";
+import { TIME_FORMATS, ACCENTS, LANGUAGES, LANGUAGE_LABELS } from "@kreozalabs/kei-core";
 
 export function PersonalizationSettings() {
   const { settings, updateSetting } = useSettings();

@@ -1,6 +1,6 @@
 import * as React from "react";
 import { Check } from "lucide-react";
-import { cn } from "@kreozalabs/ui/lib/utils";
+import { cn } from "@kreozalabs/kei-ui/lib/utils";
 
 export interface CheckboxProps extends Omit<React.ComponentProps<"input">, "type"> {
   onCheckedChange?: (checked: boolean) => void;

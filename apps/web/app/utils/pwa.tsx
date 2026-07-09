@@ -1,4 +1,4 @@
-import { toast, Button } from "@kreozalabs/ui";
+import { toast, Button } from "@kreozalabs/kei-ui";
 
 export function registerPWA() {
   if (typeof window === "undefined") return;

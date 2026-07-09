@@ -1,4 +1,4 @@
-import { cn, Input } from "@kreozalabs/ui";
+import { cn, Input } from "@kreozalabs/kei-ui";
 import { useEditableField } from "./useEditableField";
 
 interface EditableTitleProps {

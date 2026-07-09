@@ -1,8 +1,8 @@
 import * as React from "react";
 import { DayPicker, getDefaultClassNames, type DayButton, type Locale } from "react-day-picker";
 
-import { cn } from "@kreozalabs/ui/lib/utils";
-import { Button, buttonVariants } from "@kreozalabs/ui/components/button";
+import { cn } from "@kreozalabs/kei-ui/lib/utils";
+import { Button, buttonVariants } from "@kreozalabs/kei-ui/components/button";
 import { ChevronLeftIcon, ChevronRightIcon, ChevronDownIcon } from "lucide-react";
 
 function Calendar({

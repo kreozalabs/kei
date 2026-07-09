@@ -1,4 +1,4 @@
-import { type DatabaseAdapter, type Event, type Action } from "@kreozalabs/core";
+import { type DatabaseAdapter, type Event, type Action } from "@kreozalabs/kei-core";
 
 let cachedTauriDeviceId = "tauri-device-fallback";
 
@@ -7,7 +7,7 @@ export const tauriDatabaseAdapter: DatabaseAdapter = {
     console.log("Connecting to native Tauri database...");
     try {
       // Dynamic import to avoid loading Tauri deps in the web browser bundle:
-      // const { invoke } = await import("@tauri-apps/api/core");
+      // const { invoke } = await import("@tauri-apps/api/kei-core");
       // cachedTauriDeviceId = await invoke("get_device_id");
       cachedTauriDeviceId = `tauri-device-${crypto.randomUUID().slice(0, 8)}`;
     } catch (e) {

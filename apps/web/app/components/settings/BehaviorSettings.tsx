@@ -1,5 +1,5 @@
 // FIXME: Refactor !
-import { Button, cn } from "@kreozalabs/ui";
+import { Button, cn } from "@kreozalabs/kei-ui";
 
 import { useSettings } from "../../providers/SettingsContext";
 import {
@@ -17,7 +17,7 @@ import {
   DEFAULT_INSERT_AT_TOP_OPTIONS,
   SHOW_INTENTIONS_OPTIONS,
   SHOW_DEFAULT_ENERGY_OPTIONS,
-} from "@kreozalabs/core";
+} from "@kreozalabs/kei-core";
 import { MapPin } from "lucide-react";
 import { TimezoneSelector } from "../TimezoneSelector";
 

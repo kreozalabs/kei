@@ -1,5 +1,5 @@
 import { NavLink } from "react-router";
-import { Button, cn } from "@kreozalabs/ui";
+import { Button, cn } from "@kreozalabs/kei-ui";
 import { SidebarToggle } from "./SidebarToggle";
 import { Logo as KreozaLogo } from "@kreozalabs/icons";
 import { navGroups } from "@/config/navigation";

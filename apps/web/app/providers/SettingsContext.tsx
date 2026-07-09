@@ -1,6 +1,6 @@
 import { createContext, useContext } from "react";
-import { DEFAULT_SETTINGS } from "@kreozalabs/core";
-import type { Settings } from "@kreozalabs/core";
+import { DEFAULT_SETTINGS } from "@kreozalabs/kei-core";
+import type { Settings } from "@kreozalabs/kei-core";
 
 interface SettingsProviderState {
   settings: Settings;

@@ -1,12 +1,12 @@
 // FIXME: Refactor !
-import { Button, cn } from "@kreozalabs/ui";
-import type { Action } from "@kreozalabs/core";
+import { Button, cn } from "@kreozalabs/kei-ui";
+import type { Action } from "@kreozalabs/kei-core";
 import { ActionItem } from "./ActionItem";
 import { useState, useEffect } from "react";
 import { ChevronDownIcon, PlusIcon } from "lucide-react";
 import { ActionInput } from "./action-input";
 import { AnimatePresence } from "framer-motion";
-import { ACTION_STATUS, STORAGE_KEYS } from "@kreozalabs/core";
+import { ACTION_STATUS, STORAGE_KEYS } from "@kreozalabs/kei-core";
 import { useSettings } from "@/providers/SettingsContext";
 
 interface ActionSectionProps {

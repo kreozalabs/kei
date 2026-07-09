@@ -1,7 +1,7 @@
 // FIXME: Refactor !
 import { useState, useEffect } from "react";
 import { Link } from "react-router";
-import { Button, cn, toast } from "@kreozalabs/ui";
+import { Button, cn, toast } from "@kreozalabs/kei-ui";
 import { useP2P } from "@/providers/P2PProvider";
 import { db } from "@/db";
 import type { BenchmarkResult } from "@/db/webDatabaseAdapter";

@@ -12,9 +12,9 @@ import {
   CommandItem,
   cn,
   Button,
-} from "@kreozalabs/ui";
+} from "@kreozalabs/kei-ui";
 import { Check, ChevronsUpDown, Globe, MapPin } from "lucide-react";
-import { MAJOR_TIMEZONES, ALL_TIMEZONES, TIMEZONES } from "@kreozalabs/core";
+import { MAJOR_TIMEZONES, ALL_TIMEZONES, TIMEZONES } from "@kreozalabs/kei-core";
 import { useSettings } from "../providers/SettingsContext";
 
 interface TimezoneSelectorProps {

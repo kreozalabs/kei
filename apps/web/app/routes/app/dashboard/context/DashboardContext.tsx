@@ -1,5 +1,5 @@
 import { createContext, useContext } from "react";
-import type { Action } from "@kreozalabs/core";
+import type { Action } from "@kreozalabs/kei-core";
 import type { ViewMode } from "../types";
 import { useActionMutations } from "../hooks/useActionMutations";
 

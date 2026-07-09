@@ -9,7 +9,7 @@ import {
 } from "react-router";
 
 import { useEffect } from "react";
-import { Toaster, TooltipProvider } from "@kreozalabs/ui";
+import { Toaster, TooltipProvider } from "@kreozalabs/kei-ui";
 import "./index.css";
 import { QueryProvider } from "./providers/QueryProvider";
 import { SettingsProvider } from "./providers/SettingsProvider";
@@ -17,7 +17,7 @@ import { DbProvider } from "./providers/DbProvider";
 import { P2PProvider } from "./providers/P2PProvider";
 
 import { ErrorPage } from "./components/ErrorPage";
-import { STORAGE_KEYS } from "@kreozalabs/core";
+import { STORAGE_KEYS } from "@kreozalabs/kei-core";
 import { registerPWA } from "./utils/pwa";
 
 export function Layout({ children }: { children: React.ReactNode }) {

@@ -1,5 +1,5 @@
 import { PanelLeftIcon } from "lucide-react";
-import { Button, cn } from "@kreozalabs/ui";
+import { Button, cn } from "@kreozalabs/kei-ui";
 
 interface SidebarToggleProps {
   onClick?: () => void;

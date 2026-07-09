@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 
-import { getTodayString } from "@kreozalabs/core";
+import { getTodayString } from "@kreozalabs/kei-core";
 
 export function useCurrentDay() {
   const [today, setToday] = useState(getTodayString);

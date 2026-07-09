@@ -1,12 +1,12 @@
 import { useMemo } from "react";
-import { type Action, ACTION_STATUS, TIME } from "@kreozalabs/core";
+import { type Action, ACTION_STATUS, TIME } from "@kreozalabs/kei-core";
 import {
   formatDate,
   parseDateString,
   formatShortDate,
   formatFullWeekday,
   getNextDayString,
-} from "@kreozalabs/core";
+} from "@kreozalabs/kei-core";
 import { useSettings } from "@/providers/SettingsContext";
 import { useDashboardContext } from "../context/DashboardContext";
 import { ActionSection } from "@/components/ActionSection";

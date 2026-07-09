@@ -16,7 +16,7 @@ import {
   DialogTrigger,
   cn,
   toast,
-} from "@kreozalabs/ui";
+} from "@kreozalabs/kei-ui";
 import { useState, useEffect, useRef } from "react";
 import { Smartphone, Unlink, Copy, Check, Camera, VideoOff } from "lucide-react";
 import { useP2P } from "@/providers/P2PProvider";

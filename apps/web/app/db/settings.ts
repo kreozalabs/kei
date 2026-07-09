@@ -1,6 +1,6 @@
 import { activeAdapter } from "./index";
-import * as core from "@kreozalabs/core";
-import type { Settings } from "@kreozalabs/core";
+import * as core from "@kreozalabs/kei-core";
+import type { Settings } from "@kreozalabs/kei-core";
 
 export const getSetting = <T>(key: keyof Settings) => core.getSetting<T>(key, activeAdapter);
 

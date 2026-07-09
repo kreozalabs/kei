@@ -6,10 +6,10 @@ import {
   DropdownMenuTrigger,
   DropdownMenuContent,
   DropdownMenuItem,
-} from "@kreozalabs/ui";
+} from "@kreozalabs/kei-ui";
 import { RotateCcw, CheckCircle2Icon, CalendarIcon, Trash2Icon, X } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import { getNextDayString } from "@kreozalabs/core";
+import { getNextDayString } from "@kreozalabs/kei-core";
 import { useMemo } from "react";
 
 export function BulkActionBar() {

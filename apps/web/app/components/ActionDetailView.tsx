@@ -1,6 +1,6 @@
 // FIXME: Refactor !
 import { useEffect, useState } from "react";
-import { Button, cn, toast } from "@kreozalabs/ui";
+import { Button, cn, toast } from "@kreozalabs/kei-ui";
 import {
   Calendar,
   Clock,
@@ -11,10 +11,15 @@ import {
   Pencil,
   Loader2,
 } from "lucide-react";
-import type { Action } from "@kreozalabs/core";
-import type { Event } from "@kreozalabs/core";
-import { EVENT_TYPES, ACTION_STATUS, ENERGY_OPTIONS, INTENTION_OPTIONS } from "@kreozalabs/core";
-import { formatGoogleDate } from "@kreozalabs/core";
+import type { Action } from "@kreozalabs/kei-core";
+import type { Event } from "@kreozalabs/kei-core";
+import {
+  EVENT_TYPES,
+  ACTION_STATUS,
+  ENERGY_OPTIONS,
+  INTENTION_OPTIONS,
+} from "@kreozalabs/kei-core";
+import { formatGoogleDate } from "@kreozalabs/kei-core";
 import { getEventsForEntity, updateAction } from "@/db/actions";
 import { EditableTitle } from "./action-input/EditableTitle";
 import { EditableNote } from "./action-input/EditableNote";

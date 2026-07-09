@@ -1,5 +1,5 @@
 import { NavLink } from "react-router";
-import { cn } from "@kreozalabs/ui";
+import { cn } from "@kreozalabs/kei-ui";
 import { navItems } from "@/config/navigation";
 
 export function MobileNav() {

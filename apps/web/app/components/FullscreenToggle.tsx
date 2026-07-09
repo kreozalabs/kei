@@ -1,5 +1,5 @@
 import { Maximize, Minimize } from "lucide-react";
-import { Button, cn } from "@kreozalabs/ui";
+import { Button, cn } from "@kreozalabs/kei-ui";
 import { useFullscreen } from "@/hooks/useFullscreen";
 
 interface FullscreenToggleProps {

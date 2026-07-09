@@ -1,4 +1,4 @@
-import type { DatabaseAdapter } from "@kreozalabs/core";
+import type { DatabaseAdapter } from "@kreozalabs/kei-core";
 
 // Web database adapter stub for Tauri/native production builds
 export const webDatabaseAdapter: DatabaseAdapter = {} as DatabaseAdapter;

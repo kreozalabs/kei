@@ -3,5 +3,6 @@
 @import "./styles/base.css";
 
 @source "../../../apps/web/app/**/*.{ts,tsx}";
-@source "../../ui/src/**/*.{ts,tsx}";
+@source "./**/*.{ts,tsx}";
 @source "../../core/src/**/*.{ts,tsx}";
+@source "../../kei-calendar/src/**/*.{ts,tsx}";

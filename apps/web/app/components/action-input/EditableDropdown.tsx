@@ -3,7 +3,7 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from "@kreozalabs/ui";
+} from "@kreozalabs/kei-ui";
 import { PropertyButton } from "./PropertyButton";
 import { type ReactNode } from "react";
 import { Check } from "lucide-react";

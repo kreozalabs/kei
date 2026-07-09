@@ -6,7 +6,7 @@ import {
   type EventType,
   type Action,
   type ActionStatus,
-} from "@kreozalabs/core";
+} from "@kreozalabs/kei-core";
 import { getOrCreateDeviceIdentity } from "@/utils/device";
 
 // Export db as null to maintain interface compatibility with old PGlite imports

@@ -1,7 +1,7 @@
 import { useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { getActions } from "@/db/actions";
-import { ACTION_STATUS } from "@kreozalabs/core";
+import { ACTION_STATUS } from "@kreozalabs/kei-core";
 
 interface UseDashboardQueriesProps {
   isDbReady: boolean;

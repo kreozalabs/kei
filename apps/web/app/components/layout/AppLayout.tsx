@@ -5,7 +5,7 @@ import { PlusIcon } from "lucide-react";
 import { useKeyboardShortcuts } from "@/hooks/useKeyboardShortcuts";
 import { useFullscreen } from "@/hooks/useFullscreen";
 import { SidebarToggle } from "./SidebarToggle";
-import { Button, cn } from "@kreozalabs/ui";
+import { Button, cn } from "@kreozalabs/kei-ui";
 import { AppSidebar } from "./AppSidebar";
 import { AppHeader, HeaderSearch, HeaderNewAction, HeaderMore } from "./AppHeader";
 import { MobileNav } from "./MobileNav";

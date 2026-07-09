@@ -1,7 +1,7 @@
 import { type RefObject, useCallback } from "react";
 import { useQueryClient } from "@tanstack/react-query";
-import { toast } from "@kreozalabs/ui";
-import { type Action, ACTION_STATUS, type ActionStatus } from "@kreozalabs/core";
+import { toast } from "@kreozalabs/kei-ui";
+import { type Action, ACTION_STATUS, type ActionStatus } from "@kreozalabs/kei-core";
 import {
   completeAction,
   activateAction,

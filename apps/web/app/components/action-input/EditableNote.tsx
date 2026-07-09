@@ -1,4 +1,4 @@
-import { cn, Textarea } from "@kreozalabs/ui";
+import { cn, Textarea } from "@kreozalabs/kei-ui";
 import { useEditableField } from "./useEditableField";
 
 interface EditableNoteProps {

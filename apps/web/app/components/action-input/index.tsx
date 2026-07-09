@@ -1,6 +1,6 @@
-import type { Action } from "@kreozalabs/core";
+import type { Action } from "@kreozalabs/kei-core";
 import { forwardRef, useEffect, useRef, useState } from "react";
-import { Button } from "@kreozalabs/ui";
+import { Button } from "@kreozalabs/kei-ui";
 import { $getRoot, type EditorState } from "lexical";
 import { EditableIntention, type IntentionType } from "./EditableIntention";
 import { EditableImportant } from "./EditableImportant";

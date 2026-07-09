@@ -1,5 +1,5 @@
 import { Clock } from "lucide-react";
-import { Popover, PopoverContent, PopoverTrigger, Button } from "@kreozalabs/ui";
+import { Popover, PopoverContent, PopoverTrigger, Button } from "@kreozalabs/kei-ui";
 import { PropertyButton } from "./PropertyButton";
 import { DurationInputs } from "./DurationInputs";
 import { useState } from "react";

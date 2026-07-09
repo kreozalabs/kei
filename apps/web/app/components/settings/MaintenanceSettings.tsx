@@ -1,6 +1,6 @@
 // FIXME: Refactor !
 import { useState, useRef } from "react";
-import { Button, Input, toast } from "@kreozalabs/ui";
+import { Button, Input, toast } from "@kreozalabs/kei-ui";
 import { Loader2, Database, RefreshCw, Download, Upload } from "lucide-react";
 import { rebuildActions } from "@/db/actions";
 import { rebuildSettings } from "@/db/settings";

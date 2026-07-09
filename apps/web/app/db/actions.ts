@@ -1,6 +1,6 @@
 import { activeAdapter } from "./index";
-import * as core from "@kreozalabs/core";
-import type { Action, ActionPayload, ActionStatus } from "@kreozalabs/core";
+import * as core from "@kreozalabs/kei-core";
+import type { Action, ActionPayload, ActionStatus } from "@kreozalabs/kei-core";
 
 const addAction = (payload: ActionPayload) =>
   core.addAction(payload, activeAdapter.getDeviceId(), activeAdapter);

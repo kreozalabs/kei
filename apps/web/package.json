@@ -12,9 +12,9 @@
   },
   "dependencies": {
     "@electric-sql/pglite": "^0.4.3",
-    "@kreozalabs/core": "workspace:*",
+    "@kreozalabs/kei-core": "workspace:*",
     "@kreozalabs/icons": "^1.0.0",
-    "@kreozalabs/ui": "workspace:*",
+    "@kreozalabs/kei-ui": "workspace:*",
     "@react-router/node": "^7.17.0",
     "@sqlite.org/sqlite-wasm": "3.53.0-build1",
     "@tanstack/react-query": "^5.96.2",

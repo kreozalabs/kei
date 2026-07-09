@@ -1,4 +1,4 @@
-import { Button, cn } from "@kreozalabs/ui";
+import { Button, cn } from "@kreozalabs/kei-ui";
 import { type ReactNode, forwardRef } from "react";
 
 interface PropertyButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {

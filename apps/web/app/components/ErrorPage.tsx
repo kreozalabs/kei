@@ -1,5 +1,5 @@
 import { Link, useNavigate } from "react-router";
-import { Button } from "@kreozalabs/ui";
+import { Button } from "@kreozalabs/kei-ui";
 import { ChevronLeft, Home, AlertCircle } from "lucide-react";
 
 interface ErrorPageProps {

@@ -3,7 +3,7 @@ import { Folder, MapPin, Tags, Users, Layers, Share2, Link2 } from "lucide-react
 import { PropertyButton } from "../PropertyButton";
 import { EditableEnergy } from "../EditableEnergy";
 import { EditableStatus, type StatusType } from "../EditableStatus";
-import type { EnergyType } from "@kreozalabs/core";
+import type { EnergyType } from "@kreozalabs/kei-core";
 
 export function ContextGroup() {
   const [energy, setEnergy] = useState<EnergyType>("medium");

@@ -1,9 +1,9 @@
 import { type ReactNode, useState, useMemo, useRef, useEffect, useCallback } from "react";
-import type { Action } from "@kreozalabs/core";
+import type { Action } from "@kreozalabs/kei-core";
 import { useSettings } from "@/providers/SettingsContext";
 import { useDb } from "@/providers/DbContext";
 import { useCurrentDay } from "@/hooks/useCurrentDay";
-import { getTodayString, STORAGE_KEYS } from "@kreozalabs/core";
+import { getTodayString, STORAGE_KEYS } from "@kreozalabs/kei-core";
 
 import type { ViewMode } from "../types";
 import { useDashboardQueries } from "../hooks/useDashboardQueries";

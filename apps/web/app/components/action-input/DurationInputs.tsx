@@ -1,4 +1,4 @@
-import { Button } from "@kreozalabs/ui";
+import { Button } from "@kreozalabs/kei-ui";
 import { Plus, Minus } from "lucide-react";
 
 const DurationStepper = ({
