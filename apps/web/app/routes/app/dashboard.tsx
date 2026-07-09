@@ -145,8 +145,6 @@ function DashboardShell() {
     <>
       <HeaderPortal to="header-center-portal-root">
         <div className="flex items-center gap-3">
-          <HeaderCalendar />
-          <ViewSwitcher />
           {/* Sticky Today Button for Day Grid */}
           {viewMode === "day" && !isTodayLocked && selectedDate !== todayStr && (
             <div className="animate-in fade-in slide-in-from-top-4 hidden duration-200 sm:block">
@@ -158,6 +156,8 @@ function DashboardShell() {
               </Button>
             </div>
           )}
+          <HeaderCalendar />
+          <ViewSwitcher />
           <div className="hidden sm:block">
             <HeaderSearch />
           </div>
