@@ -25,11 +25,42 @@ function CalendarHeaderControls() {
   const localeCode = settings.language === "auto" ? undefined : settings.language;
   const selectedDateObj = api.currentDate.toDate();
 
-  const displayDate = selectedDateObj.toLocaleDateString(localeCode, {
-    month: "long",
-    day: "numeric",
-    year: "numeric",
-  });
+  let displayDate = "";
+  if (viewMode === "week" || viewMode === "agenda") {
+    const startOfWeek = new Date(selectedDateObj);
+    startOfWeek.setDate(selectedDateObj.getDate() - selectedDateObj.getDay());
+
+    const endOfWeek = new Date(startOfWeek);
+    endOfWeek.setDate(startOfWeek.getDate() + 6);
+
+    const startMonth = startOfWeek.toLocaleDateString(localeCode, { month: "long" });
+    const endMonth = endOfWeek.toLocaleDateString(localeCode, { month: "long" });
+    const startYear = startOfWeek.getFullYear();
+    const endYear = endOfWeek.getFullYear();
+
+    if (startYear !== endYear) {
+      displayDate = `${startMonth} ${startYear} - ${endMonth} ${endYear}`;
+    } else if (startMonth !== endMonth) {
+      displayDate = `${startMonth} - ${endMonth}, ${startYear}`;
+    } else {
+      displayDate = `${startMonth} ${startYear}`;
+    }
+  } else if (viewMode === "month") {
+    displayDate = selectedDateObj.toLocaleDateString(localeCode, {
+      month: "long",
+      year: "numeric",
+    });
+  } else if (viewMode === "year") {
+    displayDate = selectedDateObj.toLocaleDateString(localeCode, {
+      year: "numeric",
+    });
+  } else {
+    displayDate = selectedDateObj.toLocaleDateString(localeCode, {
+      month: "long",
+      day: "numeric",
+      year: "numeric",
+    });
+  }
 
   const handleSelect = (date: Date | undefined) => {
     if (date) {
@@ -38,6 +69,58 @@ function CalendarHeaderControls() {
       );
       setIsOpen(false);
     }
+  };
+
+  const handlePrev = () => {
+    let nextDate = api.currentDate;
+    switch (viewMode) {
+      case "day":
+      case "inbox":
+      case "kanban":
+      case "lists":
+        nextDate = api.currentDate.subtract(1, "day");
+        break;
+      case "week":
+      case "agenda":
+        nextDate = api.currentDate.subtract(1, "week");
+        break;
+      case "month":
+        nextDate = api.currentDate.subtract(1, "month");
+        break;
+      case "year":
+        nextDate = api.currentDate.subtract(1, "year");
+        break;
+      default:
+        nextDate = api.currentDate.subtract(1, "day");
+        break;
+    }
+    api.setCurrentDate(nextDate);
+  };
+
+  const handleNext = () => {
+    let nextDate = api.currentDate;
+    switch (viewMode) {
+      case "day":
+      case "inbox":
+      case "kanban":
+      case "lists":
+        nextDate = api.currentDate.add(1, "day");
+        break;
+      case "week":
+      case "agenda":
+        nextDate = api.currentDate.add(1, "week");
+        break;
+      case "month":
+        nextDate = api.currentDate.add(1, "month");
+        break;
+      case "year":
+        nextDate = api.currentDate.add(1, "year");
+        break;
+      default:
+        nextDate = api.currentDate.add(1, "day");
+        break;
+    }
+    api.setCurrentDate(nextDate);
   };
 
   return (
@@ -53,7 +136,7 @@ function CalendarHeaderControls() {
         <Button
           variant="ghost"
           size="icon"
-          onClick={() => api.prevPeriod()}
+          onClick={handlePrev}
           className="hover:bg-muted/50 text-muted-foreground flex h-8 items-center gap-2 rounded-md border-none px-3 text-sm font-black tracking-wider"
         >
           <ChevronLeftIcon />
@@ -61,7 +144,7 @@ function CalendarHeaderControls() {
         <Button
           variant="ghost"
           size="icon"
-          onClick={() => api.nextPeriod()}
+          onClick={handleNext}
           className="hover:bg-muted/50 text-muted-foreground flex h-8 items-center gap-2 rounded-md border-none px-3 text-sm font-black tracking-wider"
         >
           <ChevronRightIcon />
@@ -71,7 +154,7 @@ function CalendarHeaderControls() {
           <PopoverTrigger asChild>
             <Button
               variant="ghost"
-              className="hover:bg-muted/50 text-muted-foreground flex h-8 w-[170px] items-center justify-between gap-2 rounded-md border-none px-3 text-sm font-black tracking-wider"
+              className="hover:bg-muted/50 text-muted-foreground flex h-8 min-w-[170px] w-auto items-center justify-between gap-2 rounded-md border-none px-3 text-sm font-black tracking-wider"
             >
               <span className="truncate">{displayDate}</span>
               <ChevronDown className="size-4 shrink-0" />
