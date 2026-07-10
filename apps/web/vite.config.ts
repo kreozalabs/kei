@@ -30,7 +30,6 @@ const isTauriBuild =
 
 console.log("Vite Config - isTauriBuild:", isTauriBuild);
 
-
 const crossOriginIsolation = (): Plugin => ({
   name: "cross-origin-isolation",
   configureServer(server) {
@@ -137,11 +136,12 @@ export default defineConfig(({ command }) => ({
         : []),
     ],
   },
-  ssr: {
-    noExternal: ["rrule", "@kreozalabs/kei-calendar"],
-  },
   optimizeDeps: {
+    include: ["rrule"],
     exclude: ["@sqlite.org/sqlite-wasm"],
+  },
+  ssr: {
+    noExternal: ["rrule", "@ilamy/calendar"],
   },
   worker: {
     format: "es",

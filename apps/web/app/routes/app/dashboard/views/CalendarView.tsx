@@ -1,18 +1,26 @@
-import { useState } from "react";
-import { IlamyCalendar, useIlamyCalendarContext } from "@kreozalabs/kei-calendar";
-import { recurrencePlugin } from "@kreozalabs/kei-calendar/plugins/recurrence";
-import { agendaPlugin } from "@kreozalabs/kei-calendar/plugins/agenda";
-import { dragToCreatePlugin } from "@kreozalabs/kei-calendar/plugins/drag-to-create";
+import { useState, useEffect } from "react";
+import { IlamyCalendar, useIlamyCalendarContext } from "@ilamy/calendar";
+import { recurrencePlugin } from "@ilamy/calendar/plugins/recurrence";
+import { agendaPlugin } from "@ilamy/calendar/plugins/agenda";
+import { dragToCreatePlugin } from "@ilamy/calendar/plugins/drag-to-create";
 import { Button, Popover, PopoverTrigger, PopoverContent, Calendar } from "@kreozalabs/kei-ui";
 import { ChevronLeftIcon, ChevronRightIcon, ChevronDown } from "lucide-react";
 import { HeaderPortal } from "../../dashboard";
 import { useSettings } from "@/providers/SettingsContext";
 import { useDashboardContext } from "../context/DashboardContext";
+import type { ViewMode } from "../types";
 
 function CalendarHeaderControls() {
   const api = useIlamyCalendarContext();
   const { settings } = useSettings();
+  const { viewMode } = useDashboardContext();
   const [isOpen, setIsOpen] = useState(false);
+
+  useEffect(() => {
+    if (api.view !== viewMode) {
+      api.setView(viewMode as string);
+    }
+  }, [viewMode, api]);
 
   const localeCode = settings.language === "auto" ? undefined : settings.language;
   const selectedDateObj = api.currentDate.toDate();
@@ -58,6 +66,7 @@ function CalendarHeaderControls() {
         >
           <ChevronRightIcon />
         </Button>
+
         <Popover open={isOpen} onOpenChange={setIsOpen}>
           <PopoverTrigger asChild>
             <Button
@@ -83,16 +92,24 @@ function CalendarHeaderControls() {
 }
 
 export function CalendarView() {
-  const { setSelectedDate } = useDashboardContext();
+  const { viewMode, setViewMode, setSelectedDate, setStartDateStr, setEndDateStr } =
+    useDashboardContext();
 
   return (
     <div className="flex h-full flex-col p-4">
       <div className="bg-background flex-1 overflow-hidden rounded-xl border shadow-sm">
         <IlamyCalendar
           plugins={[recurrencePlugin(), agendaPlugin(), dragToCreatePlugin()]}
-          initialView="day"
+          initialView={viewMode as string}
+          onViewChange={(view) => setViewMode(view as ViewMode)}
           headerComponent={<CalendarHeaderControls />}
-          onDateChange={(date) => setSelectedDate(date.format("YYYY-MM-DD"))}
+          onDateChange={(date, range) => {
+            setSelectedDate(date.format("YYYY-MM-DD"));
+            if (range) {
+              setStartDateStr(range.start.format("YYYY-MM-DD"));
+              setEndDateStr(range.end.format("YYYY-MM-DD"));
+            }
+          }}
         />
       </div>
     </div>

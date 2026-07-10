@@ -1,19 +1,9 @@
-import { forwardRef, useState, useContext } from "react";
-import {
-  PlusIcon,
-  SearchIcon,
-  MoreVerticalIcon,
-  Loader2Icon,
-  ChevronDown,
-  ChevronRightIcon,
-  ChevronLeftIcon,
-} from "lucide-react";
-import { Button, Calendar, cn, Popover, PopoverTrigger, PopoverContent } from "@kreozalabs/kei-ui";
+import { forwardRef } from "react";
+import { PlusIcon, SearchIcon, MoreVerticalIcon, Loader2Icon } from "lucide-react";
+import { Button, cn } from "@kreozalabs/kei-ui";
 import { useSettings } from "@/providers/SettingsContext";
 import { useSubtleOnIdle } from "@/hooks/useSubtleOnIdle";
 import { useDb } from "@/providers/DbContext";
-import { parseDateString, formatDate, getTodayString } from "@kreozalabs/kei-core";
-import { DashboardContext } from "@/routes/app/dashboard/context/DashboardContext";
 
 interface AppHeaderProps {
   title: string;

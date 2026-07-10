@@ -17,6 +17,12 @@ export function DashboardProvider({ children }: { children: ReactNode }) {
   const [viewMode, setViewModeState] = useState<ViewMode>("day");
   const todayStr = useCurrentDay();
   const [selectedDate, setSelectedDateState] = useState(getTodayString);
+  const [startDateStr, setStartDateStr] = useState(getTodayString);
+  const [endDateStr, setEndDateStr] = useState(() => {
+    const d = new Date(getTodayString());
+    d.setDate(d.getDate() + 3);
+    return d.toISOString().split("T")[0];
+  });
 
   // Restore client-side state on mount to prevent SSR hydration mismatch warnings
   useEffect(() => {
@@ -52,17 +58,9 @@ export function DashboardProvider({ children }: { children: ReactNode }) {
     [settings.remember_layout_on_refresh]
   );
 
-  const startDate = selectedDate;
-  // Compute endDate appropriately based on view mode or settings. For Day Grid, timeline is +3 days.
-  const endDateStr = useMemo(() => {
-    const d = new Date(selectedDate);
-    d.setDate(d.getDate() + 3); // Based on TIME.TIMELINE_DAYS
-    return d.toISOString().split("T")[0];
-  }, [selectedDate]);
-
   const queries = useDashboardQueries({
     isDbReady,
-    startDate,
+    startDate: startDateStr,
     endDate: endDateStr,
     showCompleted: settings.show_completed,
     showAbandoned: settings.show_abandoned,
@@ -126,6 +124,10 @@ export function DashboardProvider({ children }: { children: ReactNode }) {
     setViewMode,
     selectedDate,
     setSelectedDate,
+    startDateStr,
+    setStartDateStr,
+    endDateStr,
+    setEndDateStr,
     todayStr,
     allActions: queries.allActions,
     activeActions: queries.activeActions,

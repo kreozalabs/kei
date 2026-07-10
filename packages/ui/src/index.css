@@ -5,4 +5,3 @@
 @source "../../../apps/web/app/**/*.{ts,tsx}";
 @source "./**/*.{ts,tsx}";
 @source "../../core/src/**/*.{ts,tsx}";
-@source "../../calendar/src/**/*.{ts,tsx}";

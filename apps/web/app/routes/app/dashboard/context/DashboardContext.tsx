@@ -9,6 +9,10 @@ export interface DashboardContextValue {
 
   selectedDate: string;
   setSelectedDate: (date: string) => void;
+  startDateStr: string;
+  setStartDateStr: (date: string) => void;
+  endDateStr: string;
+  setEndDateStr: (date: string) => void;
   todayStr: string;
 
   allActions: Action[];

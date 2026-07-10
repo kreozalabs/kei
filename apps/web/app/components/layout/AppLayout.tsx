@@ -169,29 +169,27 @@ export function AppLayout({ error }: { error?: unknown }) {
         />
 
         {/* Scrollable Content */}
-        <div className="no-scrollbar flex-1 overflow-y-auto pb-24 md:pb-12">
-          <div className="w-full px-4 pt-4 sm:px-8 md:px-12 md:pt-10">
-            <div className="mx-auto max-w-3xl">
-              {error ? (
-                <ErrorPage
-                  status={isRouteErrorResponse(error) ? error.status : 500}
-                  title={isRouteErrorResponse(error) ? error.statusText : "App Error"}
-                  message={
-                    isRouteErrorResponse(error)
-                      ? error.status === 404
-                        ? "The requested page was not found."
-                        : "Something went wrong in the app."
-                      : error instanceof Error
-                        ? error.message
-                        : "An unexpected error occurred."
-                  }
-                  homeLink="/app"
-                  homeLabel="Return to Dashboard"
-                />
-              ) : (
-                <Outlet context={contextValue} />
-              )}
-            </div>
+        <div className="no-scrollbar flex-1 overflow-y-auto pb-24 md:pb-0">
+          <div className="h-full w-full">
+            {error ? (
+              <ErrorPage
+                status={isRouteErrorResponse(error) ? error.status : 500}
+                title={isRouteErrorResponse(error) ? error.statusText : "App Error"}
+                message={
+                  isRouteErrorResponse(error)
+                    ? error.status === 404
+                      ? "The requested page was not found."
+                      : "Something went wrong in the app."
+                    : error instanceof Error
+                      ? error.message
+                      : "An unexpected error occurred."
+                }
+                homeLink="/app"
+                homeLabel="Return to Dashboard"
+              />
+            ) : (
+              <Outlet context={contextValue} />
+            )}
           </div>
         </div>
 

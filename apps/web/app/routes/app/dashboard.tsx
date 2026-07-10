@@ -58,9 +58,6 @@ function DashboardShell() {
   const { settings, updateSetting } = useSettings();
   const {
     viewMode,
-    selectedDate,
-    setSelectedDate,
-    startDate,
     visibleSelectedActionIds,
     isSelectionModeForced,
     setIsSelectionModeForced,
@@ -74,7 +71,7 @@ function DashboardShell() {
     mutations: { handleComplete, handleAbandon, handleReactivate, handleDeletePermanently },
     dbError,
     isDbReady,
-    todayStr,
+    startDateStr,
   } = useDashboardContext();
 
   const [editorMode, setEditorMode] = useState<"floating" | "docked" | "drawer">("floating");
@@ -86,7 +83,7 @@ function DashboardShell() {
 
   useEffect(() => {
     setTitle("Timeline");
-    setSubtitle(formatTitleDate(parseDateString(startDate)));
+    setSubtitle(formatTitleDate(parseDateString(startDateStr)));
 
     setHeaderActions({
       center: <div id="header-center-portal-root" />,
@@ -94,7 +91,7 @@ function DashboardShell() {
     });
 
     return () => setHeaderActions(undefined);
-  }, [setTitle, setSubtitle, setHeaderActions, startDate]);
+  }, [setTitle, setSubtitle, setHeaderActions, startDateStr]);
 
   if (dbError) {
     return (
@@ -113,6 +110,10 @@ function DashboardShell() {
   let Content;
   switch (viewMode) {
     case "day":
+    case "week":
+    case "month":
+    case "year":
+    case "agenda":
       Content = <CalendarView />;
       break;
     case "kanban":
