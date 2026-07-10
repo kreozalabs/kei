@@ -2,29 +2,13 @@ import { useEffect, useState } from "react";
 import { useOutletContext } from "react-router";
 import { type AppLayoutContext } from "@/components/layout/AppLayout";
 import { HeaderSearch, HeaderNewAction } from "@/components/layout/AppHeader";
-import {
-  Button,
-  cn,
-  DropdownMenu,
-  DropdownMenuTrigger,
-  DropdownMenuContent,
-  DropdownMenuCheckboxItem,
-} from "@kreozalabs/kei-ui";
-import {
-  MoreVertical,
-  CheckSquare,
-  CheckCircle2Icon,
-  Trash2Icon,
-  Loader2Icon,
-  LayoutGrid,
-} from "lucide-react";
+import { Button } from "@kreozalabs/kei-ui";
+import { LayoutGrid } from "lucide-react";
 import { parseDateString, formatTitleDate } from "@kreozalabs/kei-core";
 import { AnimatePresence } from "framer-motion";
 import { ActionInput } from "@/components/action-input";
 import { ActionDetailView } from "@/components/ActionDetailView";
 import { DragResizeWrapper } from "@/components/DragResizeWrapper";
-import { useSettings } from "@/providers/SettingsContext";
-
 import { createPortal } from "react-dom";
 import { useDashboardContext } from "./dashboard/context/DashboardContext";
 import { DashboardProvider } from "./dashboard/context/DashboardProvider";
@@ -54,22 +38,15 @@ export function HeaderPortal({ to, children }: { to: string; children: React.Rea
 }
 
 function DashboardShell() {
-  const { settings, updateSetting } = useSettings();
   const {
     viewMode,
-    visibleSelectedActionIds,
-    isSelectionModeForced,
-    setIsSelectionModeForced,
-    handleClearSelection,
     isDialogOpen,
     setIsDialogOpen,
     dialogPreDate,
-    setDialogPreDate,
     actionToEdit,
     setActionToEdit,
     mutations: { handleComplete, handleAbandon, handleReactivate, handleDeletePermanently },
     dbError,
-    isDbReady,
     selectedDate,
   } = useDashboardContext();
 
@@ -142,101 +119,12 @@ function DashboardShell() {
           <div className="hidden sm:block">
             <HeaderSearch />
           </div>
-        </div>
-      </HeaderPortal>
-
-      <HeaderPortal to="header-right-portal-root">
-        <div className="flex items-center gap-2">
-          <div
-            onClick={() => {
-              setDialogPreDate(null);
-              setActionToEdit(null);
-              setIsDialogOpen(true);
-            }}
-          >
-            <HeaderNewAction />
-          </div>
-
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button
-                variant="ghost"
-                size="icon"
-                className="text-muted-foreground hover:text-primary hover:bg-primary/10 size-8 rounded-full border-none transition-all active:scale-95"
-                title="More Actions"
-              >
-                <MoreVertical className="size-4" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="bg-background border-border/40 w-48">
-              {settings.enable_selection && (
-                <DropdownMenuCheckboxItem
-                  checked={isSelectionModeForced || visibleSelectedActionIds.size > 0}
-                  onCheckedChange={(checked) => {
-                    if (checked) {
-                      setIsSelectionModeForced(true);
-                    } else {
-                      handleClearSelection();
-                    }
-                  }}
-                  className="flex cursor-pointer items-center gap-2 text-xs"
-                >
-                  <CheckSquare
-                    className={cn(
-                      "mr-1 size-3.5",
-                      isSelectionModeForced || visibleSelectedActionIds.size > 0
-                        ? "text-primary"
-                        : "text-muted-foreground"
-                    )}
-                  />
-                  <span>Selection Mode</span>
-                </DropdownMenuCheckboxItem>
-              )}
-              <DropdownMenuCheckboxItem
-                checked={settings.show_completed}
-                onCheckedChange={(checked) => updateSetting("show_completed", checked)}
-                className="flex cursor-pointer items-center gap-2 text-xs"
-              >
-                <CheckCircle2Icon
-                  className={cn(
-                    "mr-1 size-3.5",
-                    settings.show_completed ? "text-primary" : "text-muted-foreground"
-                  )}
-                />
-                <span>Show Completed</span>
-              </DropdownMenuCheckboxItem>
-              <DropdownMenuCheckboxItem
-                checked={settings.show_abandoned}
-                onCheckedChange={(checked) => updateSetting("show_abandoned", checked)}
-                className="flex cursor-pointer items-center gap-2 text-xs"
-              >
-                <Trash2Icon
-                  className={cn(
-                    "mr-1 size-3.5",
-                    settings.show_abandoned ? "text-primary" : "text-muted-foreground"
-                  )}
-                />
-                <span>Show Abandoned</span>
-              </DropdownMenuCheckboxItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+          <HeaderNewAction />
         </div>
       </HeaderPortal>
 
       {Content}
       <BulkActionBar />
-
-      {/* Sync Status Alert */}
-      {!isDbReady && (
-        <div className="animate-in fade-in slide-in-from-bottom-4 fixed right-8 bottom-24 z-50 duration-500 md:bottom-8">
-          <div className="border-primary/20 bg-background/80 flex items-center gap-3 rounded-2xl border px-4 py-2 shadow-2xl backdrop-blur-md">
-            <Loader2Icon className="text-primary size-4 animate-spin" />
-            <span className="text-primary/80 text-[10px] font-bold tracking-[0.15em] uppercase">
-              Synchronizing
-            </span>
-          </div>
-        </div>
-      )}
 
       {/* Global Action Modals */}
       <AnimatePresence>

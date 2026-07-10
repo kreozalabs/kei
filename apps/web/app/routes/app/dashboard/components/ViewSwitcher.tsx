@@ -1,3 +1,4 @@
+import { useSettings } from "@/providers/SettingsContext";
 import { useDashboardContext } from "../context/DashboardContext";
 import { VIEW_MODES, type ViewMode } from "../types";
 import {
@@ -8,11 +9,30 @@ import {
   DropdownMenuSeparator,
   Button,
   cn,
+  DropdownMenuGroup,
+  DropdownMenuCheckboxItem,
 } from "@kreozalabs/kei-ui";
-import { LayoutGrid, ChevronDown, Calendar, Inbox, ListTodo } from "lucide-react";
+import {
+  LayoutGrid,
+  ChevronDown,
+  Calendar,
+  Inbox,
+  ListTodo,
+  Trash2Icon,
+  CheckCircle2Icon,
+  CheckSquare,
+} from "lucide-react";
 
 export function ViewSwitcher() {
-  const { viewMode, setViewMode } = useDashboardContext();
+  const { settings, updateSetting } = useSettings();
+  const {
+    viewMode,
+    setViewMode,
+    visibleSelectedActionIds,
+    isSelectionModeForced,
+    setIsSelectionModeForced,
+    handleClearSelection,
+  } = useDashboardContext();
 
   const currentView = VIEW_MODES[viewMode];
 
@@ -80,6 +100,48 @@ export function ViewSwitcher() {
             {view.label}
           </DropdownMenuItem>
         ))}
+        <DropdownMenuSeparator />
+        <DropdownMenuGroup>
+          {settings.enable_selection && (
+            <DropdownMenuCheckboxItem
+              checked={isSelectionModeForced || visibleSelectedActionIds.size > 0}
+              onCheckedChange={(checked) => {
+                if (checked) {
+                  setIsSelectionModeForced(true);
+                } else {
+                  handleClearSelection();
+                }
+              }}
+            >
+              <CheckSquare
+                className={cn(
+                  isSelectionModeForced || visibleSelectedActionIds.size > 0
+                    ? "text-primary"
+                    : "text-muted-foreground"
+                )}
+              />
+              Selection Mode
+            </DropdownMenuCheckboxItem>
+          )}
+          <DropdownMenuCheckboxItem
+            checked={settings.show_completed}
+            onCheckedChange={(checked) => updateSetting("show_completed", checked)}
+          >
+            <CheckCircle2Icon
+              className={cn(settings.show_completed ? "text-primary" : "text-muted-foreground")}
+            />
+            Show Completed
+          </DropdownMenuCheckboxItem>
+          <DropdownMenuCheckboxItem
+            checked={settings.show_abandoned}
+            onCheckedChange={(checked) => updateSetting("show_abandoned", checked)}
+          >
+            <Trash2Icon
+              className={cn(settings.show_abandoned ? "text-primary" : "text-muted-foreground")}
+            />
+            Show Abandoned
+          </DropdownMenuCheckboxItem>
+        </DropdownMenuGroup>
       </DropdownMenuContent>
     </DropdownMenu>
   );
