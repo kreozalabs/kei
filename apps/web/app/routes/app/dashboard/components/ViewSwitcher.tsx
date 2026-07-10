@@ -5,12 +5,11 @@ import {
   DropdownMenuTrigger,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuLabel,
   DropdownMenuSeparator,
   Button,
   cn,
 } from "@kreozalabs/kei-ui";
-import { LayoutGrid, ChevronDown, Calendar, KanbanSquare, Inbox, ListTodo } from "lucide-react";
+import { LayoutGrid, ChevronDown, Calendar, Inbox, ListTodo } from "lucide-react";
 
 export function ViewSwitcher() {
   const { viewMode, setViewMode } = useDashboardContext();
@@ -27,15 +26,13 @@ export function ViewSwitcher() {
       case "month":
       case "year":
       case "agenda":
-        return <Calendar className="mr-2 size-4" />;
-      case "kanban":
-        return <KanbanSquare className="mr-2 size-4" />;
+        return <Calendar />;
       case "inbox":
-        return <Inbox className="mr-2 size-4" />;
+        return <Inbox />;
       case "lists":
-        return <ListTodo className="mr-2 size-4" />;
+        return <ListTodo />;
       default:
-        return <LayoutGrid className="mr-2 size-4" />;
+        return <LayoutGrid />;
     }
   };
 
@@ -47,7 +44,6 @@ export function ViewSwitcher() {
           size="sm"
           className="bg-background hover:bg-muted h-8 gap-1 rounded-full border-dashed px-3 text-xs font-medium shadow-sm"
         >
-          {getIcon(currentView.id)}
           <span className="hidden sm:inline">{currentView.label}</span>
           <ChevronDown className="text-muted-foreground ml-1 size-3.5" />
         </Button>
@@ -56,9 +52,6 @@ export function ViewSwitcher() {
         align="end"
         className="bg-background/95 border-border/40 w-56 rounded-xl border shadow-xl backdrop-blur-md"
       >
-        <DropdownMenuLabel className="text-muted-foreground/60 px-3 py-1.5 text-[10px] font-black tracking-wider uppercase">
-          Chronological
-        </DropdownMenuLabel>
         {chronologicalViews.map((view) => (
           <DropdownMenuItem
             key={view.id}
@@ -68,16 +61,12 @@ export function ViewSwitcher() {
               viewMode === view.id ? "bg-primary/10 text-primary" : "hover:bg-muted text-foreground"
             )}
           >
-            {getIcon(view.id)}
             {view.label}
           </DropdownMenuItem>
         ))}
 
-        <DropdownMenuSeparator className="bg-border/40 my-1" />
+        <DropdownMenuSeparator />
 
-        <DropdownMenuLabel className="text-muted-foreground/60 px-3 py-1.5 text-[10px] font-black tracking-wider uppercase">
-          Structural
-        </DropdownMenuLabel>
         {structuralViews.map((view) => (
           <DropdownMenuItem
             key={view.id}

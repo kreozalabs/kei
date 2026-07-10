@@ -30,7 +30,6 @@ import { useDashboardContext } from "./dashboard/context/DashboardContext";
 import { DashboardProvider } from "./dashboard/context/DashboardProvider";
 import { ViewSwitcher } from "./dashboard/components/ViewSwitcher";
 import { BulkActionBar } from "./dashboard/components/BulkActionBar";
-import { KanbanView } from "./dashboard/views/KanbanView";
 import { CalendarView } from "./dashboard/views/CalendarView";
 
 export function HeaderPortal({ to, children }: { to: string; children: React.ReactNode }) {
@@ -115,9 +114,6 @@ function DashboardShell() {
     case "year":
     case "agenda":
       Content = <CalendarView />;
-      break;
-    case "kanban":
-      Content = <KanbanView />;
       break;
     default:
       Content = (

@@ -13,7 +13,6 @@ import type { ViewMode } from "../types";
 const VIEW_MODE_UNITS: Record<string, "day" | "week" | "month" | "year"> = {
   day: "day",
   inbox: "day",
-  kanban: "day",
   lists: "day",
   week: "week",
   agenda: "week",

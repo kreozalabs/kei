@@ -1,4 +1,4 @@
-export type ViewMode = "day" | "week" | "month" | "year" | "agenda" | "inbox" | "kanban" | "lists";
+export type ViewMode = "day" | "week" | "month" | "year" | "agenda" | "inbox" | "lists";
 
 interface ViewModeConfig {
   id: ViewMode;
@@ -14,6 +14,5 @@ export const VIEW_MODES: Record<ViewMode, ViewModeConfig> = {
   year: { id: "year", label: "Year", group: "chronological" },
   agenda: { id: "agenda", label: "Agenda", group: "chronological" },
   inbox: { id: "inbox", label: "Inbox", group: "structural" },
-  kanban: { id: "kanban", label: "Kanban", group: "structural" },
   lists: { id: "lists", label: "Lists", group: "structural" },
 };
