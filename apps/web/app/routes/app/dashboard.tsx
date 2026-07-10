@@ -71,7 +71,7 @@ function DashboardShell() {
     mutations: { handleComplete, handleAbandon, handleReactivate, handleDeletePermanently },
     dbError,
     isDbReady,
-    startDateStr,
+    selectedDate,
   } = useDashboardContext();
 
   const [editorMode, setEditorMode] = useState<"floating" | "docked" | "drawer">("floating");
@@ -83,7 +83,7 @@ function DashboardShell() {
 
   useEffect(() => {
     setTitle("Timeline");
-    setSubtitle(formatTitleDate(parseDateString(startDateStr)));
+    setSubtitle(formatTitleDate(parseDateString(selectedDate)));
 
     setHeaderActions({
       center: <div id="header-center-portal-root" />,
@@ -91,7 +91,7 @@ function DashboardShell() {
     });
 
     return () => setHeaderActions(undefined);
-  }, [setTitle, setSubtitle, setHeaderActions, startDateStr]);
+  }, [setTitle, setSubtitle, setHeaderActions, selectedDate]);
 
   if (dbError) {
     return (
