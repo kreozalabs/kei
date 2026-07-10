@@ -1,5 +1,13 @@
 import { forwardRef, useState, useContext } from "react";
-import { PlusIcon, SearchIcon, MoreVerticalIcon, Loader2Icon, ChevronDown } from "lucide-react";
+import {
+  PlusIcon,
+  SearchIcon,
+  MoreVerticalIcon,
+  Loader2Icon,
+  ChevronDown,
+  ChevronRightIcon,
+  ChevronLeftIcon,
+} from "lucide-react";
 import { Button, Calendar, cn, Popover, PopoverTrigger, PopoverContent } from "@kreozalabs/kei-ui";
 import { useSettings } from "@/providers/SettingsContext";
 import { useSubtleOnIdle } from "@/hooks/useSubtleOnIdle";
@@ -130,54 +138,5 @@ export function HeaderMore({ onClick }: { onClick?: () => void }) {
     >
       <MoreVerticalIcon className="size-4" />
     </Button>
-  );
-}
-
-export function HeaderCalendar() {
-  const context = useContext(DashboardContext);
-  const { settings } = useSettings();
-  const [isOpen, setIsOpen] = useState(false);
-
-  const dateStr = context ? context.selectedDate : getTodayString();
-  const selectedDateObj = parseDateString(dateStr);
-
-  const localeCode = settings.language === "auto" ? undefined : settings.language;
-
-  const displayDate = selectedDateObj.toLocaleDateString(localeCode, {
-    month: "long",
-    day: "numeric",
-    year: "numeric",
-  });
-
-  const handleSelect = (date: Date | undefined) => {
-    if (date) {
-      if (context) {
-        context.setSelectedDate(formatDate(date));
-      }
-      setIsOpen(false);
-    }
-  };
-
-  return (
-    <Popover open={isOpen} onOpenChange={setIsOpen}>
-      <PopoverTrigger asChild>
-        <Button
-          variant="ghost"
-          className="hover:bg-muted/50 text-muted-foreground flex h-8 items-center gap-2 rounded-md border-none px-3 text-sm font-black tracking-wider"
-        >
-          <span>{displayDate}</span>
-          <ChevronDown className="size-4" />
-        </Button>
-      </PopoverTrigger>
-
-      <PopoverContent className="w-auto p-0" align="start">
-        <Calendar
-          mode="single"
-          selected={selectedDateObj}
-          onSelect={handleSelect}
-          lang={localeCode}
-        />
-      </PopoverContent>
-    </Popover>
   );
 }

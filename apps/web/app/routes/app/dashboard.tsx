@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useOutletContext } from "react-router";
 import { type AppLayoutContext } from "@/components/layout/AppLayout";
-import { HeaderSearch, HeaderNewAction, HeaderCalendar } from "@/components/layout/AppHeader";
+import { HeaderSearch, HeaderNewAction } from "@/components/layout/AppHeader";
 import {
   Button,
   cn,
@@ -11,8 +11,6 @@ import {
   DropdownMenuCheckboxItem,
 } from "@kreozalabs/kei-ui";
 import {
-  LockIcon,
-  UnlockIcon,
   MoreVertical,
   CheckSquare,
   CheckCircle2Icon,
@@ -32,11 +30,10 @@ import { useDashboardContext } from "./dashboard/context/DashboardContext";
 import { DashboardProvider } from "./dashboard/context/DashboardProvider";
 import { ViewSwitcher } from "./dashboard/components/ViewSwitcher";
 import { BulkActionBar } from "./dashboard/components/BulkActionBar";
-import { DayView } from "./dashboard/views/DayView";
 import { KanbanView } from "./dashboard/views/KanbanView";
 import { CalendarView } from "./dashboard/views/CalendarView";
 
-function HeaderPortal({ to, children }: { to: string; children: React.ReactNode }) {
+export function HeaderPortal({ to, children }: { to: string; children: React.ReactNode }) {
   const [target, setTarget] = useState<HTMLElement | null>(null);
 
   useEffect(() => {
@@ -61,8 +58,6 @@ function DashboardShell() {
   const { settings, updateSetting } = useSettings();
   const {
     viewMode,
-    isTodayLocked,
-    setIsTodayLocked,
     selectedDate,
     setSelectedDate,
     startDate,
@@ -144,18 +139,8 @@ function DashboardShell() {
     <>
       <HeaderPortal to="header-center-portal-root">
         <div className="flex items-center gap-3">
-          {/* Sticky Today Button for Day Grid */}
-          {viewMode === "day" && !isTodayLocked && selectedDate !== todayStr && (
-            <div className="animate-in fade-in slide-in-from-top-4 hidden duration-200 sm:block">
-              <Button
-                onClick={() => setSelectedDate(todayStr)}
-                className="bg-primary text-primary-foreground flex items-center gap-1.5 rounded-full border-none px-3 py-1.5 text-[10px] font-black tracking-wider uppercase shadow-lg transition-all hover:scale-105 active:scale-95"
-              >
-                Today
-              </Button>
-            </div>
-          )}
-          <HeaderCalendar />
+          <div id="header-calendar-portal-root" className="contents" />
+
           <ViewSwitcher />
           <div className="hidden sm:block">
             <HeaderSearch />
@@ -174,18 +159,6 @@ function DashboardShell() {
           >
             <HeaderNewAction />
           </div>
-
-          {viewMode === "day" && (
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => setIsTodayLocked((prev) => !prev)}
-              className="text-muted-foreground hover:text-primary hover:bg-primary/10 size-8 rounded-full border-none transition-all active:scale-95"
-              title={isTodayLocked ? "Unlock Timeline" : "Lock to Today"}
-            >
-              {isTodayLocked ? <LockIcon className="size-4" /> : <UnlockIcon className="size-4" />}
-            </Button>
-          )}
 
           <DropdownMenu>
             <DropdownMenuTrigger asChild>

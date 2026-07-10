@@ -15,7 +15,6 @@ export function DashboardProvider({ children }: { children: ReactNode }) {
   const { isDbReady, dbError } = useDb();
 
   const [viewMode, setViewModeState] = useState<ViewMode>("day");
-  const [isTodayLocked, setIsTodayLockedState] = useState(true);
   const todayStr = useCurrentDay();
   const [selectedDate, setSelectedDateState] = useState(getTodayString);
 
@@ -27,13 +26,6 @@ export function DashboardProvider({ children }: { children: ReactNode }) {
         setViewModeState(storedViewMode);
       }
 
-      const storedLock = sessionStorage.getItem(STORAGE_KEYS.SESSION.TIMELINE_LOCKED);
-      if (storedLock !== null) {
-        setIsTodayLockedState(storedLock === "true");
-      } else {
-        setIsTodayLockedState(settings.today_locked);
-      }
-
       if (settings.remember_layout_on_refresh) {
         const storedDate = localStorage.getItem(STORAGE_KEYS.LOCAL.SELECTED_DATE);
         if (storedDate) {
@@ -41,23 +33,13 @@ export function DashboardProvider({ children }: { children: ReactNode }) {
         }
       }
     }
-  }, [settings.today_locked, settings.remember_layout_on_refresh]);
+  }, [settings.remember_layout_on_refresh]);
 
   const setViewMode = useCallback((val: ViewMode) => {
     setViewModeState(val);
     if (typeof window !== "undefined") {
       window.localStorage.setItem("kei_dashboard_view_mode", val);
     }
-  }, []);
-
-  const setIsTodayLocked = useCallback((val: boolean | ((prev: boolean) => boolean)) => {
-    setIsTodayLockedState((prev) => {
-      const next = typeof val === "function" ? val(prev) : val;
-      if (typeof window !== "undefined") {
-        window.sessionStorage.setItem(STORAGE_KEYS.SESSION.TIMELINE_LOCKED, String(next));
-      }
-      return next;
-    });
   }, []);
 
   const setSelectedDate = useCallback(
@@ -70,14 +52,13 @@ export function DashboardProvider({ children }: { children: ReactNode }) {
     [settings.remember_layout_on_refresh]
   );
 
-  const startDate = isTodayLocked ? todayStr : selectedDate;
+  const startDate = selectedDate;
   // Compute endDate appropriately based on view mode or settings. For Day Grid, timeline is +3 days.
   const endDateStr = useMemo(() => {
-    if (isTodayLocked) return todayStr;
     const d = new Date(selectedDate);
     d.setDate(d.getDate() + 3); // Based on TIME.TIMELINE_DAYS
     return d.toISOString().split("T")[0];
-  }, [isTodayLocked, selectedDate, todayStr]);
+  }, [selectedDate]);
 
   const queries = useDashboardQueries({
     isDbReady,
@@ -143,8 +124,6 @@ export function DashboardProvider({ children }: { children: ReactNode }) {
   const value: DashboardContextValue = {
     viewMode,
     setViewMode,
-    isTodayLocked,
-    setIsTodayLocked,
     selectedDate,
     setSelectedDate,
     todayStr,

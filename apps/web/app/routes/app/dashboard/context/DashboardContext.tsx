@@ -7,8 +7,6 @@ export interface DashboardContextValue {
   viewMode: ViewMode;
   setViewMode: (mode: ViewMode) => void;
 
-  isTodayLocked: boolean;
-  setIsTodayLocked: (val: boolean | ((prev: boolean) => boolean)) => void;
   selectedDate: string;
   setSelectedDate: (date: string) => void;
   todayStr: string;
