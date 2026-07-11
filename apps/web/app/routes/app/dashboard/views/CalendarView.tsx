@@ -71,7 +71,7 @@ function getDisplayDate(dateObj: Date, viewMode: string, localeCode?: string): s
   });
 }
 
-export function TodayButton({ onClick }: { onClick?: () => void }) {
+function TodayButton({ onClick }: { onClick?: () => void }) {
   const api = useIlamyCalendarContext();
   const isMobile = useMediaQuery("(max-width: 768px)");
 
@@ -131,7 +131,7 @@ interface CalendarHeaderControlsProps {
   setIsOpen: (val: boolean) => void;
 }
 
-export function CalendarHeaderControls({ isOpen, setIsOpen }: CalendarHeaderControlsProps) {
+function CalendarHeaderControls({ isOpen, setIsOpen }: CalendarHeaderControlsProps) {
   const api = useIlamyCalendarContext();
   const { settings } = useSettings();
   const { viewMode } = useDashboardContext();

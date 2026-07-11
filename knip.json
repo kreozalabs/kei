@@ -14,7 +14,6 @@
     },
     "apps/web": {
       "ignoreDependencies": [
-        "vite-plugin-pwa",
         "@eslint/js",
         "eslint-plugin-react-hooks",
         "eslint-plugin-react-refresh",
@@ -23,7 +22,7 @@
       ]
     },
     "packages/ui": {
-      "ignoreDependencies": ["@tailwindcss/postcss", "tailwindcss"]
+      "ignoreDependencies": ["@tailwindcss/postcss"]
     }
   }
 }
