@@ -1,11 +1,11 @@
 import { forwardRef } from "react";
 import { PlusIcon, SearchIcon, MoreVerticalIcon, Loader2Icon } from "lucide-react";
-import { Button, cn } from "@kreozalabs/ui";
+import { Button, cn } from "@kreozalabs/kei-ui";
 import { useSettings } from "@/providers/SettingsContext";
 import { useSubtleOnIdle } from "@/hooks/useSubtleOnIdle";
 import { useDb } from "@/providers/DbContext";
 
-export interface AppHeaderProps {
+interface AppHeaderProps {
   title: string;
   subtitle?: string;
   left?: React.ReactNode;
@@ -27,34 +27,34 @@ export function AppHeader({ title, subtitle, left, center, right }: AppHeaderPro
 
   return (
     <header
-      className="shrink-0 z-40 w-full pt-2 md:pt-4 pb-1 md:pb-6 px-6 md:px-8 sticky top-0 bg-background/95 backdrop-blur-xl border-b border-border/40 md:border-none"
+      className="bg-background/95 border-border/40 sticky top-0 z-40 w-full shrink-0 border-b px-6 pt-2 pb-1 backdrop-blur-xl md:border-none md:px-8 md:pt-4 md:pb-6"
       onMouseEnter={show}
       onMouseMove={show}
       onMouseLeave={hide}
     >
       <div
         className={cn(
-          "flex w-full gap-4 transition-[opacity,transform] duration-1000 ease-in-out cursor-default",
-          isSubtle ? "opacity-20 translate-y-0.5" : "opacity-100"
+          "flex w-full cursor-default gap-4 transition-[opacity,transform] duration-1000 ease-in-out",
+          isSubtle ? "translate-y-0.5 opacity-20" : "opacity-100"
         )}
       >
         {/* 1. Left Area (e.g. Sidebar toggle) */}
-        {left && <div className="flex items-center shrink-0">{left}</div>}
+        {left && <div className="flex shrink-0 items-center">{left}</div>}
 
         {/* 2. Title Area (Reserved space for stability) */}
-        <div className="md:ml-12 flex flex-col flex-1 min-w-0 h-10 md:h-16 justify-end gap-1">
-          <h1 className="text-lg md:text-xl font-bold tracking-tight leading-none mb-2 flex items-center gap-2">
+        <div className="flex h-10 min-w-0 flex-1 flex-col justify-end gap-1 md:ml-12 md:h-16">
+          <h1 className="mb-2 flex items-center gap-2 text-lg leading-none font-bold tracking-tight md:text-xl">
             <span>{title}</span>
             {isLoading && (
               <Loader2Icon
-                className="size-4 animate-spin text-muted-foreground/60 shrink-0"
+                className="text-muted-foreground/60 size-4 shrink-0 animate-spin"
                 aria-hidden="true"
               />
             )}
           </h1>
-          <div className="h-4 flex items-center overflow-hidden">
+          <div className="flex h-4 items-center overflow-hidden">
             {subtitle ? (
-              <span className="text-[11px] md:text-xs text-muted-foreground font-semibold truncate tracking-wider opacity-70">
+              <span className="text-muted-foreground truncate text-[11px] font-semibold tracking-wider opacity-70 md:text-xs">
                 {subtitle}
               </span>
             ) : (
@@ -64,13 +64,13 @@ export function AppHeader({ title, subtitle, left, center, right }: AppHeaderPro
         </div>
 
         {/* 3. Actions Area (Right-aligned grouping) */}
-        <div className="flex-1 flex items-center justify-end gap-6 md:gap-10 min-w-0 h-12">
+        <div className="flex h-12 min-w-0 flex-1 items-center justify-end gap-6 md:gap-10">
           {/* Search stays grouped with the other actions */}
-          <div className="hidden lg:flex items-center">{center}</div>
+          <div className="hidden items-center lg:flex">{center}</div>
 
           {/* Secondary Actions */}
-          <div className="flex items-center gap-2 md:gap-6 font-medium">
-            <div className="lg:hidden text-muted-foreground/40">{center}</div>
+          <div className="flex items-center gap-2 font-medium md:gap-6">
+            <div className="text-muted-foreground/40 lg:hidden">{center}</div>
             {right}
           </div>
         </div>
@@ -89,11 +89,11 @@ export function HeaderSearch() {
     <Button
       variant="ghost"
       size="sm"
-      className="flex items-center gap-2 h-8 rounded-md hover:bg-muted/50 border-none font-medium px-2 md:px-3 text-muted-foreground"
+      className="hover:bg-muted/50 text-muted-foreground flex h-8 items-center gap-2 rounded-md border-none px-2 font-medium md:px-3"
     >
       <SearchIcon className="size-4 md:size-4" />
-      <span className="hidden md:inline text-xs">Search</span>
-      <span className="hidden md:inline text-[10px] opacity-40">Ctrl+K</span>
+      <span className="hidden text-xs md:inline">Search</span>
+      <span className="hidden text-[10px] opacity-40 md:inline">Ctrl+K</span>
     </Button>
   );
 }
@@ -106,12 +106,12 @@ export const HeaderNewAction = forwardRef<HTMLButtonElement, { onClick?: () => v
         variant="default"
         size="sm"
         onClick={onClick}
-        className="hidden md:flex items-center gap-1.5 h-9 rounded-full bg-primary hover:bg-primary/90 text-primary-foreground font-bold px-4 shadow-lg shadow-primary/20 border-none transition-all active:scale-95 hover:shadow-primary/30"
+        className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-primary/20 hover:shadow-primary/30 hidden h-9 items-center gap-1.5 rounded-full border-none px-4 font-bold shadow-lg transition-all active:scale-95 md:flex"
         {...props}
       >
         <PlusIcon className="size-4" />
         <span className="text-sm">New Action</span>
-        <span className="hidden lg:inline text-[10px] opacity-40 ml-1 font-medium">N</span>
+        <span className="ml-1 hidden text-[10px] font-medium opacity-40 lg:inline">N</span>
       </Button>
     );
   }
@@ -124,7 +124,7 @@ export function HeaderMore({ onClick }: { onClick?: () => void }) {
       variant="ghost"
       size="icon"
       onClick={onClick}
-      className="size-8 rounded-md hover:bg-muted/50 border-none text-muted-foreground"
+      className="hover:bg-muted/50 text-muted-foreground size-8 rounded-md border-none"
     >
       <MoreVerticalIcon className="size-4" />
     </Button>

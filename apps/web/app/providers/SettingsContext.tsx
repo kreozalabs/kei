@@ -1,8 +1,8 @@
 import { createContext, useContext } from "react";
-import { DEFAULT_SETTINGS } from "@kreozalabs/core";
-import type { Settings } from "@kreozalabs/core";
+import { DEFAULT_SETTINGS } from "@kreozalabs/kei-core";
+import type { Settings } from "@kreozalabs/kei-core";
 
-export interface SettingsProviderState {
+interface SettingsProviderState {
   settings: Settings;
   updateSetting: <K extends keyof Settings>(
     key: K,
@@ -10,7 +10,7 @@ export interface SettingsProviderState {
   ) => void;
 }
 
-export const initialState: SettingsProviderState = {
+const initialState: SettingsProviderState = {
   settings: DEFAULT_SETTINGS,
   updateSetting: () => null,
 };

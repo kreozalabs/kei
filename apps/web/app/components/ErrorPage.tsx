@@ -1,5 +1,5 @@
 import { Link, useNavigate } from "react-router";
-import { Button } from "@kreozalabs/ui";
+import { Button } from "@kreozalabs/kei-ui";
 import { ChevronLeft, Home, AlertCircle } from "lucide-react";
 
 interface ErrorPageProps {
@@ -21,16 +21,16 @@ export function ErrorPage({
   const navigate = useNavigate();
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-[50vh] px-4 text-center animate-in fade-in slide-in-from-bottom-4 duration-700">
-      <div className="flex items-center justify-center size-20 rounded-2xl bg-muted/50 mb-8 mx-auto">
+    <div className="animate-in fade-in slide-in-from-bottom-4 flex min-h-[50vh] flex-col items-center justify-center px-4 text-center duration-700">
+      <div className="bg-muted/50 mx-auto mb-8 flex size-20 items-center justify-center rounded-2xl">
         {is404 ? (
-          <AlertCircle className="size-10 text-muted-foreground" />
+          <AlertCircle className="text-muted-foreground size-10" />
         ) : (
-          <AlertCircle className="size-10 text-destructive/80" />
+          <AlertCircle className="text-destructive/80 size-10" />
         )}
       </div>
 
-      <div className="space-y-3 max-w-sm mx-auto">
+      <div className="mx-auto max-w-sm space-y-3">
         <h2 className="text-2xl font-semibold tracking-tight">
           {is404 ? "The path is unclear" : title}
         </h2>
@@ -41,11 +41,11 @@ export function ErrorPage({
         </p>
       </div>
 
-      <div className="flex flex-col sm:flex-row items-center gap-3 mt-10">
+      <div className="mt-10 flex flex-col items-center gap-3 sm:flex-row">
         <Button
           asChild
           size="lg"
-          className="flex flex-row items-center gap-2 rounded-xl px-8 h-11 bg-primary text-primary-foreground shadow-sm hover:shadow-md transition-all active:scale-[0.98]"
+          className="bg-primary text-primary-foreground flex h-11 flex-row items-center gap-2 rounded-xl px-8 shadow-sm transition-all hover:shadow-md active:scale-[0.98]"
         >
           <Link to={homeLink}>
             <Home className="size-4" />
@@ -55,7 +55,7 @@ export function ErrorPage({
         <Button
           variant="ghost"
           size="lg"
-          className="flex flex-row items-center gap-2 rounded-xl px-6 h-11 text-muted-foreground hover:text-foreground"
+          className="text-muted-foreground hover:text-foreground flex h-11 flex-row items-center gap-2 rounded-xl px-6"
           onClick={() => navigate(-1)}
         >
           <ChevronLeft className="size-4" />

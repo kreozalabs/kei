@@ -1,8 +1,8 @@
 import { Maximize, Minimize } from "lucide-react";
-import { Button, cn } from "@kreozalabs/ui";
+import { Button, cn } from "@kreozalabs/kei-ui";
 import { useFullscreen } from "@/hooks/useFullscreen";
 
-export interface FullscreenToggleProps {
+interface FullscreenToggleProps {
   className?: string;
   size?: "icon" | "icon-lg";
 }
@@ -14,7 +14,7 @@ export function FullscreenToggle({ className, size = "icon-lg" }: FullscreenTogg
     <Button
       variant="ghost"
       size={size}
-      className={cn("transition-colors hover:bg-muted", className)}
+      className={cn("hover:bg-muted transition-colors", className)}
       onClick={toggleFullscreen}
       title={isFullscreen ? "Exit Fullscreen (Alt+F)" : "Enter Fullscreen (Alt+F)"}
     >

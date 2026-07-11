@@ -1,3 +1,4 @@
+// FIXME: Refactor !
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
 import sqlite3InitModule from "@sqlite.org/sqlite-wasm";

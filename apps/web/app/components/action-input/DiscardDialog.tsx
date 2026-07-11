@@ -6,7 +6,7 @@ import {
   DialogHeader,
   DialogTitle,
   Button,
-} from "@kreozalabs/ui";
+} from "@kreozalabs/kei-ui";
 
 interface DiscardDialogProps {
   open: boolean;
@@ -19,28 +19,28 @@ export const DiscardDialog = ({ open, onOpenChange, onConfirm }: DiscardDialogPr
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent
         showCloseButton={false}
-        className="max-w-100 p-6 bg-popover border border-border/50 shadow-2xl rounded-xl"
+        className="bg-popover border-border/50 max-w-100 rounded-xl border p-6 shadow-2xl"
       >
         <DialogHeader className="gap-2">
-          <DialogTitle className="text-[17px] font-bold tracking-tight text-foreground">
+          <DialogTitle className="text-foreground text-[17px] font-bold tracking-tight">
             Discard unsaved changes?
           </DialogTitle>
-          <DialogDescription className="text-[14px] text-muted-foreground leading-relaxed font-medium">
+          <DialogDescription className="text-muted-foreground text-[14px] leading-relaxed font-medium">
             Your unsaved changes will be discarded.
           </DialogDescription>
         </DialogHeader>
-        <DialogFooter className="flex flex-row justify-end gap-3 mt-6 bg-transparent border-none p-0 mx-0 mb-0">
+        <DialogFooter className="mx-0 mt-6 mb-0 flex flex-row justify-end gap-3 border-none bg-transparent p-0">
           <Button
             variant="secondary"
             onClick={() => onOpenChange(false)}
-            className="h-9 px-4 rounded-lg font-bold transition-all active:scale-95 border-none"
+            className="h-9 rounded-lg border-none px-4 font-bold transition-all active:scale-95"
           >
             Cancel
           </Button>
           <Button
             variant="default"
             onClick={onConfirm}
-            className="h-9 px-4 rounded-lg bg-destructive hover:bg-destructive/90 text-destructive-foreground font-bold transition-all active:scale-95 border-none"
+            className="bg-destructive hover:bg-destructive/90 text-destructive-foreground h-9 rounded-lg border-none px-4 font-bold transition-all active:scale-95"
           >
             Discard
           </Button>

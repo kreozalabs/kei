@@ -1,6 +1,7 @@
+// FIXME: Refactor !
 import { useState } from "react";
-import type { Action, ActionStatus } from "@kreozalabs/core";
-import { Button, cn, Checkbox, Input } from "@kreozalabs/ui";
+import type { Action, ActionStatus } from "@kreozalabs/kei-core";
+import { Button, cn, Checkbox, Input } from "@kreozalabs/kei-ui";
 import {
   Trash2Icon,
   CheckCircle2Icon,
@@ -22,10 +23,10 @@ import {
   DropdownMenuTrigger,
   DropdownMenuContent,
   DropdownMenuItem,
-} from "@kreozalabs/ui";
+} from "@kreozalabs/kei-ui";
 import { NextDayBadge } from "./NextDayBadge";
 import { useSettings } from "../providers/SettingsContext";
-import { formatTime, getNextDayString } from "@kreozalabs/core";
+import { formatTime, getNextDayString } from "@kreozalabs/kei-core";
 import { useCurrentDay } from "../hooks/useCurrentDay";
 import {
   ACTION_STATUS,
@@ -34,7 +35,7 @@ import {
   INTENTIONS,
   INTENTION_OPTIONS,
   IMPORTANT_CONFIG,
-} from "@kreozalabs/core";
+} from "@kreozalabs/kei-core";
 import { motion } from "framer-motion";
 
 interface ActionItemProps {
@@ -132,11 +133,11 @@ export function ActionItem({
         height: { duration: 0.2 },
       }}
       className={cn(
-        "group flex items-start gap-2 py-2.5 border-b border-border/40 last:border-none transition-colors px-1 sm:px-2 cursor-default relative overflow-hidden",
+        "group border-border/40 relative flex cursor-default items-start gap-2 overflow-hidden border-b px-1 py-2.5 transition-colors last:border-none sm:px-2",
         type === ACTION_STATUS.COMPLETED
           ? "opacity-50"
           : type === ACTION_STATUS.ABANDONED
-            ? "opacity-45 italic bg-rose-500/1"
+            ? "bg-rose-500/1 italic opacity-45"
             : "hover:bg-muted/10"
       )}
     >
@@ -144,9 +145,9 @@ export function ActionItem({
       {type === ACTION_STATUS.ACTIVE && (
         <div
           className={cn(
-            "flex flex-col items-center gap-0.5 shrink-0 transition-all duration-200 overflow-hidden h-10.5",
+            "flex h-10.5 shrink-0 flex-col items-center gap-0.5 overflow-hidden transition-all duration-200",
             isBulkModeActive
-              ? "opacity-0 pointer-events-none w-0 md:w-5"
+              ? "pointer-events-none w-0 opacity-0 md:w-5"
               : "opacity-100 lg:opacity-0 lg:group-hover:opacity-100"
           )}
         >
@@ -164,7 +165,7 @@ export function ActionItem({
                   }
                 }}
                 disabled={isFirstActive}
-                className="size-5 text-muted-foreground/70 lg:text-muted-foreground/50 hover:text-primary hover:bg-primary/10 disabled:opacity-0 rounded-md transition-all active:scale-90"
+                className="text-muted-foreground/70 lg:text-muted-foreground/50 hover:text-primary hover:bg-primary/10 size-5 rounded-md transition-all active:scale-90 disabled:opacity-0"
                 title="Move up (Shift-click to move to top)"
               >
                 <ChevronUp className="size-3.5" />
@@ -181,7 +182,7 @@ export function ActionItem({
                   }
                 }}
                 disabled={isLastActive}
-                className="size-5 text-muted-foreground/70 lg:text-muted-foreground/50 hover:text-primary hover:bg-primary/10 disabled:opacity-0 rounded-md transition-all active:scale-90"
+                className="text-muted-foreground/70 lg:text-muted-foreground/50 hover:text-primary hover:bg-primary/10 size-5 rounded-md transition-all active:scale-90 disabled:opacity-0"
                 title="Move down (Shift-click to move to bottom)"
               >
                 <ChevronDown className="size-3.5" />
@@ -194,12 +195,12 @@ export function ActionItem({
       {settings.enable_selection && (
         <div
           className={cn(
-            "mt-0.5 shrink-0 flex items-center justify-center h-5 transition-all duration-200",
+            "mt-0.5 flex h-5 shrink-0 items-center justify-center transition-all duration-200",
             isBulkModeActive || isSelected
-              ? "w-5 opacity-100 pointer-events-auto"
+              ? "pointer-events-auto w-5 opacity-100"
               : settings.show_checkboxes_on_hover
-                ? "w-0 md:w-5 opacity-0 pointer-events-none group-hover:opacity-100 group-hover:pointer-events-auto"
-                : "w-0 opacity-0 pointer-events-none"
+                ? "pointer-events-none w-0 opacity-0 group-hover:pointer-events-auto group-hover:opacity-100 md:w-5"
+                : "pointer-events-none w-0 opacity-0"
           )}
         >
           <Checkbox checked={isSelected} onCheckedChange={() => onSelectToggle?.(action.id)} />
@@ -208,16 +209,16 @@ export function ActionItem({
 
       <div
         className={cn(
-          "flex items-start flex-1 min-w-0 transition-all duration-200",
+          "flex min-w-0 flex-1 items-start transition-all duration-200",
           isBulkModeActive ? "gap-0 md:gap-2" : "gap-2"
         )}
       >
         <div
           className={cn(
-            "shrink-0 flex items-center justify-center transition-all duration-200 mt-0.5",
+            "mt-0.5 flex shrink-0 items-center justify-center transition-all duration-200",
             isBulkModeActive
-              ? "opacity-0 pointer-events-none w-0 overflow-hidden md:size-5 md:overflow-visible"
-              : "opacity-100 size-5 overflow-visible"
+              ? "pointer-events-none w-0 overflow-hidden opacity-0 md:size-5 md:overflow-visible"
+              : "size-5 overflow-visible opacity-100"
           )}
         >
           {type === ACTION_STATUS.ACTIVE ? (
@@ -229,7 +230,7 @@ export function ActionItem({
                 onComplete(action);
               }}
               className={cn(
-                "size-5 rounded-full transition-all shrink-0 bg-transparent border-[1.5px] p-0 shadow-none flex items-center justify-center group/check hover:scale-110",
+                "group/check flex size-5 shrink-0 items-center justify-center rounded-full border-[1.5px] bg-transparent p-0 shadow-none transition-all hover:scale-110",
                 energyConfig?.color || "text-muted-foreground",
                 energyConfig?.bg.split(" ")[1] || "border-border/40"
               )}
@@ -237,7 +238,7 @@ export function ActionItem({
             >
               <CheckCircle2Icon
                 className={cn(
-                  "size-3.5 opacity-0 group-hover/check:opacity-100 transition-all duration-300",
+                  "size-3.5 opacity-0 transition-all duration-300 group-hover/check:opacity-100",
                   "group-hover/check:scale-110 group-active/check:scale-90"
                 )}
               />
@@ -250,7 +251,7 @@ export function ActionItem({
                 e.stopPropagation();
                 onReactivate?.(action);
               }}
-              className="size-5 shrink-0 flex items-center justify-center hover:bg-primary/10 rounded-full transition-all duration-300 p-0 active:scale-90"
+              className="hover:bg-primary/10 flex size-5 shrink-0 items-center justify-center rounded-full p-0 transition-all duration-300 active:scale-90"
               title="Reactivate task"
             >
               <RotateCcw className="size-3.5 text-rose-500" />
@@ -263,17 +264,17 @@ export function ActionItem({
                 e.stopPropagation();
                 onComplete(action);
               }}
-              className="size-5 shrink-0 flex items-center justify-center hover:bg-primary/10 rounded-full transition-all duration-300 p-0 group/uncheck active:scale-90"
+              className="hover:bg-primary/10 group/uncheck flex size-5 shrink-0 items-center justify-center rounded-full p-0 transition-all duration-300 active:scale-90"
               title="Unmark as completed"
             >
-              <CheckCircle2Icon className="size-4 text-primary group-hover/uncheck:hidden animate-in zoom-in duration-300" />
-              <RotateCcw className="size-3.5 text-primary hidden group-hover/uncheck:block animate-in spin-in-180 duration-300" />
+              <CheckCircle2Icon className="text-primary animate-in zoom-in size-4 duration-300 group-hover/uncheck:hidden" />
+              <RotateCcw className="text-primary animate-in spin-in-180 hidden size-3.5 duration-300 group-hover/uncheck:block" />
             </Button>
           )}
         </div>
 
         <div
-          className="flex-1 min-w-0 flex flex-col gap-0.5 cursor-pointer"
+          className="flex min-w-0 flex-1 cursor-pointer flex-col gap-0.5"
           onClick={(e) => {
             if (isBulkModeActive && onSelectToggle) {
               e.stopPropagation();
@@ -284,10 +285,10 @@ export function ActionItem({
           }}
         >
           <div className="flex items-start justify-between gap-4">
-            <div className="flex flex-col flex-1 min-w-0">
+            <div className="flex min-w-0 flex-1 flex-col">
               <span
                 className={cn(
-                  "text-[14px] font-medium leading-[1.4] transition-colors relative flex-1 truncate",
+                  "relative flex-1 truncate text-[14px] leading-[1.4] font-medium transition-colors",
                   type === ACTION_STATUS.COMPLETED
                     ? "text-muted-foreground"
                     : type === ACTION_STATUS.ABANDONED
@@ -297,7 +298,7 @@ export function ActionItem({
               >
                 {index !== undefined && (
                   <span
-                    className="mr-1.5 select-none inline-block w-5 shrink-0"
+                    className="mr-1.5 inline-block w-5 shrink-0 select-none"
                     onClick={(e) => {
                       if (type === ACTION_STATUS.ACTIVE && !isBulkModeActive) {
                         e.stopPropagation();
@@ -338,13 +339,13 @@ export function ActionItem({
                           }
                         }}
                         autoFocus
-                        className="h-5 w-6 text-[10px] font-black text-center p-0 border border-primary bg-background focus-visible:ring-0 rounded"
+                        className="border-primary bg-background h-5 w-6 rounded border p-0 text-center text-[10px] font-black focus-visible:ring-0"
                       />
                     ) : (
                       <span
                         className={cn(
-                          "text-[11px] font-bold text-muted-foreground/70 lg:text-muted-foreground/40 tabular-nums transition-colors",
-                          !isBulkModeActive && "hover:text-primary hover:font-black cursor-pointer"
+                          "text-muted-foreground/70 lg:text-muted-foreground/40 text-[11px] font-bold tabular-nums transition-colors",
+                          !isBulkModeActive && "hover:text-primary cursor-pointer hover:font-black"
                         )}
                         title={!isBulkModeActive ? "Click to change order position" : undefined}
                       >
@@ -357,18 +358,18 @@ export function ActionItem({
                 {/* Strike-through line */}
                 <div
                   className={cn(
-                    "absolute left-0 top-1/2 -translate-y-1/2 h-px transition-all duration-300 ease-in-out",
+                    "absolute top-1/2 left-0 h-px -translate-y-1/2 transition-all duration-300 ease-in-out",
                     type === ACTION_STATUS.COMPLETED
-                      ? "w-full opacity-100 bg-muted-foreground/40"
+                      ? "bg-muted-foreground/40 w-full opacity-100"
                       : type === ACTION_STATUS.ABANDONED
-                        ? "w-full opacity-100 bg-rose-500/30"
-                        : "w-0 opacity-0 bg-transparent"
+                        ? "w-full bg-rose-500/30 opacity-100"
+                        : "w-0 bg-transparent opacity-0"
                   )}
                 />
                 {action.important && (
                   <Star
                     className={cn(
-                      "size-3 ml-1.5 shrink-0 inline-block",
+                      "ml-1.5 inline-block size-3 shrink-0",
                       IMPORTANT_CONFIG.active.color,
                       IMPORTANT_CONFIG.active.fill
                     )}
@@ -377,13 +378,13 @@ export function ActionItem({
               </span>
 
               {action.note && (
-                <span className="text-[12.5px] text-muted-foreground/80 line-clamp-1 leading-normal">
+                <span className="text-muted-foreground/80 line-clamp-1 text-[12.5px] leading-normal">
                   {action.note}
                 </span>
               )}
-              <div className="flex items-center gap-3 mt-1 flex-wrap">
+              <div className="mt-1 flex flex-wrap items-center gap-3">
                 {action.startTime ? (
-                  <span className="text-[11px] font-medium flex items-center gap-1 text-primary/80">
+                  <span className="text-primary/80 flex items-center gap-1 text-[11px] font-medium">
                     <Clock className="size-3" />
                     {formatTime(action.startTime, timeFormat)}
                     {action.endTime ? (
@@ -403,7 +404,7 @@ export function ActionItem({
                 ) : (
                   <span
                     className={cn(
-                      "text-[11px] font-medium flex items-center gap-1",
+                      "flex items-center gap-1 text-[11px] font-medium",
                       isOverdue ? "text-red-500/80" : "text-muted-foreground/60"
                     )}
                   >
@@ -413,7 +414,7 @@ export function ActionItem({
                 )}
 
                 {action.duration && (
-                  <span className="text-[11px] font-bold flex items-center gap-1 text-muted-foreground/80 bg-muted/40 px-1.5 py-0.5 rounded-md">
+                  <span className="text-muted-foreground/80 bg-muted/40 flex items-center gap-1 rounded-md px-1.5 py-0.5 text-[11px] font-bold">
                     <Clock className="size-3" />
                     {!action.duration[1] || action.duration[0] === action.duration[1]
                       ? `${action.duration[0]}m`
@@ -423,7 +424,7 @@ export function ActionItem({
                 {shouldShowEnergy && (
                   <div
                     className={cn(
-                      "px-1.5 sm:px-2 py-0.5 rounded-full text-[10px] font-bold border flex items-center gap-1 sm:gap-1.5",
+                      "flex items-center gap-1 rounded-full border px-1.5 py-0.5 text-[10px] font-bold sm:gap-1.5 sm:px-2",
                       energyConfig?.bg || "bg-muted/50 border-border/50"
                     )}
                     title={`Energy: ${action.energy}`}
@@ -437,7 +438,7 @@ export function ActionItem({
                     )}
                     <span
                       className={cn(
-                        "uppercase tracking-wider hidden sm:inline",
+                        "hidden tracking-wider uppercase sm:inline",
                         energyConfig?.color || "text-muted-foreground"
                       )}
                     >
@@ -448,10 +449,10 @@ export function ActionItem({
               </div>
             </div>
             {settings.show_intentions && action.intention === INTENTIONS.WANT && (
-              <div className="flex items-center gap-2 shrink-0 pt-0.5">
+              <div className="flex shrink-0 items-center gap-2 pt-0.5">
                 <span
                   className={cn(
-                    "text-[10px] uppercase tracking-widest font-bold transition-colors flex items-center gap-1 sm:gap-1.5 group/project px-1.5 sm:px-2 py-0.5 sm:py-1 rounded-lg border",
+                    "group/project flex items-center gap-1 rounded-lg border px-1.5 py-0.5 text-[10px] font-bold tracking-widest uppercase transition-colors sm:gap-1.5 sm:px-2 sm:py-1",
                     intentionConfig.bg,
                     intentionConfig.color
                   )}
@@ -467,7 +468,7 @@ export function ActionItem({
       </div>
 
       {type === ACTION_STATUS.ACTIVE && !isBulkModeActive && (
-        <div className="flex items-center gap-0.5 shrink-0 ml-1">
+        <div className="ml-1 flex shrink-0 items-center gap-0.5">
           {/* Desktop Hover Actions */}
           {type === ACTION_STATUS.ACTIVE && (
             <Button
@@ -477,7 +478,7 @@ export function ActionItem({
                 e.stopPropagation();
                 onQuickReschedule?.(action);
               }}
-              className="hidden lg:flex opacity-0 group-hover:opacity-100 transition-all duration-200 size-7 text-muted-foreground/40 hover:text-primary hover:bg-primary/10 select-none active:scale-90 hover:scale-110"
+              className="text-muted-foreground/40 hover:text-primary hover:bg-primary/10 hidden size-7 opacity-0 transition-all duration-200 select-none group-hover:opacity-100 hover:scale-110 active:scale-90 lg:flex"
               title={rescheduleLabel}
             >
               <CalendarIcon className="size-3.5" />
@@ -490,7 +491,7 @@ export function ActionItem({
               e.stopPropagation();
               onEdit(action);
             }}
-            className="hidden lg:flex opacity-0 group-hover:opacity-100 transition-all duration-200 size-7 text-muted-foreground/40 hover:text-primary hover:bg-primary/10 select-none active:scale-90 hover:rotate-12"
+            className="text-muted-foreground/40 hover:text-primary hover:bg-primary/10 hidden size-7 opacity-0 transition-all duration-200 select-none group-hover:opacity-100 hover:rotate-12 active:scale-90 lg:flex"
             title="Edit action"
           >
             <PencilIcon className="size-3.5" />
@@ -502,7 +503,7 @@ export function ActionItem({
               e.stopPropagation();
               onAbandon(action);
             }}
-            className="hidden lg:flex opacity-0 group-hover:opacity-100 transition-all duration-200 size-7 text-muted-foreground/40 hover:text-destructive hover:bg-destructive/10 select-none active:scale-90 hover:-rotate-12"
+            className="text-muted-foreground/40 hover:text-destructive hover:bg-destructive/10 hidden size-7 opacity-0 transition-all duration-200 select-none group-hover:opacity-100 hover:-rotate-12 active:scale-90 lg:flex"
             title="Abandon action"
           >
             <Trash2Icon className="size-3.5" />
@@ -515,7 +516,7 @@ export function ActionItem({
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="size-7 text-muted-foreground/70 lg:text-muted-foreground/40 hover:text-foreground active:scale-90 transition-all"
+                  className="text-muted-foreground/70 lg:text-muted-foreground/40 hover:text-foreground size-7 transition-all active:scale-90"
                   onClick={(e) => e.stopPropagation()}
                 >
                   <MoreVertical className="size-3.5" />
@@ -523,7 +524,7 @@ export function ActionItem({
               </DropdownMenuTrigger>
               <DropdownMenuContent
                 align="end"
-                className="w-48 bg-background border-border/40 shadow-xl p-1 animate-in fade-in zoom-in-95 duration-200 ring-0"
+                className="bg-background border-border/40 animate-in fade-in zoom-in-95 w-48 p-1 shadow-xl ring-0 duration-200"
               >
                 {type === ACTION_STATUS.ACTIVE && (
                   <DropdownMenuItem
@@ -531,9 +532,9 @@ export function ActionItem({
                       e.stopPropagation();
                       onQuickReschedule?.(action);
                     }}
-                    className="flex items-center gap-2 px-2 py-1.5 text-[13px] font-medium hover:bg-muted/50 rounded-md transition-colors"
+                    className="hover:bg-muted/50 flex items-center gap-2 rounded-md px-2 py-1.5 text-[13px] font-medium transition-colors"
                   >
-                    <CalendarIcon className="size-3.5 text-muted-foreground/60" />
+                    <CalendarIcon className="text-muted-foreground/60 size-3.5" />
                     {rescheduleLabel}
                   </DropdownMenuItem>
                 )}
@@ -542,9 +543,9 @@ export function ActionItem({
                     e.stopPropagation();
                     onEdit(action);
                   }}
-                  className="flex items-center gap-2 px-2 py-1.5 text-[13px] font-medium hover:bg-muted/50 rounded-md transition-colors"
+                  className="hover:bg-muted/50 flex items-center gap-2 rounded-md px-2 py-1.5 text-[13px] font-medium transition-colors"
                 >
-                  <PencilIcon className="size-3.5 text-muted-foreground/60" />
+                  <PencilIcon className="text-muted-foreground/60 size-3.5" />
                   Edit
                 </DropdownMenuItem>
                 <DropdownMenuItem
@@ -552,7 +553,7 @@ export function ActionItem({
                     e.stopPropagation();
                     onAbandon(action);
                   }}
-                  className="flex items-center gap-2 px-2 py-1.5 text-[13px] font-medium text-destructive focus:text-destructive hover:bg-destructive/5 rounded-md transition-colors"
+                  className="text-destructive focus:text-destructive hover:bg-destructive/5 flex items-center gap-2 rounded-md px-2 py-1.5 text-[13px] font-medium transition-colors"
                 >
                   <Trash2Icon className="size-3.5" />
                   Abandon
@@ -564,7 +565,7 @@ export function ActionItem({
       )}
 
       {type === ACTION_STATUS.ABANDONED && !isBulkModeActive && (
-        <div className="flex items-center gap-0.5 shrink-0 ml-1">
+        <div className="ml-1 flex shrink-0 items-center gap-0.5">
           {/* Desktop Hover Actions */}
           <Button
             variant="ghost"
@@ -573,7 +574,7 @@ export function ActionItem({
               e.stopPropagation();
               onReactivate?.(action);
             }}
-            className="hidden lg:flex opacity-0 group-hover:opacity-100 transition-all duration-200 size-7 text-muted-foreground/40 hover:text-primary hover:bg-primary/10 select-none active:scale-90 hover:rotate-12"
+            className="text-muted-foreground/40 hover:text-primary hover:bg-primary/10 hidden size-7 opacity-0 transition-all duration-200 select-none group-hover:opacity-100 hover:rotate-12 active:scale-90 lg:flex"
             title="Reactivate task"
           >
             <RotateCcw className="size-3.5" />
@@ -587,7 +588,7 @@ export function ActionItem({
                 onDeletePermanently?.(action);
               }
             }}
-            className="hidden lg:flex opacity-0 group-hover:opacity-100 transition-all duration-200 size-7 text-muted-foreground/40 hover:text-destructive hover:bg-destructive/10 select-none active:scale-95 hover:-rotate-12"
+            className="text-muted-foreground/40 hover:text-destructive hover:bg-destructive/10 hidden size-7 opacity-0 transition-all duration-200 select-none group-hover:opacity-100 hover:-rotate-12 active:scale-95 lg:flex"
             title="Delete permanently"
           >
             <Trash2Icon className="size-3.5" />
@@ -600,7 +601,7 @@ export function ActionItem({
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="size-7 text-muted-foreground/70 lg:text-muted-foreground/40 hover:text-foreground active:scale-95 transition-all"
+                  className="text-muted-foreground/70 lg:text-muted-foreground/40 hover:text-foreground size-7 transition-all active:scale-95"
                   onClick={(e) => e.stopPropagation()}
                 >
                   <MoreVertical className="size-3.5" />
@@ -608,16 +609,16 @@ export function ActionItem({
               </DropdownMenuTrigger>
               <DropdownMenuContent
                 align="end"
-                className="w-40 bg-background border-border/40 shadow-xl p-1 animate-in fade-in zoom-in-95 duration-200 ring-0"
+                className="bg-background border-border/40 animate-in fade-in zoom-in-95 w-40 p-1 shadow-xl ring-0 duration-200"
               >
                 <DropdownMenuItem
                   onClick={(e) => {
                     e.stopPropagation();
                     onReactivate?.(action);
                   }}
-                  className="flex items-center gap-2 px-2 py-1.5 text-[13px] font-medium hover:bg-muted/50 rounded-md transition-colors"
+                  className="hover:bg-muted/50 flex items-center gap-2 rounded-md px-2 py-1.5 text-[13px] font-medium transition-colors"
                 >
-                  <RotateCcw className="size-3.5 text-muted-foreground/60" />
+                  <RotateCcw className="text-muted-foreground/60 size-3.5" />
                   Reactivate
                 </DropdownMenuItem>
                 <DropdownMenuItem
@@ -627,7 +628,7 @@ export function ActionItem({
                       onDeletePermanently?.(action);
                     }
                   }}
-                  className="flex items-center gap-2 px-2 py-1.5 text-[13px] font-medium text-destructive focus:text-destructive hover:bg-destructive/5 rounded-md transition-colors"
+                  className="text-destructive focus:text-destructive hover:bg-destructive/5 flex items-center gap-2 rounded-md px-2 py-1.5 text-[13px] font-medium transition-colors"
                 >
                   <Trash2Icon className="size-3.5" />
                   Delete Permanently

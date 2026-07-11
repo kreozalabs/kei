@@ -1,3 +1,4 @@
+// FIXME: Refactor !
 import { MoonIcon, SunIcon, LaptopIcon } from "lucide-react";
 import {
   Button,
@@ -7,10 +8,10 @@ import {
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@kreozalabs/ui";
+} from "@kreozalabs/kei-ui";
 import { useSettings } from "../../providers/SettingsContext";
-import type { Theme } from "@kreozalabs/core";
-import { TIME_FORMATS, ACCENTS, LANGUAGES, LANGUAGE_LABELS } from "@kreozalabs/core";
+import type { Theme } from "@kreozalabs/kei-core";
+import { TIME_FORMATS, ACCENTS, LANGUAGES, LANGUAGE_LABELS } from "@kreozalabs/kei-core";
 
 export function PersonalizationSettings() {
   const { settings, updateSetting } = useSettings();
@@ -18,7 +19,7 @@ export function PersonalizationSettings() {
   return (
     <div className="space-y-8">
       <div className="space-y-4">
-        <h4 className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground/50 px-2">
+        <h4 className="text-muted-foreground/50 px-2 text-[11px] font-bold tracking-wider uppercase">
           Accent Color
         </h4>
         <div className="flex items-center gap-2 px-1">
@@ -27,11 +28,11 @@ export function PersonalizationSettings() {
               key={a.name}
               variant="ghost"
               className={cn(
-                "size-5 p-0 min-w-0 rounded-full border-none transition-transform hover:scale-110 active:scale-95",
+                "size-5 min-w-0 rounded-full border-none p-0 transition-transform hover:scale-110 active:scale-95",
                 a.color,
                 a.hover,
                 settings.accent === a.name
-                  ? "ring-2 ring-ring ring-offset-2 ring-offset-background scale-110"
+                  ? "ring-ring ring-offset-background scale-110 ring-2 ring-offset-2"
                   : "opacity-80 hover:opacity-100"
               )}
               onClick={() => updateSetting("accent", a.name)}
@@ -44,10 +45,10 @@ export function PersonalizationSettings() {
       </div>
 
       <div className="space-y-3">
-        <h4 className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground/50 px-2">
+        <h4 className="text-muted-foreground/50 px-2 text-[11px] font-bold tracking-wider uppercase">
           Theme
         </h4>
-        <div className="flex items-center gap-1.5 p-1 bg-muted/40 rounded-xl">
+        <div className="bg-muted/40 flex items-center gap-1.5 rounded-xl p-1">
           {(["light", "dark", "system"] as Theme[]).map((t) => (
             <Button
               key={t}
@@ -55,9 +56,9 @@ export function PersonalizationSettings() {
               size="sm"
               onClick={() => updateSetting("theme", t)}
               className={cn(
-                "flex-1 flex flex-row items-center justify-center h-8 rounded-lg text-[12px] font-medium transition-colors gap-1.5 border-none",
+                "flex h-8 flex-1 flex-row items-center justify-center gap-1.5 rounded-lg border-none text-[12px] font-medium transition-colors",
                 settings.theme === t
-                  ? "bg-background text-foreground shadow-sm hover:bg-background"
+                  ? "bg-background text-foreground hover:bg-background shadow-sm"
                   : "text-muted-foreground hover:text-foreground hover:bg-muted/80"
               )}
             >
@@ -71,10 +72,10 @@ export function PersonalizationSettings() {
       </div>
 
       <div className="space-y-3">
-        <h4 className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground/50 px-2">
+        <h4 className="text-muted-foreground/50 px-2 text-[11px] font-bold tracking-wider uppercase">
           Time Format
         </h4>
-        <div className="flex items-center gap-1.5 p-1 bg-muted/40 rounded-xl">
+        <div className="bg-muted/40 flex items-center gap-1.5 rounded-xl p-1">
           {[TIME_FORMATS.H12, TIME_FORMATS.H24].map((f) => (
             <Button
               key={f}
@@ -82,9 +83,9 @@ export function PersonalizationSettings() {
               size="sm"
               onClick={() => updateSetting("time_format", f)}
               className={cn(
-                "flex-1 flex flex-row items-center justify-center h-8 rounded-lg text-[12px] font-medium transition-colors border-none",
+                "flex h-8 flex-1 flex-row items-center justify-center rounded-lg border-none text-[12px] font-medium transition-colors",
                 settings.time_format === f
-                  ? "bg-background text-foreground shadow-sm hover:bg-background"
+                  ? "bg-background text-foreground hover:bg-background shadow-sm"
                   : "text-muted-foreground hover:text-foreground hover:bg-muted/80"
               )}
             >
@@ -96,7 +97,7 @@ export function PersonalizationSettings() {
 
       <div className="space-y-3">
         <div className="flex items-center justify-between px-2">
-          <h4 className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground/50">
+          <h4 className="text-muted-foreground/50 text-[11px] font-bold tracking-wider uppercase">
             Language
           </h4>
         </div>

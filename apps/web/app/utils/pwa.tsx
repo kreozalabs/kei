@@ -1,4 +1,4 @@
-import { toast, Button } from "@kreozalabs/ui";
+import { toast, Button } from "@kreozalabs/kei-ui";
 
 export function registerPWA() {
   if (typeof window === "undefined") return;
@@ -11,10 +11,10 @@ export function registerPWA() {
       onOfflineReady() {
         toast.custom(
           (t) => (
-            <div className="flex flex-col gap-3 rounded-2xl border border-border bg-background p-4 shadow-lg w-80 md:w-96 text-left">
+            <div className="border-border bg-background flex w-80 flex-col gap-3 rounded-2xl border p-4 text-left shadow-lg md:w-96">
               <div className="flex flex-col gap-1">
-                <h3 className="font-semibold text-foreground text-sm">Ready to work offline</h3>
-                <p className="text-xs text-muted-foreground">
+                <h3 className="text-foreground text-sm font-semibold">Ready to work offline</h3>
+                <p className="text-muted-foreground text-xs">
                   Kei is now fully configured for offline capability and works perfectly without
                   internet connection!
                 </p>

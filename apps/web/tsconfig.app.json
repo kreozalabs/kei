@@ -26,7 +26,7 @@
     "rootDirs": [".", "./.react-router/types"],
     "paths": {
       "@/*": ["./app/*"],
-      "@kreozalabs/ui": ["../../packages/ui/src"]
+      "@kreozalabs/kei-ui": ["../../packages/ui/src"]
     }
   },
   "include": ["app", ".react-router/types"]

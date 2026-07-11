@@ -14,7 +14,11 @@ export interface Settings {
   subtle_on_idle: boolean;
   language: string;
   remember_layout_on_refresh: boolean;
-  action_duration_options: { label: string; value: [number, number] }[];
+  action_duration_options: {
+    label: string | null;
+    value: [number, number];
+    default: boolean;
+  }[];
   action_timezone_options: string[];
   default_energy: string;
   default_intention: string;

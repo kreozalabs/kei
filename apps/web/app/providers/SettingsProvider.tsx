@@ -1,9 +1,9 @@
 import * as React from "react";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback, useMemo } from "react";
 import { SettingsProviderContext } from "./SettingsContext";
-import { DEFAULT_SETTINGS, STORAGE_KEYS } from "@kreozalabs/core";
+import { DEFAULT_SETTINGS, STORAGE_KEYS } from "@kreozalabs/kei-core";
 import { getSetting, setSetting } from "@/db/settings";
-import type { Settings } from "@kreozalabs/core";
+import type { Settings } from "@kreozalabs/kei-core";
 import { initPromise } from "../db";
 
 interface ThemeProviderProps {
@@ -20,11 +20,9 @@ export function SettingsProvider({
     if (typeof window === "undefined") return DEFAULT_SETTINGS;
     try {
       const stored = localStorage.getItem(storageKey);
-      if (stored) {
-        const parsed = JSON.parse(stored);
-        if (parsed && typeof parsed === "object" && !Array.isArray(parsed)) {
-          return { ...DEFAULT_SETTINGS, ...parsed };
-        }
+      const parsed = stored ? JSON.parse(stored) : null;
+      if (parsed && typeof parsed === "object" && !Array.isArray(parsed)) {
+        return { ...DEFAULT_SETTINGS, ...parsed };
       }
     } catch {
       // Legacy or invalid data, fallback to defaults
@@ -32,51 +30,42 @@ export function SettingsProvider({
     return DEFAULT_SETTINGS;
   });
 
-  const updateSetting = <K extends keyof Settings>(
-    key: K,
-    valueOrFn: Settings[K] | ((prev: Settings[K]) => Settings[K])
-  ) => {
-    const newValue =
-      typeof valueOrFn === "function"
-        ? (valueOrFn as (prev: Settings[K]) => Settings[K])(settings[key])
-        : valueOrFn;
+  const updateSetting = useCallback(
+    <K extends keyof Settings>(
+      key: K,
+      valueOrFn: Settings[K] | ((prev: Settings[K]) => Settings[K])
+    ) => {
+      const newValue =
+        typeof valueOrFn === "function"
+          ? (valueOrFn as (prev: Settings[K]) => Settings[K])(settings[key])
+          : valueOrFn;
 
-    const newSettings = { ...settings, [key]: newValue };
+      const newSettings = { ...settings, [key]: newValue };
 
-    // 1. Update React state
-    setSettingsState(newSettings);
-
-    // 2. Perform side-effects cleanly exactly once
-    localStorage.setItem(storageKey, JSON.stringify(newSettings));
-    initPromise.then(() => setSetting(key, newValue));
-  };
+      setSettingsState(newSettings);
+      localStorage.setItem(storageKey, JSON.stringify(newSettings));
+      initPromise.then(() => setSetting(key, newValue));
+    },
+    [settings, storageKey]
+  );
 
   useEffect(() => {
-    // On mount, load latest from DB
     const loadFromDb = async () => {
       await initPromise;
-      const dbSettings: Partial<Settings> = {};
-
-      for (const key of Object.keys(DEFAULT_SETTINGS) as (keyof Settings)[]) {
-        const dbValue = await getSetting<Settings[keyof Settings]>(key);
-        if (dbValue !== null) {
-          dbSettings[key] = dbValue as never;
-        }
-      }
+      const keys = Object.keys(DEFAULT_SETTINGS) as (keyof Settings)[];
+      const dbValues = await Promise.all(keys.map((k) => getSetting(k)));
 
       setSettingsState((prev) => {
         let hasChanges = false;
         const newSettings = { ...prev };
 
-        for (const [key, value] of Object.entries(dbSettings) as [
-          keyof Settings,
-          Settings[keyof Settings],
-        ][]) {
-          if (JSON.stringify(value) !== JSON.stringify(prev[key])) {
-            newSettings[key] = value as never;
+        keys.forEach((key, idx) => {
+          const val = dbValues[idx];
+          if (val !== null && JSON.stringify(val) !== JSON.stringify(prev[key])) {
+            newSettings[key] = val as never;
             hasChanges = true;
           }
-        }
+        });
 
         if (hasChanges) {
           localStorage.setItem(storageKey, JSON.stringify(newSettings));
@@ -88,40 +77,33 @@ export function SettingsProvider({
 
     loadFromDb();
 
-    // Listen to broadcast channel and custom local events for settings updates
     const channel = new BroadcastChannel("kei_db_sync");
-    const handleMessage = (e: MessageEvent) => {
-      if (e.data && e.data.type === "DB_UPDATED" && e.data.entity === "settings") {
+    const sync = (data: any) => {
+      if (data?.type === "DB_UPDATED" && data?.entity === "settings") {
         loadFromDb();
       }
     };
-    const handleCustomEvent = (e: Event) => {
-      const customEvent = e as CustomEvent;
-      if (
-        customEvent.detail &&
-        customEvent.detail.type === "DB_UPDATED" &&
-        customEvent.detail.entity === "settings"
-      ) {
-        loadFromDb();
-      }
-    };
+    const handleMessage = (e: MessageEvent) => sync(e.data);
+    const handleCustomEvent = (e: Event) => sync((e as CustomEvent).detail);
+
     channel.addEventListener("message", handleMessage);
     window.addEventListener("kei_db_sync_local", handleCustomEvent);
+
     return () => {
       channel.removeEventListener("message", handleMessage);
       window.removeEventListener("kei_db_sync_local", handleCustomEvent);
       channel.close();
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [storageKey]);
 
   useEffect(() => {
     const root = window.document.documentElement;
 
-    const applyTheme = () => {
+    const applyThemeAndAccent = () => {
       root.classList.add("disable-transitions");
-      root.classList.remove("light", "dark");
 
+      // Update theme classes
+      root.classList.remove("light", "dark");
       if (settings.theme === "system") {
         const systemTheme = window.matchMedia("(prefers-color-scheme: dark)").matches
           ? "dark"
@@ -131,44 +113,35 @@ export function SettingsProvider({
         root.classList.add(settings.theme);
       }
 
-      // Allow browser to apply the theme without transition, then re-enable
+      // Update accent classes
+      const classes = root.className.split(" ").filter((c) => !c.startsWith("theme-"));
+      root.className = classes.join(" ").trim();
+      root.classList.add(`theme-${settings.accent}`);
+
+      // Allow browser to apply styles without transition, then re-enable
       setTimeout(() => {
         root.classList.remove("disable-transitions");
-      }, 50); // Small delay to ensure styles are painted
+      }, 50);
     };
 
-    applyTheme();
+    applyThemeAndAccent();
 
     if (settings.theme === "system") {
       const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
-      const handleSystemChange = () => applyTheme();
+      const handleSystemChange = () => applyThemeAndAccent();
 
       mediaQuery.addEventListener("change", handleSystemChange);
       return () => mediaQuery.removeEventListener("change", handleSystemChange);
     }
-  }, [settings.theme]);
+  }, [settings.theme, settings.accent]);
 
-  useEffect(() => {
-    const root = window.document.documentElement;
-
-    root.classList.add("disable-transitions");
-
-    // Remove all theme-* classes
-    const classes = root.className.split(" ").filter((c) => !c.startsWith("theme-"));
-    root.className = classes.join(" ").trim();
-
-    // Add new accent class
-    root.classList.add(`theme-${settings.accent}`);
-
-    setTimeout(() => {
-      root.classList.remove("disable-transitions");
-    }, 50);
-  }, [settings.accent]);
-
-  const value = {
-    settings,
-    updateSetting,
-  };
+  const value = useMemo(
+    () => ({
+      settings,
+      updateSetting,
+    }),
+    [settings, updateSetting]
+  );
 
   return (
     <SettingsProviderContext.Provider {...props} value={value}>

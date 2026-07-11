@@ -10,10 +10,10 @@
     "cssVariables": true
   },
   "aliases": {
-    "components": "@kreozalabs/ui/components",
-    "utils": "@kreozalabs/ui/lib/utils",
-    "hooks": "@kreozalabs/ui/hooks",
-    "lib": "@kreozalabs/ui/lib",
-    "ui": "@kreozalabs/ui/components"
+    "components": "@kreozalabs/kei-ui/components",
+    "utils": "@kreozalabs/kei-ui/lib/utils",
+    "hooks": "@kreozalabs/kei-ui/hooks",
+    "lib": "@kreozalabs/kei-ui/lib",
+    "ui": "@kreozalabs/kei-ui/components"
   }
 }

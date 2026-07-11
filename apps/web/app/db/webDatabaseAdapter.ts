@@ -1,3 +1,4 @@
+// FIXME: Refactor !
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import {
   type DatabaseAdapter,
@@ -5,7 +6,7 @@ import {
   type EventType,
   type Action,
   type ActionStatus,
-} from "@kreozalabs/core";
+} from "@kreozalabs/kei-core";
 import { getOrCreateDeviceIdentity } from "@/utils/device";
 
 // Export db as null to maintain interface compatibility with old PGlite imports
@@ -77,7 +78,7 @@ function sendToWorker(type: "init" | "query" | "exec", sql?: string, params?: an
   });
 }
 
-export interface WebDatabaseAdapter extends DatabaseAdapter {
+interface WebDatabaseAdapter extends DatabaseAdapter {
   query(sql: string, params?: any[]): Promise<any[]>;
   queryDirect(sql: string, params?: any[]): Promise<any[]>;
 }

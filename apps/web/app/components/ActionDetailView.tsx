@@ -1,5 +1,6 @@
+// FIXME: Refactor !
 import { useEffect, useState } from "react";
-import { Button, cn } from "@kreozalabs/ui";
+import { Button, cn, toast } from "@kreozalabs/kei-ui";
 import {
   Calendar,
   Clock,
@@ -10,11 +11,20 @@ import {
   Pencil,
   Loader2,
 } from "lucide-react";
-import type { Action } from "@kreozalabs/core";
-import type { Event } from "@kreozalabs/core";
-import { EVENT_TYPES, ACTION_STATUS, ENERGY_OPTIONS, INTENTION_OPTIONS } from "@kreozalabs/core";
-import { formatGoogleDate } from "@kreozalabs/core";
-import { getEventsForEntity } from "@/db/actions";
+import type { Action } from "@kreozalabs/kei-core";
+import type { Event } from "@kreozalabs/kei-core";
+import {
+  EVENT_TYPES,
+  ACTION_STATUS,
+  ENERGY_OPTIONS,
+  INTENTION_OPTIONS,
+} from "@kreozalabs/kei-core";
+import { formatGoogleDate } from "@kreozalabs/kei-core";
+import { getEventsForEntity, updateAction } from "@/db/actions";
+import { EditableTitle } from "./action-input/EditableTitle";
+import { EditableNote } from "./action-input/EditableNote";
+import { useQueryClient } from "@tanstack/react-query";
+import { useSettings } from "@/providers/SettingsContext";
 
 const STATUS_BADGE_STYLES: Record<string, string> = {
   [ACTION_STATUS.COMPLETED]: "bg-emerald-500/10 text-emerald-500 border-emerald-500/20",
@@ -63,16 +73,50 @@ interface ActionDetailViewProps {
 
 export function ActionDetailView({
   action,
-  onEdit,
   onClose,
   onComplete,
   onAbandon,
   onReactivate,
   onDeletePermanently,
-}: ActionDetailViewProps) {
+}: Omit<ActionDetailViewProps, "onEdit">) {
+  const queryClient = useQueryClient();
   const [events, setEvents] = useState<Event[]>([]);
   const [loadingEvents, setLoadingEvents] = useState(true);
   const [prevActionId, setPrevActionId] = useState(action.id);
+
+  const handleFieldUpdate = async (field: keyof Action, value: any) => {
+    if (action[field] === value) return;
+
+    const previousActions = queryClient.getQueryData<Action[]>(["actions"]);
+    if (previousActions) {
+      queryClient.setQueryData<Action[]>(
+        ["actions"],
+        previousActions.map((a) => (a.id === action.id ? { ...a, [field]: value } : a))
+      );
+    }
+
+    try {
+      await updateAction(action.id, { [field]: value });
+      toast.success("Action updated", {
+        description: "Your changes have been saved.",
+        action: {
+          label: "Undo",
+          onClick: async () => {
+            if (previousActions) {
+              queryClient.setQueryData(["actions"], previousActions);
+            }
+            await updateAction(action.id, { [field]: action[field] });
+            toast.success("Action restored");
+          },
+        },
+      });
+    } catch (error) {
+      if (previousActions) {
+        queryClient.setQueryData(["actions"], previousActions);
+      }
+      toast.error("Failed to update action");
+    }
+  };
 
   if (action.id !== prevActionId) {
     setPrevActionId(action.id);
@@ -142,16 +186,19 @@ export function ActionDetailView({
   };
 
   return (
-    <div className="flex flex-col gap-6 max-h-[80vh] overflow-y-auto custom-scrollbar px-6 pb-6 pt-2">
+    <div className="custom-scrollbar flex max-h-[80vh] flex-col gap-6 overflow-y-auto px-6 pt-2 pb-6">
       {/* Title & Status */}
       <div className="flex flex-col gap-2">
         <div className="flex items-start justify-between gap-4">
-          <h3 className="text-xl font-bold tracking-tight text-foreground leading-snug wrap-break-word flex-1">
-            {action.title}
-          </h3>
+          <div className="min-w-0 flex-1">
+            <EditableTitle
+              value={action.title}
+              onChange={(val) => handleFieldUpdate("title", val)}
+            />
+          </div>
           <span
             className={cn(
-              "text-[10px] font-black uppercase tracking-widest px-2.5 py-1 rounded-full shrink-0 border",
+              "mt-1 shrink-0 rounded-full border px-2.5 py-1 text-[10px] font-black tracking-widest uppercase",
               STATUS_BADGE_STYLES[action.status] || STATUS_BADGE_STYLES[ACTION_STATUS.ACTIVE]
             )}
           >
@@ -159,26 +206,23 @@ export function ActionDetailView({
           </span>
         </div>
 
-        {action.note ? (
-          <p className="text-sm text-muted-foreground/80 leading-relaxed bg-muted/20 border border-border/5 p-4 rounded-2xl whitespace-pre-wrap mt-2">
-            {action.note}
-          </p>
-        ) : (
-          <p className="text-xs italic text-muted-foreground/45 mt-1 px-1">
-            No notes or subtasks attached to this action.
-          </p>
-        )}
+        <div className="mt-2">
+          <EditableNote
+            value={action.note || ""}
+            onChange={(val) => handleFieldUpdate("note", val)}
+          />
+        </div>
       </div>
 
       {/* Metadata Badges */}
-      <div className="flex flex-col bg-muted/30 border border-border/10 p-5 rounded-3xl divide-y divide-border/10">
+      <div className="bg-muted/30 border-border/10 divide-border/10 flex flex-col divide-y rounded-3xl border p-5">
         <div className="flex flex-col gap-1 pb-3">
-          <span className="text-[9px] font-bold uppercase tracking-wider text-muted-foreground/40">
+          <span className="text-muted-foreground/40 text-[9px] font-bold tracking-wider uppercase">
             Intention
           </span>
           <span
             className={cn(
-              "text-xs font-black uppercase tracking-widest px-2 py-0.5 rounded-lg w-max text-center leading-none mt-1",
+              "mt-1 w-max rounded-lg px-2 py-0.5 text-center text-xs leading-none font-black tracking-widest uppercase",
               getIntentionBadgeStyle(action.intention)
             )}
           >
@@ -187,12 +231,12 @@ export function ActionDetailView({
         </div>
 
         <div className="flex flex-col gap-1 py-3">
-          <span className="text-[9px] font-bold uppercase tracking-wider text-muted-foreground/40">
+          <span className="text-muted-foreground/40 text-[9px] font-bold tracking-wider uppercase">
             Energy Required
           </span>
           <span
             className={cn(
-              "text-xs font-black uppercase tracking-widest px-2 py-0.5 rounded-lg w-max text-center leading-none mt-1",
+              "mt-1 w-max rounded-lg px-2 py-0.5 text-center text-xs leading-none font-black tracking-widest uppercase",
               getEnergyBadgeStyle(action.energy)
             )}
           >
@@ -201,21 +245,21 @@ export function ActionDetailView({
         </div>
 
         <div className="flex flex-col gap-1 py-3">
-          <span className="text-[9px] font-bold uppercase tracking-wider text-muted-foreground/40">
+          <span className="text-muted-foreground/40 text-[9px] font-bold tracking-wider uppercase">
             Scheduled Date
           </span>
-          <span className="text-xs font-bold text-foreground/80 flex items-center gap-1.5 mt-1">
-            <Calendar className="size-3.5 text-muted-foreground/50 shrink-0" />
+          <span className="text-foreground/80 mt-1 flex items-center gap-1.5 text-xs font-bold">
+            <Calendar className="text-muted-foreground/50 size-3.5 shrink-0" />
             {formatGoogleDate(action.scheduledDate)}
           </span>
         </div>
 
         <div className="flex flex-col gap-1 pt-3">
-          <span className="text-[9px] font-bold uppercase tracking-wider text-muted-foreground/40">
+          <span className="text-muted-foreground/40 text-[9px] font-bold tracking-wider uppercase">
             Timing & Span
           </span>
-          <span className="text-xs font-bold text-foreground/80 flex items-center gap-1.5 mt-1">
-            <Clock className="size-3.5 text-muted-foreground/50 shrink-0" />
+          <span className="text-foreground/80 mt-1 flex items-center gap-1.5 text-xs font-bold">
+            <Clock className="text-muted-foreground/50 size-3.5 shrink-0" />
             {action.startTime ? (
               <span>
                 {action.startTime}
@@ -234,36 +278,36 @@ export function ActionDetailView({
 
       {/* Chronological Event History Log */}
       <div className="flex flex-col gap-3">
-        <h4 className="text-[11px] font-black uppercase tracking-widest text-muted-foreground/50 px-1">
+        <h4 className="text-muted-foreground/50 px-1 text-[11px] font-black tracking-widest uppercase">
           Chronological Lifecycle History
         </h4>
-        <div className="bg-card/45 border border-border/20 rounded-3xl p-4 overflow-hidden relative min-h-24 max-h-56 overflow-y-auto custom-scrollbar">
+        <div className="bg-card/45 border-border/20 custom-scrollbar relative max-h-56 min-h-24 overflow-hidden overflow-y-auto rounded-3xl border p-4">
           {loadingEvents ? (
-            <div className="absolute inset-0 flex items-center justify-center bg-background/20 backdrop-blur-xs">
-              <Loader2 className="size-5 text-primary animate-spin" />
+            <div className="bg-background/20 absolute inset-0 flex items-center justify-center backdrop-blur-xs">
+              <Loader2 className="text-primary size-5 animate-spin" />
             </div>
           ) : events.length === 0 ? (
-            <div className="text-center py-6 text-xs text-muted-foreground/30 italic">
+            <div className="text-muted-foreground/30 py-6 text-center text-xs italic">
               No historical checkpoints recorded.
             </div>
           ) : (
-            <div className="relative border-l border-border/20 ml-2.5 pl-5 py-1 space-y-5">
+            <div className="border-border/20 relative ml-2.5 space-y-5 border-l py-1 pl-5">
               {events.map((event) => {
                 return (
-                  <div key={event.eventId} className="relative group/item">
+                  <div key={event.eventId} className="group/item relative">
                     {/* Circle Node */}
                     <div
                       className={cn(
-                        "absolute -left-6.5 top-1 size-3 rounded-full border bg-background transition-all flex items-center justify-center",
+                        "bg-background absolute top-1 -left-6.5 flex size-3 items-center justify-center rounded-full border transition-all",
                         EVENT_NODE_STYLES[event.type] || "border-border/60"
                       )}
                     />
                     {/* Content */}
                     <div className="flex flex-col gap-0.5">
-                      <span className="text-xs font-bold text-foreground/80">
+                      <span className="text-foreground/80 text-xs font-bold">
                         {getEventName(event.type)}
                       </span>
-                      <span className="text-[9px] text-muted-foreground/50 font-medium">
+                      <span className="text-muted-foreground/50 text-[9px] font-medium">
                         {formatEventTime(event.timestamp)}
                       </span>
                     </div>
@@ -276,7 +320,7 @@ export function ActionDetailView({
       </div>
 
       {/* Action Footer Button Drawer */}
-      <div className="flex items-center flex-wrap gap-2.5 mt-2 border-t border-border/10 pt-5">
+      <div className="border-border/10 mt-2 flex flex-wrap items-center gap-2.5 border-t pt-5">
         {action.status === ACTION_STATUS.COMPLETED ? (
           <Button
             variant="outline"
@@ -287,7 +331,7 @@ export function ActionDetailView({
             }}
             className={BUTTON_STYLES.CONTROL}
           >
-            <RotateCcw className="size-3.5 text-muted-foreground" />
+            <RotateCcw className="text-muted-foreground size-3.5" />
             Mark Active
           </Button>
         ) : action.status === ACTION_STATUS.ABANDONED ? (
@@ -300,7 +344,7 @@ export function ActionDetailView({
             }}
             className={BUTTON_STYLES.CONTROL}
           >
-            <RotateCcw className="size-3.5 text-muted-foreground" />
+            <RotateCcw className="text-muted-foreground size-3.5" />
             Reactivate Task
           </Button>
         ) : (
@@ -332,11 +376,6 @@ export function ActionDetailView({
             </Button>
           </>
         )}
-
-        <Button variant="outline" size="sm" onClick={onEdit} className={BUTTON_STYLES.EDIT}>
-          <Pencil className="size-3.5" />
-          Edit Details
-        </Button>
 
         <Button
           variant="outline"

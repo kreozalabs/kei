@@ -1,7 +1,7 @@
-import { Button } from "@kreozalabs/ui";
+import { Button } from "@kreozalabs/kei-ui";
 import { Plus, Minus } from "lucide-react";
 
-export const DurationStepper = ({
+const DurationStepper = ({
   value,
   label,
   onChange,
@@ -14,28 +14,28 @@ export const DurationStepper = ({
   const getDecrement = (val: number) => (val <= 60 ? 5 : 15);
 
   return (
-    <div className="flex flex-col gap-1.5 items-center flex-1 bg-muted/20 p-2.5 rounded-xl border border-border/30">
-      <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground/60">
+    <div className="bg-muted/20 border-border/30 flex flex-1 flex-col items-center gap-1.5 rounded-xl border p-2.5">
+      <span className="text-muted-foreground/60 text-[10px] font-bold tracking-wider uppercase">
         {label}
       </span>
-      <div className="flex items-center gap-1.5 w-full justify-between mt-0.5">
+      <div className="mt-0.5 flex w-full items-center justify-between gap-1.5">
         <Button
           type="button"
           variant="ghost"
           size="icon"
-          className="size-7 bg-background/50 hover:bg-background shadow-sm border border-border/40 text-muted-foreground hover:text-foreground rounded-lg transition-all active:scale-95 shrink-0"
+          className="bg-background/50 hover:bg-background border-border/40 text-muted-foreground hover:text-foreground size-7 shrink-0 rounded-lg border shadow-sm transition-all active:scale-95"
           onClick={() => onChange(Math.max(0, value - getDecrement(value)))}
         >
           <Minus className="size-3" />
         </Button>
-        <div className="font-bold text-[13px] text-foreground tracking-tight select-none">
+        <div className="text-foreground text-[13px] font-bold tracking-tight select-none">
           {value}m
         </div>
         <Button
           type="button"
           variant="ghost"
           size="icon"
-          className="size-7 bg-background/50 hover:bg-background shadow-sm border border-border/40 text-muted-foreground hover:text-foreground rounded-lg transition-all active:scale-95 shrink-0"
+          className="bg-background/50 hover:bg-background border-border/40 text-muted-foreground hover:text-foreground size-7 shrink-0 rounded-lg border shadow-sm transition-all active:scale-95"
           onClick={() => onChange(value + getIncrement(value))}
         >
           <Plus className="size-3" />
@@ -68,9 +68,9 @@ export const DurationInputs = ({
   };
 
   return (
-    <div className="p-2 space-y-3">
+    <div className="space-y-3 p-2">
       <div className="flex items-center justify-between px-1">
-        <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground/50">
+        <p className="text-muted-foreground/50 text-[10px] font-bold tracking-wider uppercase">
           Custom Duration
         </p>
       </div>

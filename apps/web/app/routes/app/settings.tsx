@@ -19,7 +19,7 @@ export default function Settings() {
   }, [setTitle, setSubtitle, setHeaderActions]);
 
   return (
-    <div className="flex flex-col space-y-12 animate-in fade-in slide-in-from-bottom-3 duration-700">
+    <div className="animate-in fade-in slide-in-from-bottom-3 flex flex-col space-y-12 duration-700">
       <div className="flex flex-col space-y-2">
         <div className="flex items-center gap-3">
           <h2 className="text-2xl font-bold tracking-tight">General Settings</h2>
@@ -28,37 +28,37 @@ export default function Settings() {
           Customize how Kei looks and feels for you.
         </p>
       </div>
-      <div className="grid grid-cols-1 gap-8 items-start">
-        <div className="bg-card/50 border border-border/40 rounded-4xl p-8 space-y-8 overflow-hidden relative group">
+      <div className="grid grid-cols-1 items-start gap-8">
+        <div className="bg-card/50 border-border/40 group relative space-y-8 overflow-hidden rounded-4xl border p-8">
           <div className="relative">
-            <h3 className="text-lg font-bold tracking-tight mb-8">Personalization</h3>
+            <h3 className="mb-8 text-lg font-bold tracking-tight">Personalization</h3>
             <PersonalizationSettings />
           </div>
         </div>
 
-        <div className="bg-card/50 border border-border/40 rounded-4xl p-8 space-y-8 overflow-hidden relative group">
+        <div className="bg-card/50 border-border/40 group relative space-y-8 overflow-hidden rounded-4xl border p-8">
           <div className="relative">
-            <h3 className="text-lg font-bold tracking-tight mb-8">Behavior</h3>
+            <h3 className="mb-8 text-lg font-bold tracking-tight">Behavior</h3>
             <BehaviorSettings />
           </div>
         </div>
 
-        <div className="bg-card/50 border border-border/40 rounded-4xl p-8 space-y-8 overflow-hidden relative group">
+        <div className="bg-card/50 border-border/40 group relative space-y-8 overflow-hidden rounded-4xl border p-8">
           <div className="relative">
-            <h3 className="text-lg font-bold tracking-tight mb-8">Actions Configuration</h3>
+            <h3 className="mb-8 text-lg font-bold tracking-tight">Actions Configuration</h3>
             <ActionsSettings />
           </div>
         </div>
 
-        <div className="bg-card/50 border border-border/40 rounded-4xl p-8 space-y-8 overflow-hidden relative group">
+        <div className="bg-card/50 border-border/40 group relative space-y-8 overflow-hidden rounded-4xl border p-8">
           <div className="relative">
-            <h3 className="text-lg font-bold tracking-tight mb-8">Maintenance</h3>
+            <h3 className="mb-8 text-lg font-bold tracking-tight">Maintenance</h3>
             <MaintenanceSettings />
           </div>
         </div>
-        <div className="bg-card/50 border border-border/40 rounded-4xl p-8 space-y-8 overflow-hidden relative group">
+        <div className="bg-card/50 border-border/40 group relative space-y-8 overflow-hidden rounded-4xl border p-8">
           <div className="relative">
-            <h3 className="text-lg font-bold tracking-tight mb-8">System Settings</h3>
+            <h3 className="mb-8 text-lg font-bold tracking-tight">System Settings</h3>
             <SystemSettings />
           </div>
         </div>

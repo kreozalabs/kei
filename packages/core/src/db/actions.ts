@@ -1,8 +1,8 @@
 import { v7 as uuidv7 } from "uuid";
-import type { Action, ActionPayload, ActionStatus, Event } from "@kreozalabs/core";
-import { EVENT_TYPES, ACTION_STATUS } from "@kreozalabs/core";
+import type { Action, ActionPayload, ActionStatus, Event } from "@kreozalabs/kei-core";
+import { EVENT_TYPES, ACTION_STATUS } from "@kreozalabs/kei-core";
 import { persistEvent } from "./events";
-import { getTodayString, applyEventToAction } from "@kreozalabs/core";
+import { getTodayString, applyEventToAction } from "@kreozalabs/kei-core";
 import type { DatabaseAdapter } from "./adapter";
 
 /**

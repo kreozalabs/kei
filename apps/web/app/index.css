@@ -1,4 +1,5 @@
-@import "@kreozalabs/ui/index.css";
+@import "@kreozalabs/kei-ui/index.css";
+@source "../node_modules/@ilamy/calendar/dist";
 
 /* Local overrides */
 body {

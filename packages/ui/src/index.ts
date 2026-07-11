@@ -1,6 +1,7 @@
 export * from "./components/alert";
 export * from "./components/badge";
 export * from "./components/button";
+export * from "./components/calendar";
 export * from "./components/card";
 export * from "./components/checkbox";
 export * from "./components/command";
@@ -15,4 +16,6 @@ export * from "./components/sheet";
 export * from "./components/sonner";
 export * from "./components/table";
 export * from "./components/textarea";
+export * from "./components/tooltip";
+export * from "./hooks/useMediaQuery";
 export * from "./lib/utils";

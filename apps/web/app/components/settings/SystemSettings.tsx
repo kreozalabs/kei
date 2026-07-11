@@ -1,6 +1,7 @@
+// FIXME: Refactor !
 import { useState, useEffect } from "react";
 import { Link } from "react-router";
-import { Button, cn, toast } from "@kreozalabs/ui";
+import { Button, cn, toast } from "@kreozalabs/kei-ui";
 import { useP2P } from "@/providers/P2PProvider";
 import { db } from "@/db";
 import type { BenchmarkResult } from "@/db/webDatabaseAdapter";
@@ -40,17 +41,17 @@ interface TelemetryCardProps {
   className?: string;
 }
 
-export function TelemetryCard({ title, icon, children, className }: TelemetryCardProps) {
+function TelemetryCard({ title, icon, children, className }: TelemetryCardProps) {
   return (
     <div
       className={cn(
-        "p-5 rounded-2xl bg-muted/10 border border-border/40 space-y-4 hover:border-border/60 transition-all duration-300 @container",
+        "bg-muted/10 border-border/40 hover:border-border/60 @container space-y-4 rounded-2xl border p-5 transition-all duration-300",
         className
       )}
     >
-      <div className="flex items-center gap-2 text-primary">
+      <div className="text-primary flex items-center gap-2">
         {icon}
-        <h4 className="text-xs font-bold uppercase tracking-wider">{title}</h4>
+        <h4 className="text-xs font-bold tracking-wider uppercase">{title}</h4>
       </div>
       <div className="space-y-3">{children}</div>
     </div>
@@ -64,21 +65,21 @@ interface TelemetryRowProps {
   borderTop?: boolean;
 }
 
-export function TelemetryRow({ label, value, borderTop }: TelemetryRowProps) {
+function TelemetryRow({ label, value, borderTop }: TelemetryRowProps) {
   return (
     <div
       className={cn(
-        "flex flex-col @sm:flex-row @sm:items-center justify-between text-xs gap-1 @sm:gap-4",
-        borderTop && "pt-1.5 border-t border-border/30"
+        "flex flex-col justify-between gap-1 text-xs @sm:flex-row @sm:items-center @sm:gap-4",
+        borderTop && "border-border/30 border-t pt-1.5"
       )}
     >
       <span className="text-muted-foreground shrink-0">{label}</span>
       {typeof value === "string" ? (
-        <span className="font-semibold text-foreground text-left @sm:text-right min-w-0">
+        <span className="text-foreground min-w-0 text-left font-semibold @sm:text-right">
           {value}
         </span>
       ) : (
-        <div className="min-w-0 flex items-center justify-start @sm:justify-end">{value}</div>
+        <div className="flex min-w-0 items-center justify-start @sm:justify-end">{value}</div>
       )}
     </div>
   );
@@ -325,9 +326,9 @@ export function SystemSettings() {
         <Button
           onClick={() => setIsOpen(true)}
           variant="outline"
-          className="rounded-xl h-10 px-5 bg-background hover:bg-muted border-border/50 text-foreground gap-2 transition-all text-xs font-bold uppercase tracking-widest animate-in fade-in zoom-in-95 duration-300"
+          className="bg-background hover:bg-muted border-border/50 text-foreground animate-in fade-in zoom-in-95 h-10 gap-2 rounded-xl px-5 text-xs font-bold tracking-widest uppercase transition-all duration-300"
         >
-          <Activity className="size-4 text-primary" />
+          <Activity className="text-primary size-4" />
           <span>Reveal System Diagnostics</span>
         </Button>
       </div>
@@ -335,35 +336,35 @@ export function SystemSettings() {
   }
 
   return (
-    <div className="space-y-6 animate-in fade-in slide-in-from-top-3 duration-300">
+    <div className="animate-in fade-in slide-in-from-top-3 space-y-6 duration-300">
       {/* App Identity Banner */}
-      <div className="bg-gradient-to-r from-primary/10 to-accent/10 border border-border/40 rounded-2xl p-6 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
-        <div className="flex items-start md:items-center gap-3 w-full md:w-auto">
-          <div className="p-3 bg-primary/15 rounded-xl border border-primary/25 shadow-[0_0_12px_rgba(244,63,94,0.15)] shrink-0">
-            <Layers className="size-6 text-primary" />
+      <div className="from-primary/10 to-accent/10 border-border/40 flex flex-col items-start justify-between gap-4 rounded-2xl border bg-gradient-to-r p-6 md:flex-row md:items-center">
+        <div className="flex w-full items-start gap-3 md:w-auto md:items-center">
+          <div className="bg-primary/15 border-primary/25 shrink-0 rounded-xl border p-3 shadow-[0_0_12px_rgba(244,63,94,0.15)]">
+            <Layers className="text-primary size-6" />
           </div>
           <div className="min-w-0">
             <div className="flex flex-wrap items-center gap-2">
-              <h4 className="text-base font-bold tracking-tight text-foreground">
+              <h4 className="text-foreground text-base font-bold tracking-tight">
                 Kei Productivity Engine
               </h4>
               {/* TODO: Remove manual versioning*/}
-              <span className="text-[10px] font-bold px-2 py-0.5 bg-primary/20 text-primary rounded-full border border-primary/30 uppercase tracking-widest shrink-0">
+              <span className="bg-primary/20 text-primary border-primary/30 shrink-0 rounded-full border px-2 py-0.5 text-[10px] font-bold tracking-widest uppercase">
                 v2.0.0
               </span>
             </div>
-            <p className="text-xs text-muted-foreground/80 mt-0.5 leading-relaxed">
+            <p className="text-muted-foreground/80 mt-0.5 text-xs leading-relaxed">
               Standalone Event-Sourced Local-First Productivity Space
             </p>
           </div>
         </div>
 
-        <div className="flex flex-col md:flex-row items-stretch md:items-center gap-2 w-full md:w-auto">
+        <div className="flex w-full flex-col items-stretch gap-2 md:w-auto md:flex-row md:items-center">
           <Button
             asChild
             variant="outline"
             size="sm"
-            className="w-full md:w-auto rounded-xl h-9 px-3 bg-background hover:bg-muted border-border/50 text-foreground gap-1.5 transition-all text-xs font-semibold"
+            className="bg-background hover:bg-muted border-border/50 text-foreground h-9 w-full gap-1.5 rounded-xl px-3 text-xs font-semibold transition-all md:w-auto"
           >
             <Link to="https://github.com/kreozalabs/kei" target="_blank" rel="noopener noreferrer">
               <GitHub className="size-3.5 shrink-0" />
@@ -376,7 +377,7 @@ export function SystemSettings() {
             disabled={isCheckingUpdates}
             variant="outline"
             size="sm"
-            className="w-full md:w-auto rounded-xl h-9 px-3 bg-background hover:bg-muted border-border/50 text-foreground gap-1.5 transition-all text-xs font-semibold"
+            className="bg-background hover:bg-muted border-border/50 text-foreground h-9 w-full gap-1.5 rounded-xl px-3 text-xs font-semibold transition-all md:w-auto"
           >
             <RefreshCw className={cn("size-3.5 shrink-0", isCheckingUpdates && "animate-spin")} />
             <span>Check for Updates</span>
@@ -386,7 +387,7 @@ export function SystemSettings() {
             onClick={() => setIsOpen(false)}
             variant="ghost"
             size="sm"
-            className="w-full md:w-auto rounded-xl h-9 px-3 hover:bg-muted/80 text-muted-foreground hover:text-foreground text-xs font-semibold"
+            className="hover:bg-muted/80 text-muted-foreground hover:text-foreground h-9 w-full rounded-xl px-3 text-xs font-semibold md:w-auto"
           >
             Hide
           </Button>
@@ -394,14 +395,14 @@ export function SystemSettings() {
       </div>
 
       {/* Stats and Telemetry Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
         {/* Storage & Local Cache */}
         <TelemetryCard title="Storage & Cache" icon={<HardDrive className="size-4" />}>
           <TelemetryRow label="Location" value="Browser Origin Private File System (OPFS)" />
           <TelemetryRow
             label="Datastore Path"
             value={
-              <span className="font-mono text-[11px] bg-muted/30 px-1.5 py-0.5 rounded text-foreground">
+              <span className="bg-muted/30 text-foreground rounded px-1.5 py-0.5 font-mono text-[11px]">
                 /kei.sqlite3
               </span>
             }
@@ -412,7 +413,7 @@ export function SystemSettings() {
             <div className="space-y-1.5 pt-1">
               <div className="flex items-center justify-between text-xs">
                 <span className="text-muted-foreground">Storage Allocated</span>
-                <span className="font-medium text-foreground">
+                <span className="text-foreground font-medium">
                   {storageStats.usedMb} MB /{" "}
                   {storageStats.totalMb > 1000
                     ? `${(storageStats.totalMb / 1024).toFixed(1)} GB`
@@ -420,9 +421,9 @@ export function SystemSettings() {
                   ({storageStats.percent}%)
                 </span>
               </div>
-              <div className="h-1.5 w-full bg-muted/30 rounded-full overflow-hidden">
+              <div className="bg-muted/30 h-1.5 w-full overflow-hidden rounded-full">
                 <div
-                  className="h-full bg-primary rounded-full transition-all duration-500"
+                  className="bg-primary h-full rounded-full transition-all duration-500"
                   style={{ width: `${storageStats.percent}%` }}
                 />
               </div>
@@ -436,13 +437,13 @@ export function SystemSettings() {
             value={
               <div className="flex items-center gap-2">
                 {storageStats?.persisted ? (
-                  <span className="flex items-center gap-1.5 text-emerald-500 font-semibold text-[11px] bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/20">
+                  <span className="flex items-center gap-1.5 rounded-full border border-emerald-500/20 bg-emerald-500/10 px-2 py-0.5 text-[11px] font-semibold text-emerald-500">
                     <ShieldCheck className="size-3" />
                     <span>Protected</span>
                   </span>
                 ) : (
                   <div className="flex items-center gap-1.5">
-                    <span className="flex items-center gap-1.5 text-amber-500 font-semibold text-[11px] bg-amber-500/10 px-2 py-0.5 rounded-full border border-amber-500/20">
+                    <span className="flex items-center gap-1.5 rounded-full border border-amber-500/20 bg-amber-500/10 px-2 py-0.5 text-[11px] font-semibold text-amber-500">
                       <ShieldAlert className="size-3" />
                       <span>Best Effort</span>
                     </span>
@@ -451,7 +452,7 @@ export function SystemSettings() {
                       disabled={isRequestingPersistence}
                       variant="ghost"
                       size="sm"
-                      className="h-6 px-2 text-[10px] uppercase font-bold rounded-lg border border-border bg-background hover:bg-muted text-foreground"
+                      className="border-border bg-background hover:bg-muted text-foreground h-6 rounded-lg border px-2 text-[10px] font-bold uppercase"
                     >
                       Harden
                     </Button>
@@ -491,11 +492,11 @@ export function SystemSettings() {
                   className={cn(
                     "size-2 rounded-full",
                     isOnline
-                      ? "bg-emerald-500 shadow-[0_0_6px_#10b981] animate-pulse"
+                      ? "animate-pulse bg-emerald-500 shadow-[0_0_6px_#10b981]"
                       : "bg-zinc-500"
                   )}
                 />
-                <span className="font-semibold text-foreground">
+                <span className="text-foreground font-semibold">
                   {isOnline ? "Online" : "Offline Mode"}
                 </span>
               </div>
@@ -508,12 +509,12 @@ export function SystemSettings() {
             value={
               <div className="flex items-center gap-1.5">
                 {isOfflineReady ? (
-                  <span className="flex items-center gap-1 text-emerald-500 font-semibold text-[11px]">
+                  <span className="flex items-center gap-1 text-[11px] font-semibold text-emerald-500">
                     <Check className="size-3.5" />
                     <span>Ready</span>
                   </span>
                 ) : (
-                  <span className="flex items-center gap-1 text-muted-foreground/70 text-[11px]">
+                  <span className="text-muted-foreground/70 flex items-center gap-1 text-[11px]">
                     <X className="size-3.5" />
                     <span>Pending activation</span>
                   </span>
@@ -554,12 +555,12 @@ export function SystemSettings() {
             value={
               <div className="flex items-center gap-2">
                 {notificationStatus === "granted" ? (
-                  <span className="flex items-center gap-1 text-emerald-500 font-semibold text-[11px] bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/20">
+                  <span className="flex items-center gap-1 rounded-full border border-emerald-500/20 bg-emerald-500/10 px-2 py-0.5 text-[11px] font-semibold text-emerald-500">
                     <Bell className="size-3" />
                     <span>Enabled</span>
                   </span>
                 ) : notificationStatus === "denied" ? (
-                  <span className="flex items-center gap-1 text-red-500 font-semibold text-[11px] bg-red-500/10 px-2 py-0.5 rounded-full border border-red-500/20">
+                  <span className="flex items-center gap-1 rounded-full border border-red-500/20 bg-red-500/10 px-2 py-0.5 text-[11px] font-semibold text-red-500">
                     <BellOff className="size-3" />
                     <span>Blocked</span>
                   </span>
@@ -570,7 +571,7 @@ export function SystemSettings() {
                       onClick={handleRequestNotificationPermission}
                       variant="ghost"
                       size="sm"
-                      className="h-6 px-2 text-[10px] uppercase font-bold rounded-lg border border-border bg-background hover:bg-muted text-foreground"
+                      className="border-border bg-background hover:bg-muted text-foreground h-6 rounded-lg border px-2 text-[10px] font-bold uppercase"
                     >
                       Enable
                     </Button>
@@ -584,11 +585,11 @@ export function SystemSettings() {
         {/* Database Benchmark Diagnostics */}
         <TelemetryCard title="Database Diagnostics" icon={<Activity className="size-4" />}>
           <div className="flex flex-col space-y-3">
-            <p className="text-xs text-muted-foreground/80 leading-relaxed">
+            <p className="text-muted-foreground/80 text-xs leading-relaxed">
               Measure local SQLite database query latency and write performance.
             </p>
             {benchmarkResult ? (
-              <div className="space-y-2 border-t border-border/30 pt-2.5">
+              <div className="border-border/30 space-y-2 border-t pt-2.5">
                 <TelemetryRow
                   label="Single Write Latency"
                   value={
@@ -632,13 +633,13 @@ export function SystemSettings() {
                 />
               </div>
             ) : null}
-            <div className="pt-1.5 flex justify-end">
+            <div className="flex justify-end pt-1.5">
               <Button
                 onClick={handleRunBenchmark}
                 disabled={isBenchmarking}
                 variant="outline"
                 size="sm"
-                className="h-8 text-xs font-semibold rounded-xl bg-background hover:bg-muted text-foreground gap-1.5"
+                className="bg-background hover:bg-muted text-foreground h-8 gap-1.5 rounded-xl text-xs font-semibold"
               >
                 <RefreshCw className={cn("size-3.5", isBenchmarking && "animate-spin")} />
                 {isBenchmarking ? "Running Benchmark..." : "Run Benchmark"}

@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 
-export interface ShortcutConfig {
+interface ShortcutConfig {
   /**
    * The key to trigger the shortcut (e.g., 'b', 'k', 'Enter').
    * Case-insensitive.
