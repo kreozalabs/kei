@@ -10,12 +10,11 @@ import type { AppLayoutContext } from "./AppLayout";
 
 interface AppHeaderProps {
   title?: string;
-  subtitle?: string;
   className?: string;
   children?: React.ReactNode;
 }
 
-export function AppHeader({ title, subtitle, className, children }: AppHeaderProps) {
+export function AppHeader({ title, className, children }: AppHeaderProps) {
   const { settings } = useSettings();
   const { isSubtle, show, hide } = useSubtleOnIdle({
     initialDelay: 3000,
@@ -26,7 +25,7 @@ export function AppHeader({ title, subtitle, className, children }: AppHeaderPro
   return (
     <header
       className={cn(
-        "bg-muted/95 border-border/40 sticky top-0 z-40 w-full shrink-0 border-b px-6 pt-2 pb-1 backdrop-blur-xl md:border-none md:px-8 md:pt-4 md:pb-6",
+        "bg-muted/95 border-border/40 sticky top-0 z-40 w-full shrink-0 border-b px-6 pt-2 pb-1 backdrop-blur-xl md:h-20",
         className
       )}
       onMouseEnter={show}
@@ -47,7 +46,7 @@ export function AppHeader({ title, subtitle, className, children }: AppHeaderPro
             <HeaderSidebarToggle />
 
             {/* Title Area */}
-            <HeaderTitleArea title={title || ""} subtitle={subtitle} />
+            <HeaderTitleArea title={title || ""} />
           </>
         )}
       </div>
@@ -55,6 +54,7 @@ export function AppHeader({ title, subtitle, className, children }: AppHeaderPro
   );
 }
 
+// NOTE: It is not displayed on mobile screen
 export function HeaderSidebarToggle() {
   const context = useOutletContext<AppLayoutContext | null>();
   if (!context) return null;
@@ -76,17 +76,16 @@ export function HeaderSidebarToggle() {
 
 interface HeaderTitleAreaProps {
   title: string;
-  subtitle?: string;
   className?: string;
 }
 
-export function HeaderTitleArea({ title, subtitle, className }: HeaderTitleAreaProps) {
+export function HeaderTitleArea({ title, className }: HeaderTitleAreaProps) {
   const { isDbReady, isWriting } = useDb();
   const isLoading = !isDbReady || isWriting;
 
   return (
     <div className={cn("flex h-10 min-w-0 flex-col justify-end gap-1 md:h-16", className)}>
-      <h1 className="mb-2 flex items-center gap-2 text-lg leading-none font-bold tracking-tight md:text-xl">
+      <h1 className="mb-4 flex items-center gap-2 text-lg leading-none font-bold tracking-tight md:text-xl">
         <span>{title}</span>
         {isLoading && (
           <Loader2Icon
@@ -95,13 +94,6 @@ export function HeaderTitleArea({ title, subtitle, className }: HeaderTitleAreaP
           />
         )}
       </h1>
-      <div className="flex h-4 items-center overflow-hidden">
-        {subtitle && (
-          <span className="text-muted-foreground truncate text-[11px] font-semibold tracking-wider opacity-70 md:text-xs">
-            {subtitle}
-          </span>
-        )}
-      </div>
     </div>
   );
 }

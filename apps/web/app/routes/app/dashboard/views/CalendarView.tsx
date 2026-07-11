@@ -61,7 +61,7 @@ function getDisplayDate(dateObj: Date, viewMode: string, localeCode?: string): s
     year: "numeric",
   });
 }
-
+// FIXME: Make ready for mobile version too
 export function CalendarHeaderControls() {
   const api = useIlamyCalendarContext();
   const { settings } = useSettings();

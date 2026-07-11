@@ -22,7 +22,7 @@ import {
   CheckCircle2Icon,
   CheckSquare,
 } from "lucide-react";
-
+// FIXME: Broken on mobile
 export function ViewSwitcher() {
   const { settings, updateSetting } = useSettings();
   const {
