@@ -1,11 +1,11 @@
 import { useState, useEffect } from "react";
+import { createPortal } from "react-dom";
 import { IlamyCalendar, useIlamyCalendarContext } from "@ilamy/calendar";
 import { recurrencePlugin } from "@ilamy/calendar/plugins/recurrence";
 import { agendaPlugin } from "@ilamy/calendar/plugins/agenda";
 import { dragToCreatePlugin } from "@ilamy/calendar/plugins/drag-to-create";
 import { Button, Popover, PopoverTrigger, PopoverContent, Calendar } from "@kreozalabs/kei-ui";
 import { ChevronLeftIcon, ChevronRightIcon, ChevronDown } from "lucide-react";
-import { HeaderPortal } from "../../dashboard";
 import { useSettings } from "@/providers/SettingsContext";
 import { useDashboardContext } from "../context/DashboardContext";
 import type { ViewMode } from "../types";
@@ -62,17 +62,30 @@ function getDisplayDate(dateObj: Date, viewMode: string, localeCode?: string): s
   });
 }
 
-function CalendarHeaderControls() {
+export function CalendarHeaderControls() {
   const api = useIlamyCalendarContext();
   const { settings } = useSettings();
   const { viewMode } = useDashboardContext();
   const [isOpen, setIsOpen] = useState(false);
+  const [target, setTarget] = useState<HTMLElement | null>(null);
 
   useEffect(() => {
     if (api.view !== viewMode) {
       api.setView(viewMode as string);
     }
   }, [viewMode, api]);
+
+  useEffect(() => {
+    // Look up the portal target in the DOM.
+    // Since DashboardHeader renders before CalendarView in the same route tree,
+    // this element is guaranteed to exist.
+    const el = document.getElementById("calendar-controls-target");
+    if (el) {
+      queueMicrotask(() => {
+        setTarget(el);
+      });
+    }
+  }, []);
 
   const localeCode = settings.language === "auto" ? undefined : settings.language;
   const selectedDateObj = api.currentDate.toDate();
@@ -97,37 +110,38 @@ function CalendarHeaderControls() {
     api.setCurrentDate(api.currentDate.add(1, unit));
   };
 
-  return (
-    <HeaderPortal to="header-calendar-portal-root">
-      <div className="flex items-center">
-        <Button size="default" variant="outline" onClick={() => api.today()}>
-          Today
-        </Button>
-        <Button variant="ghost" size="icon" onClick={handlePrev}>
-          <ChevronLeftIcon />
-        </Button>
-        <Button variant="ghost" size="icon" onClick={handleNext}>
-          <ChevronRightIcon />
-        </Button>
+  if (!target) return null;
 
-        <Popover open={isOpen} onOpenChange={setIsOpen}>
-          <PopoverTrigger asChild>
-            <Button variant="outline">
-              <span className="truncate">{displayDate}</span>
-              <ChevronDown />
-            </Button>
-          </PopoverTrigger>
-          <PopoverContent className="w-auto p-0" align="start">
-            <Calendar
-              mode="single"
-              selected={selectedDateObj}
-              onSelect={handleSelect}
-              lang={localeCode}
-            />
-          </PopoverContent>
-        </Popover>
-      </div>
-    </HeaderPortal>
+  return createPortal(
+    <div className="flex items-center gap-1">
+      <Button size="default" variant="outline" onClick={() => api.today()}>
+        Today
+      </Button>
+      <Button variant="ghost" size="icon" onClick={handlePrev}>
+        <ChevronLeftIcon />
+      </Button>
+      <Button variant="ghost" size="icon" onClick={handleNext}>
+        <ChevronRightIcon />
+      </Button>
+
+      <Popover open={isOpen} onOpenChange={setIsOpen}>
+        <PopoverTrigger asChild>
+          <Button variant="outline">
+            <span className="truncate">{displayDate}</span>
+            <ChevronDown />
+          </Button>
+        </PopoverTrigger>
+        <PopoverContent className="w-auto p-0" align="start">
+          <Calendar
+            mode="single"
+            selected={selectedDateObj}
+            onSelect={handleSelect}
+            lang={localeCode}
+          />
+        </PopoverContent>
+      </Popover>
+    </div>,
+    target
   );
 }
 

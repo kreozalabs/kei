@@ -1,16 +1,26 @@
 import { useEffect } from "react";
 import { useOutletContext } from "react-router";
 import { ErrorPage } from "@/components/ErrorPage";
+import { AppHeader } from "@/components/layout/AppHeader";
 import type { AppLayoutContext } from "@/components/layout/AppLayout";
 
 export default function AppNotFound() {
-  const { setTitle, setSubtitle, setOnFabClick } = useOutletContext<AppLayoutContext>();
+  const context = useOutletContext<AppLayoutContext | null>();
+  const setOnFabClick = context?.setOnFabClick;
 
   useEffect(() => {
-    setTitle("Error");
-    setSubtitle(undefined);
-    setOnFabClick(undefined);
-  }, [setTitle, setSubtitle, setOnFabClick]);
+    document.title = "Kei - Not Found";
+    if (setOnFabClick) {
+      setOnFabClick(undefined);
+    }
+  }, [setOnFabClick]);
 
-  return <ErrorPage status={404} homeLink="/app" homeLabel="Return to Dashboard" />;
+  return (
+    <div className="flex h-full w-full flex-col overflow-hidden">
+      <AppHeader title="Error" />
+      <div className="no-scrollbar flex-1 overflow-y-auto p-6 md:p-8">
+        <ErrorPage status={404} homeLink="/app" homeLabel="Return to Dashboard" />
+      </div>
+    </div>
+  );
 }

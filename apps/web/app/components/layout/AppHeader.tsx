@@ -1,19 +1,21 @@
 import { forwardRef } from "react";
-import { PlusIcon, SearchIcon, MoreVerticalIcon, Loader2Icon } from "lucide-react";
+import { PlusIcon, SearchIcon, Loader2Icon } from "lucide-react";
 import { Button, cn } from "@kreozalabs/kei-ui";
 import { useSettings } from "@/providers/SettingsContext";
 import { useSubtleOnIdle } from "@/hooks/useSubtleOnIdle";
 import { useDb } from "@/providers/DbContext";
+import { useOutletContext } from "react-router";
+import { SidebarToggle } from "./SidebarToggle";
+import type { AppLayoutContext } from "./AppLayout";
 
 interface AppHeaderProps {
-  title: string;
+  title?: string;
   subtitle?: string;
-  left?: React.ReactNode;
-  center?: React.ReactNode;
-  right?: React.ReactNode;
+  className?: string;
+  children?: React.ReactNode;
 }
 
-export function AppHeader({ title, subtitle, left, center, right }: AppHeaderProps) {
+export function AppHeader({ title, subtitle, className, children }: AppHeaderProps) {
   const { settings } = useSettings();
   const { isSubtle, show, hide } = useSubtleOnIdle({
     initialDelay: 3000,
@@ -22,111 +24,121 @@ export function AppHeader({ title, subtitle, left, center, right }: AppHeaderPro
     disabled: !settings.subtle_on_idle,
   });
 
-  const { isDbReady, isWriting } = useDb();
-  const isLoading = !isDbReady || isWriting;
-
   return (
     <header
-      className="bg-background/95 border-border/40 sticky top-0 z-40 w-full shrink-0 border-b px-6 pt-2 pb-1 backdrop-blur-xl md:border-none md:px-8 md:pt-4 md:pb-6"
+      className={cn(
+        "bg-background/95 border-border/40 sticky top-0 z-40 w-full shrink-0 border-b px-6 pt-2 pb-1 backdrop-blur-xl md:border-none md:px-8 md:pt-4 md:pb-6",
+        className
+      )}
       onMouseEnter={show}
       onMouseMove={show}
       onMouseLeave={hide}
     >
       <div
         className={cn(
-          "flex w-full cursor-default gap-4 transition-[opacity,transform] duration-1000 ease-in-out",
+          "flex w-full cursor-default items-center gap-4 transition-[opacity,transform] duration-1000 ease-in-out",
           isSubtle ? "translate-y-0.5 opacity-20" : "opacity-100"
         )}
       >
-        {/* 1. Left Area (e.g. Sidebar toggle) */}
-        {left && <div className="flex shrink-0 items-center">{left}</div>}
+        {children ? (
+          children
+        ) : (
+          <>
+            {/* Left Area (Sidebar toggle) */}
+            <HeaderSidebarToggle />
 
-        {/* 2. Title Area (Reserved space for stability) */}
-        <div className="flex h-10 min-w-0 flex-1 flex-col justify-end gap-1 md:ml-12 md:h-16">
-          <h1 className="mb-2 flex items-center gap-2 text-lg leading-none font-bold tracking-tight md:text-xl">
-            <span>{title}</span>
-            {isLoading && (
-              <Loader2Icon
-                className="text-muted-foreground/60 size-4 shrink-0 animate-spin"
-                aria-hidden="true"
-              />
-            )}
-          </h1>
-          <div className="flex h-4 items-center overflow-hidden">
-            {subtitle ? (
-              <span className="text-muted-foreground truncate text-[11px] font-semibold tracking-wider opacity-70 md:text-xs">
-                {subtitle}
-              </span>
-            ) : (
-              <span className="invisible text-[11px] uppercase">placeholder</span>
-            )}
-          </div>
-        </div>
-
-        {/* 3. Actions Area (Right-aligned grouping) */}
-        <div className="flex h-12 min-w-0 flex-1 items-center justify-end gap-6 md:gap-10">
-          {/* Search stays grouped with the other actions */}
-          <div className="hidden items-center lg:flex">{center}</div>
-
-          {/* Secondary Actions */}
-          <div className="flex items-center gap-2 font-medium md:gap-6">
-            <div className="text-muted-foreground/40 lg:hidden">{center}</div>
-            {right}
-          </div>
-        </div>
+            {/* Title Area */}
+            <HeaderTitleArea title={title || ""} subtitle={subtitle} />
+          </>
+        )}
       </div>
     </header>
   );
 }
 
-/**
- * Reusable Header Action Components
- * Routes can import these to maintain consistency while staying explicit.
- */
+export function HeaderSidebarToggle() {
+  const context = useOutletContext<AppLayoutContext | null>();
+  if (!context) return null;
+
+  const { isSidebarOpen, toggleSidebar, isDocked } = context;
+  if (isDocked) return null;
+
+  return (
+    <div
+      className={cn(
+        "flex items-center overflow-hidden transition-all duration-500 ease-[cubic-bezier(0.32,0.72,0,1)]",
+        isSidebarOpen ? "invisible w-0 opacity-0" : "visible mr-2 w-10 opacity-100"
+      )}
+    >
+      <SidebarToggle onClick={toggleSidebar} />
+    </div>
+  );
+}
+
+interface HeaderTitleAreaProps {
+  title: string;
+  subtitle?: string;
+  className?: string;
+}
+
+export function HeaderTitleArea({ title, subtitle, className }: HeaderTitleAreaProps) {
+  const { isDbReady, isWriting } = useDb();
+  const isLoading = !isDbReady || isWriting;
+
+  return (
+    <div className={cn("flex h-10 min-w-0 flex-col justify-end gap-1 md:h-16", className)}>
+      <h1 className="mb-2 flex items-center gap-2 text-lg leading-none font-bold tracking-tight md:text-xl">
+        <span>{title}</span>
+        {isLoading && (
+          <Loader2Icon
+            className="text-muted-foreground/60 size-4 shrink-0 animate-spin"
+            aria-hidden="true"
+          />
+        )}
+      </h1>
+      <div className="flex h-4 items-center overflow-hidden">
+        {subtitle && (
+          <span className="text-muted-foreground truncate text-[11px] font-semibold tracking-wider opacity-70 md:text-xs">
+            {subtitle}
+          </span>
+        )}
+      </div>
+    </div>
+  );
+}
 
 export function HeaderSearch() {
   return (
-    <Button
-      variant="ghost"
-      size="sm"
-      className="hover:bg-muted/50 text-muted-foreground flex h-8 items-center gap-2 rounded-md border-none px-2 font-medium md:px-3"
-    >
-      <SearchIcon className="size-4 md:size-4" />
-      <span className="hidden text-xs md:inline">Search</span>
-      <span className="hidden text-[10px] opacity-40 md:inline">Ctrl+K</span>
+    <Button variant="ghost" size="icon" className="size-10">
+      <SearchIcon />
     </Button>
   );
 }
 
 export const HeaderNewAction = forwardRef<HTMLButtonElement, { onClick?: () => void }>(
   ({ onClick, ...props }, ref) => {
+    const context = useOutletContext<AppLayoutContext | null>();
+
+    // If the FAB is explicitly disabled (undefined), hide the header button too
+    if (context && context.onFabClick === undefined && !onClick) {
+      return null;
+    }
+
+    const handleClick = onClick || context?.onFabClick || context?.openActionInput;
+
     return (
       <Button
         ref={ref}
         variant="default"
-        size="sm"
-        onClick={onClick}
-        className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-primary/20 hover:shadow-primary/30 hidden h-9 items-center gap-1.5 rounded-full border-none px-4 font-bold shadow-lg transition-all active:scale-95 md:flex"
+        size="icon"
+        onClick={handleClick}
+        className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-primary/30 hidden size-10 items-center justify-center rounded-xl border-none shadow-lg transition-all active:scale-95 md:flex"
         {...props}
       >
-        <PlusIcon className="size-4" />
-        <span className="text-sm">New Action</span>
-        <span className="ml-1 hidden text-[10px] font-medium opacity-40 lg:inline">N</span>
+        <PlusIcon className="size-6" />
       </Button>
     );
   }
 );
-HeaderNewAction.displayName = "HeaderNewAction";
 
-export function HeaderMore({ onClick }: { onClick?: () => void }) {
-  return (
-    <Button
-      variant="ghost"
-      size="icon"
-      onClick={onClick}
-      className="hover:bg-muted/50 text-muted-foreground size-8 rounded-md border-none"
-    >
-      <MoreVerticalIcon className="size-4" />
-    </Button>
-  );
-}
+HeaderNewAction.displayName = "HeaderNewAction";

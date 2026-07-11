@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import { useOutletContext } from "react-router";
 import { type AppLayoutContext } from "@/components/layout/AppLayout";
-import { HeaderSearch, HeaderNewAction } from "@/components/layout/AppHeader";
 import { Button } from "@kreozalabs/kei-ui";
 import { LayoutGrid } from "lucide-react";
 import { parseDateString, formatTitleDate } from "@kreozalabs/kei-core";
@@ -9,33 +8,11 @@ import { AnimatePresence } from "framer-motion";
 import { ActionInput } from "@/components/action-input";
 import { ActionDetailView } from "@/components/ActionDetailView";
 import { DragResizeWrapper } from "@/components/DragResizeWrapper";
-import { createPortal } from "react-dom";
 import { useDashboardContext } from "./dashboard/context/DashboardContext";
 import { DashboardProvider } from "./dashboard/context/DashboardProvider";
-import { ViewSwitcher } from "./dashboard/components/ViewSwitcher";
 import { BulkActionBar } from "./dashboard/components/BulkActionBar";
 import { CalendarView } from "./dashboard/views/CalendarView";
-
-export function HeaderPortal({ to, children }: { to: string; children: React.ReactNode }) {
-  const [target, setTarget] = useState<HTMLElement | null>(null);
-
-  useEffect(() => {
-    let checkCount = 0;
-    const checkTarget = () => {
-      const el = document.getElementById(to);
-      if (el) {
-        setTarget(el);
-      } else if (checkCount < 10) {
-        checkCount++;
-        requestAnimationFrame(checkTarget);
-      }
-    };
-    checkTarget();
-  }, [to]);
-
-  if (!target) return null;
-  return createPortal(children, target);
-}
+import { DashboardHeader } from "@/components/dashboard/DashboardHeader";
 
 function DashboardShell() {
   const {
@@ -54,20 +31,11 @@ function DashboardShell() {
 
   const { setViewMode } = useDashboardContext();
 
-  const { setTitle, setSubtitle, setHeaderActions, setIsDocked } =
-    useOutletContext<AppLayoutContext>();
+  const { setIsDocked } = useOutletContext<AppLayoutContext>();
 
   useEffect(() => {
-    setTitle("Timeline");
-    setSubtitle(formatTitleDate(parseDateString(selectedDate)));
-
-    setHeaderActions({
-      center: <div id="header-center-portal-root" />,
-      right: <div id="header-right-portal-root" />,
-    });
-
-    return () => setHeaderActions(undefined);
-  }, [setTitle, setSubtitle, setHeaderActions, selectedDate]);
+    document.title = `Kei Timeline - ${formatTitleDate(parseDateString(selectedDate))}`; // TODO: Add Weekday
+  }, [selectedDate]);
 
   if (dbError) {
     return (
@@ -110,18 +78,8 @@ function DashboardShell() {
   }
 
   return (
-    <>
-      <HeaderPortal to="header-center-portal-root">
-        <div className="flex items-center gap-3">
-          <div id="header-calendar-portal-root" className="contents" />
-
-          <ViewSwitcher />
-          <div className="hidden sm:block">
-            <HeaderSearch />
-          </div>
-          <HeaderNewAction />
-        </div>
-      </HeaderPortal>
+    <div className="flex h-full w-full flex-col overflow-hidden">
+      <DashboardHeader />
 
       {Content}
       <BulkActionBar />
@@ -176,7 +134,7 @@ function DashboardShell() {
           </DragResizeWrapper>
         )}
       </AnimatePresence>
-    </>
+    </div>
   );
 }
 
