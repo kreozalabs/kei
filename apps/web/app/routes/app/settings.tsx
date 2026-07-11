@@ -8,7 +8,7 @@ import { SystemSettings } from "@/components/settings/SystemSettings";
 
 export default function Settings() {
   useEffect(() => {
-    document.title = "Kei - Settings"; // TODO: Add subpage to title
+    document.title = "Kei︱Settings"; // TODO: Add subpage to title " — SubPage"
   }, []);
 
   return (

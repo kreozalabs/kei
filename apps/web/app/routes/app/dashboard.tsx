@@ -35,7 +35,7 @@ function DashboardShell() {
   const { setIsDocked } = useOutletContext<AppLayoutContext>();
 
   useEffect(() => {
-    document.title = `Kei Timeline - ${formatTitleDate(parseDateString(selectedDate))}`; // TODO: Add Weekday
+    document.title = `Kei︱Timeline — ${formatTitleDate(parseDateString(selectedDate))}`; // TODO: Add Weekday
   }, [selectedDate]);
 
   if (dbError) {
