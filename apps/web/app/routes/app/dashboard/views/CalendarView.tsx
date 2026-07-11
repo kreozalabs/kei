@@ -150,8 +150,8 @@ export function CalendarView() {
     useDashboardContext();
 
   return (
-    <div className="flex h-full flex-col p-4">
-      <div className="bg-background flex-1 overflow-hidden rounded-xl border shadow-sm">
+    <div className="flex h-full flex-col md:pr-2">
+      <div className="bg-background flex-1 overflow-hidden">
         <IlamyCalendar
           plugins={[recurrencePlugin(), agendaPlugin(), dragToCreatePlugin()]}
           initialView={viewMode as string}

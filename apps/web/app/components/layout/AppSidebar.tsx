@@ -29,7 +29,7 @@ export function AppSidebar({ isOpen = true, onToggle }: AppSidebarProps) {
       >
         <div
           className={cn(
-            "border-border/80 animate-in fade-in slide-in-from-top-2 animation-duration-[700ms] mb-2 flex shrink-0 items-end justify-between border-b px-6 pt-4 pb-2 md:px-8 md:pt-6 md:pb-2"
+            "border-border/80 animate-in fade-in slide-in-from-top-2 animation-duration-[700ms] mb-2 flex shrink-0 items-end justify-between px-6 pt-4 pb-2 md:px-8 md:pt-6 md:pb-2"
           )}
         >
           <div className="flex h-12 w-full items-center justify-between">

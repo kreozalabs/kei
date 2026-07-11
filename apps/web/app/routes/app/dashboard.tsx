@@ -13,6 +13,7 @@ import { DashboardProvider } from "./dashboard/context/DashboardProvider";
 import { BulkActionBar } from "./dashboard/components/BulkActionBar";
 import { CalendarView } from "./dashboard/views/CalendarView";
 import { DashboardHeader } from "@/components/dashboard/DashboardHeader";
+import { AppPage } from "@/components/layout/AppPage";
 
 function DashboardShell() {
   const {
@@ -78,9 +79,7 @@ function DashboardShell() {
   }
 
   return (
-    <div className="flex h-full w-full flex-col overflow-hidden">
-      <DashboardHeader />
-
+    <AppPage header={<DashboardHeader />} className="flex flex-col">
       {Content}
       <BulkActionBar />
 
@@ -134,7 +133,7 @@ function DashboardShell() {
           </DragResizeWrapper>
         )}
       </AnimatePresence>
-    </div>
+    </AppPage>
   );
 }
 

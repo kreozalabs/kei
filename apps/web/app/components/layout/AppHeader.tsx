@@ -23,11 +23,10 @@ export function AppHeader({ title, subtitle, className, children }: AppHeaderPro
     disableOnMobile: true,
     disabled: !settings.subtle_on_idle,
   });
-
   return (
     <header
       className={cn(
-        "bg-background/95 border-border/40 sticky top-0 z-40 w-full shrink-0 border-b px-6 pt-2 pb-1 backdrop-blur-xl md:border-none md:px-8 md:pt-4 md:pb-6",
+        "bg-muted/95 border-border/40 sticky top-0 z-40 w-full shrink-0 border-b px-6 pt-2 pb-1 backdrop-blur-xl md:border-none md:px-8 md:pt-4 md:pb-6",
         className
       )}
       onMouseEnter={show}
