@@ -4,7 +4,6 @@
 import {
   AppHeader,
   HeaderTitleArea,
-  HeaderSidebarToggle,
   HeaderSearch,
   HeaderNewAction,
 } from "@/components/layout/AppHeader";
@@ -19,9 +18,8 @@ export const DashboardHeader = () => {
           {/* Mobile Left: Calendar Trigger portal target */}
           <div id="calendar-mobile-trigger-target" className="mr-2 flex min-w-0 flex-1 md:hidden" />
 
-          {/* Desktop Left: Sidebar Toggle & Title Area & Today, Arrows, Calendar Popover portal target */}
+          {/* Desktop Left: Title Area & Today, Arrows, Calendar Popover portal target */}
           <div className="hidden items-center gap-2 md:flex">
-            <HeaderSidebarToggle />
             <HeaderTitleArea title="Timeline" />
             <div
               id="calendar-desktop-controls-target"
