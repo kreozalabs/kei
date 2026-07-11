@@ -101,7 +101,7 @@ export function HeaderTitleArea({ title, className }: HeaderTitleAreaProps) {
 export function HeaderSearch() {
   return (
     <Button variant="ghost" size="icon" className="size-10">
-      <SearchIcon />
+      <SearchIcon className="size-5" />
     </Button>
   );
 }
@@ -126,7 +126,7 @@ export const HeaderNewAction = forwardRef<HTMLButtonElement, { onClick?: () => v
         className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-primary/30 hidden h-10 w-20 items-center justify-center rounded-xl border-none shadow-lg transition-all active:scale-95 md:flex"
         {...props}
       >
-        <PlusIcon className="size-6" />
+        <PlusIcon className="size-5" />
       </Button>
     );
   }
