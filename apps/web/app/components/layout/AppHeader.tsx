@@ -131,7 +131,7 @@ export const HeaderNewAction = forwardRef<HTMLButtonElement, { onClick?: () => v
         variant="default"
         size="icon"
         onClick={handleClick}
-        className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-primary/30 hidden size-10 items-center justify-center rounded-xl border-none shadow-lg transition-all active:scale-95 md:flex"
+        className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-primary/30 hidden h-10 w-20 items-center justify-center rounded-xl border-none shadow-lg transition-all active:scale-95 md:flex"
         {...props}
       >
         <PlusIcon className="size-6" />
