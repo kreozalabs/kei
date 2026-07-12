@@ -1,4 +1,4 @@
-import { type ReactNode, useState, useMemo, useRef, useEffect, useCallback } from "react";
+import { type ReactNode, useState, useMemo, useRef, useEffect, useCallback, startTransition } from "react";
 import type { Action } from "@kreozalabs/kei-core";
 import { useSettings } from "@/providers/SettingsContext";
 import { useDb } from "@/providers/DbContext";
@@ -42,7 +42,9 @@ export function DashboardProvider({ children }: { children: ReactNode }) {
   }, [settings.remember_layout_on_refresh]);
 
   const setViewMode = useCallback((val: ViewMode) => {
-    setViewModeState(val);
+    startTransition(() => {
+      setViewModeState(val);
+    });
     if (typeof window !== "undefined") {
       window.localStorage.setItem("kei_dashboard_view_mode", val);
     }
@@ -119,37 +121,63 @@ export function DashboardProvider({ children }: { children: ReactNode }) {
     setSelectedActionIds,
   });
 
-  const value: DashboardContextValue = {
-    viewMode,
-    setViewMode,
-    selectedDate,
-    setSelectedDate,
-    startDateStr,
-    setStartDateStr,
-    endDateStr,
-    setEndDateStr,
-    todayStr,
-    allActions: queries.allActions,
-    activeActions: queries.activeActions,
-    completedActions: queries.completedActions,
-    abandonedActions: queries.abandonedActions,
-    isDbReady,
-    dbError,
-    visibleSelectedActionIds,
-    setSelectedActionIds,
-    isBulkModeActive,
-    isSelectionModeForced,
-    setIsSelectionModeForced,
-    handleClearSelection,
-    handleSelectToggle,
-    actionToEdit,
-    setActionToEdit,
-    isDialogOpen,
-    setIsDialogOpen,
-    dialogPreDate,
-    setDialogPreDate,
-    mutations,
-  };
+  const value = useMemo<DashboardContextValue>(
+    () => ({
+      viewMode,
+      setViewMode,
+      selectedDate,
+      setSelectedDate,
+      startDateStr,
+      setStartDateStr,
+      endDateStr,
+      setEndDateStr,
+      todayStr,
+      allActions: queries.allActions,
+      activeActions: queries.activeActions,
+      completedActions: queries.completedActions,
+      abandonedActions: queries.abandonedActions,
+      isDbReady,
+      dbError,
+      visibleSelectedActionIds,
+      setSelectedActionIds,
+      isBulkModeActive,
+      isSelectionModeForced,
+      setIsSelectionModeForced,
+      handleClearSelection,
+      handleSelectToggle,
+      actionToEdit,
+      setActionToEdit,
+      isDialogOpen,
+      setIsDialogOpen,
+      dialogPreDate,
+      setDialogPreDate,
+      mutations,
+    }),
+    [
+      viewMode,
+      setViewMode,
+      selectedDate,
+      setSelectedDate,
+      startDateStr,
+      endDateStr,
+      todayStr,
+      queries.allActions,
+      queries.activeActions,
+      queries.completedActions,
+      queries.abandonedActions,
+      isDbReady,
+      dbError,
+      visibleSelectedActionIds,
+      isBulkModeActive,
+      isSelectionModeForced,
+      handleClearSelection,
+      handleSelectToggle,
+      actionToEdit,
+      isDialogOpen,
+      dialogPreDate,
+      mutations,
+    ]
+  );
 
   return <DashboardContext.Provider value={value}>{children}</DashboardContext.Provider>;
 }

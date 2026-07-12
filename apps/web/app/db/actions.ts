@@ -2,7 +2,7 @@ import { activeAdapter } from "./index";
 import * as core from "@kreozalabs/kei-core";
 import type { Action, ActionPayload, ActionStatus } from "@kreozalabs/kei-core";
 
-const addAction = (payload: ActionPayload) =>
+export const addAction = (payload: ActionPayload) =>
   core.addAction(payload, activeAdapter.getDeviceId(), activeAdapter);
 
 export const updateAction = (id: string, payload: Partial<ActionPayload>) =>
@@ -32,7 +32,7 @@ export const bulkActivateActions = (ids: string[]) =>
 export const bulkAbandonActions = (ids: string[]) =>
   core.bulkAbandonActions(ids, activeAdapter.getDeviceId(), activeAdapter);
 
-const bulkUpdateActions = (ids: string[], payload: Partial<ActionPayload>) =>
+export const bulkUpdateActions = (ids: string[], payload: Partial<ActionPayload>) =>
   core.bulkUpdateActions(ids, payload, activeAdapter.getDeviceId(), activeAdapter);
 
 export const bulkStatusUpdateActions = (updates: { id: string; status: ActionStatus }[]) =>

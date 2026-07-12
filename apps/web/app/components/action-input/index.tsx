@@ -1,7 +1,6 @@
 import type { Action } from "@kreozalabs/kei-core";
 import { forwardRef, useEffect, useRef, useState } from "react";
 import { Button } from "@kreozalabs/kei-ui";
-import { $getRoot, type EditorState } from "lexical";
 import { EditableIntention, type IntentionType } from "./EditableIntention";
 import { EditableImportant } from "./EditableImportant";
 import { PropertyButton } from "./PropertyButton";
@@ -29,7 +28,7 @@ interface ActionInputHandle {
 }
 
 export const ActionInput = forwardRef<ActionInputHandle, ActionInputProps>(
-  ({ onSuccess, onCancel, initialDate, className, variant = "inline", actionToEdit }, ref) => {
+  ({ onSuccess, onCancel }) => {
     const [isLoading, setIsLoading] = useState(false);
 
     const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -55,29 +54,6 @@ export const ActionInput = forwardRef<ActionInputHandle, ActionInputProps>(
         setIsLoading(false);
         onSuccess?.();
       }, 500);
-    };
-
-    // State for all editable fields
-    const [title, setTitle] = useState(actionToEdit?.title || "");
-    const [note, setNote] = useState(actionToEdit?.note || "");
-
-    const handleEditorChange = (editorState: EditorState) => {
-      editorState.read(() => {
-        const root = $getRoot();
-        const children = root.getChildren();
-        if (children.length > 0) {
-          setTitle(children[0].getTextContent());
-        }
-        if (children.length > 1) {
-          const noteText = children
-            .slice(1)
-            .map((c) => c.getTextContent())
-            .join("\n");
-          setNote(noteText);
-        } else {
-          setNote("");
-        }
-      });
     };
 
     const [intention, setIntention] = useState<IntentionType>("want");
@@ -143,12 +119,7 @@ export const ActionInput = forwardRef<ActionInputHandle, ActionInputProps>(
               <Button type="button" variant="ghost" size="sm" onClick={onCancel}>
                 Cancel
               </Button>
-              <Button
-                type="submit"
-                size="sm"
-                disabled={isLoading || !title.trim()}
-                className="gap-1.5 px-4"
-              >
+              <Button type="submit" size="sm" disabled={isLoading} className="gap-1.5 px-4">
                 <span>Save</span>
                 <SendHorizontal className="size-3.5" />
               </Button>

@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { createPortal } from "react-dom";
 import { IlamyCalendar, useIlamyCalendarContext } from "@ilamy/calendar";
 import { recurrencePlugin } from "@ilamy/calendar/plugins/recurrence";
@@ -165,14 +165,12 @@ function CalendarHeaderControls({ isOpen, setIsOpen }: CalendarHeaderControlsPro
 
   const localeCode = settings.language === "auto" ? undefined : settings.language;
   const selectedDateObj = api.currentDate.toDate();
-  const [prevSelectedDateVal, setPrevSelectedDateVal] = useState(selectedDateObj.getTime());
+  const currentDateMs = api.currentDate.valueOf();
   const [visibleMonth, setVisibleMonth] = useState<Date>(selectedDateObj);
 
-  if (selectedDateObj.getTime() !== prevSelectedDateVal) {
-    setPrevSelectedDateVal(selectedDateObj.getTime());
-
+  useEffect(() => {
+    const newDate = new Date(currentDateMs);
     const prevDate = visibleMonth;
-    const newDate = selectedDateObj;
 
     const prevYear = prevDate.getFullYear();
     const prevMonth = prevDate.getMonth();
@@ -186,8 +184,8 @@ function CalendarHeaderControls({ isOpen, setIsOpen }: CalendarHeaderControlsPro
       setSlideDirection(direction);
     }
 
-    setVisibleMonth(selectedDateObj);
-  }
+    setVisibleMonth(newDate);
+  }, [currentDateMs]);
 
   const displayDate = getDisplayDate(
     isOpen && isMobile ? visibleMonth : selectedDateObj,
@@ -408,11 +406,13 @@ export function CalendarView() {
     useDashboardContext();
   const [isCalendarOpen, setIsCalendarOpen] = useState(false);
 
+  const plugins = useMemo(() => [recurrencePlugin(), agendaPlugin(), dragToCreatePlugin()], []);
+
   return (
     <div className="flex h-full flex-col md:pr-2">
       <div className="bg-background flex-1 overflow-hidden">
         <IlamyCalendar
-          plugins={[recurrencePlugin(), agendaPlugin(), dragToCreatePlugin()]}
+          plugins={plugins}
           initialView={viewMode as string}
           onViewChange={(view) => setViewMode(view as ViewMode)}
           headerComponent={

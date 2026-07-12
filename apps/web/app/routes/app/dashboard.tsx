@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, memo } from "react";
 import { useOutletContext } from "react-router";
 import { type AppLayoutContext } from "@/components/layout/AppLayout";
 import { Button } from "@kreozalabs/kei-ui";
@@ -15,7 +15,37 @@ import { CalendarView } from "./dashboard/views/CalendarView";
 import { DashboardHeader } from "@/components/dashboard/DashboardHeader";
 import { AppPage } from "@/components/layout/AppPage";
 
-function DashboardShell() {
+const CalendarSkeleton = () => (
+  <div className="flex h-full flex-1 flex-col gap-4 p-4 animate-pulse">
+    {/* Header Skeleton */}
+    <div className="flex items-center justify-between">
+      <div className="flex gap-2">
+        <div className="bg-muted h-9 w-20 rounded-full" />
+        <div className="bg-muted h-9 w-24 rounded-lg" />
+      </div>
+      <div className="bg-muted h-9 w-32 rounded-lg" />
+    </div>
+    {/* Grid Skeleton */}
+    <div className="border-border/40 flex-1 rounded-xl border p-4">
+      <div className="grid grid-cols-7 gap-2">
+        {Array.from({ length: 7 }).map((_, i) => (
+          <div key={i} className="bg-muted/60 h-6 rounded-md" />
+        ))}
+      </div>
+      <div className="mt-4 grid grid-cols-7 grid-rows-5 gap-2 h-[calc(100%-2rem)]">
+        {Array.from({ length: 35 }).map((_, i) => (
+          <div key={i} className="bg-muted/30 rounded-lg p-2 flex flex-col gap-2">
+            <div className="bg-muted/50 h-4 w-6 rounded" />
+            {i % 5 === 0 && <div className="bg-primary/20 h-5 w-full rounded" />}
+            {i % 7 === 2 && <div className="bg-muted/40 h-5 w-full rounded" />}
+          </div>
+        ))}
+      </div>
+    </div>
+  </div>
+);
+
+const DashboardShell = memo(function DashboardShell() {
   const {
     viewMode,
     isDialogOpen,
@@ -26,9 +56,11 @@ function DashboardShell() {
     mutations: { handleComplete, handleAbandon, handleReactivate, handleDeletePermanently },
     dbError,
     selectedDate,
+    isDbReady,
   } = useDashboardContext();
 
   const [editorMode, setEditorMode] = useState<"floating" | "docked" | "drawer">("floating");
+  const [shouldRenderCalendar, setShouldRenderCalendar] = useState(false);
 
   const { setViewMode } = useDashboardContext();
 
@@ -37,6 +69,15 @@ function DashboardShell() {
   useEffect(() => {
     document.title = `Kei︱Timeline — ${formatTitleDate(parseDateString(selectedDate))}`; // TODO: Add Weekday
   }, [selectedDate]);
+
+  useEffect(() => {
+    if (isDbReady) {
+      const timer = setTimeout(() => {
+        setShouldRenderCalendar(true);
+      }, 100);
+      return () => clearTimeout(timer);
+    }
+  }, [isDbReady]);
 
   if (dbError) {
     return (
@@ -59,7 +100,7 @@ function DashboardShell() {
     case "month":
     case "year":
     case "agenda":
-      Content = <CalendarView />;
+      Content = shouldRenderCalendar ? <CalendarView /> : <CalendarSkeleton />;
       break;
     default:
       Content = (
@@ -135,7 +176,7 @@ function DashboardShell() {
       </AnimatePresence>
     </AppPage>
   );
-}
+});
 
 export default function Dashboard() {
   return (

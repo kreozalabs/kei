@@ -60,7 +60,7 @@ export function ViewSwitcher() {
   };
 
   return (
-    <DropdownMenu>
+    <DropdownMenu modal={false}>
       <DropdownMenuTrigger asChild>
         {isMobile ? (
           <Button variant="ghost" size="icon">
@@ -79,7 +79,7 @@ export function ViewSwitcher() {
       </DropdownMenuTrigger>
       <DropdownMenuContent
         align="end"
-        className="bg-background/95 border-border/40 w-56 rounded-xl border shadow-xl backdrop-blur-md"
+        className="bg-background border-border/40 w-56 rounded-xl border shadow-xl"
       >
         {chronologicalViews.map((view) => (
           <DropdownMenuItem
