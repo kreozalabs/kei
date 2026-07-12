@@ -53,7 +53,7 @@ export function ActionsSettings() {
 
     updateSetting("action_duration_options", (prev) => [
       ...prev,
-      { label: finalLabel, value: newPreset.value },
+      { label: finalLabel, value: newPreset.value, default: false },
     ]);
     setIsAddDialogOpen(false);
     setNewPreset({ label: "", value: DEFAULT_CONFIG.DURATION });
@@ -82,7 +82,7 @@ export function ActionsSettings() {
       prev.map((p, i) => {
         if (i === index) {
           const updated = { ...p, ...updates };
-          if (!updated.label.trim()) {
+          if (updated.label?.trim()) {
             const [min, max] = updated.value;
             updated.label = min === max ? `${min}m` : `${min}-${max}m`;
           }
@@ -314,7 +314,7 @@ export function ActionsSettings() {
               <div className="flex-1 space-y-2.5">
                 <div className="flex items-center justify-between">
                   <Input
-                    value={preset.label}
+                    value={preset.label || ""}
                     onChange={(e) => updateDurationPreset(idx, { label: e.target.value })}
                     placeholder={
                       preset.value[0] === preset.value[1]

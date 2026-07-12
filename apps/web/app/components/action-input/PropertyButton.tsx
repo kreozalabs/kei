@@ -1,7 +1,7 @@
 import { Button, cn } from "@kreozalabs/kei-ui";
-import { type ReactNode, forwardRef } from "react";
+import { type ButtonHTMLAttributes, type ReactNode, forwardRef } from "react";
 
-interface PropertyButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
+interface PropertyButtonProps extends Omit<ButtonHTMLAttributes<HTMLButtonElement>, "value"> {
   icon?: ReactNode;
   label?: string;
   isActive?: boolean;

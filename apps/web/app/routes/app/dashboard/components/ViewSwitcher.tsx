@@ -11,6 +11,7 @@ import {
   cn,
   DropdownMenuGroup,
   DropdownMenuCheckboxItem,
+  useMediaQuery,
 } from "@kreozalabs/kei-ui";
 import {
   LayoutGrid,
@@ -21,6 +22,7 @@ import {
   Trash2Icon,
   CheckCircle2Icon,
   CheckSquare,
+  MoreHorizontalIcon,
 } from "lucide-react";
 
 export function ViewSwitcher() {
@@ -33,6 +35,7 @@ export function ViewSwitcher() {
     setIsSelectionModeForced,
     handleClearSelection,
   } = useDashboardContext();
+  const isMobile = useMediaQuery("(max-width: 768px)");
 
   const currentView = VIEW_MODES[viewMode];
 
@@ -57,27 +60,33 @@ export function ViewSwitcher() {
   };
 
   return (
-    <DropdownMenu>
+    <DropdownMenu modal={false}>
       <DropdownMenuTrigger asChild>
-        <Button
-          variant="outline"
-          size="sm"
-          className="bg-background hover:bg-muted h-8 gap-1 rounded-full border-dashed px-3 text-xs font-medium shadow-sm"
-        >
-          <span className="hidden sm:inline">{currentView.label}</span>
-          <ChevronDown className="text-muted-foreground ml-1 size-3.5" />
-        </Button>
+        {isMobile ? (
+          <Button variant="ghost" size="icon">
+            <MoreHorizontalIcon />
+          </Button>
+        ) : (
+          <Button
+            variant="outline"
+            size="default"
+            className="bg-background hover:bg-muted h-9 gap-1 rounded-full border-dashed px-3 text-sm font-medium shadow-sm"
+          >
+            <span>{currentView.label}</span>
+            <ChevronDown className="text-muted-foreground ml-1 size-4" />
+          </Button>
+        )}
       </DropdownMenuTrigger>
       <DropdownMenuContent
         align="end"
-        className="bg-background/95 border-border/40 w-56 rounded-xl border shadow-xl backdrop-blur-md"
+        className="bg-background border-border/40 w-56 rounded-xl border shadow-xl"
       >
         {chronologicalViews.map((view) => (
           <DropdownMenuItem
             key={view.id}
             onClick={() => setViewMode(view.id)}
             className={cn(
-              "mx-1 my-0.5 cursor-pointer rounded-lg px-3 py-2 text-xs font-semibold",
+              "mx-1 my-0.5 cursor-pointer rounded-lg px-3 py-2 text-sm font-semibold",
               viewMode === view.id ? "bg-primary/10 text-primary" : "hover:bg-muted text-foreground"
             )}
           >
@@ -92,7 +101,7 @@ export function ViewSwitcher() {
             key={view.id}
             onClick={() => setViewMode(view.id)}
             className={cn(
-              "mx-1 my-0.5 cursor-pointer rounded-lg px-3 py-2 text-xs font-semibold",
+              "mx-1 my-0.5 cursor-pointer rounded-lg px-3 py-2 text-sm font-semibold",
               viewMode === view.id ? "bg-primary/10 text-primary" : "hover:bg-muted text-foreground"
             )}
           >

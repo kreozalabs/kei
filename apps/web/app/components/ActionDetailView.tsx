@@ -1,16 +1,7 @@
 // FIXME: Refactor !
 import { useEffect, useState } from "react";
 import { Button, cn, toast } from "@kreozalabs/kei-ui";
-import {
-  Calendar,
-  Clock,
-  CheckCircle2,
-  Trash2,
-  XCircle,
-  RotateCcw,
-  Pencil,
-  Loader2,
-} from "lucide-react";
+import { Calendar, Clock, CheckCircle2, Trash2, XCircle, RotateCcw, Loader2 } from "lucide-react";
 import type { Action } from "@kreozalabs/kei-core";
 import type { Event } from "@kreozalabs/kei-core";
 import {
@@ -24,7 +15,6 @@ import { getEventsForEntity, updateAction } from "@/db/actions";
 import { EditableTitle } from "./action-input/EditableTitle";
 import { EditableNote } from "./action-input/EditableNote";
 import { useQueryClient } from "@tanstack/react-query";
-import { useSettings } from "@/providers/SettingsContext";
 
 const STATUS_BADGE_STYLES: Record<string, string> = {
   [ACTION_STATUS.COMPLETED]: "bg-emerald-500/10 text-emerald-500 border-emerald-500/20",

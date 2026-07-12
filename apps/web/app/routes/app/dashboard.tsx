@@ -1,7 +1,6 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, memo } from "react";
 import { useOutletContext } from "react-router";
 import { type AppLayoutContext } from "@/components/layout/AppLayout";
-import { HeaderSearch, HeaderNewAction } from "@/components/layout/AppHeader";
 import { Button } from "@kreozalabs/kei-ui";
 import { LayoutGrid } from "lucide-react";
 import { parseDateString, formatTitleDate } from "@kreozalabs/kei-core";
@@ -9,35 +8,44 @@ import { AnimatePresence } from "framer-motion";
 import { ActionInput } from "@/components/action-input";
 import { ActionDetailView } from "@/components/ActionDetailView";
 import { DragResizeWrapper } from "@/components/DragResizeWrapper";
-import { createPortal } from "react-dom";
 import { useDashboardContext } from "./dashboard/context/DashboardContext";
 import { DashboardProvider } from "./dashboard/context/DashboardProvider";
-import { ViewSwitcher } from "./dashboard/components/ViewSwitcher";
 import { BulkActionBar } from "./dashboard/components/BulkActionBar";
 import { CalendarView } from "./dashboard/views/CalendarView";
+import { DashboardHeader } from "@/components/dashboard/DashboardHeader";
+import { AppPage } from "@/components/layout/AppPage";
 
-export function HeaderPortal({ to, children }: { to: string; children: React.ReactNode }) {
-  const [target, setTarget] = useState<HTMLElement | null>(null);
+const CalendarSkeleton = () => (
+  <div className="flex h-full flex-1 animate-pulse flex-col gap-4 p-4">
+    {/* Header Skeleton */}
+    <div className="flex items-center justify-between">
+      <div className="flex gap-2">
+        <div className="bg-muted h-9 w-20 rounded-full" />
+        <div className="bg-muted h-9 w-24 rounded-lg" />
+      </div>
+      <div className="bg-muted h-9 w-32 rounded-lg" />
+    </div>
+    {/* Grid Skeleton */}
+    <div className="border-border/40 flex-1 rounded-xl border p-4">
+      <div className="grid grid-cols-7 gap-2">
+        {Array.from({ length: 7 }).map((_, i) => (
+          <div key={i} className="bg-muted/60 h-6 rounded-md" />
+        ))}
+      </div>
+      <div className="mt-4 grid h-[calc(100%-2rem)] grid-cols-7 grid-rows-5 gap-2">
+        {Array.from({ length: 35 }).map((_, i) => (
+          <div key={i} className="bg-muted/30 flex flex-col gap-2 rounded-lg p-2">
+            <div className="bg-muted/50 h-4 w-6 rounded" />
+            {i % 5 === 0 && <div className="bg-primary/20 h-5 w-full rounded" />}
+            {i % 7 === 2 && <div className="bg-muted/40 h-5 w-full rounded" />}
+          </div>
+        ))}
+      </div>
+    </div>
+  </div>
+);
 
-  useEffect(() => {
-    let checkCount = 0;
-    const checkTarget = () => {
-      const el = document.getElementById(to);
-      if (el) {
-        setTarget(el);
-      } else if (checkCount < 10) {
-        checkCount++;
-        requestAnimationFrame(checkTarget);
-      }
-    };
-    checkTarget();
-  }, [to]);
-
-  if (!target) return null;
-  return createPortal(children, target);
-}
-
-function DashboardShell() {
+const DashboardShell = memo(function DashboardShell() {
   const {
     viewMode,
     isDialogOpen,
@@ -48,26 +56,28 @@ function DashboardShell() {
     mutations: { handleComplete, handleAbandon, handleReactivate, handleDeletePermanently },
     dbError,
     selectedDate,
+    isDbReady,
   } = useDashboardContext();
 
   const [editorMode, setEditorMode] = useState<"floating" | "docked" | "drawer">("floating");
+  const [shouldRenderCalendar, setShouldRenderCalendar] = useState(false);
 
   const { setViewMode } = useDashboardContext();
 
-  const { setTitle, setSubtitle, setHeaderActions, setIsDocked } =
-    useOutletContext<AppLayoutContext>();
+  const { setIsDocked } = useOutletContext<AppLayoutContext>();
 
   useEffect(() => {
-    setTitle("Timeline");
-    setSubtitle(formatTitleDate(parseDateString(selectedDate)));
+    document.title = `Kei︱Timeline — ${formatTitleDate(parseDateString(selectedDate))}`; // TODO: Add Weekday
+  }, [selectedDate]);
 
-    setHeaderActions({
-      center: <div id="header-center-portal-root" />,
-      right: <div id="header-right-portal-root" />,
-    });
-
-    return () => setHeaderActions(undefined);
-  }, [setTitle, setSubtitle, setHeaderActions, selectedDate]);
+  useEffect(() => {
+    if (isDbReady) {
+      const timer = setTimeout(() => {
+        setShouldRenderCalendar(true);
+      }, 100);
+      return () => clearTimeout(timer);
+    }
+  }, [isDbReady]);
 
   if (dbError) {
     return (
@@ -90,7 +100,7 @@ function DashboardShell() {
     case "month":
     case "year":
     case "agenda":
-      Content = <CalendarView />;
+      Content = shouldRenderCalendar ? <CalendarView /> : <CalendarSkeleton />;
       break;
     default:
       Content = (
@@ -110,19 +120,7 @@ function DashboardShell() {
   }
 
   return (
-    <>
-      <HeaderPortal to="header-center-portal-root">
-        <div className="flex items-center gap-3">
-          <div id="header-calendar-portal-root" className="contents" />
-
-          <ViewSwitcher />
-          <div className="hidden sm:block">
-            <HeaderSearch />
-          </div>
-          <HeaderNewAction />
-        </div>
-      </HeaderPortal>
-
+    <AppPage header={<DashboardHeader />} className="flex flex-col">
       {Content}
       <BulkActionBar />
 
@@ -176,9 +174,9 @@ function DashboardShell() {
           </DragResizeWrapper>
         )}
       </AnimatePresence>
-    </>
+    </AppPage>
   );
-}
+});
 
 export default function Dashboard() {
   return (

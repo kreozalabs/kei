@@ -1,19 +1,13 @@
 import { NavLink } from "react-router";
-import { Button, cn } from "@kreozalabs/kei-ui";
-import { SidebarToggle } from "./SidebarToggle";
-import { Logo as KreozaLogo } from "@kreozalabs/icons";
+import { cn } from "@kreozalabs/kei-ui";
 import { navGroups } from "@/config/navigation";
-import { FullscreenToggle } from "../FullscreenToggle";
 import { SettingsIcon } from "lucide-react";
-import { useSettings } from "@/providers/SettingsContext";
 
 interface AppSidebarProps {
   isOpen?: boolean;
-  onToggle?: () => void;
 }
 
-export function AppSidebar({ isOpen = true, onToggle }: AppSidebarProps) {
-  const { settings } = useSettings();
+export function AppSidebar({ isOpen = true }: AppSidebarProps) {
   return (
     <aside
       className={cn(
@@ -27,48 +21,7 @@ export function AppSidebar({ isOpen = true, onToggle }: AppSidebarProps) {
           !isOpen && "-translate-x-12"
         )}
       >
-        <div
-          className={cn(
-            "border-border/80 animate-in fade-in slide-in-from-top-2 animation-duration-[700ms] mb-2 flex shrink-0 items-end justify-between border-b px-6 pt-4 pb-2 md:px-8 md:pt-6 md:pb-2"
-          )}
-        >
-          <div className="flex h-12 w-full items-center justify-between">
-            <SidebarToggle onClick={onToggle} />
-            <div
-              className={cn(
-                "flex items-center gap-1.5 transition-opacity",
-                settings.subtle_on_idle ? "opacity-0 group-hover:opacity-100" : "opacity-100"
-              )}
-            >
-              <FullscreenToggle
-                size="icon"
-                className="hover:bg-muted/80 text-muted-foreground/40 hover:text-foreground size-8 rounded-lg border-none transition-all active:scale-90"
-              />
-            </div>
-          </div>
-        </div>
-
-        <div className="flex flex-1 flex-col gap-2 space-y-2 p-4">
-          {/* App & Profile Header */}
-          <div className="mb-6 flex items-center justify-between px-0">
-            <Button
-              variant="ghost"
-              className="hover:bg-muted/50 group hidden h-auto min-w-0 flex-1 items-center justify-start gap-2.5 rounded-lg border-none px-0 py-1.5 font-medium md:flex"
-            >
-              <div className="bg-primary/10 text-primary group-hover:bg-primary/20 flex size-8 shrink-0 items-center justify-center rounded-lg transition-colors">
-                <KreozaLogo className="size-5" />
-              </div>
-              <div className="flex min-w-0 flex-col items-start">
-                <span className="text-foreground/90 text-[13px] leading-none font-bold tracking-tight">
-                  Kei
-                </span>
-                <span className="text-muted-foreground/70 mt-1 truncate text-[10.5px] font-medium">
-                  {"{user.email} or login"}
-                </span>
-              </div>
-            </Button>
-          </div>
-
+        <div className="flex flex-1 flex-col gap-2 space-y-2 p-4 pt-6">
           <div className="flex flex-1 flex-col gap-2.5 space-y-6">
             {navGroups.map((group) => (
               <div key={group.label} className="flex flex-col space-y-1">

@@ -1,19 +1,22 @@
-import { forwardRef } from "react";
-import { PlusIcon, SearchIcon, MoreVerticalIcon, Loader2Icon } from "lucide-react";
-import { Button, cn } from "@kreozalabs/kei-ui";
+import { forwardRef, useState, useEffect } from "react";
+import { createPortal } from "react-dom";
+import { PlusIcon, SearchIcon, Loader2Icon } from "lucide-react";
+import { Button, cn, useMediaQuery } from "@kreozalabs/kei-ui";
 import { useSettings } from "@/providers/SettingsContext";
 import { useSubtleOnIdle } from "@/hooks/useSubtleOnIdle";
 import { useDb } from "@/providers/DbContext";
+import { useOutletContext } from "react-router";
+import type { AppLayoutContext } from "./AppLayout";
 
 interface AppHeaderProps {
-  title: string;
+  title?: string;
   subtitle?: string;
-  left?: React.ReactNode;
-  center?: React.ReactNode;
-  right?: React.ReactNode;
+  icon?: React.ReactNode;
+  className?: string;
+  children?: React.ReactNode;
 }
 
-export function AppHeader({ title, subtitle, left, center, right }: AppHeaderProps) {
+export function AppHeader({ title, subtitle, icon, className, children }: AppHeaderProps) {
   const { settings } = useSettings();
   const { isSubtle, show, hide } = useSubtleOnIdle({
     initialDelay: 3000,
@@ -22,111 +25,123 @@ export function AppHeader({ title, subtitle, left, center, right }: AppHeaderPro
     disabled: !settings.subtle_on_idle,
   });
 
-  const { isDbReady, isWriting } = useDb();
-  const isLoading = !isDbReady || isWriting;
+  const isMobile = useMediaQuery("(max-width: 768px)");
+  const [portalTarget, setPortalTarget] = useState<HTMLElement | null>(null);
 
-  return (
-    <header
-      className="bg-background/95 border-border/40 sticky top-0 z-40 w-full shrink-0 border-b px-6 pt-2 pb-1 backdrop-blur-xl md:border-none md:px-8 md:pt-4 md:pb-6"
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const frameId = requestAnimationFrame(() => {
+        if (!isMobile) {
+          setPortalTarget(document.getElementById("global-header-content"));
+        } else {
+          setPortalTarget(null);
+        }
+      });
+      return () => cancelAnimationFrame(frameId);
+    }
+  }, [isMobile]);
+
+  const headerContent = (
+    <div
+      className={cn(
+        "flex w-full cursor-default items-center gap-4 transition-[opacity,transform] duration-1000 ease-in-out",
+        isSubtle ? "translate-y-0.5 opacity-20" : "opacity-100"
+      )}
       onMouseEnter={show}
       onMouseMove={show}
       onMouseLeave={hide}
     >
-      <div
+      {children ? (
+        children
+      ) : (
+        <HeaderTitleArea title={title || ""} subtitle={subtitle} icon={icon} />
+      )}
+    </div>
+  );
+
+  if (isMobile) {
+    return (
+      <header
         className={cn(
-          "flex w-full cursor-default gap-4 transition-[opacity,transform] duration-1000 ease-in-out",
-          isSubtle ? "translate-y-0.5 opacity-20" : "opacity-100"
+          "bg-muted/95 border-border/40 sticky top-0 z-40 w-full shrink-0 border-b px-6 pt-2 pb-1 backdrop-blur-xl md:h-20",
+          className
         )}
       >
-        {/* 1. Left Area (e.g. Sidebar toggle) */}
-        {left && <div className="flex shrink-0 items-center">{left}</div>}
+        {headerContent}
+      </header>
+    );
+  }
 
-        {/* 2. Title Area (Reserved space for stability) */}
-        <div className="flex h-10 min-w-0 flex-1 flex-col justify-end gap-1 md:ml-12 md:h-16">
-          <h1 className="mb-2 flex items-center gap-2 text-lg leading-none font-bold tracking-tight md:text-xl">
-            <span>{title}</span>
-            {isLoading && (
-              <Loader2Icon
-                className="text-muted-foreground/60 size-4 shrink-0 animate-spin"
-                aria-hidden="true"
-              />
-            )}
-          </h1>
-          <div className="flex h-4 items-center overflow-hidden">
-            {subtitle ? (
-              <span className="text-muted-foreground truncate text-[11px] font-semibold tracking-wider opacity-70 md:text-xs">
-                {subtitle}
-              </span>
-            ) : (
-              <span className="invisible text-[11px] uppercase">placeholder</span>
-            )}
-          </div>
-        </div>
+  if (!portalTarget) return null;
+  return createPortal(headerContent, portalTarget);
+}
 
-        {/* 3. Actions Area (Right-aligned grouping) */}
-        <div className="flex h-12 min-w-0 flex-1 items-center justify-end gap-6 md:gap-10">
-          {/* Search stays grouped with the other actions */}
-          <div className="hidden items-center lg:flex">{center}</div>
+interface HeaderTitleAreaProps {
+  title: string;
+  subtitle?: string;
+  icon?: React.ReactNode;
+  className?: string;
+}
 
-          {/* Secondary Actions */}
-          <div className="flex items-center gap-2 font-medium md:gap-6">
-            <div className="text-muted-foreground/40 lg:hidden">{center}</div>
-            {right}
-          </div>
-        </div>
+export function HeaderTitleArea({ title, subtitle, icon, className }: HeaderTitleAreaProps) {
+  const { isDbReady, isWriting } = useDb();
+  const isLoading = !isDbReady || isWriting;
+
+  return (
+    <div className={cn("flex min-w-0 items-center gap-2.5", className)}>
+      {icon && (
+        <div className="text-primary/80 flex shrink-0 items-center justify-center">{icon}</div>
+      )}
+      <div className="flex min-w-0 flex-col justify-center">
+        <h1 className="flex items-center gap-2 text-base font-bold tracking-tight md:text-lg">
+          <span>{title}</span>
+          {isLoading && (
+            <Loader2Icon
+              className="text-muted-foreground/60 size-3.5 shrink-0 animate-spin"
+              aria-hidden="true"
+            />
+          )}
+        </h1>
+        {subtitle && (
+          <p className="text-muted-foreground/60 mt-0.5 truncate text-xs font-normal">{subtitle}</p>
+        )}
       </div>
-    </header>
+    </div>
   );
 }
 
-/**
- * Reusable Header Action Components
- * Routes can import these to maintain consistency while staying explicit.
- */
-
 export function HeaderSearch() {
   return (
-    <Button
-      variant="ghost"
-      size="sm"
-      className="hover:bg-muted/50 text-muted-foreground flex h-8 items-center gap-2 rounded-md border-none px-2 font-medium md:px-3"
-    >
-      <SearchIcon className="size-4 md:size-4" />
-      <span className="hidden text-xs md:inline">Search</span>
-      <span className="hidden text-[10px] opacity-40 md:inline">Ctrl+K</span>
+    <Button variant="ghost" size="icon" className="size-10">
+      <SearchIcon className="size-5" />
     </Button>
   );
 }
 
 export const HeaderNewAction = forwardRef<HTMLButtonElement, { onClick?: () => void }>(
   ({ onClick, ...props }, ref) => {
+    const context = useOutletContext<AppLayoutContext | null>();
+
+    // If the FAB is explicitly disabled (undefined), hide the header button too
+    if (context && context.onFabClick === undefined && !onClick) {
+      return null;
+    }
+
+    const handleClick = onClick || context?.onFabClick || context?.openActionInput;
+
     return (
       <Button
         ref={ref}
         variant="default"
-        size="sm"
-        onClick={onClick}
-        className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-primary/20 hover:shadow-primary/30 hidden h-9 items-center gap-1.5 rounded-full border-none px-4 font-bold shadow-lg transition-all active:scale-95 md:flex"
+        size="icon"
+        onClick={handleClick}
+        className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-primary/30 hidden h-10 w-20 items-center justify-center rounded-xl border-none shadow-lg transition-all active:scale-95 md:flex"
         {...props}
       >
-        <PlusIcon className="size-4" />
-        <span className="text-sm">New Action</span>
-        <span className="ml-1 hidden text-[10px] font-medium opacity-40 lg:inline">N</span>
+        <PlusIcon className="size-5" />
       </Button>
     );
   }
 );
-HeaderNewAction.displayName = "HeaderNewAction";
 
-export function HeaderMore({ onClick }: { onClick?: () => void }) {
-  return (
-    <Button
-      variant="ghost"
-      size="icon"
-      onClick={onClick}
-      className="hover:bg-muted/50 text-muted-foreground size-8 rounded-md border-none"
-    >
-      <MoreVerticalIcon className="size-4" />
-    </Button>
-  );
-}
+HeaderNewAction.displayName = "HeaderNewAction";
