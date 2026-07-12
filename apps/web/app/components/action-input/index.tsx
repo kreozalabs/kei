@@ -1,5 +1,5 @@
 import type { Action } from "@kreozalabs/kei-core";
-import { forwardRef, useEffect, useRef, useState } from "react";
+import { forwardRef, useEffect, useRef, useState, useImperativeHandle } from "react";
 import { Button } from "@kreozalabs/kei-ui";
 import { EditableIntention, type IntentionType } from "./EditableIntention";
 import { EditableImportant } from "./EditableImportant";
@@ -28,8 +28,14 @@ interface ActionInputHandle {
 }
 
 export const ActionInput = forwardRef<ActionInputHandle, ActionInputProps>(
-  ({ onSuccess, onCancel }) => {
+  ({ onSuccess, onCancel }, ref) => {
     const [isLoading, setIsLoading] = useState(false);
+
+    useImperativeHandle(ref, () => ({
+      handleCancelAttempt: () => {
+        onCancel?.();
+      },
+    }));
 
     const handleKeyDown = (e: React.KeyboardEvent) => {
       if (e.key === "Escape") {
