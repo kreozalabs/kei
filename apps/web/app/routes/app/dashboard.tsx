@@ -16,7 +16,7 @@ import { DashboardHeader } from "@/components/dashboard/DashboardHeader";
 import { AppPage } from "@/components/layout/AppPage";
 
 const CalendarSkeleton = () => (
-  <div className="flex h-full flex-1 flex-col gap-4 p-4 animate-pulse">
+  <div className="flex h-full flex-1 animate-pulse flex-col gap-4 p-4">
     {/* Header Skeleton */}
     <div className="flex items-center justify-between">
       <div className="flex gap-2">
@@ -32,9 +32,9 @@ const CalendarSkeleton = () => (
           <div key={i} className="bg-muted/60 h-6 rounded-md" />
         ))}
       </div>
-      <div className="mt-4 grid grid-cols-7 grid-rows-5 gap-2 h-[calc(100%-2rem)]">
+      <div className="mt-4 grid h-[calc(100%-2rem)] grid-cols-7 grid-rows-5 gap-2">
         {Array.from({ length: 35 }).map((_, i) => (
-          <div key={i} className="bg-muted/30 rounded-lg p-2 flex flex-col gap-2">
+          <div key={i} className="bg-muted/30 flex flex-col gap-2 rounded-lg p-2">
             <div className="bg-muted/50 h-4 w-6 rounded" />
             {i % 5 === 0 && <div className="bg-primary/20 h-5 w-full rounded" />}
             {i % 7 === 2 && <div className="bg-muted/40 h-5 w-full rounded" />}
