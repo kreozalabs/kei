@@ -1,6 +1,4 @@
 import { useEffect, useState, memo } from "react";
-import { useOutletContext } from "react-router";
-import { type AppLayoutContext } from "@/components/layout/AppLayout";
 import { Button } from "@kreozalabs/kei-ui";
 import { LayoutGrid } from "lucide-react";
 import { parseDateString, formatTitleDate } from "@kreozalabs/kei-core";
@@ -59,12 +57,9 @@ const DashboardShell = memo(function DashboardShell() {
     isDbReady,
   } = useDashboardContext();
 
-  const [editorMode, setEditorMode] = useState<"floating" | "docked" | "drawer">("floating");
   const [shouldRenderCalendar, setShouldRenderCalendar] = useState(false);
 
   const { setViewMode } = useDashboardContext();
-
-  const { setIsDocked } = useOutletContext<AppLayoutContext>();
 
   useEffect(() => {
     document.title = `Kei︱Timeline — ${formatTitleDate(parseDateString(selectedDate))}`; // TODO: Add Weekday
@@ -128,16 +123,9 @@ const DashboardShell = memo(function DashboardShell() {
       <AnimatePresence>
         {isDialogOpen && (
           <DragResizeWrapper
-            mode={editorMode}
-            onModeChange={(newMode) => {
-              setEditorMode(newMode);
-              setIsDocked(newMode === "docked");
-            }}
             onClose={() => {
               setIsDialogOpen(false);
               setActionToEdit(null);
-              setIsDocked(false);
-              setEditorMode("floating");
             }}
           >
             {actionToEdit ? (
@@ -146,8 +134,6 @@ const DashboardShell = memo(function DashboardShell() {
                 onClose={() => {
                   setIsDialogOpen(false);
                   setActionToEdit(null);
-                  setIsDocked(false);
-                  setEditorMode("floating");
                 }}
                 onComplete={handleComplete}
                 onAbandon={handleAbandon}
@@ -159,14 +145,10 @@ const DashboardShell = memo(function DashboardShell() {
                 onSuccess={() => {
                   setIsDialogOpen(false);
                   setActionToEdit(null);
-                  setIsDocked(false);
-                  setEditorMode("floating");
                 }}
                 onCancel={() => {
                   setIsDialogOpen(false);
                   setActionToEdit(null);
-                  setIsDocked(false);
-                  setEditorMode("floating");
                 }}
                 initialDate={dialogPreDate || undefined}
               />

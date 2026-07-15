@@ -7,7 +7,7 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
 } from "@kreozalabs/kei-ui";
-import { RotateCcw, CheckCircle2Icon, CalendarIcon, Trash2Icon, X } from "lucide-react";
+import { RotateCcw, CheckCircle2Icon, CalendarIcon, Trash2Icon, XIcon } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { getNextDayString } from "@kreozalabs/kei-core";
 import { useMemo } from "react";
@@ -143,7 +143,7 @@ export function BulkActionBar() {
               className="text-muted-foreground/60 hover:text-foreground hover:bg-muted/50 h-7 rounded-full border-none px-2 text-[10px] font-black tracking-wider uppercase transition-all sm:px-2.5"
               title="Clear selection"
             >
-              <X className="size-3.5 sm:hidden" />
+              <XIcon className="size-3.5 sm:hidden" />
               <span className="hidden sm:inline">Clear</span>
             </Button>
           </div>

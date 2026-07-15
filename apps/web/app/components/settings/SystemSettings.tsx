@@ -7,7 +7,7 @@ import { db } from "@/db";
 import type { BenchmarkResult } from "@/db/webDatabaseAdapter";
 import {
   Check,
-  X,
+  XIcon,
   Database,
   HardDrive,
   RefreshCw,
@@ -515,7 +515,7 @@ export function SystemSettings() {
                   </span>
                 ) : (
                   <span className="text-muted-foreground/70 flex items-center gap-1 text-[11px]">
-                    <X className="size-3.5" />
+                    <XIcon className="size-3.5" />
                     <span>Pending activation</span>
                   </span>
                 )}
