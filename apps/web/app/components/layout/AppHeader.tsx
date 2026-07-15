@@ -1,8 +1,7 @@
-import { useState, useEffect } from "react";
 import { createPortal } from "react-dom";
 import { cn, useMediaQuery } from "@kreozalabs/kei-ui";
-import { useSettings } from "@/providers/SettingsContext";
-import { useSubtleOnIdle } from "@/hooks/useSubtleOnIdle";
+import { useHeaderPortalTarget } from "./HeaderPortalContext";
+import { IdleFadeWrapper } from "./IdleFadeWrapper";
 import { HeaderTitleArea } from "./HeaderTitleArea";
 
 interface AppHeaderProps {
@@ -20,40 +19,11 @@ export function AppHeader({
   className,
   children,
 }: AppHeaderProps) {
-  const { settings } = useSettings();
-  const { isSubtle, show, hide } = useSubtleOnIdle({
-    initialDelay: 3000,
-    idleDelay: 2000,
-    disableOnMobile: true,
-    disabled: !settings.subtle_on_idle,
-  });
-
   const isMobile = useMediaQuery("(max-width: 768px)");
-  const [portalTarget, setPortalTarget] = useState<HTMLElement | null>(null);
-
-  useEffect(() => {
-    if (typeof window !== "undefined") {
-      const frameId = requestAnimationFrame(() => {
-        if (!isMobile) {
-          setPortalTarget(document.getElementById("global-header-content"));
-        } else {
-          setPortalTarget(null);
-        }
-      });
-      return () => cancelAnimationFrame(frameId);
-    }
-  }, [isMobile]);
+  const portalTarget = useHeaderPortalTarget();
 
   const headerContent = (
-    <div
-      className={cn(
-        "flex w-full cursor-default items-center gap-4 transition-[opacity,transform] duration-1000 ease-in-out",
-        isSubtle ? "translate-y-0.5 opacity-20" : "opacity-100"
-      )}
-      onMouseEnter={show}
-      onMouseMove={show}
-      onMouseLeave={hide}
-    >
+    <IdleFadeWrapper>
       {children ? (
         children
       ) : (
@@ -63,7 +33,7 @@ export function AppHeader({
           icon={icon}
         />
       )}
-    </div>
+    </IdleFadeWrapper>
   );
 
   if (isMobile) {
@@ -82,3 +52,4 @@ export function AppHeader({
   if (!portalTarget) return null;
   return createPortal(headerContent, portalTarget);
 }
+
