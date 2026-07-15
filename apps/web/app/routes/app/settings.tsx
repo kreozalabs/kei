@@ -5,6 +5,7 @@ import { BehaviorSettings } from "@/components/settings/BehaviorSettings";
 import { ActionsSettings } from "@/components/settings/ActionsSettings";
 import { MaintenanceSettings } from "@/components/settings/MaintenanceSettings";
 import { SystemSettings } from "@/components/settings/SystemSettings";
+import { MobileFAB } from "@/components/MobileFAB";
 
 export default function Settings() {
   useEffect(() => {
@@ -13,6 +14,7 @@ export default function Settings() {
 
   return (
     <AppPage title="Settings" subtitle="Manage your experience and preferences." scrollable padded>
+      <MobileFAB className="hidden">{null}</MobileFAB>
       <div className="animate-in fade-in slide-in-from-bottom-3 flex max-w-4xl flex-col space-y-12 duration-700">
         <div className="flex flex-col space-y-2">
           <div className="flex items-center gap-3">

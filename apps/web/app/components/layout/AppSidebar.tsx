@@ -29,7 +29,7 @@ export function AppSidebar({ isOpen = true }: AppSidebarProps) {
                   {group.label}
                 </h4>
                 {group.items.map((item) => {
-                  const isToday = item.id === "today";
+                  const isHighlight = item.variant === "highlight";
                   return (
                     <NavLink
                       key={item.id}
@@ -42,11 +42,11 @@ export function AppSidebar({ isOpen = true }: AppSidebarProps) {
                           isActive
                             ? cn(
                                 "bg-primary/10 text-primary shadow-none",
-                                isToday && "bg-primary/15"
+                                isHighlight && "bg-primary/15"
                               )
                             : cn(
                                 "text-muted-foreground hover:bg-muted/60",
-                                isToday && "text-foreground/80 font-bold"
+                                isHighlight && "text-foreground/80 font-bold"
                               )
                         )
                       }
@@ -57,8 +57,10 @@ export function AppSidebar({ isOpen = true }: AppSidebarProps) {
                             <item.icon
                               className={cn(
                                 "size-4.5",
-                                isActive || isToday ? "text-primary" : "text-muted-foreground/70",
-                                isToday && !isActive && "opacity-60"
+                                isActive || isHighlight
+                                  ? "text-primary"
+                                  : "text-muted-foreground/70",
+                                isHighlight && !isActive && "opacity-60"
                               )}
                             />
                             <span className="text-sm tracking-tight">{item.label}</span>

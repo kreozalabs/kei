@@ -1,12 +1,10 @@
 // NOTE: On mobile order is different: {calendar that opens down moving page} {space} {search} {today} {view switcher}
 // NOTE: Otherwise: {title} {space} {today} {arrows} {calendar that opens as popover}{space}{search}{view switcher}{new action}
 
-import {
-  AppHeader,
-  HeaderTitleArea,
-  HeaderSearch,
-  HeaderNewAction,
-} from "@/components/layout/AppHeader";
+import { AppHeader } from "@/components/layout/AppHeader";
+import { HeaderTitleArea } from "@/components/layout/HeaderTitleArea";
+import { HeaderSearch } from "@/components/layout/HeaderSearch";
+import { HeaderNewAction } from "@/components/layout/HeaderNewAction";
 import { ViewSwitcher } from "@/routes/app/dashboard/components/ViewSwitcher";
 
 export const DashboardHeader = () => {

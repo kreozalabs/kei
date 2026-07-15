@@ -19,6 +19,9 @@ import { P2PProvider } from "./providers/P2PProvider";
 import { ErrorPage } from "./components/ErrorPage";
 import { STORAGE_KEYS } from "@kreozalabs/kei-core";
 import { registerPWA } from "./utils/pwa";
+import { SyncListener } from "./components/SyncListener";
+import { ActionInputModalProvider } from "./providers/ActionInputModalContext";
+import { useAppShortcuts } from "./hooks/useAppShortcuts";
 
 export function Layout({ children }: { children: React.ReactNode }) {
   useEffect(() => {
@@ -64,9 +67,18 @@ export function Layout({ children }: { children: React.ReactNode }) {
 }
 
 export default function App() {
+  useAppShortcuts({
+    toggleSidebar: () => {
+      window.dispatchEvent(new CustomEvent("kei:toggle-sidebar"));
+    },
+  });
+
   return (
     <QueryProvider>
-      <Outlet />
+      <ActionInputModalProvider>
+        <SyncListener />
+        <Outlet />
+      </ActionInputModalProvider>
     </QueryProvider>
   );
 }

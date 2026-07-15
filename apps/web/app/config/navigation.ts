@@ -7,6 +7,7 @@ interface NavItem {
   icon: LucideIcon;
   href: string;
   mobileVisible?: boolean;
+  variant?: "highlight";
 }
 
 interface NavGroup {
@@ -24,6 +25,7 @@ export const navGroups: NavGroup[] = [
         icon: CalendarDaysIcon,
         href: "/app",
         mobileVisible: true,
+        variant: "highlight",
       },
     ],
   },
