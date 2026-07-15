@@ -5,9 +5,7 @@ import { Button, cn } from "@kreozalabs/kei-ui";
 import { AppSidebar } from "./AppSidebar";
 import { MobileNav } from "./MobileNav";
 import { ErrorPage } from "../ErrorPage";
-import { DragResizeWrapper } from "../DragResizeWrapper";
-import { ActionInput } from "../action-input";
-import { AnimatePresence } from "framer-motion";
+import { useActionInputModal } from "@/providers/ActionInputModalContext";
 import { SidebarToggle } from "./SidebarToggle";
 import { FullscreenToggle } from "../FullscreenToggle";
 import { useSettings } from "@/providers/SettingsContext";
@@ -22,11 +20,7 @@ export interface AppLayoutContext {
 export function AppLayout({ error }: { error?: unknown }) {
   const { settings } = useSettings();
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
-  const [isActionInputOpen, setIsActionInputOpen] = useState(false);
-
-  const openActionInput = useCallback(() => {
-    setIsActionInputOpen(true);
-  }, []);
+  const { openActionInput } = useActionInputModal();
 
   const toggleSidebar = useCallback(() => setIsSidebarOpen((prev) => !prev), []);
 
@@ -120,25 +114,7 @@ export function AppLayout({ error }: { error?: unknown }) {
           {/* Mobile Bottom Navigation */}
           <MobileNav />
 
-          {/* Global Action Input Dialog */}
-          <AnimatePresence>
-            {isActionInputOpen && (
-              <DragResizeWrapper
-                onClose={() => {
-                  setIsActionInputOpen(false);
-                }}
-              >
-                <ActionInput
-                  onSuccess={() => {
-                    setIsActionInputOpen(false);
-                  }}
-                  onCancel={() => {
-                    setIsActionInputOpen(false);
-                  }}
-                />
-              </DragResizeWrapper>
-            )}
-          </AnimatePresence>
+
         </main>
       </div>
     </div>

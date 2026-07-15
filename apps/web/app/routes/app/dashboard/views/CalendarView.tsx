@@ -18,6 +18,8 @@ import { ChevronLeftIcon, ChevronRightIcon, ChevronDown, CalendarIcon } from "lu
 import { useSettings } from "@/providers/SettingsContext";
 import { useDashboardContext } from "../context/DashboardContext";
 import type { ViewMode } from "../types";
+import { useActionInputModal } from "@/providers/ActionInputModalContext";
+import type { Action } from "@kreozalabs/kei-core";
 
 const VIEW_MODE_UNITS: Record<string, "day" | "week" | "month" | "year"> = {
   day: "day",
@@ -402,11 +404,39 @@ function CalendarHeaderControls({ isOpen, setIsOpen }: CalendarHeaderControlsPro
 }
 
 export function CalendarView() {
-  const { viewMode, setViewMode, setSelectedDate, setStartDateStr, setEndDateStr } =
-    useDashboardContext();
+  const {
+    viewMode,
+    setViewMode,
+    setSelectedDate,
+    setStartDateStr,
+    setEndDateStr,
+    allActions,
+    setActionToEdit,
+    setIsDialogOpen,
+  } = useDashboardContext();
+  const { openActionInput } = useActionInputModal();
   const [isCalendarOpen, setIsCalendarOpen] = useState(false);
 
   const plugins = useMemo(() => [recurrencePlugin(), agendaPlugin(), dragToCreatePlugin()], []);
+
+  const calendarEvents = useMemo(() => {
+    return allActions.map((action) => {
+      const hasTime = !!action.startTime;
+      const start = hasTime ? `${action.scheduledDate}T${action.startTime}` : action.scheduledDate;
+      const end = hasTime && action.endTime
+        ? `${action.scheduledDate}T${action.endTime}`
+        : action.scheduledDate;
+
+      return {
+        id: action.id,
+        title: action.title,
+        start,
+        end,
+        allDay: !hasTime,
+        data: { action },
+      };
+    });
+  }, [allActions]);
 
   return (
     <div className="flex h-full flex-col md:pr-2">
@@ -418,6 +448,17 @@ export function CalendarView() {
           headerComponent={
             <CalendarHeaderControls isOpen={isCalendarOpen} setIsOpen={setIsCalendarOpen} />
           }
+          events={calendarEvents}
+          onEventClick={(event) => {
+            const originalAction = event.data?.action as Action | undefined;
+            if (originalAction) {
+              setActionToEdit(originalAction);
+              setIsDialogOpen(true);
+            }
+          }}
+          onCellClick={(info) => {
+            openActionInput({ initialDate: info.start.format("YYYY-MM-DD") });
+          }}
           onDateChange={(date, range) => {
             setSelectedDate(date.format("YYYY-MM-DD"));
             if (range) {

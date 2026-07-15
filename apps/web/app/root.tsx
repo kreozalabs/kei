@@ -20,6 +20,7 @@ import { ErrorPage } from "./components/ErrorPage";
 import { STORAGE_KEYS } from "@kreozalabs/kei-core";
 import { registerPWA } from "./utils/pwa";
 import { SyncListener } from "./components/SyncListener";
+import { ActionInputModalProvider } from "./providers/ActionInputModalContext";
 
 export function Layout({ children }: { children: React.ReactNode }) {
   useEffect(() => {
@@ -67,8 +68,10 @@ export function Layout({ children }: { children: React.ReactNode }) {
 export default function App() {
   return (
     <QueryProvider>
-      <SyncListener />
-      <Outlet />
+      <ActionInputModalProvider>
+        <SyncListener />
+        <Outlet />
+      </ActionInputModalProvider>
     </QueryProvider>
   );
 }

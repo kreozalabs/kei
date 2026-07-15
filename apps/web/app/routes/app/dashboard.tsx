@@ -3,7 +3,6 @@ import { Button } from "@kreozalabs/kei-ui";
 import { LayoutGrid } from "lucide-react";
 import { parseDateString, formatTitleDate } from "@kreozalabs/kei-core";
 import { AnimatePresence } from "framer-motion";
-import { ActionInput } from "@/components/action-input";
 import { ActionDetailView } from "@/components/ActionDetailView";
 import { DragResizeWrapper } from "@/components/DragResizeWrapper";
 import { useDashboardContext } from "./dashboard/context/DashboardContext";
@@ -19,7 +18,6 @@ const DashboardShell = memo(function DashboardShell() {
     viewMode,
     isDialogOpen,
     setIsDialogOpen,
-    dialogPreDate,
     actionToEdit,
     setActionToEdit,
     mutations: { handleComplete, handleAbandon, handleReactivate, handleDeletePermanently },
@@ -92,38 +90,24 @@ const DashboardShell = memo(function DashboardShell() {
 
       {/* Global Action Modals */}
       <AnimatePresence>
-        {isDialogOpen && (
+        {isDialogOpen && actionToEdit && (
           <DragResizeWrapper
             onClose={() => {
               setIsDialogOpen(false);
               setActionToEdit(null);
             }}
           >
-            {actionToEdit ? (
-              <ActionDetailView
-                action={actionToEdit}
-                onClose={() => {
-                  setIsDialogOpen(false);
-                  setActionToEdit(null);
-                }}
-                onComplete={handleComplete}
-                onAbandon={handleAbandon}
-                onReactivate={handleReactivate}
-                onDeletePermanently={handleDeletePermanently}
-              />
-            ) : (
-              <ActionInput
-                onSuccess={() => {
-                  setIsDialogOpen(false);
-                  setActionToEdit(null);
-                }}
-                onCancel={() => {
-                  setIsDialogOpen(false);
-                  setActionToEdit(null);
-                }}
-                initialDate={dialogPreDate || undefined}
-              />
-            )}
+            <ActionDetailView
+              action={actionToEdit}
+              onClose={() => {
+                setIsDialogOpen(false);
+                setActionToEdit(null);
+              }}
+              onComplete={handleComplete}
+              onAbandon={handleAbandon}
+              onReactivate={handleReactivate}
+              onDeletePermanently={handleDeletePermanently}
+            />
           </DragResizeWrapper>
         )}
       </AnimatePresence>
