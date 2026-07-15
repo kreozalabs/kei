@@ -7,7 +7,6 @@ import { MobileNav } from "./MobileNav";
 import { ErrorPage } from "../ErrorPage";
 import { DragResizeWrapper } from "../DragResizeWrapper";
 import { ActionInput } from "../action-input";
-import { SyncListener } from "../SyncListener";
 import { AnimatePresence } from "framer-motion";
 import { SidebarToggle } from "./SidebarToggle";
 import { FullscreenToggle } from "../FullscreenToggle";
@@ -140,9 +139,6 @@ export function AppLayout({ error }: { error?: unknown }) {
               </DragResizeWrapper>
             )}
           </AnimatePresence>
-
-          {/* Global Sync Listener */}
-          <SyncListener />
         </main>
       </div>
     </div>

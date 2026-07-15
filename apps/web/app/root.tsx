@@ -19,6 +19,7 @@ import { P2PProvider } from "./providers/P2PProvider";
 import { ErrorPage } from "./components/ErrorPage";
 import { STORAGE_KEYS } from "@kreozalabs/kei-core";
 import { registerPWA } from "./utils/pwa";
+import { SyncListener } from "./components/SyncListener";
 
 export function Layout({ children }: { children: React.ReactNode }) {
   useEffect(() => {
@@ -66,6 +67,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
 export default function App() {
   return (
     <QueryProvider>
+      <SyncListener />
       <Outlet />
     </QueryProvider>
   );
