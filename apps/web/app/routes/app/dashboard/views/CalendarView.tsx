@@ -187,7 +187,7 @@ function CalendarHeaderControls({ isOpen, setIsOpen }: CalendarHeaderControlsPro
     }
 
     setVisibleMonth(newDate);
-  }, [currentDateMs]);
+  }, [currentDateMs, visibleMonth]);
 
   const displayDate = getDisplayDate(
     isOpen && isMobile ? visibleMonth : selectedDateObj,
@@ -423,9 +423,10 @@ export function CalendarView() {
     return allActions.map((action) => {
       const hasTime = !!action.startTime;
       const start = hasTime ? `${action.scheduledDate}T${action.startTime}` : action.scheduledDate;
-      const end = hasTime && action.endTime
-        ? `${action.scheduledDate}T${action.endTime}`
-        : action.scheduledDate;
+      const end =
+        hasTime && action.endTime
+          ? `${action.scheduledDate}T${action.endTime}`
+          : action.scheduledDate;
 
       return {
         id: action.id,

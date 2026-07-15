@@ -7,12 +7,7 @@ interface HeaderTitleAreaProps {
   className?: string;
 }
 
-export function HeaderTitleArea({
-  title,
-  subtitle,
-  icon,
-  className,
-}: HeaderTitleAreaProps) {
+export function HeaderTitleArea({ title, subtitle, icon, className }: HeaderTitleAreaProps) {
   return (
     <div className={cn("flex min-w-0 items-center gap-2.5", className)}>
       {icon && (
@@ -29,4 +24,3 @@ export function HeaderTitleArea({
     </div>
   );
 }
-

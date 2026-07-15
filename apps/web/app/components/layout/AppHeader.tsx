@@ -12,13 +12,7 @@ interface AppHeaderProps {
   children?: React.ReactNode;
 }
 
-export function AppHeader({
-  title,
-  subtitle,
-  icon,
-  className,
-  children,
-}: AppHeaderProps) {
+export function AppHeader({ title, subtitle, icon, className, children }: AppHeaderProps) {
   const isMobile = useMediaQuery("(max-width: 768px)");
   const portalTarget = useHeaderPortalTarget();
 
@@ -27,11 +21,7 @@ export function AppHeader({
       {children ? (
         children
       ) : (
-        <HeaderTitleArea
-          title={title || ""}
-          subtitle={subtitle}
-          icon={icon}
-        />
+        <HeaderTitleArea title={title || ""} subtitle={subtitle} icon={icon} />
       )}
     </IdleFadeWrapper>
   );
@@ -52,4 +42,3 @@ export function AppHeader({
   if (!portalTarget) return null;
   return createPortal(headerContent, portalTarget);
 }
-

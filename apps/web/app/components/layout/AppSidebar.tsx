@@ -57,7 +57,9 @@ export function AppSidebar({ isOpen = true }: AppSidebarProps) {
                             <item.icon
                               className={cn(
                                 "size-4.5",
-                                isActive || isHighlight ? "text-primary" : "text-muted-foreground/70",
+                                isActive || isHighlight
+                                  ? "text-primary"
+                                  : "text-muted-foreground/70",
                                 isHighlight && !isActive && "opacity-60"
                               )}
                             />

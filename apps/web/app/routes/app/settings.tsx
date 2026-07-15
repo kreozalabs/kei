@@ -16,7 +16,6 @@ export default function Settings() {
     <AppPage title="Settings" subtitle="Manage your experience and preferences." scrollable padded>
       <MobileFAB className="hidden">{null}</MobileFAB>
       <div className="animate-in fade-in slide-in-from-bottom-3 flex max-w-4xl flex-col space-y-12 duration-700">
-
         <div className="flex flex-col space-y-2">
           <div className="flex items-center gap-3">
             <h2 className="text-2xl font-bold tracking-tight">General Settings</h2>
