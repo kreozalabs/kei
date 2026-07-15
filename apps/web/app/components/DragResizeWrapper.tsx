@@ -1,10 +1,6 @@
 import React, { useState, useRef, useEffect } from "react";
 import { motion } from "framer-motion";
-import {
-  Button,
-  cn,
-  useMediaQuery,
-} from "@kreozalabs/kei-ui";
+import { Button, cn, useMediaQuery } from "@kreozalabs/kei-ui";
 import { XIcon } from "lucide-react";
 
 interface DragResizeWrapperProps {
@@ -37,10 +33,7 @@ const variants = (size: { width: number; height: number }, position: { x: number
   },
 });
 
-export const DragResizeWrapper = ({
-  children,
-  onClose,
-}: DragResizeWrapperProps) => {
+export const DragResizeWrapper = ({ children, onClose }: DragResizeWrapperProps) => {
   const isMobile = useMediaQuery("(max-width: 768px)");
   const currentMode = isMobile ? "drawer" : "floating";
 
@@ -116,7 +109,6 @@ export const DragResizeWrapper = ({
       }
 
       setPosition({ x: startX + validDeltaX, y: startY + validDeltaY });
-
     };
 
     const stopDrag = () => {
