@@ -5,7 +5,7 @@ import {
   Minus,
   Trash2,
   Search,
-  X,
+  XIcon,
   ChevronsUpDown,
   ChevronUp,
   ChevronDown,
@@ -444,7 +444,7 @@ export function ActionsSettings() {
                   onClick={() => removeTimezonePreset(tz)}
                   className="hover:bg-primary/10 text-primary/60 hover:text-primary size-5 rounded-md"
                 >
-                  <X className="size-3" />
+                  <XIcon className="size-3" />
                 </Button>
               </div>
             ))}

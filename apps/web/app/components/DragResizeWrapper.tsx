@@ -1,27 +1,20 @@
 import React, { useState, useRef, useEffect } from "react";
-import { createPortal } from "react-dom";
 import { motion } from "framer-motion";
 import {
   Button,
   cn,
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
   useMediaQuery,
 } from "@kreozalabs/kei-ui";
-import { Maximize2, PanelLeft, X } from "lucide-react";
+import { XIcon } from "lucide-react";
 
 interface DragResizeWrapperProps {
   children: React.ReactNode;
-  mode?: "floating" | "docked" | "drawer";
-  onModeChange?: (mode: "floating" | "docked" | "drawer") => void;
   onClose?: () => void;
   portalTargetId?: string;
 }
 
 const initialVariants = {
   floating: { opacity: 0, scale: 0.95 },
-  docked: { opacity: 0, width: 0 },
   drawer: { opacity: 0, y: "100%" },
 };
 
@@ -33,14 +26,6 @@ const variants = (size: { width: number; height: number }, position: { x: number
     height: size.height,
     x: position.x,
     y: position.y,
-  },
-  docked: {
-    opacity: 1,
-    scale: 1,
-    width: size.width,
-    height: "100%",
-    x: 0,
-    y: 0,
   },
   drawer: {
     opacity: 1,
@@ -54,47 +39,26 @@ const variants = (size: { width: number; height: number }, position: { x: number
 
 export const DragResizeWrapper = ({
   children,
-  mode: controlledMode,
-  onModeChange,
   onClose,
-  portalTargetId = "dock-container",
 }: DragResizeWrapperProps) => {
-  const [internalMode, setInternalMode] = useState<"floating" | "docked" | "drawer">("floating");
-  const mode = controlledMode !== undefined ? controlledMode : internalMode;
+  const isMobile = useMediaQuery("(max-width: 768px)");
+  const currentMode = isMobile ? "drawer" : "floating";
 
-  const handleModeChange = (newMode: "floating" | "docked" | "drawer") => {
-    if (onModeChange) onModeChange(newMode);
-    else setInternalMode(newMode);
-  };
   const [size, setSize] = useState({ width: 450, height: 500 });
   const [position, setPosition] = useState({ x: -260, y: -100 });
   const [isInteracting, setIsInteracting] = useState(false);
-  const [portalTarget, setPortalTarget] = useState<HTMLElement | null>(null);
   const wrapperRef = useRef<HTMLDivElement>(null);
-
-  // Snapping logic states
-  const [snapPreview, setSnapPreview] = useState<"left" | "bottom" | null>(null);
-  const snapPreviewRef = useRef<"left" | "bottom" | null>(null);
-
-  useEffect(() => {
-    if (typeof window !== "undefined" && portalTargetId) {
-      const frameId = requestAnimationFrame(() => {
-        setPortalTarget(document.getElementById(portalTargetId));
-      });
-      return () => cancelAnimationFrame(frameId);
-    }
-  }, [portalTargetId]);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "Escape" && mode === "floating" && onClose) {
+      if (e.key === "Escape" && currentMode === "floating" && onClose) {
         onClose();
       }
     };
 
     const handlePointerDown = (e: PointerEvent) => {
       if (
-        mode === "floating" &&
+        currentMode === "floating" &&
         wrapperRef.current &&
         !wrapperRef.current.contains(e.target as Node) &&
         onClose
@@ -110,7 +74,7 @@ export const DragResizeWrapper = ({
       }
     };
 
-    if (mode === "floating") {
+    if (currentMode === "floating") {
       document.addEventListener("keydown", handleKeyDown);
       document.addEventListener("pointerdown", handlePointerDown);
     }
@@ -119,10 +83,7 @@ export const DragResizeWrapper = ({
       document.removeEventListener("keydown", handleKeyDown);
       document.removeEventListener("pointerdown", handlePointerDown);
     };
-  }, [mode, onClose]);
-
-  const isMobile = useMediaQuery("(max-width: 768px)");
-  const currentMode = isMobile ? "drawer" : mode;
+  }, [currentMode, onClose]);
 
   // Drag handler for Header
   const handleDragStart = (e: React.MouseEvent) => {
@@ -156,41 +117,12 @@ export const DragResizeWrapper = ({
 
       setPosition({ x: startX + validDeltaX, y: startY + validDeltaY });
 
-      // Detect snap zones
-      const currentScreenLeft = startScreenRect.left + validDeltaX;
-      const currentScreenBottom = startScreenRect.top + validDeltaY + size.height;
-
-      if (currentScreenLeft < 100) {
-        if (snapPreviewRef.current !== "left") {
-          snapPreviewRef.current = "left";
-          setSnapPreview("left");
-        }
-      } else if (window.innerHeight - currentScreenBottom < 100) {
-        if (snapPreviewRef.current !== "bottom") {
-          snapPreviewRef.current = "bottom";
-          setSnapPreview("bottom");
-        }
-      } else {
-        if (snapPreviewRef.current !== null) {
-          snapPreviewRef.current = null;
-          setSnapPreview(null);
-        }
-      }
     };
 
     const stopDrag = () => {
       setIsInteracting(false);
       document.removeEventListener("mousemove", doDrag);
       document.removeEventListener("mouseup", stopDrag);
-
-      const finalSnap = snapPreviewRef.current;
-      if (finalSnap === "left") {
-        handleModeChange("docked");
-      } else if (finalSnap === "bottom") {
-        handleModeChange("drawer");
-      }
-      setSnapPreview(null);
-      snapPreviewRef.current = null;
     };
 
     document.addEventListener("mousemove", doDrag);
@@ -295,8 +227,8 @@ export const DragResizeWrapper = ({
       transition={isInteracting ? { duration: 0 } : { type: "spring", damping: 26, stiffness: 220 }}
       className={cn(
         "bg-background z-100 flex flex-col overflow-hidden",
-        currentMode === "floating" && "border-border/50 fixed rounded-2xl border shadow-2xl left-1/2 top-1/2",
-        currentMode === "docked" && "border-border/50 h-full border-r relative",
+        currentMode === "floating" &&
+          "border-border/50 fixed top-1/2 left-1/2 rounded-2xl border shadow-2xl",
         currentMode === "drawer" &&
           "border-border fixed right-0 bottom-0 left-0 rounded-t-2xl border-t shadow-[0_-10px_40px_rgba(0,0,0,0.1)]"
       )}
@@ -305,35 +237,15 @@ export const DragResizeWrapper = ({
       <div
         onMouseDown={currentMode === "floating" ? handleDragStart : undefined}
         className={cn(
-          "bg-muted border-border flex h-10 items-center justify-between border-b px-4 select-none",
+          "bg-muted border-border flex h-10 items-center justify-end border-b px-4 select-none",
           currentMode === "floating"
             ? "hover:bg-muted-foreground/15 cursor-grab transition-colors active:cursor-grabbing"
             : ""
         )}
       >
-        {!isMobile && (
-          <div className="flex gap-2">
-            {/* Docking buttons */}
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button
-                  size="sm"
-                  variant="ghost"
-                  onClick={() => handleModeChange(mode === "floating" ? "docked" : "floating")}
-                >
-                  {mode === "floating" ? <PanelLeft className="size-4" /> : <Maximize2 className="size-4" />}
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent>
-                <p>{mode === "floating" ? "Dock to sidebar" : "Float window"}</p>
-              </TooltipContent>
-            </Tooltip>
-          </div>
-        )}
-
         {onClose && (
           <Button size="sm" variant="ghost" onClick={onClose}>
-            <X className="size-4" />
+            <XIcon className="size-4" />
           </Button>
         )}
       </div>
@@ -341,41 +253,26 @@ export const DragResizeWrapper = ({
       <div className="flex-1 overflow-y-auto">{children}</div>
 
       {/* Resize Handles */}
-      {(currentMode === "floating" || currentMode === "docked") && (
+      {currentMode === "floating" && (
         <div
           onMouseDown={handleRightResizeStart}
-          className="hover:bg-primary/25 absolute top-0 right-0 bottom-0 w-1 cursor-ew-resize transition-colors z-50"
+          className="hover:bg-primary/25 absolute top-0 right-0 bottom-0 z-50 w-1 cursor-ew-resize transition-colors"
         />
       )}
       {currentMode === "floating" && (
         <>
           <div
             onMouseDown={handleBottomResizeStart}
-            className="hover:bg-primary/25 absolute right-0 bottom-0 left-0 h-1 cursor-ns-resize transition-colors z-50"
+            className="hover:bg-primary/25 absolute right-0 bottom-0 left-0 z-50 h-1 cursor-ns-resize transition-colors"
           />
           <div
             onMouseDown={handleCornerResizeStart}
-            className="hover:bg-primary/25 absolute right-0 bottom-0 h-3 w-3 cursor-nwse-resize transition-colors z-50"
+            className="hover:bg-primary/25 absolute right-0 bottom-0 z-50 h-3 w-3 cursor-nwse-resize transition-colors"
           />
         </>
       )}
-
-      {/* Snapping Zone Previews */}
-      {snapPreview && (
-        <div
-          className={cn(
-            "fixed bg-primary/10 border-primary/30 z-[9999] pointer-events-none animate-pulse",
-            snapPreview === "left" && "inset-y-0 left-0 w-96 border-r-2",
-            snapPreview === "bottom" && "bottom-0 inset-x-0 h-[30vh] border-t-2"
-          )}
-        />
-      )}
     </motion.div>
   );
-
-  if (currentMode === "docked" && portalTarget) {
-    return createPortal(content, portalTarget);
-  }
 
   return content;
 };

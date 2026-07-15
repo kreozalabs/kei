@@ -20,8 +20,6 @@ export interface AppLayoutContext {
   isSidebarOpen: boolean;
   toggleSidebar: () => void;
   openActionInput: () => void;
-  setIsDocked: (isDocked: boolean) => void;
-  isDocked: boolean;
   onFabClick?: () => void;
   setOnFabClick: (fn: (() => void) | undefined) => void;
 }
@@ -30,8 +28,7 @@ export function AppLayout({ error }: { error?: unknown }) {
   const { settings } = useSettings();
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [isActionInputOpen, setIsActionInputOpen] = useState(false);
-  const [editorMode, setEditorMode] = useState<"floating" | "docked" | "drawer">("floating");
-  const [isDocked, setIsDocked] = useState(false);
+
   const [isDesktopAddMenuOpen, setIsDesktopAddMenuOpen] = useState(false);
   const [isMobileAddMenuOpen, setIsMobileAddMenuOpen] = useState(false);
 
@@ -85,12 +82,10 @@ export function AppLayout({ error }: { error?: unknown }) {
       isSidebarOpen,
       toggleSidebar,
       openActionInput,
-      setIsDocked,
-      isDocked,
       onFabClick,
       setOnFabClick,
     }),
-    [isSidebarOpen, toggleSidebar, openActionInput, setIsDocked, isDocked, onFabClick]
+    [isSidebarOpen, toggleSidebar, openActionInput, onFabClick]
   );
 
   return (
@@ -122,13 +117,7 @@ export function AppLayout({ error }: { error?: unknown }) {
       {/* Main Workspace below header */}
       <div className="flex flex-1 flex-row overflow-hidden">
         {/* Desktop Sidebar */}
-        <AppSidebar isOpen={isSidebarOpen && !isDocked} />
-
-        {/* Dock Container for Portaled components */}
-        <div
-          id="dock-container"
-          className="z-20 h-full shrink-0"
-        />
+        <AppSidebar isOpen={isSidebarOpen} />
 
         {/* Main Content Area */}
         <main className="bg-background relative flex min-w-0 flex-1 flex-col overflow-hidden">
@@ -197,27 +186,16 @@ export function AppLayout({ error }: { error?: unknown }) {
           <AnimatePresence>
             {isActionInputOpen && (
               <DragResizeWrapper
-                mode={editorMode}
-                onModeChange={(newMode) => {
-                  setEditorMode(newMode);
-                  setIsDocked(newMode === "docked");
-                }}
                 onClose={() => {
                   setIsActionInputOpen(false);
-                  setIsDocked(false);
-                  setEditorMode("floating");
                 }}
               >
                 <ActionInput
                   onSuccess={() => {
                     setIsActionInputOpen(false);
-                    setIsDocked(false);
-                    setEditorMode("floating");
                   }}
                   onCancel={() => {
                     setIsActionInputOpen(false);
-                    setIsDocked(false);
-                    setEditorMode("floating");
                   }}
                 />
               </DragResizeWrapper>
