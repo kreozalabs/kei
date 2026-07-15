@@ -122,12 +122,7 @@ export const HeaderNewAction = forwardRef<HTMLButtonElement, { onClick?: () => v
   ({ onClick, ...props }, ref) => {
     const context = useOutletContext<AppLayoutContext | null>();
 
-    // If the FAB is explicitly disabled (undefined), hide the header button too
-    if (context && context.onFabClick === undefined && !onClick) {
-      return null;
-    }
-
-    const handleClick = onClick || context?.onFabClick || context?.openActionInput;
+    const handleClick = onClick || context?.openActionInput;
 
     return (
       <Button

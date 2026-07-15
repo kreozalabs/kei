@@ -18,8 +18,6 @@ export interface AppLayoutContext {
   isSidebarOpen: boolean;
   toggleSidebar: () => void;
   openActionInput: () => void;
-  onFabClick?: () => void;
-  setOnFabClick: (fn: (() => void) | undefined) => void;
 }
 
 export function AppLayout({ error }: { error?: unknown }) {
@@ -31,8 +29,6 @@ export function AppLayout({ error }: { error?: unknown }) {
     setIsActionInputOpen(true);
   }, []);
 
-  const defaultFabClick = useCallback(() => openActionInput(), [openActionInput]);
-  const [onFabClick, setOnFabClick] = useState<(() => void) | undefined>(() => defaultFabClick);
   const toggleSidebar = useCallback(() => setIsSidebarOpen((prev) => !prev), []);
 
   // Register keyboard shortcuts for the application.
@@ -45,10 +41,8 @@ export function AppLayout({ error }: { error?: unknown }) {
       isSidebarOpen,
       toggleSidebar,
       openActionInput,
-      onFabClick,
-      setOnFabClick,
     }),
-    [isSidebarOpen, toggleSidebar, openActionInput, onFabClick]
+    [isSidebarOpen, toggleSidebar, openActionInput]
   );
 
   return (
@@ -109,26 +103,20 @@ export function AppLayout({ error }: { error?: unknown }) {
             )}
           </div>
 
-          {/* Floating Action Button (Mobile only) */}
-          {onFabClick === defaultFabClick ? (
-            <Button
-              onClick={openActionInput}
-              className={cn(
-                "bg-primary hover:bg-primary/90 text-primary-foreground group shadow-primary/30 fixed right-6 bottom-24 z-50 flex size-14 items-center justify-center rounded-2xl border-none shadow-2xl transition-all duration-300 active:scale-95 md:hidden"
-              )}
-              aria-label="Add Action"
-            >
-              <PlusIcon className="size-8 transition-transform duration-300 group-hover:rotate-90" />
-            </Button>
-          ) : onFabClick ? (
-            <Button
-              onClick={onFabClick}
-              className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-primary/30 group fixed right-6 bottom-24 z-50 flex size-14 items-center justify-center rounded-2xl border-none shadow-2xl transition-all active:scale-95 md:hidden"
-              aria-label="Add Action"
-            >
-              <PlusIcon className="size-8 transition-transform duration-300 group-hover:rotate-90" />
-            </Button>
-          ) : null}
+          {/* Portal target container for mobile FAB */}
+          <div id="mobile-fab-content" />
+
+          {/* Default Floating Action Button (Mobile only) */}
+          <Button
+            onClick={openActionInput}
+            className={cn(
+              "bg-primary hover:bg-primary/90 text-primary-foreground group shadow-primary/30 fixed right-6 bottom-24 z-50 flex size-14 items-center justify-center rounded-2xl border-none shadow-2xl transition-all duration-300 active:scale-95 md:hidden",
+              "[#mobile-fab-content:not(:empty)~&]:hidden"
+            )}
+            aria-label="Add Action"
+          >
+            <PlusIcon className="size-8 transition-transform duration-300 group-hover:rotate-90" />
+          </Button>
 
           {/* Mobile Bottom Navigation */}
           <MobileNav />
