@@ -21,6 +21,7 @@ import { STORAGE_KEYS } from "@kreozalabs/kei-core";
 import { registerPWA } from "./utils/pwa";
 import { SyncListener } from "./components/SyncListener";
 import { ActionInputModalProvider } from "./providers/ActionInputModalContext";
+import { useAppShortcuts } from "./hooks/useAppShortcuts";
 
 export function Layout({ children }: { children: React.ReactNode }) {
   useEffect(() => {
@@ -66,6 +67,12 @@ export function Layout({ children }: { children: React.ReactNode }) {
 }
 
 export default function App() {
+  useAppShortcuts({
+    toggleSidebar: () => {
+      window.dispatchEvent(new CustomEvent("kei:toggle-sidebar"));
+    },
+  });
+
   return (
     <QueryProvider>
       <ActionInputModalProvider>

@@ -1,6 +1,6 @@
-import { useState, useCallback, useMemo } from "react";
+import { useState, useCallback, useMemo, useEffect } from "react";
 import { Outlet, isRouteErrorResponse } from "react-router";
-import { PlusIcon, Loader2Icon } from "lucide-react";
+import { PlusIcon } from "lucide-react";
 import { Button, cn } from "@kreozalabs/kei-ui";
 import { AppSidebar } from "./AppSidebar";
 import { MobileNav } from "./MobileNav";
@@ -9,10 +9,9 @@ import { useActionInputModal } from "@/providers/ActionInputModalContext";
 import { SidebarToggle } from "./SidebarToggle";
 import { FullscreenToggle } from "../FullscreenToggle";
 import { useSettings } from "@/providers/SettingsContext";
-import { useAppShortcuts } from "@/hooks/useAppShortcuts";
 import { MobileFABProvider, useMobileFAB } from "@/components/MobileFAB";
-import { useDb } from "@/providers/DbContext";
 import { HeaderPortalContext } from "./HeaderPortalContext";
+import { DbSyncStatus } from "./DbSyncStatus";
 
 export interface AppLayoutContext {
   isSidebarOpen: boolean;
@@ -33,16 +32,16 @@ function AppLayoutContent({ error }: { error?: unknown }) {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const { openActionInput } = useActionInputModal();
   const { hasCustomFab } = useMobileFAB();
-  const { isDbReady, isWriting } = useDb();
-  const isLoading = !isDbReady || isWriting;
   const [headerPortalRef, setHeaderPortalRef] = useState<HTMLElement | null>(null);
 
   const toggleSidebar = useCallback(() => setIsSidebarOpen((prev) => !prev), []);
 
-  // Register keyboard shortcuts for the application.
-  useAppShortcuts({
-    toggleSidebar,
-  });
+  // Listen to global toggle-sidebar keyboard shortcuts.
+  useEffect(() => {
+    const handleToggle = () => toggleSidebar();
+    window.addEventListener("kei:toggle-sidebar", handleToggle);
+    return () => window.removeEventListener("kei:toggle-sidebar", handleToggle);
+  }, [toggleSidebar]);
 
   const contextValue: AppLayoutContext = useMemo(
     () => ({
@@ -72,13 +71,13 @@ function AppLayoutContent({ error }: { error?: unknown }) {
           <div className="flex items-center gap-4">
             <div
               className={cn(
-                "flex items-center gap-1.5 transition-opacity",
-                settings.subtle_on_idle ? "opacity-0 hover:opacity-100" : "opacity-100"
+                "flex items-center gap-1.5 transition-opacity duration-300",
+                settings.subtle_on_idle ? "opacity-50 hover:opacity-100" : "opacity-100"
               )}
             >
               <FullscreenToggle
                 size="icon"
-                className="hover:bg-muted/80 text-muted-foreground/40 hover:text-foreground size-8 rounded-lg border-none transition-all active:scale-90"
+                className="hover:bg-muted/80 text-muted-foreground hover:text-foreground size-8 rounded-lg border-none transition-all active:scale-90"
               />
             </div>
           </div>
@@ -131,11 +130,7 @@ function AppLayoutContent({ error }: { error?: unknown }) {
             )}
 
             {/* Database Sync Status (Floating bottom-left) */}
-            {isLoading && (
-              <div className="bg-card/85 border-border/40 animate-in fade-in zoom-in-95 absolute bottom-24 left-6 z-50 flex size-14 items-center justify-center rounded-2xl border shadow-xl backdrop-blur-md transition-all duration-300 md:bottom-6">
-                <Loader2Icon className="text-muted-foreground/60 size-6 animate-spin" />
-              </div>
-            )}
+            <DbSyncStatus />
 
             {/* Mobile Bottom Navigation */}
             <MobileNav />
