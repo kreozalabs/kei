@@ -1,12 +1,9 @@
-import { forwardRef, useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { createPortal } from "react-dom";
-import { PlusIcon, SearchIcon, Loader2Icon } from "lucide-react";
-import { Button, cn, useMediaQuery } from "@kreozalabs/kei-ui";
+import { cn, useMediaQuery } from "@kreozalabs/kei-ui";
 import { useSettings } from "@/providers/SettingsContext";
 import { useSubtleOnIdle } from "@/hooks/useSubtleOnIdle";
-import { useDb } from "@/providers/DbContext";
-import { useOutletContext } from "react-router";
-import type { AppLayoutContext } from "./AppLayout";
+import { HeaderTitleArea } from "./HeaderTitleArea";
 
 interface AppHeaderProps {
   title?: string;
@@ -75,68 +72,3 @@ export function AppHeader({ title, subtitle, icon, className, children }: AppHea
   if (!portalTarget) return null;
   return createPortal(headerContent, portalTarget);
 }
-
-interface HeaderTitleAreaProps {
-  title: string;
-  subtitle?: string;
-  icon?: React.ReactNode;
-  className?: string;
-}
-
-export function HeaderTitleArea({ title, subtitle, icon, className }: HeaderTitleAreaProps) {
-  const { isDbReady, isWriting } = useDb();
-  const isLoading = !isDbReady || isWriting;
-
-  return (
-    <div className={cn("flex min-w-0 items-center gap-2.5", className)}>
-      {icon && (
-        <div className="text-primary/80 flex shrink-0 items-center justify-center">{icon}</div>
-      )}
-      <div className="flex min-w-0 flex-col justify-center">
-        <h1 className="flex items-center gap-2 text-base font-bold tracking-tight md:text-lg">
-          <span>{title}</span>
-          {isLoading && (
-            <Loader2Icon
-              className="text-muted-foreground/60 size-3.5 shrink-0 animate-spin"
-              aria-hidden="true"
-            />
-          )}
-        </h1>
-        {subtitle && (
-          <p className="text-muted-foreground/60 mt-0.5 truncate text-xs font-normal">{subtitle}</p>
-        )}
-      </div>
-    </div>
-  );
-}
-
-export function HeaderSearch() {
-  return (
-    <Button variant="ghost" size="icon" className="size-10">
-      <SearchIcon className="size-5" />
-    </Button>
-  );
-}
-
-export const HeaderNewAction = forwardRef<HTMLButtonElement, { onClick?: () => void }>(
-  ({ onClick, ...props }, ref) => {
-    const context = useOutletContext<AppLayoutContext | null>();
-
-    const handleClick = onClick || context?.openActionInput;
-
-    return (
-      <Button
-        ref={ref}
-        variant="default"
-        size="icon"
-        onClick={handleClick}
-        className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-primary/30 hidden h-10 w-20 items-center justify-center rounded-xl border-none shadow-lg transition-all active:scale-95 md:flex"
-        {...props}
-      >
-        <PlusIcon className="size-5" />
-      </Button>
-    );
-  }
-);
-
-HeaderNewAction.displayName = "HeaderNewAction";
