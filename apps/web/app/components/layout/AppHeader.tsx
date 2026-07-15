@@ -13,7 +13,13 @@ interface AppHeaderProps {
   children?: React.ReactNode;
 }
 
-export function AppHeader({ title, subtitle, icon, className, children }: AppHeaderProps) {
+export function AppHeader({
+  title,
+  subtitle,
+  icon,
+  className,
+  children,
+}: AppHeaderProps) {
   const { settings } = useSettings();
   const { isSubtle, show, hide } = useSubtleOnIdle({
     initialDelay: 3000,
@@ -51,7 +57,11 @@ export function AppHeader({ title, subtitle, icon, className, children }: AppHea
       {children ? (
         children
       ) : (
-        <HeaderTitleArea title={title || ""} subtitle={subtitle} icon={icon} />
+        <HeaderTitleArea
+          title={title || ""}
+          subtitle={subtitle}
+          icon={icon}
+        />
       )}
     </div>
   );

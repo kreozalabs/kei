@@ -1,6 +1,6 @@
 import { useState, useCallback, useMemo } from "react";
 import { Outlet, isRouteErrorResponse } from "react-router";
-import { PlusIcon } from "lucide-react";
+import { PlusIcon, Loader2Icon } from "lucide-react";
 import { Button, cn } from "@kreozalabs/kei-ui";
 import { AppSidebar } from "./AppSidebar";
 import { MobileNav } from "./MobileNav";
@@ -11,6 +11,7 @@ import { FullscreenToggle } from "../FullscreenToggle";
 import { useSettings } from "@/providers/SettingsContext";
 import { useAppShortcuts } from "@/hooks/useAppShortcuts";
 import { MobileFABProvider, useMobileFAB } from "@/components/MobileFAB";
+import { useDb } from "@/providers/DbContext";
 
 export interface AppLayoutContext {
   isSidebarOpen: boolean;
@@ -31,6 +32,8 @@ function AppLayoutContent({ error }: { error?: unknown }) {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const { openActionInput } = useActionInputModal();
   const { hasCustomFab } = useMobileFAB();
+  const { isDbReady, isWriting } = useDb();
+  const isLoading = !isDbReady || isWriting;
 
   const toggleSidebar = useCallback(() => setIsSidebarOpen((prev) => !prev), []);
 
@@ -118,6 +121,13 @@ function AppLayoutContent({ error }: { error?: unknown }) {
             >
               <PlusIcon className="size-8 transition-transform duration-300 group-hover:rotate-90" />
             </Button>
+          )}
+
+          {/* Database Sync Status (Floating bottom-left) */}
+          {isLoading && (
+            <div className="bg-card/85 border-border/40 animate-in fade-in zoom-in-95 absolute bottom-24 left-6 z-50 flex size-14 items-center justify-center rounded-2xl border shadow-xl backdrop-blur-md transition-all duration-300 md:bottom-6">
+              <Loader2Icon className="text-muted-foreground/60 size-6 animate-spin" />
+            </div>
           )}
 
           {/* Mobile Bottom Navigation */}

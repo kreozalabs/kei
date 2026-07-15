@@ -25,7 +25,6 @@ const DashboardShell = memo(function DashboardShell() {
     selectedDate,
     isDbReady,
   } = useDashboardContext();
-
   const [shouldRenderCalendar, setShouldRenderCalendar] = useState(false);
 
   const { setViewMode } = useDashboardContext();
