@@ -1,9 +1,6 @@
-// FIXME: Refactor !
 import { useState, useCallback, useMemo } from "react";
 import { Outlet, isRouteErrorResponse } from "react-router";
 import { PlusIcon } from "lucide-react";
-import { useKeyboardShortcuts } from "@/hooks/useKeyboardShortcuts";
-import { useFullscreen } from "@/hooks/useFullscreen";
 import { Button, cn } from "@kreozalabs/kei-ui";
 import { AppSidebar } from "./AppSidebar";
 import { MobileNav } from "./MobileNav";
@@ -15,6 +12,7 @@ import { AnimatePresence } from "framer-motion";
 import { SidebarToggle } from "./SidebarToggle";
 import { FullscreenToggle } from "../FullscreenToggle";
 import { useSettings } from "@/providers/SettingsContext";
+import { useAppShortcuts } from "@/hooks/useAppShortcuts";
 
 export interface AppLayoutContext {
   isSidebarOpen: boolean;
@@ -40,42 +38,10 @@ export function AppLayout({ error }: { error?: unknown }) {
   const [onFabClick, setOnFabClick] = useState<(() => void) | undefined>(() => defaultFabClick);
   const toggleSidebar = useCallback(() => setIsSidebarOpen((prev) => !prev), []);
 
-  const { toggleFullscreen } = useFullscreen();
-
-  // TODO: Add keyboard shortcut to open settings dialog/page.
-  const shortcuts = useMemo(
-    () => [
-      {
-        key: "b",
-        ctrlOrMeta: true,
-        handler: toggleSidebar,
-        description: "Toggle Sidebar",
-      },
-      {
-        key: "n",
-        handler: openActionInput,
-        description: "New Action",
-      },
-      {
-        key: "k",
-        ctrlOrMeta: true,
-        handler: () => {
-          console.log("Search shortcut triggered");
-          // TODO: Implement actual search trigger (e.g., focus search input or open command palette)
-        },
-        description: "Search",
-      },
-      {
-        key: "f",
-        alt: true,
-        handler: toggleFullscreen,
-        description: "Toggle Fullscreen",
-      },
-    ],
-    [toggleSidebar, openActionInput, toggleFullscreen]
-  );
-
-  useKeyboardShortcuts(shortcuts);
+  // Register keyboard shortcuts for the application.
+  useAppShortcuts({
+    toggleSidebar,
+  });
 
   const contextValue: AppLayoutContext = useMemo(
     () => ({
