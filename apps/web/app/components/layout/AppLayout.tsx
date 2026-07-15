@@ -10,6 +10,7 @@ import { SidebarToggle } from "./SidebarToggle";
 import { FullscreenToggle } from "../FullscreenToggle";
 import { useSettings } from "@/providers/SettingsContext";
 import { useAppShortcuts } from "@/hooks/useAppShortcuts";
+import { MobileFABProvider, useMobileFAB } from "@/components/MobileFAB";
 
 export interface AppLayoutContext {
   isSidebarOpen: boolean;
@@ -18,9 +19,18 @@ export interface AppLayoutContext {
 }
 
 export function AppLayout({ error }: { error?: unknown }) {
+  return (
+    <MobileFABProvider>
+      <AppLayoutContent error={error} />
+    </MobileFABProvider>
+  );
+}
+
+function AppLayoutContent({ error }: { error?: unknown }) {
   const { settings } = useSettings();
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const { openActionInput } = useActionInputModal();
+  const { hasCustomFab } = useMobileFAB();
 
   const toggleSidebar = useCallback(() => setIsSidebarOpen((prev) => !prev), []);
 
@@ -100,21 +110,18 @@ export function AppLayout({ error }: { error?: unknown }) {
           <div id="mobile-fab-content" />
 
           {/* Default Floating Action Button (Mobile only) */}
-          <Button
-            onClick={openActionInput}
-            className={cn(
-              "bg-primary hover:bg-primary/90 text-primary-foreground group shadow-primary/30 fixed right-6 bottom-24 z-50 flex size-14 items-center justify-center rounded-2xl border-none shadow-2xl transition-all duration-300 active:scale-95 md:hidden",
-              "[#mobile-fab-content:not(:empty)~&]:hidden"
-            )}
-            aria-label="Add Action"
-          >
-            <PlusIcon className="size-8 transition-transform duration-300 group-hover:rotate-90" />
-          </Button>
+          {!hasCustomFab && (
+            <Button
+              onClick={() => openActionInput()}
+              className="bg-primary hover:bg-primary/90 text-primary-foreground group shadow-primary/30 fixed right-6 bottom-24 z-50 flex size-14 items-center justify-center rounded-2xl border-none shadow-2xl transition-all duration-300 active:scale-95 md:hidden"
+              aria-label="Add Action"
+            >
+              <PlusIcon className="size-8 transition-transform duration-300 group-hover:rotate-90" />
+            </Button>
+          )}
 
           {/* Mobile Bottom Navigation */}
           <MobileNav />
-
-
         </main>
       </div>
     </div>

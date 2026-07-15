@@ -1,6 +1,29 @@
 import { createPortal } from "react-dom";
-import { useEffect, useState } from "react";
+import { useEffect, useState, createContext, useContext } from "react";
 import { Button, cn } from "@kreozalabs/kei-ui";
+
+interface MobileFABContextType {
+  hasCustomFab: boolean;
+  setHasCustomFab: (has: boolean) => void;
+}
+
+const MobileFABContext = createContext<MobileFABContextType>({
+  hasCustomFab: false,
+  setHasCustomFab: () => {},
+});
+
+export function MobileFABProvider({ children }: { children: React.ReactNode }) {
+  const [hasCustomFab, setHasCustomFab] = useState(false);
+  return (
+    <MobileFABContext.Provider value={{ hasCustomFab, setHasCustomFab }}>
+      {children}
+    </MobileFABContext.Provider>
+  );
+}
+
+export function useMobileFAB() {
+  return useContext(MobileFABContext);
+}
 
 interface MobileFABProps {
   onClick?: () => void;
@@ -9,8 +32,19 @@ interface MobileFABProps {
   "aria-label"?: string;
 }
 
-export function MobileFAB({ onClick, className, children, "aria-label": ariaLabel }: MobileFABProps) {
+export function MobileFAB({
+  onClick,
+  className,
+  children,
+  "aria-label": ariaLabel,
+}: MobileFABProps) {
   const [portalTarget, setPortalTarget] = useState<HTMLElement | null>(null);
+  const { setHasCustomFab } = useMobileFAB();
+
+  useEffect(() => {
+    setHasCustomFab(true);
+    return () => setHasCustomFab(false);
+  }, [setHasCustomFab]);
 
   useEffect(() => {
     const frameId = requestAnimationFrame(() => {
