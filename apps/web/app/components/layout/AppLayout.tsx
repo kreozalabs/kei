@@ -27,9 +27,6 @@ export function AppLayout({ error }: { error?: unknown }) {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [isActionInputOpen, setIsActionInputOpen] = useState(false);
 
-  const [isDesktopAddMenuOpen, setIsDesktopAddMenuOpen] = useState(false);
-  const [isMobileAddMenuOpen, setIsMobileAddMenuOpen] = useState(false);
-
   const openActionInput = useCallback(() => {
     setIsActionInputOpen(true);
   }, []);
@@ -87,18 +84,6 @@ export function AppLayout({ error }: { error?: unknown }) {
 
         {/* Main Content Area */}
         <main className="bg-background relative flex min-w-0 flex-1 flex-col overflow-hidden">
-          {/* Dimmed Overlay for Add Menu */}
-          {(isDesktopAddMenuOpen || isMobileAddMenuOpen) && (
-            <div
-              className="bg-background/40 animate-in fade-in fixed inset-0 z-40 backdrop-blur-sm transition-all duration-500"
-              aria-hidden="true"
-              onClick={() => {
-                setIsDesktopAddMenuOpen(false);
-                setIsMobileAddMenuOpen(false);
-              }}
-            />
-          )}
-
           {/* Route Area - full height so that routes themselves manage layout, headers, and scroll areas */}
           <div className="flex-1 overflow-hidden">
             {error ? (
