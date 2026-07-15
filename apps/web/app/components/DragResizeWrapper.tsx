@@ -1,4 +1,3 @@
-// FIXME: Refactor !
 import React, { useState, useRef, useEffect } from "react";
 import { createPortal } from "react-dom";
 import { motion } from "framer-motion";
@@ -10,7 +9,7 @@ import {
   TooltipTrigger,
   useMediaQuery,
 } from "@kreozalabs/kei-ui";
-import { Grip, PanelLeft, X } from "lucide-react";
+import { Maximize2, PanelLeft, X } from "lucide-react";
 
 interface DragResizeWrapperProps {
   children: React.ReactNode;
@@ -19,6 +18,39 @@ interface DragResizeWrapperProps {
   onClose?: () => void;
   portalTargetId?: string;
 }
+
+const initialVariants = {
+  floating: { opacity: 0, scale: 0.95 },
+  docked: { opacity: 0, width: 0 },
+  drawer: { opacity: 0, y: "100%" },
+};
+
+const variants = (size: { width: number; height: number }, position: { x: number; y: number }) => ({
+  floating: {
+    opacity: 1,
+    scale: 1,
+    width: size.width,
+    height: size.height,
+    x: position.x,
+    y: position.y,
+  },
+  docked: {
+    opacity: 1,
+    scale: 1,
+    width: size.width,
+    height: "100%",
+    x: 0,
+    y: 0,
+  },
+  drawer: {
+    opacity: 1,
+    scale: 1,
+    width: "100%",
+    height: "85vh",
+    x: 0,
+    y: 0,
+  },
+});
 
 export const DragResizeWrapper = ({
   children,
@@ -40,9 +72,12 @@ export const DragResizeWrapper = ({
   const [portalTarget, setPortalTarget] = useState<HTMLElement | null>(null);
   const wrapperRef = useRef<HTMLDivElement>(null);
 
+  // Snapping logic states
+  const [snapPreview, setSnapPreview] = useState<"left" | "bottom" | null>(null);
+  const snapPreviewRef = useRef<"left" | "bottom" | null>(null);
+
   useEffect(() => {
     if (typeof window !== "undefined" && portalTargetId) {
-      // Defer the state update to avoid synchronous cascading renders
       const frameId = requestAnimationFrame(() => {
         setPortalTarget(document.getElementById(portalTargetId));
       });
@@ -64,7 +99,6 @@ export const DragResizeWrapper = ({
         !wrapperRef.current.contains(e.target as Node) &&
         onClose
       ) {
-        // Prevent closing if clicking inside a toast, dialog, or popover
         const target = e.target as HTMLElement;
         if (
           target.closest('[role="dialog"]') ||
@@ -87,13 +121,12 @@ export const DragResizeWrapper = ({
     };
   }, [mode, onClose]);
 
-  // Mobile layout check
   const isMobile = useMediaQuery("(max-width: 768px)");
   const currentMode = isMobile ? "drawer" : mode;
 
   // Drag handler for Header
   const handleDragStart = (e: React.MouseEvent) => {
-    if (e.button !== 0 || !wrapperRef.current) return; // Only drag on left click
+    if (e.button !== 0 || !wrapperRef.current) return;
     e.preventDefault();
     setIsInteracting(true);
 
@@ -122,12 +155,42 @@ export const DragResizeWrapper = ({
       }
 
       setPosition({ x: startX + validDeltaX, y: startY + validDeltaY });
+
+      // Detect snap zones
+      const currentScreenLeft = startScreenRect.left + validDeltaX;
+      const currentScreenBottom = startScreenRect.top + validDeltaY + size.height;
+
+      if (currentScreenLeft < 100) {
+        if (snapPreviewRef.current !== "left") {
+          snapPreviewRef.current = "left";
+          setSnapPreview("left");
+        }
+      } else if (window.innerHeight - currentScreenBottom < 100) {
+        if (snapPreviewRef.current !== "bottom") {
+          snapPreviewRef.current = "bottom";
+          setSnapPreview("bottom");
+        }
+      } else {
+        if (snapPreviewRef.current !== null) {
+          snapPreviewRef.current = null;
+          setSnapPreview(null);
+        }
+      }
     };
 
     const stopDrag = () => {
       setIsInteracting(false);
       document.removeEventListener("mousemove", doDrag);
       document.removeEventListener("mouseup", stopDrag);
+
+      const finalSnap = snapPreviewRef.current;
+      if (finalSnap === "left") {
+        handleModeChange("docked");
+      } else if (finalSnap === "bottom") {
+        handleModeChange("drawer");
+      }
+      setSnapPreview(null);
+      snapPreviewRef.current = null;
     };
 
     document.addEventListener("mousemove", doDrag);
@@ -221,31 +284,21 @@ export const DragResizeWrapper = ({
     document.addEventListener("mouseup", stopDrag);
   };
 
+  const motionVariants = variants(size, position);
+
   const content = (
     <motion.div
       ref={wrapperRef}
-      initial={isMobile ? { y: "100%" } : { opacity: 0, scale: 0.95 }}
-      animate={isMobile ? { y: 0 } : { opacity: 1, scale: 1 }}
-      exit={isMobile ? { y: "100%" } : { opacity: 0, scale: 0.95 }}
-      transition={isInteracting ? { duration: 0 } : { type: "spring", damping: 25, stiffness: 300 }}
-      style={{
-        width: currentMode === "floating" ? size.width : "100%",
-        height: currentMode === "floating" ? size.height : "100%",
-        ...(currentMode === "floating"
-          ? {
-              left: "50%",
-              top: "50%",
-              x: position.x,
-              y: position.y,
-            }
-          : {}),
-      }}
+      initial={initialVariants[currentMode]}
+      animate={motionVariants[currentMode]}
+      exit={initialVariants[currentMode]}
+      transition={isInteracting ? { duration: 0 } : { type: "spring", damping: 26, stiffness: 220 }}
       className={cn(
         "bg-background z-100 flex flex-col overflow-hidden",
-        currentMode === "floating" && "border-border/50 fixed rounded-2xl border shadow-2xl",
-        currentMode === "docked" && "border-border h-full w-full rounded-none border-l",
+        currentMode === "floating" && "border-border/50 fixed rounded-2xl border shadow-2xl left-1/2 top-1/2",
+        currentMode === "docked" && "border-border/50 h-full border-r relative",
         currentMode === "drawer" &&
-          "border-border fixed right-0 bottom-0 left-0 h-[85vh] rounded-t-2xl border-t shadow-[0_-10px_40px_rgba(0,0,0,0.1)]"
+          "border-border fixed right-0 bottom-0 left-0 rounded-t-2xl border-t shadow-[0_-10px_40px_rgba(0,0,0,0.1)]"
       )}
     >
       {/* Header / Drag Handle */}
@@ -268,12 +321,11 @@ export const DragResizeWrapper = ({
                   variant="ghost"
                   onClick={() => handleModeChange(mode === "floating" ? "docked" : "floating")}
                 >
-                  {/* FIXME: Feels kind of off. Maybe switch icons' order */}
-                  {mode === "floating" ? <PanelLeft /> : <Grip />}
+                  {mode === "floating" ? <PanelLeft className="size-4" /> : <Maximize2 className="size-4" />}
                 </Button>
               </TooltipTrigger>
               <TooltipContent>
-                <p>{mode === "floating" ? "Dock to sidebar" : "Float to top of page"}</p>
+                <p>{mode === "floating" ? "Dock to sidebar" : "Float window"}</p>
               </TooltipContent>
             </Tooltip>
           </div>
@@ -281,29 +333,42 @@ export const DragResizeWrapper = ({
 
         {onClose && (
           <Button size="sm" variant="ghost" onClick={onClose}>
-            <X />
+            <X className="size-4" />
           </Button>
         )}
       </div>
 
       <div className="flex-1 overflow-y-auto">{children}</div>
 
-      {/* Resize Handles (Only rendered in floating mode) */}
+      {/* Resize Handles */}
+      {(currentMode === "floating" || currentMode === "docked") && (
+        <div
+          onMouseDown={handleRightResizeStart}
+          className="hover:bg-primary/25 absolute top-0 right-0 bottom-0 w-1 cursor-ew-resize transition-colors z-50"
+        />
+      )}
       {currentMode === "floating" && (
         <>
           <div
-            onMouseDown={handleRightResizeStart}
-            className="hover:bg-primary/25 absolute top-0 right-0 bottom-0 w-1 cursor-ew-resize transition-colors"
-          />
-          <div
             onMouseDown={handleBottomResizeStart}
-            className="hover:bg-primary/25 absolute right-0 bottom-0 left-0 h-1 cursor-ns-resize transition-colors"
+            className="hover:bg-primary/25 absolute right-0 bottom-0 left-0 h-1 cursor-ns-resize transition-colors z-50"
           />
           <div
             onMouseDown={handleCornerResizeStart}
-            className="hover:bg-primary/25 absolute right-0 bottom-0 h-3 w-3 cursor-nwse-resize transition-colors"
+            className="hover:bg-primary/25 absolute right-0 bottom-0 h-3 w-3 cursor-nwse-resize transition-colors z-50"
           />
         </>
+      )}
+
+      {/* Snapping Zone Previews */}
+      {snapPreview && (
+        <div
+          className={cn(
+            "fixed bg-primary/10 border-primary/30 z-[9999] pointer-events-none animate-pulse",
+            snapPreview === "left" && "inset-y-0 left-0 w-96 border-r-2",
+            snapPreview === "bottom" && "bottom-0 inset-x-0 h-[30vh] border-t-2"
+          )}
+        />
       )}
     </motion.div>
   );

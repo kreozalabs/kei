@@ -35,12 +35,12 @@ export function AppLayout({ error }: { error?: unknown }) {
   const [isDesktopAddMenuOpen, setIsDesktopAddMenuOpen] = useState(false);
   const [isMobileAddMenuOpen, setIsMobileAddMenuOpen] = useState(false);
 
-  const defaultFabClick = useCallback(() => setIsMobileAddMenuOpen(true), []);
-  const [onFabClick, setOnFabClick] = useState<(() => void) | undefined>(() => defaultFabClick);
-
   const openActionInput = useCallback(() => {
     setIsActionInputOpen(true);
   }, []);
+
+  const defaultFabClick = useCallback(() => openActionInput(), [openActionInput]);
+  const [onFabClick, setOnFabClick] = useState<(() => void) | undefined>(() => defaultFabClick);
   const toggleSidebar = useCallback(() => setIsSidebarOpen((prev) => !prev), []);
 
   const { toggleFullscreen } = useFullscreen();
@@ -122,12 +122,12 @@ export function AppLayout({ error }: { error?: unknown }) {
       {/* Main Workspace below header */}
       <div className="flex flex-1 flex-row overflow-hidden">
         {/* Desktop Sidebar */}
-        {!isDocked && <AppSidebar isOpen={isSidebarOpen} />}
+        <AppSidebar isOpen={isSidebarOpen && !isDocked} />
 
         {/* Dock Container for Portaled components */}
         <div
           id="dock-container"
-          className="z-20 h-full shrink-0 transition-all duration-300 empty:hidden"
+          className="z-20 h-full shrink-0"
         />
 
         {/* Main Content Area */}
