@@ -1,7 +1,7 @@
 // FIXME: Refactor !
 import { useState, useEffect } from "react";
 import { Link } from "react-router";
-import { Button, cn, toast } from "@kreozalabs/kei-ui";
+import { Button, cn, toast, GitHubIcon } from "@kreozalabs/kei-ui";
 import { useP2P } from "@/providers/P2PProvider";
 import { db } from "@/db";
 import type { BenchmarkResult } from "@/db/webDatabaseAdapter";
@@ -15,7 +15,6 @@ import {
   BellOff,
   Layers,
   Activity,
-  Github as GitHub,
   ShieldCheck,
   ShieldAlert,
 } from "lucide-react";
@@ -367,7 +366,7 @@ export function SystemSettings() {
             className="bg-background hover:bg-muted border-border/50 text-foreground h-9 w-full gap-1.5 rounded-xl px-3 text-xs font-semibold transition-all md:w-auto"
           >
             <Link to="https://github.com/kreozalabs/kei" target="_blank" rel="noopener noreferrer">
-              <GitHub className="size-3.5 shrink-0" />
+              <GitHubIcon className="size-3.5 shrink-0" />
               <span>Source Code</span>
             </Link>
           </Button>
