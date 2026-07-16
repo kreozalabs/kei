@@ -74,7 +74,7 @@ export default function App() {
   useHotkeys("g>s", () => navigate("/app/settings"), { preventDefault: true });
   useHotkeys("g>d", () => navigate("/app/calendar/day"), { preventDefault: true });
   useHotkeys("g>w", () => navigate("/app/calendar/week"), { preventDefault: true });
-  useHotkeys("g>c", () => navigate("/app/calendar/month"), { preventDefault: true });
+  useHotkeys("g>m", () => navigate("/app/calendar/month"), { preventDefault: true });
   useHotkeys("g>y", () => navigate("/app/calendar/year"), { preventDefault: true });
   useHotkeys("g>i", () => navigate("/app/calendar/inbox"), { preventDefault: true });
   useHotkeys("g>t", () => navigate("/app/calendar/day"), { preventDefault: true }); // TODO: Replace with TIMELINE !!!
