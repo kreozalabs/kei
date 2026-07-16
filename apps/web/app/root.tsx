@@ -71,15 +71,15 @@ export default function App() {
   const navigate = useNavigate();
 
   // Navigation shortcuts
-  useHotkeys("g>s>t", () => navigate("/app/settings"), { preventDefault: true });
-  useHotkeys("g>d>t", () => navigate("/app/calendar/day"), { preventDefault: true });
-  useHotkeys("g>w>t", () => navigate("/app/calendar/week"), { preventDefault: true });
-  useHotkeys("g>c>t", () => navigate("/app/calendar/month"), { preventDefault: true });
-  useHotkeys("g>y>t", () => navigate("/app/calendar/year"), { preventDefault: true });
-  useHotkeys("g>i>t", () => navigate("/app/calendar/inbox"), { preventDefault: true });
-  useHotkeys("g>t>t", () => navigate("/app/calendar/day"), { preventDefault: true });
-  useHotkeys("g>a>t", () => navigate("/app/calendar/agenda"), { preventDefault: true });
-  useHotkeys("g>l>t", () => navigate("/app/calendar/lists"), { preventDefault: true });
+  useHotkeys("g>s", () => navigate("/app/settings"), { preventDefault: true });
+  useHotkeys("g>d", () => navigate("/app/calendar/day"), { preventDefault: true });
+  useHotkeys("g>w", () => navigate("/app/calendar/week"), { preventDefault: true });
+  useHotkeys("g>c", () => navigate("/app/calendar/month"), { preventDefault: true });
+  useHotkeys("g>y", () => navigate("/app/calendar/year"), { preventDefault: true });
+  useHotkeys("g>i", () => navigate("/app/calendar/inbox"), { preventDefault: true });
+  useHotkeys("g>t", () => navigate("/app/calendar/day"), { preventDefault: true }); // TODO: Replace with TIMELINE !!!
+  useHotkeys("g>a", () => navigate("/app/calendar/agenda"), { preventDefault: true });
+  useHotkeys("g>l", () => navigate("/app/calendar/lists"), { preventDefault: true });
 
   // Other shortcuts
   useHotkeys("mod+k", () => console.log("Search..."), { preventDefault: true });
