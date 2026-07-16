@@ -11,7 +11,7 @@ import {
   cn,
   DropdownMenuGroup,
   DropdownMenuCheckboxItem,
-  useMediaQuery,
+  useIsMobile,
 } from "@kreozalabs/kei-ui";
 import {
   LayoutGrid,
@@ -35,7 +35,7 @@ export function ViewSwitcher() {
     setIsSelectionModeForced,
     handleClearSelection,
   } = useDashboardContext();
-  const isMobile = useMediaQuery("(max-width: 768px)");
+  const isMobile = useIsMobile();
 
   const currentView = VIEW_MODES[viewMode];
 

@@ -10,8 +10,8 @@ import {
   PopoverTrigger,
   PopoverContent,
   Calendar,
-  useMediaQuery,
   cn,
+  useIsMobile,
 } from "@kreozalabs/kei-ui";
 import { motion, AnimatePresence } from "framer-motion";
 import { ChevronLeftIcon, ChevronRightIcon, ChevronDown, CalendarIcon } from "lucide-react";
@@ -75,7 +75,7 @@ function getDisplayDate(dateObj: Date, viewMode: string, localeCode?: string): s
 
 function TodayButton({ onClick }: { onClick?: () => void }) {
   const api = useIlamyCalendarContext();
-  const isMobile = useMediaQuery("(max-width: 768px)");
+  const isMobile = useIsMobile();
   const { setSelectedDate } = useDashboardContext();
 
   // Get today's day number (e.g., 11)
@@ -143,7 +143,7 @@ function CalendarHeaderControls({ isOpen, setIsOpen }: CalendarHeaderControlsPro
   const api = useIlamyCalendarContext();
   const { settings } = useSettings();
   const { viewMode, selectedDate, setSelectedDate } = useDashboardContext();
-  const isMobile = useMediaQuery("(max-width: 768px)");
+  const isMobile = useIsMobile();
   const [slideDirection, setSlideDirection] = useState<-1 | 1>(1);
 
   const [desktopTarget, setDesktopTarget] = useState<HTMLElement | null>(null);
