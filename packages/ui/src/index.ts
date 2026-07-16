@@ -19,4 +19,5 @@ export * from "./components/table";
 export * from "./components/textarea";
 export * from "./components/tooltip";
 export * from "./hooks/useIsMobile";
+export * from "./hooks/useLocalStorage";
 export * from "./lib/utils";
