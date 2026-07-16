@@ -1,6 +1,6 @@
 // FIXME: Refactor !
 /* eslint-disable react-refresh/only-export-components */
-import React, { createContext, useContext, useState, useEffect, useRef, useCallback } from "react";
+import React, { createContext, use, useState, useEffect, useRef, useCallback } from "react";
 import { Button, toast } from "@kreozalabs/kei-ui";
 import type { Event as DBEvent } from "@kreozalabs/kei-core";
 import { getLocalWatermarks, getEventsSince } from "@/db/sync";
@@ -67,7 +67,7 @@ interface ChallengeResponseMessage {
 const P2PContext = createContext<P2PContextType | undefined>(undefined);
 
 export function useP2P() {
-  const context = useContext(P2PContext);
+  const context = use(P2PContext);
   if (!context) {
     throw new Error("useP2P must be used within a P2PProvider");
   }
@@ -968,7 +968,7 @@ export function P2PProvider({ children }: { children: React.ReactNode }) {
   };
 
   return (
-    <P2PContext.Provider
+    <P2PContext
       value={{
         isPaired: !!pairingCode,
         pairingCode,
@@ -981,6 +981,6 @@ export function P2PProvider({ children }: { children: React.ReactNode }) {
       }}
     >
       {children}
-    </P2PContext.Provider>
+    </P2PContext>
   );
 }

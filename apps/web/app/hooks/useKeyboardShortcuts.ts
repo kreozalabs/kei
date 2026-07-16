@@ -1,9 +1,10 @@
-import { useEffect } from "react";
+import { useMemo } from "react";
+import { useHotkeys } from "react-hotkeys-hook";
 
 interface ShortcutConfig {
   /**
    * The key to trigger the shortcut (e.g., 'b', 'k', 'Enter').
-   * Case-insensitive.
+   * Case-insensitive. Space-separated for sequences.
    */
   key: string;
   /**
@@ -33,48 +34,60 @@ interface ShortcutConfig {
   allowInInputs?: boolean;
 }
 
+function getHotkeyValue(shortcut: ShortcutConfig): string {
+  const parts: string[] = [];
+  if (shortcut.ctrlOrMeta) {
+    parts.push("mod");
+  }
+  if (shortcut.alt) {
+    parts.push("alt");
+  }
+  if (shortcut.shift) {
+    parts.push("shift");
+  }
+
+  const cleanKey = shortcut.key.trim().toLowerCase();
+  if (cleanKey.includes(" ")) {
+    parts.push(cleanKey.split(/\s+/).join(">"));
+  } else {
+    parts.push(cleanKey);
+  }
+  return parts.join("+");
+}
+
 /**
- * A hook to register global keyboard shortcuts.
+ * A hook to register global keyboard shortcuts using react-hotkeys-hook.
  */
 export function useKeyboardShortcuts(shortcuts: ShortcutConfig[]) {
-  useEffect(() => {
-    const handleKeyDown = (event: KeyboardEvent) => {
-      // 1. Check if we should ignore this event (e.g., focused in an input)
+  const hotkeyMap = useMemo(() => {
+    return shortcuts.map((s) => ({
+      hotkey: getHotkeyValue(s),
+      shortcut: s,
+    }));
+  }, [shortcuts]);
+
+  const hotkeysList = useMemo(() => hotkeyMap.map((h) => h.hotkey), [hotkeyMap]);
+
+  useHotkeys(
+    hotkeysList,
+    (event, handler) => {
       const target = event.target as HTMLElement;
       const isInput =
         target?.tagName === "INPUT" || target?.tagName === "TEXTAREA" || target?.isContentEditable;
 
-      for (const shortcut of shortcuts) {
-        if (isInput && !shortcut.allowInInputs) {
-          continue;
+      const matched = hotkeyMap.find((h) => h.hotkey === handler.hotkey);
+      if (matched) {
+        if (isInput && !matched.shortcut.allowInInputs) {
+          return;
         }
-
-        // 2. Match modifiers
-        const matchesCtrlMeta = shortcut.ctrlOrMeta
-          ? event.ctrlKey || event.metaKey
-          : !(event.ctrlKey || event.metaKey);
-
-        const matchesAlt = !!shortcut.alt === event.altKey;
-        const matchesShift = !!shortcut.shift === event.shiftKey;
-
-        // 3. Match key
-        // We check both key and code to be more robust (e.g., 'KeyB' or 'b')
-        const pressedKey = event.key.toLowerCase();
-        const targetKey = shortcut.key.toLowerCase();
-
-        const matchesKey =
-          pressedKey === targetKey || event.code.toLowerCase() === `key${targetKey}`;
-
-        if (matchesCtrlMeta && matchesAlt && matchesShift && matchesKey) {
-          // Found a match!
-          event.preventDefault();
-          shortcut.handler(event);
-          return; // Stop after first match
-        }
+        event.preventDefault();
+        matched.shortcut.handler(event);
       }
-    };
-
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [shortcuts]);
+    },
+    {
+      enableOnFormTags: true,
+      enableOnContentEditable: true,
+    },
+    [hotkeyMap]
+  );
 }

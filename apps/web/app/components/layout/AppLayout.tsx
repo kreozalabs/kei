@@ -12,6 +12,8 @@ import { useSettings } from "@/providers/SettingsContext";
 import { MobileFABProvider, useMobileFAB } from "@/components/MobileFAB";
 import { HeaderPortalContext } from "./HeaderPortalContext";
 import { DbSyncStatus } from "./DbSyncStatus";
+import { useKeyboardShortcuts } from "@/hooks/useKeyboardShortcuts";
+import { useFullscreen } from "@/hooks/useFullscreen";
 
 export interface AppLayoutContext {
   isSidebarOpen: boolean;
@@ -35,13 +37,12 @@ function AppLayoutContent({ error }: { error?: unknown }) {
   const [headerPortalRef, setHeaderPortalRef] = useState<HTMLElement | null>(null);
 
   const toggleSidebar = useCallback(() => setIsSidebarOpen((prev) => !prev), []);
+  const { toggleFullscreen } = useFullscreen();
 
-  // Listen to global toggle-sidebar keyboard shortcuts.
-  useEffect(() => {
-    const handleToggle = () => toggleSidebar();
-    window.addEventListener("kei:toggle-sidebar", handleToggle);
-    return () => window.removeEventListener("kei:toggle-sidebar", handleToggle);
-  }, [toggleSidebar]);
+  useKeyboardShortcuts([
+    { key: "b", ctrlOrMeta: true, handler: toggleSidebar, description: "Toggle Sidebar" },
+    { key: "f", handler: toggleFullscreen, description: "Toggle Fullscreen" },
+  ]);
 
   const contextValue: AppLayoutContext = useMemo(
     () => ({

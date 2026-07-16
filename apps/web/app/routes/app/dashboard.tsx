@@ -12,6 +12,7 @@ import { CalendarView } from "./dashboard/views/CalendarView";
 import { DashboardHeader } from "@/components/dashboard/DashboardHeader";
 import { AppPage } from "@/components/layout/AppPage";
 import { CalendarSkeleton } from "@/components/CalendarSkeleton";
+import { useKeyboardShortcuts } from "@/hooks/useKeyboardShortcuts";
 
 const DashboardShell = memo(function DashboardShell() {
   const {
@@ -28,6 +29,14 @@ const DashboardShell = memo(function DashboardShell() {
   const [shouldRenderCalendar, setShouldRenderCalendar] = useState(false);
 
   const { setViewMode } = useDashboardContext();
+
+  useKeyboardShortcuts([
+    { key: "g>d>t", handler: () => setViewMode("day"), description: "Go to Day View" },
+    { key: "g>w>t", handler: () => setViewMode("week"), description: "Go to Week View" },
+    { key: "g>c>t", handler: () => setViewMode("month"), description: "Go to Calendar" },
+    { key: "g>i>t", handler: () => setViewMode("inbox"), description: "Go to Inbox" },
+    { key: "g>t>t", handler: () => setViewMode("day"), description: "Go to Timeline" },
+  ]);
 
   useEffect(() => {
     document.title = `Kei︱Timeline — ${formatTitleDate(parseDateString(selectedDate))}`; // TODO: Add Weekday

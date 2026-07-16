@@ -6,6 +6,7 @@ import {
   ScrollRestoration,
   isRouteErrorResponse,
   useRouteError,
+  useNavigate,
 } from "react-router";
 
 import { useEffect } from "react";
@@ -21,7 +22,7 @@ import { STORAGE_KEYS } from "@kreozalabs/kei-core";
 import { registerPWA } from "./utils/pwa";
 import { SyncListener } from "./components/SyncListener";
 import { ActionInputModalProvider } from "./providers/ActionInputModalContext";
-import { useAppShortcuts } from "./hooks/useAppShortcuts";
+import { useKeyboardShortcuts } from "./hooks/useKeyboardShortcuts";
 
 export function Layout({ children }: { children: React.ReactNode }) {
   useEffect(() => {
@@ -67,11 +68,21 @@ export function Layout({ children }: { children: React.ReactNode }) {
 }
 
 export default function App() {
-  useAppShortcuts({
-    toggleSidebar: () => {
-      window.dispatchEvent(new CustomEvent("kei:toggle-sidebar"));
+  const navigate = useNavigate();
+
+  useKeyboardShortcuts([
+    {
+      key: "g>s>t",
+      handler: () => navigate("/app/settings"),
+      description: "Go to Settings",
     },
-  });
+    {
+      key: "k",
+      ctrlOrMeta: true,
+      handler: () => console.log("Search..."),
+      description: "Search",
+    },
+  ]);
 
   return (
     <QueryProvider>

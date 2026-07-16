@@ -187,5 +187,5 @@ export function DashboardProvider({ children }: { children: ReactNode }) {
     ]
   );
 
-  return <DashboardContext.Provider value={value}>{children}</DashboardContext.Provider>;
+  return <DashboardContext value={value}>{children}</DashboardContext>;
 }

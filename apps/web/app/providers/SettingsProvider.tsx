@@ -144,8 +144,8 @@ export function SettingsProvider({
   );
 
   return (
-    <SettingsProviderContext.Provider {...props} value={value}>
+    <SettingsProviderContext value={value}>
       {children}
-    </SettingsProviderContext.Provider>
+    </SettingsProviderContext>
   );
 }

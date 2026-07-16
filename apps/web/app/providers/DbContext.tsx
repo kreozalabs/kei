@@ -1,4 +1,4 @@
-import { createContext, useContext } from "react";
+import { createContext, use } from "react";
 
 interface DbContextState {
   isDbReady: boolean;
@@ -13,7 +13,7 @@ export const DbContext = createContext<DbContextState>({
 });
 
 export const useDb = () => {
-  const context = useContext(DbContext);
+  const context = use(DbContext);
   if (context === undefined) {
     throw new Error("useDb must be used within a DbProvider");
   }

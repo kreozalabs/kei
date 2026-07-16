@@ -1,4 +1,4 @@
-import { createContext, useContext } from "react";
+import { createContext, use } from "react";
 import type { Action } from "@kreozalabs/kei-core";
 import type { ViewMode } from "../types";
 import { useActionMutations } from "../hooks/useActionMutations";
@@ -44,7 +44,7 @@ export interface DashboardContextValue {
 export const DashboardContext = createContext<DashboardContextValue | null>(null);
 
 export function useDashboardContext() {
-  const context = useContext(DashboardContext);
+  const context = use(DashboardContext);
   if (!context) {
     throw new Error("useDashboardContext must be used within a DashboardProvider");
   }
