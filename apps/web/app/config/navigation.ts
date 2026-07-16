@@ -23,7 +23,7 @@ export const navGroups: NavGroup[] = [
         id: "days",
         label: "Days",
         icon: CalendarDaysIcon,
-        href: "/app",
+        href: "/app/calendar",
         mobileVisible: true,
         variant: "highlight",
       },

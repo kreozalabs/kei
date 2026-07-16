@@ -1,17 +1,10 @@
-import {
-  type ReactNode,
-  useState,
-  useMemo,
-  useRef,
-  useEffect,
-  useCallback,
-  startTransition,
-} from "react";
+import { type ReactNode, useState, useMemo, useRef, useEffect, useCallback } from "react";
+import { useParams, useNavigate } from "react-router";
 import type { Action } from "@kreozalabs/kei-core";
 import { useSettings } from "@/providers/SettingsContext";
 import { useDb } from "@/providers/DbContext";
 import { useCurrentDay } from "@/hooks/useCurrentDay";
-import { getTodayString, STORAGE_KEYS } from "@kreozalabs/kei-core";
+import { STORAGE_KEYS } from "@kreozalabs/kei-core";
 
 import type { ViewMode } from "../types";
 import { useDashboardQueries } from "../hooks/useDashboardQueries";
@@ -21,51 +14,156 @@ import { DashboardContext, type DashboardContextValue } from "./DashboardContext
 export function DashboardProvider({ children }: { children: ReactNode }) {
   const { settings } = useSettings();
   const { isDbReady, dbError } = useDb();
+  const params = useParams();
+  const navigate = useNavigate();
 
-  const [viewMode, setViewModeState] = useState<ViewMode>("day");
   const todayStr = useCurrentDay();
-  const [selectedDate, setSelectedDateState] = useState(getTodayString);
-  const [startDateStr, setStartDateStr] = useState(getTodayString);
+
+  // Parse splat parameters
+  const splatParts = useMemo(() => {
+    const splat = params["*"] || "";
+    return splat.split("/").filter(Boolean);
+  }, [params]);
+
+  // 1. Derive viewMode
+  const viewMode = useMemo(() => {
+    const urlView = splatParts[0] as ViewMode | undefined;
+    const validViews: ViewMode[] = ["day", "week", "month", "year", "agenda", "inbox", "lists"];
+    if (urlView && validViews.includes(urlView)) {
+      return urlView;
+    }
+
+    if (typeof window !== "undefined") {
+      const stored = localStorage.getItem("kei_dashboard_view_mode") as ViewMode;
+      if (stored && validViews.includes(stored)) {
+        return stored;
+      }
+    }
+    return "day";
+  }, [splatParts]);
+
+  // 2. Derive selectedDate
+  const selectedDate = useMemo(() => {
+    const year = splatParts[1];
+    const month = splatParts[2];
+    const day = splatParts[3];
+
+    if (year && month && day) {
+      const y = year;
+      const m = month.padStart(2, "0");
+      const d = day.padStart(2, "0");
+      const dateStr = `${y}-${m}-${d}`;
+      if (/^\d{4}-\d{2}-\d{2}$/.test(dateStr) && !isNaN(Date.parse(dateStr))) {
+        return dateStr;
+      }
+    }
+
+    if (settings.remember_layout_on_refresh && typeof window !== "undefined") {
+      const storedDate = localStorage.getItem(STORAGE_KEYS.LOCAL.SELECTED_DATE);
+      if (storedDate && /^\d{4}-\d{2}-\d{2}$/.test(storedDate) && !isNaN(Date.parse(storedDate))) {
+        return storedDate;
+      }
+    }
+
+    return todayStr;
+  }, [splatParts, settings.remember_layout_on_refresh, todayStr]);
+
+  const [startDateStr, setStartDateStr] = useState(todayStr);
   const [endDateStr, setEndDateStr] = useState(() => {
-    const d = new Date(getTodayString());
+    const d = new Date(todayStr);
     d.setDate(d.getDate() + 3);
     return d.toISOString().split("T")[0];
   });
 
-  // Restore client-side state on mount to prevent SSR hydration mismatch warnings
+  // Sync query bounds when selectedDate changes
   useEffect(() => {
-    if (typeof window !== "undefined") {
-      const storedViewMode = localStorage.getItem("kei_dashboard_view_mode") as ViewMode;
-      if (storedViewMode) {
-        setViewModeState(storedViewMode);
-      }
+    const isChronological = ["day", "week", "month", "year", "agenda"].includes(viewMode);
+    if (!isChronological) {
+      setStartDateStr(selectedDate);
+      const d = new Date(selectedDate);
+      d.setDate(d.getDate() + 3);
+      setEndDateStr(d.toISOString().split("T")[0]);
+    }
+  }, [selectedDate, viewMode]);
 
-      if (settings.remember_layout_on_refresh) {
-        const storedDate = localStorage.getItem(STORAGE_KEYS.LOCAL.SELECTED_DATE);
-        if (storedDate) {
-          setSelectedDateState(storedDate);
-        }
+  // Redirection / URL sync effect:
+  // Ensure the browser URL matches the active viewMode and selectedDate.
+  useEffect(() => {
+    const isChronological = ["day", "week", "month", "year", "agenda"].includes(viewMode);
+
+    const urlView = splatParts[0];
+    const urlYear = splatParts[1];
+    const urlMonth = splatParts[2];
+    const urlDay = splatParts[3];
+
+    if (isChronological) {
+      const [y, m, d] = selectedDate.split("-");
+      const formattedYear = y;
+      const formattedMonth = String(Number(m));
+      const formattedDay = String(Number(d));
+
+      if (
+        urlView !== viewMode ||
+        urlYear !== formattedYear ||
+        urlMonth !== formattedMonth ||
+        urlDay !== formattedDay
+      ) {
+        navigate(`/app/calendar/${viewMode}/${formattedYear}/${formattedMonth}/${formattedDay}`, {
+          replace: true,
+        });
+      }
+    } else {
+      // Structural views (inbox, lists)
+      if (urlView !== viewMode || urlYear !== undefined) {
+        navigate(`/app/calendar/${viewMode}`, { replace: true });
       }
     }
-  }, [settings.remember_layout_on_refresh]);
+  }, [viewMode, selectedDate, splatParts, navigate]);
 
-  const setViewMode = useCallback((val: ViewMode) => {
-    startTransition(() => {
-      setViewModeState(val);
-    });
-    if (typeof window !== "undefined") {
-      window.localStorage.setItem("kei_dashboard_view_mode", val);
-    }
-  }, []);
+  const setViewMode = useCallback(
+    (val: ViewMode) => {
+      if (typeof window !== "undefined") {
+        window.localStorage.setItem("kei_dashboard_view_mode", val);
+      }
+
+      const [y, m, d] = selectedDate.split("-");
+      const formattedYear = y;
+      const formattedMonth = String(Number(m));
+      const formattedDay = String(Number(d));
+
+      const isChronological = ["day", "week", "month", "year", "agenda"].includes(val);
+      if (isChronological) {
+        navigate(`/app/calendar/${val}/${formattedYear}/${formattedMonth}/${formattedDay}`, {
+          replace: true,
+        });
+      } else {
+        navigate(`/app/calendar/${val}`, { replace: true });
+      }
+    },
+    [selectedDate, navigate]
+  );
 
   const setSelectedDate = useCallback(
     (date: string) => {
-      setSelectedDateState(date);
-      if (settings.remember_layout_on_refresh) {
+      if (settings.remember_layout_on_refresh && typeof window !== "undefined") {
         localStorage.setItem(STORAGE_KEYS.LOCAL.SELECTED_DATE, date);
       }
+
+      const [y, m, d] = date.split("-");
+      const formattedYear = y;
+      const formattedMonth = String(Number(m));
+      const formattedDay = String(Number(d));
+
+      const urlYear = splatParts[1];
+      const urlMonth = splatParts[2];
+      const urlDay = splatParts[3];
+
+      if (urlYear !== formattedYear || urlMonth !== formattedMonth || urlDay !== formattedDay) {
+        const dest = `/app/calendar/${viewMode}/${formattedYear}/${formattedMonth}/${formattedDay}`;
+        navigate(dest, { replace: true });
+      }
     },
-    [settings.remember_layout_on_refresh]
+    [viewMode, splatParts, settings.remember_layout_on_refresh, navigate]
   );
 
   const queries = useDashboardQueries({
