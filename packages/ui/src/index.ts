@@ -1,3 +1,4 @@
+export * from "./components/GitHubIcon";
 export * from "./components/alert";
 export * from "./components/badge";
 export * from "./components/button";
@@ -19,4 +20,3 @@ export * from "./components/textarea";
 export * from "./components/tooltip";
 export * from "./hooks/useMediaQuery";
 export * from "./lib/utils";
-export * from "./components/GitHubIcon";
