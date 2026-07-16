@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
 import { createPortal } from "react-dom";
 import { IlamyCalendar, useIlamyCalendarContext } from "@ilamy/calendar";
 import { recurrencePlugin } from "@ilamy/calendar/plugins/recurrence";
@@ -76,6 +76,7 @@ function getDisplayDate(dateObj: Date, viewMode: string, localeCode?: string): s
 function TodayButton({ onClick }: { onClick?: () => void }) {
   const api = useIlamyCalendarContext();
   const isMobile = useMediaQuery("(max-width: 768px)");
+  const { setSelectedDate } = useDashboardContext();
 
   // Get today's day number (e.g., 11)
   const todayElement = new Date().getDate();
@@ -87,6 +88,11 @@ function TodayButton({ onClick }: { onClick?: () => void }) {
       className={cn("", isMobile ? "" : "rounded-3xl p-5 text-sm font-medium")}
       onClick={() => {
         api.today();
+        const d = new Date();
+        const y = d.getFullYear();
+        const m = String(d.getMonth() + 1).padStart(2, "0");
+        const day = String(d.getDate()).padStart(2, "0");
+        setSelectedDate(`${y}-${m}-${day}`);
         if (onClick) onClick();
       }}
     >
@@ -136,7 +142,7 @@ interface CalendarHeaderControlsProps {
 function CalendarHeaderControls({ isOpen, setIsOpen }: CalendarHeaderControlsProps) {
   const api = useIlamyCalendarContext();
   const { settings } = useSettings();
-  const { viewMode } = useDashboardContext();
+  const { viewMode, selectedDate, setSelectedDate } = useDashboardContext();
   const isMobile = useMediaQuery("(max-width: 768px)");
   const [slideDirection, setSlideDirection] = useState<-1 | 1>(1);
 
@@ -145,11 +151,32 @@ function CalendarHeaderControls({ isOpen, setIsOpen }: CalendarHeaderControlsPro
   const [mobileTodayTarget, setMobileTodayTarget] = useState<HTMLElement | null>(null);
   const [mobileDropdownTarget, setMobileDropdownTarget] = useState<HTMLElement | null>(null);
 
+  const lastSelectedDateRef = useRef("");
+
   useEffect(() => {
     if (api.view !== viewMode) {
       api.setView(viewMode as string);
     }
   }, [viewMode, api]);
+
+  useEffect(() => {
+    if (lastSelectedDateRef.current !== selectedDate) {
+      lastSelectedDateRef.current = selectedDate;
+
+      const formatted = api.currentDate.format("YYYY-MM-DD");
+      if (formatted !== selectedDate) {
+        const parts = selectedDate.split("-").map(Number);
+        if (parts.length === 3 && !isNaN(parts[0]) && !isNaN(parts[1]) && !isNaN(parts[2])) {
+          api.setCurrentDate(
+            api.currentDate
+              .year(parts[0])
+              .month(parts[1] - 1)
+              .date(parts[2])
+          );
+        }
+      }
+    }
+  }, [selectedDate, api]);
 
   useEffect(() => {
     const dt = document.getElementById("calendar-desktop-controls-target");
@@ -170,23 +197,29 @@ function CalendarHeaderControls({ isOpen, setIsOpen }: CalendarHeaderControlsPro
   const currentDateMs = api.currentDate.valueOf();
   const [visibleMonth, setVisibleMonth] = useState<Date>(selectedDateObj);
 
+  const lastCurrentDateMsRef = useRef(currentDateMs);
+
   useEffect(() => {
-    const newDate = new Date(currentDateMs);
-    const prevDate = visibleMonth;
+    if (lastCurrentDateMsRef.current !== currentDateMs) {
+      lastCurrentDateMsRef.current = currentDateMs;
 
-    const prevYear = prevDate.getFullYear();
-    const prevMonth = prevDate.getMonth();
-    const newYear = newDate.getFullYear();
-    const newMonth = newDate.getMonth();
+      const newDate = new Date(currentDateMs);
+      const prevDate = visibleMonth;
 
-    if (prevYear !== newYear || prevMonth !== newMonth) {
-      const prevTotalMonths = prevYear * 12 + prevMonth;
-      const newTotalMonths = newYear * 12 + newMonth;
-      const direction = newTotalMonths > prevTotalMonths ? 1 : -1;
-      setSlideDirection(direction);
+      const prevYear = prevDate.getFullYear();
+      const prevMonth = prevDate.getMonth();
+      const newYear = newDate.getFullYear();
+      const newMonth = newDate.getMonth();
+
+      if (prevYear !== newYear || prevMonth !== newMonth) {
+        const prevTotalMonths = prevYear * 12 + prevMonth;
+        const newTotalMonths = newYear * 12 + newMonth;
+        const direction = newTotalMonths > prevTotalMonths ? 1 : -1;
+        setSlideDirection(direction);
+      }
+
+      setVisibleMonth(newDate);
     }
-
-    setVisibleMonth(newDate);
   }, [currentDateMs, visibleMonth]);
 
   const displayDate = getDisplayDate(
@@ -197,9 +230,10 @@ function CalendarHeaderControls({ isOpen, setIsOpen }: CalendarHeaderControlsPro
 
   const handleSelect = (date: Date | undefined) => {
     if (date) {
-      api.setCurrentDate(
-        api.currentDate.year(date.getFullYear()).month(date.getMonth()).date(date.getDate())
-      );
+      const y = date.getFullYear();
+      const m = String(date.getMonth() + 1).padStart(2, "0");
+      const d = String(date.getDate()).padStart(2, "0");
+      setSelectedDate(`${y}-${m}-${d}`);
       if (!isMobile) {
         setIsOpen(false);
       }
@@ -208,12 +242,14 @@ function CalendarHeaderControls({ isOpen, setIsOpen }: CalendarHeaderControlsPro
 
   const handlePrev = () => {
     const unit = VIEW_MODE_UNITS[viewMode] || "day";
-    api.setCurrentDate(api.currentDate.subtract(1, unit));
+    const newDate = api.currentDate.subtract(1, unit);
+    setSelectedDate(newDate.format("YYYY-MM-DD"));
   };
 
   const handleNext = () => {
     const unit = VIEW_MODE_UNITS[viewMode] || "day";
-    api.setCurrentDate(api.currentDate.add(1, unit));
+    const newDate = api.currentDate.add(1, unit);
+    setSelectedDate(newDate.format("YYYY-MM-DD"));
   };
 
   const handleSwipePrev = () => {
@@ -393,6 +429,8 @@ function CalendarHeaderControls({ isOpen, setIsOpen }: CalendarHeaderControlsPro
             mode="single"
             selected={selectedDateObj}
             onSelect={handleSelect}
+            month={visibleMonth}
+            onMonthChange={setVisibleMonth}
             lang={localeCode}
             className="[--cell-size:--spacing(10)]"
           />

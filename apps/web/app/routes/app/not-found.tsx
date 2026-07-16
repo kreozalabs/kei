@@ -6,6 +6,9 @@ import { MobileFAB } from "@/components/MobileFAB";
 export default function AppNotFound() {
   useEffect(() => {
     document.title = "Kei - Not Found";
+    if (typeof window !== "undefined") {
+      console.log("[AppNotFound] 404 hit for path:", window.location.pathname);
+    }
   }, []);
 
   return (
