@@ -143,9 +143,5 @@ export function SettingsProvider({
     [settings, updateSetting]
   );
 
-  return (
-    <SettingsProviderContext value={value}>
-      {children}
-    </SettingsProviderContext>
-  );
+  return <SettingsProviderContext value={value}>{children}</SettingsProviderContext>;
 }
