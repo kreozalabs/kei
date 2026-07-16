@@ -22,7 +22,7 @@ import { STORAGE_KEYS } from "@kreozalabs/kei-core";
 import { registerPWA } from "./utils/pwa";
 import { SyncListener } from "./components/SyncListener";
 import { ActionInputModalProvider } from "./providers/ActionInputModalContext";
-import { useKeyboardShortcuts } from "./hooks/useKeyboardShortcuts";
+import { useHotkeys } from "react-hotkeys-hook";
 
 export function Layout({ children }: { children: React.ReactNode }) {
   useEffect(() => {
@@ -70,19 +70,19 @@ export function Layout({ children }: { children: React.ReactNode }) {
 export default function App() {
   const navigate = useNavigate();
 
-  useKeyboardShortcuts([
-    {
-      key: "g>s>t",
-      handler: () => navigate("/app/settings"),
-      description: "Go to Settings",
-    },
-    {
-      key: "k",
-      ctrlOrMeta: true,
-      handler: () => console.log("Search..."),
-      description: "Search",
-    },
-  ]);
+  // Navigation shortcuts
+  useHotkeys("g>s>t", () => navigate("/app/settings"), { preventDefault: true });
+  useHotkeys("g>d>t", () => navigate("/app/calendar/day"), { preventDefault: true });
+  useHotkeys("g>w>t", () => navigate("/app/calendar/week"), { preventDefault: true });
+  useHotkeys("g>c>t", () => navigate("/app/calendar/month"), { preventDefault: true });
+  useHotkeys("g>y>t", () => navigate("/app/calendar/year"), { preventDefault: true });
+  useHotkeys("g>i>t", () => navigate("/app/calendar/inbox"), { preventDefault: true });
+  useHotkeys("g>t>t", () => navigate("/app/calendar/day"), { preventDefault: true });
+  useHotkeys("g>a>t", () => navigate("/app/calendar/agenda"), { preventDefault: true });
+  useHotkeys("g>l>t", () => navigate("/app/calendar/lists"), { preventDefault: true });
+
+  // Other shortcuts
+  useHotkeys("mod+k", () => console.log("Search..."), { preventDefault: true });
 
   return (
     <QueryProvider>

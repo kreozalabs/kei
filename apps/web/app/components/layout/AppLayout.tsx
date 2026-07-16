@@ -1,4 +1,4 @@
-import { useState, useCallback, useMemo, useEffect } from "react";
+import { useState, useCallback, useMemo } from "react";
 import { Outlet, isRouteErrorResponse } from "react-router";
 import { PlusIcon } from "lucide-react";
 import { Button, cn } from "@kreozalabs/kei-ui";
@@ -12,8 +12,8 @@ import { useSettings } from "@/providers/SettingsContext";
 import { MobileFABProvider, useMobileFAB } from "@/components/MobileFAB";
 import { HeaderPortalContext } from "./HeaderPortalContext";
 import { DbSyncStatus } from "./DbSyncStatus";
-import { useKeyboardShortcuts } from "@/hooks/useKeyboardShortcuts";
 import { useFullscreen } from "@/hooks/useFullscreen";
+import { useHotkeys } from "react-hotkeys-hook";
 
 export interface AppLayoutContext {
   isSidebarOpen: boolean;
@@ -39,10 +39,8 @@ function AppLayoutContent({ error }: { error?: unknown }) {
   const toggleSidebar = useCallback(() => setIsSidebarOpen((prev) => !prev), []);
   const { toggleFullscreen } = useFullscreen();
 
-  useKeyboardShortcuts([
-    { key: "b", ctrlOrMeta: true, handler: toggleSidebar, description: "Toggle Sidebar" },
-    { key: "f", handler: toggleFullscreen, description: "Toggle Fullscreen" },
-  ]);
+  useHotkeys("mod+b", toggleSidebar, { preventDefault: true });
+  useHotkeys("f", toggleFullscreen, { preventDefault: true });
 
   const contextValue: AppLayoutContext = useMemo(
     () => ({
