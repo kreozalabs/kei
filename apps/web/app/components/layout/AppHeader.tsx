@@ -1,5 +1,5 @@
 import { createPortal } from "react-dom";
-import { cn, useMediaQuery } from "@kreozalabs/kei-ui";
+import { cn, useIsMobile } from "@kreozalabs/kei-ui";
 import { useHeaderPortalTarget } from "./HeaderPortalContext";
 import { IdleFadeWrapper } from "./IdleFadeWrapper";
 import { HeaderTitleArea } from "./HeaderTitleArea";
@@ -13,7 +13,7 @@ interface AppHeaderProps {
 }
 
 export function AppHeader({ title, subtitle, icon, className, children }: AppHeaderProps) {
-  const isMobile = useMediaQuery("(max-width: 768px)");
+  const isMobile = useIsMobile();
   const portalTarget = useHeaderPortalTarget();
 
   const headerContent = (
