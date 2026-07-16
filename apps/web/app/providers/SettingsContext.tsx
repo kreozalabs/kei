@@ -1,4 +1,4 @@
-import { createContext, useContext } from "react";
+import { createContext, use } from "react";
 import { DEFAULT_SETTINGS } from "@kreozalabs/kei-core";
 import type { Settings } from "@kreozalabs/kei-core";
 
@@ -18,7 +18,7 @@ const initialState: SettingsProviderState = {
 export const SettingsProviderContext = createContext<SettingsProviderState>(initialState);
 
 export const useSettings = () => {
-  const context = useContext(SettingsProviderContext);
+  const context = use(SettingsProviderContext);
   if (context === undefined) throw new Error("useSettings must be used within a SettingsProvider");
   return context;
 };

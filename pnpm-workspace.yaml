@@ -7,6 +7,9 @@ allowBuilds:
   protobufjs: true
   sharp: true
 
+minimumReleaseAgeExclude:
+  - "@kreozalabs/icons"
+
 overrides:
   postcss: "^8.5.10"
   serialize-javascript: "^7.0.5"

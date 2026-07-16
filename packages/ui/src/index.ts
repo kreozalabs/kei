@@ -1,3 +1,4 @@
+export * from "./components/GitHubIcon";
 export * from "./components/alert";
 export * from "./components/badge";
 export * from "./components/button";

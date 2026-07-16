@@ -1,4 +1,4 @@
-import { useState, useCallback, useMemo, useEffect } from "react";
+import { useState, useCallback, useMemo } from "react";
 import { Outlet, isRouteErrorResponse } from "react-router";
 import { PlusIcon } from "lucide-react";
 import { Button, cn } from "@kreozalabs/kei-ui";
@@ -12,6 +12,8 @@ import { useSettings } from "@/providers/SettingsContext";
 import { MobileFABProvider, useMobileFAB } from "@/components/MobileFAB";
 import { HeaderPortalContext } from "./HeaderPortalContext";
 import { DbSyncStatus } from "./DbSyncStatus";
+import { useFullscreen } from "@/hooks/useFullscreen";
+import { useHotkeys } from "react-hotkeys-hook";
 
 export interface AppLayoutContext {
   isSidebarOpen: boolean;
@@ -35,13 +37,10 @@ function AppLayoutContent({ error }: { error?: unknown }) {
   const [headerPortalRef, setHeaderPortalRef] = useState<HTMLElement | null>(null);
 
   const toggleSidebar = useCallback(() => setIsSidebarOpen((prev) => !prev), []);
+  const { toggleFullscreen } = useFullscreen();
 
-  // Listen to global toggle-sidebar keyboard shortcuts.
-  useEffect(() => {
-    const handleToggle = () => toggleSidebar();
-    window.addEventListener("kei:toggle-sidebar", handleToggle);
-    return () => window.removeEventListener("kei:toggle-sidebar", handleToggle);
-  }, [toggleSidebar]);
+  useHotkeys("mod+b", toggleSidebar, { preventDefault: true });
+  useHotkeys("f", toggleFullscreen, { preventDefault: true });
 
   const contextValue: AppLayoutContext = useMemo(
     () => ({

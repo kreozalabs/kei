@@ -37,5 +37,5 @@ export function DbProvider({ children }: { children: React.ReactNode }) {
     [isDbReady, dbError, isWriting]
   );
 
-  return <DbContext.Provider value={value}>{children}</DbContext.Provider>;
+  return <DbContext value={value}>{children}</DbContext>;
 }

@@ -6,6 +6,7 @@ import {
   ScrollRestoration,
   isRouteErrorResponse,
   useRouteError,
+  useNavigate,
 } from "react-router";
 
 import { useEffect } from "react";
@@ -21,7 +22,7 @@ import { STORAGE_KEYS } from "@kreozalabs/kei-core";
 import { registerPWA } from "./utils/pwa";
 import { SyncListener } from "./components/SyncListener";
 import { ActionInputModalProvider } from "./providers/ActionInputModalContext";
-import { useAppShortcuts } from "./hooks/useAppShortcuts";
+import { useHotkeys } from "react-hotkeys-hook";
 
 export function Layout({ children }: { children: React.ReactNode }) {
   useEffect(() => {
@@ -67,11 +68,21 @@ export function Layout({ children }: { children: React.ReactNode }) {
 }
 
 export default function App() {
-  useAppShortcuts({
-    toggleSidebar: () => {
-      window.dispatchEvent(new CustomEvent("kei:toggle-sidebar"));
-    },
-  });
+  const navigate = useNavigate();
+
+  // Navigation shortcuts
+  useHotkeys("g>s", () => navigate("/app/settings"), { preventDefault: true });
+  useHotkeys("g>d", () => navigate("/app/calendar/day"), { preventDefault: true });
+  useHotkeys("g>w", () => navigate("/app/calendar/week"), { preventDefault: true });
+  useHotkeys("g>m", () => navigate("/app/calendar/month"), { preventDefault: true });
+  useHotkeys("g>y", () => navigate("/app/calendar/year"), { preventDefault: true });
+  useHotkeys("g>i", () => navigate("/app/calendar/inbox"), { preventDefault: true });
+  useHotkeys("g>t", () => navigate("/app/calendar/day"), { preventDefault: true }); // TODO: Replace with TIMELINE !!!
+  useHotkeys("g>a", () => navigate("/app/calendar/agenda"), { preventDefault: true });
+  useHotkeys("g>l", () => navigate("/app/calendar/lists"), { preventDefault: true });
+
+  // Other shortcuts
+  useHotkeys("mod+k", () => console.log("Search..."), { preventDefault: true });
 
   return (
     <QueryProvider>

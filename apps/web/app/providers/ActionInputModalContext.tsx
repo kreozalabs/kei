@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useCallback } from "react";
+import React, { createContext, use, useState, useCallback } from "react";
 import { AnimatePresence } from "framer-motion";
 import { DragResizeWrapper } from "@/components/DragResizeWrapper";
 import { ActionInput } from "@/components/action-input";
@@ -26,7 +26,7 @@ export function ActionInputModalProvider({ children }: { children: React.ReactNo
   }, []);
 
   return (
-    <ActionInputModalContext.Provider
+    <ActionInputModalContext
       value={{
         isActionInputOpen,
         openActionInput,
@@ -45,12 +45,12 @@ export function ActionInputModalProvider({ children }: { children: React.ReactNo
           </DragResizeWrapper>
         )}
       </AnimatePresence>
-    </ActionInputModalContext.Provider>
+    </ActionInputModalContext>
   );
 }
 
 export function useActionInputModal() {
-  const context = useContext(ActionInputModalContext);
+  const context = use(ActionInputModalContext);
   if (context === undefined) {
     throw new Error("useActionInputModal must be used within an ActionInputModalProvider");
   }

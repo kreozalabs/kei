@@ -58,8 +58,8 @@ importers:
         specifier: ^2.0.0
         version: 2.0.0(@types/react-dom@19.2.3(@types/react@19.2.14))(@types/react@19.2.14)(dayjs@1.11.21)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(tailwindcss-animate@1.0.7(tailwindcss@4.2.2))(tailwindcss@4.2.2)
       '@kreozalabs/icons':
-        specifier: ^1.0.0
-        version: 1.0.0(react@19.2.4)
+        specifier: ^1.0.1
+        version: 1.0.1(react@19.2.4)
       '@kreozalabs/kei-core':
         specifier: workspace:*
         version: link:../../packages/core
@@ -84,12 +84,9 @@ importers:
       isbot:
         specifier: ^5
         version: 5.1.37
-      lexical:
-        specifier: ^0.46.0
-        version: 0.46.0(typescript@5.9.3)
       lucide-react:
-        specifier: ^0.368.0
-        version: 0.368.0(react@19.2.4)
+        specifier: ^1.24.0
+        version: 1.24.0(react@19.2.4)
       qr-scanner:
         specifier: ^1.4.2
         version: 1.4.2
@@ -102,6 +99,9 @@ importers:
       react-dom:
         specifier: ^19.2.4
         version: 19.2.4(react@19.2.4)
+      react-hotkeys-hook:
+        specifier: ^5.3.3
+        version: 5.3.3(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
       react-router:
         specifier: ^7.17.0
         version: 7.17.0(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
@@ -186,8 +186,8 @@ importers:
         specifier: ^1.1.1
         version: 1.1.1(@types/react-dom@19.2.3(@types/react@19.2.14))(@types/react@19.2.14)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
       lucide-react:
-        specifier: ^0.368.0
-        version: 0.368.0(react@19.2.4)
+        specifier: ^1.24.0
+        version: 1.24.0(react@19.2.4)
       radix-ui:
         specifier: ^1.4.3
         version: 1.4.3(@types/react-dom@19.2.3(@types/react@19.2.14))(@types/react@19.2.14)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
@@ -1148,21 +1148,13 @@ packages:
   '@jridgewell/trace-mapping@0.3.31':
     resolution: {integrity: sha512-zzNR+SdQSDJzc8joaeP8QQoCQr8NuYx2dIIytl1QeBEZHJ9uW6hebsrYgbz8hJwUQao3TWCMtmfV8Nu1twOLAw==}
 
-  '@kreozalabs/icons@1.0.0':
-    resolution: {integrity: sha512-QvoTaCYhJdfgWNBSrI1t/hegbIBE61XHRvbdE7IBoOjkJ1r4828gLyDbmQbd8+RQoB9D6YleLi0xDYFqrFyDFA==}
+  '@kreozalabs/icons@1.0.1':
+    resolution: {integrity: sha512-7hMM6CYzwD4HKWAUUy0aeFNKtlue1X8UMXISrgKQrzD00n/nKdK885Uy4dQH9dEvgV0tc2SLkMmFXNXAIJiMDw==}
     peerDependencies:
       react: ^18.0.0 || ^19.0.0
 
   '@kreozalabs/prettier-config@1.1.0':
     resolution: {integrity: sha512-A9ln4RPAV+EjIWrOOQiHHKNaNuzaA+ykX4geDZsiWK5NRgOfZRvjhq6IQlTa5OWab4qvIv72B9jwpdhV2i/cOg==}
-
-  '@lexical/internal@0.46.0':
-    resolution: {integrity: sha512-OV1ePAAnVVd0K+Bq5SX7vOKE/LqJLYcDM4HD4zVCisbgVaznE+pTj/nDB2uWTidwf8o7QhPR65VhEi+KkUtyEw==}
-    peerDependencies:
-      typescript: '>=5.2'
-    peerDependenciesMeta:
-      typescript:
-        optional: true
 
   '@mjackson/node-fetch-server@0.2.0':
     resolution: {integrity: sha512-EMlH1e30yzmTpGLQjlFmaDAjyOeZhng1/XCd7DExR8PNAnG/G1tyruZxEoUe11ClnwGhGrtsdnyyUx1frSzjng==}
@@ -3928,14 +3920,6 @@ packages:
     resolution: {integrity: sha512-+bT2uH4E5LGE7h/n3evcS/sQlJXCpIp6ym8OWJ5eV6+67Dsql/LaaT7qJBAt2rzfoa/5QBGBhxDix1dMt2kQKQ==}
     engines: {node: '>= 0.8.0'}
 
-  lexical@0.46.0:
-    resolution: {integrity: sha512-oaE7OLY/FuqGKC7ihaqLJvgn/NvvRveryKBBgOwrSe+UIpBmc9IvyXf6hVcvew9M3Vc0XavHWe/ZAL7qc5DzMw==}
-    peerDependencies:
-      typescript: '>=5.2'
-    peerDependenciesMeta:
-      typescript:
-        optional: true
-
   lightningcss-android-arm64@1.32.0:
     resolution: {integrity: sha512-YK7/ClTt4kAK0vo6w3X+Pnm0D2cf2vPHbhOXdoNti1Ga0al1P4TBZhwjATvjNwLEBCnKvjJc2jQgHXH0NEwlAg==}
     engines: {node: '>= 12.0.0'}
@@ -4048,13 +4032,13 @@ packages:
   lru-cache@5.1.1:
     resolution: {integrity: sha512-KpNARQA3Iwv+jTA0utUVVbrh+Jlrr1Fv0e56GGzAFOXN7dk/FviaDW8LHmK52DlcH4WP2n6gI8vN1aesBFgo9w==}
 
-  lucide-react@0.368.0:
-    resolution: {integrity: sha512-soryVrCjheZs8rbXKdINw9B8iPi5OajBJZMJ1HORig89ljcOcEokKKAgGbg3QWxSXel7JwHOfDFUdDHAKyUAMw==}
-    peerDependencies:
-      react: ^16.5.1 || ^17.0.0 || ^18.0.0
-
   lucide-react@0.475.0:
     resolution: {integrity: sha512-NJzvVu1HwFVeZ+Gwq2q00KygM1aBhy/ZrhY9FsAgJtpB+E4R7uxRk9M2iKvHa6/vNxZydIB59htha4c2vvwvVg==}
+    peerDependencies:
+      react: ^16.5.1 || ^17.0.0 || ^18.0.0 || ^19.0.0
+
+  lucide-react@1.24.0:
+    resolution: {integrity: sha512-YT6mBD8lGKkg4nM39enlm94/sfJIiW0YKUT60fBy4YK8tai31ylg1VhGNWxkpSKHo9UagfnZqwIff3HTDQwXeA==}
     peerDependencies:
       react: ^16.5.1 || ^17.0.0 || ^18.0.0 || ^19.0.0
 
@@ -4396,6 +4380,12 @@ packages:
     resolution: {integrity: sha512-AXJdLo8kgMbimY95O2aKQqsz2iWi9jMgKJhRBAxECE4IFxfcazB2LmzloIoibJI3C12IlY20+KFaLv+71bUJeQ==}
     peerDependencies:
       react: ^19.2.4
+
+  react-hotkeys-hook@5.3.3:
+    resolution: {integrity: sha512-aswgyWUnE25hmhzHTfKDmKzsaSE5DJ4LKaU/o6rQSXkDd/1Bh9TfAFQbHkf6fLy11HvlYkp+cDDarGdhmCDhoQ==}
+    peerDependencies:
+      react: '>=16.8.0'
+      react-dom: '>=16.8.0'
 
   react-refresh@0.14.2:
     resolution: {integrity: sha512-jCvmsr+1IUSMUyzOkRcvnVbX3ZYC6g9TDrDbFuFmRDq7PD4yaGbLKNQL6k2jnArV8hjYxh7hVhAZB6s9HDGpZA==}
@@ -6366,16 +6356,11 @@ snapshots:
       '@jridgewell/resolve-uri': 3.1.2
       '@jridgewell/sourcemap-codec': 1.5.5
 
-  '@kreozalabs/icons@1.0.0(react@19.2.4)':
+  '@kreozalabs/icons@1.0.1(react@19.2.4)':
     dependencies:
-      lucide-react: 0.368.0(react@19.2.4)
       react: 19.2.4
 
   '@kreozalabs/prettier-config@1.1.0': {}
-
-  '@lexical/internal@0.46.0(typescript@5.9.3)':
-    optionalDependencies:
-      typescript: 5.9.3
 
   '@mjackson/node-fetch-server@0.2.0': {}
 
@@ -9170,12 +9155,6 @@ snapshots:
       prelude-ls: 1.2.1
       type-check: 0.4.0
 
-  lexical@0.46.0(typescript@5.9.3):
-    dependencies:
-      '@lexical/internal': 0.46.0(typescript@5.9.3)
-    optionalDependencies:
-      typescript: 5.9.3
-
   lightningcss-android-arm64@1.32.0:
     optional: true
 
@@ -9253,11 +9232,11 @@ snapshots:
     dependencies:
       yallist: 3.1.1
 
-  lucide-react@0.368.0(react@19.2.4):
+  lucide-react@0.475.0(react@19.2.4):
     dependencies:
       react: 19.2.4
 
-  lucide-react@0.475.0(react@19.2.4):
+  lucide-react@1.24.0(react@19.2.4):
     dependencies:
       react: 19.2.4
 
@@ -9581,6 +9560,11 @@ snapshots:
     dependencies:
       react: 19.2.4
       scheduler: 0.27.0
+
+  react-hotkeys-hook@5.3.3(react-dom@19.2.4(react@19.2.4))(react@19.2.4):
+    dependencies:
+      react: 19.2.4
+      react-dom: 19.2.4(react@19.2.4)
 
   react-refresh@0.14.2: {}
 
