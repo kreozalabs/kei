@@ -1,5 +1,12 @@
 import { NavLink } from "react-router";
-import { cn, Sheet, SheetContent, useIsMobile } from "@kreozalabs/kei-ui";
+import {
+  cn,
+  Sheet,
+  SheetContent,
+  SheetTitle,
+  SheetDescription,
+  useIsMobile,
+} from "@kreozalabs/kei-ui";
 import { navGroups } from "@/config/navigation";
 import { SettingsIcon } from "lucide-react";
 
@@ -101,7 +108,13 @@ export function AppSidebar({ isOpen = true, onOpenChange }: AppSidebarProps) {
   if (isMobile) {
     return (
       <Sheet open={isOpen} onOpenChange={onOpenChange}>
-        <SheetContent side="left" className="bg-background w-72 p-0" showCloseButton={false}>
+        <SheetContent
+          side="left"
+          className="bg-background w-72 p-0 data-[side=left]:data-open:slide-in-from-left-full data-[side=left]:data-closed:slide-out-to-left-full duration-500 ease-[cubic-bezier(0.32,0.72,0,1)]"
+          showCloseButton={false}
+        >
+          <SheetTitle className="sr-only">Navigation Menu</SheetTitle>
+          <SheetDescription className="sr-only">Main application navigation links</SheetDescription>
           {content}
         </SheetContent>
       </Sheet>

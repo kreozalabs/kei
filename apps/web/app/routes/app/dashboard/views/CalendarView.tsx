@@ -323,7 +323,7 @@ function CalendarHeaderControls({ isOpen, setIsOpen }: CalendarHeaderControlsPro
                   animate={{ height: "auto", opacity: 1 }}
                   exit={{ height: 0, opacity: 0 }}
                   transition={{ duration: 0.2, ease: "easeInOut" }}
-                  className="border-border/40 -mx-6 flex w-[calc(100%+3rem)] justify-center overflow-hidden border-b bg-transparent pt-2 pb-2"
+                  className="border-border/40 -ml-14 -mr-4 flex w-[calc(100%+4.5rem)] justify-center overflow-hidden border-b bg-transparent pt-2 pb-2"
                 >
                   <div className="relative w-full overflow-hidden bg-transparent px-6">
                     <AnimatePresence mode="popLayout" initial={false}>

@@ -35,12 +35,16 @@ export function AppHeader({ title, subtitle, icon, className, children }: AppHea
     return (
       <header
         className={cn(
-          "bg-muted/95 border-border/40 sticky top-0 z-40 flex w-full shrink-0 items-center gap-2 border-b px-4 py-2 backdrop-blur-xl",
+          "bg-muted/95 border-border/40 sticky top-0 z-40 flex w-full shrink-0 items-start gap-2 border-b px-4 pt-2.5 pb-2 backdrop-blur-xl",
           className
         )}
       >
-        {toggleSidebar && <SidebarToggle onClick={toggleSidebar} className="shrink-0" />}
-        <div className="min-w-0 flex-1">{headerContent}</div>
+        {toggleSidebar && (
+          <SidebarToggle onClick={toggleSidebar} className="shrink-0 mt-0.5" />
+        )}
+        <div className="flex-1 min-w-0">
+          {headerContent}
+        </div>
       </header>
     );
   }
