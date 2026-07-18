@@ -1,5 +1,5 @@
 import { PanelLeftIcon } from "lucide-react";
-import { Button, cn, useIsMobile } from "@kreozalabs/kei-ui";
+import { Button, cn } from "@kreozalabs/kei-ui";
 
 interface SidebarToggleProps {
   onClick?: () => void;
@@ -7,8 +7,6 @@ interface SidebarToggleProps {
 }
 
 export function SidebarToggle({ onClick, className }: SidebarToggleProps) {
-  const isMobile = useIsMobile();
-
   return (
     <Button
       variant="ghost"
@@ -19,9 +17,7 @@ export function SidebarToggle({ onClick, className }: SidebarToggleProps) {
         className
       )}
       onClick={(e) => {
-        if (isMobile) {
-          e.currentTarget.blur();
-        }
+        e.currentTarget.blur();
         onClick?.();
       }}
       title="Toggle Sidebar (Ctrl+B)"

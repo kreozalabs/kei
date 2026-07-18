@@ -9,6 +9,7 @@ import {
 } from "@kreozalabs/kei-ui/components/drawer";
 import { navGroups } from "@/config/navigation";
 import { SettingsIcon } from "lucide-react";
+import { useSwipeGesture } from "@/hooks/useSwipeGesture";
 
 interface AppSidebarProps {
   isOpen?: boolean;
@@ -17,6 +18,7 @@ interface AppSidebarProps {
 
 export function AppSidebar({ isOpen = true, onOpenChange }: AppSidebarProps) {
   const isMobile = useIsMobile();
+  const sidebarRef = useRef<HTMLDivElement>(null);
 
   const handleLinkClick = () => {
     if (isMobile) {
@@ -24,35 +26,19 @@ export function AppSidebar({ isOpen = true, onOpenChange }: AppSidebarProps) {
     }
   };
 
-  const touchStartX = useRef(0);
-  const touchStartY = useRef(0);
-
-  const handleTouchStart = (e: React.TouchEvent) => {
-    touchStartX.current = e.touches[0].clientX;
-    touchStartY.current = e.touches[0].clientY;
-  };
-
-  const handleTouchEnd = (e: React.TouchEvent) => {
-    const touchEndX = e.changedTouches[0].clientX;
-    const touchEndY = e.changedTouches[0].clientY;
-
-    const deltaX = touchStartX.current - touchEndX; // positive delta means swiped left
-    const deltaY = Math.abs(touchEndY - touchStartY.current);
-
-    // Close on swipe left (min 80px horizontal shift, max 50px vertical shift)
-    if (deltaX > 80 && deltaY < 50) {
-      onOpenChange?.(false);
-    }
-  };
+  useSwipeGesture({
+    onSwipeLeft: () => onOpenChange?.(false),
+    enabled: isMobile && isOpen,
+    targetRef: sidebarRef,
+  });
 
   const content = (
     <div
+      ref={sidebarRef}
       className={cn(
         "no-scrollbar flex h-full w-full flex-col overflow-y-auto transition-transform duration-500 ease-[cubic-bezier(0.32,0.72,0,1)] md:w-72",
         !isOpen && !isMobile && "-translate-x-12"
       )}
-      onTouchStart={isMobile ? handleTouchStart : undefined}
-      onTouchEnd={isMobile ? handleTouchEnd : undefined}
     >
       <div className="flex flex-1 flex-col gap-2 space-y-2 p-4 pt-6">
         <div className="flex flex-1 flex-col gap-2.5 space-y-6">

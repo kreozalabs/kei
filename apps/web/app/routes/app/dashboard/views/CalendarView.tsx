@@ -31,6 +31,23 @@ const VIEW_MODE_UNITS: Record<string, "day" | "week" | "month" | "year"> = {
   year: "year",
 };
 
+// Tailwind spacing unit offsets to extend the mobile calendar dropdown to full screen width.
+// The AppHeader on mobile has:
+// - Left padding: px-4 (16px, or 4 spacing units)
+// - Sidebar Toggle: size-8 (32px, or 8 spacing units)
+// - Gap: gap-2 (8px, or 2 spacing units)
+// Total left offset = 16px + 32px + 8px = 56px (exactly 14 units = 3.5rem).
+// To pull the dropdown to the screen's left edge, we apply a negative margin of -14 units (-ml-14).
+//
+// - Right padding: px-4 (16px, or 4 spacing units).
+// To pull the dropdown to the screen's right edge, we apply a negative margin of -4 units (-mr-4).
+//
+// - Total width compensation: left offset + right offset = 56px + 16px = 72px (exactly 18 units = 4.5rem).
+// To make it occupy the full screen width, we set the width to 100% + 4.5rem.
+const MOBILE_HEADER_LEFT_OFFSET = "-ml-14";
+const MOBILE_HEADER_RIGHT_OFFSET = "-mr-4";
+const MOBILE_HEADER_FULL_WIDTH = "w-[calc(100%+4.5rem)]";
+
 function getDisplayDate(dateObj: Date, viewMode: string, localeCode?: string): string {
   if (viewMode === "week" || viewMode === "agenda") {
     const startOfWeek = new Date(dateObj);
@@ -211,14 +228,17 @@ function CalendarHeaderControls({ isOpen, setIsOpen }: CalendarHeaderControlsPro
       const newYear = newDate.getFullYear();
       const newMonth = newDate.getMonth();
 
-      if (prevYear !== newYear || prevMonth !== newMonth) {
-        const prevTotalMonths = prevYear * 12 + prevMonth;
-        const newTotalMonths = newYear * 12 + newMonth;
-        const direction = newTotalMonths > prevTotalMonths ? 1 : -1;
-        setSlideDirection(direction);
-      }
+      const prevTotalMonths = prevYear * 12 + prevMonth;
+      const newTotalMonths = newYear * 12 + newMonth;
+      const direction = newTotalMonths > prevTotalMonths ? 1 : -1;
 
-      setVisibleMonth(newDate);
+      // Defer state updates to avoid synchronous cascading render warnings
+      queueMicrotask(() => {
+        if (prevYear !== newYear || prevMonth !== newMonth) {
+          setSlideDirection(direction);
+        }
+        setVisibleMonth(newDate);
+      });
     }
   }, [currentDateMs, visibleMonth]);
 
@@ -323,7 +343,12 @@ function CalendarHeaderControls({ isOpen, setIsOpen }: CalendarHeaderControlsPro
                   animate={{ height: "auto", opacity: 1 }}
                   exit={{ height: 0, opacity: 0 }}
                   transition={{ duration: 0.2, ease: "easeInOut" }}
-                  className="border-border/40 -mr-4 -ml-14 flex w-[calc(100%+4.5rem)] justify-center overflow-hidden border-b bg-transparent pt-2 pb-2"
+                  className={cn(
+                    "border-border/40 flex justify-center overflow-hidden border-b bg-transparent pt-2 pb-2",
+                    MOBILE_HEADER_RIGHT_OFFSET,
+                    MOBILE_HEADER_LEFT_OFFSET,
+                    MOBILE_HEADER_FULL_WIDTH
+                  )}
                 >
                   <div className="relative w-full overflow-hidden bg-transparent px-6">
                     <AnimatePresence mode="popLayout" initial={false}>
