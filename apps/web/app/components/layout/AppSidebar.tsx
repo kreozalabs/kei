@@ -1,12 +1,15 @@
 import { NavLink } from "react-router";
+import { useRef } from "react";
 import {
   cn,
-  Sheet,
-  SheetContent,
-  SheetTitle,
-  SheetDescription,
   useIsMobile,
 } from "@kreozalabs/kei-ui";
+import {
+  Drawer,
+  DrawerContent,
+  DrawerTitle,
+  DrawerDescription,
+} from "@kreozalabs/kei-ui/components/drawer";
 import { navGroups } from "@/config/navigation";
 import { SettingsIcon } from "lucide-react";
 
@@ -24,12 +27,35 @@ export function AppSidebar({ isOpen = true, onOpenChange }: AppSidebarProps) {
     }
   };
 
+  const touchStartX = useRef(0);
+  const touchStartY = useRef(0);
+
+  const handleTouchStart = (e: React.TouchEvent) => {
+    touchStartX.current = e.touches[0].clientX;
+    touchStartY.current = e.touches[0].clientY;
+  };
+
+  const handleTouchEnd = (e: React.TouchEvent) => {
+    const touchEndX = e.changedTouches[0].clientX;
+    const touchEndY = e.changedTouches[0].clientY;
+
+    const deltaX = touchStartX.current - touchEndX; // positive delta means swiped left
+    const deltaY = Math.abs(touchEndY - touchStartY.current);
+
+    // Close on swipe left (min 80px horizontal shift, max 50px vertical shift)
+    if (deltaX > 80 && deltaY < 50) {
+      onOpenChange?.(false);
+    }
+  };
+
   const content = (
     <div
       className={cn(
         "no-scrollbar flex h-full w-72 flex-col overflow-y-auto transition-transform duration-500 ease-[cubic-bezier(0.32,0.72,0,1)]",
         !isOpen && !isMobile && "-translate-x-12"
       )}
+      onTouchStart={isMobile ? handleTouchStart : undefined}
+      onTouchEnd={isMobile ? handleTouchEnd : undefined}
     >
       <div className="flex flex-1 flex-col gap-2 space-y-2 p-4 pt-6">
         <div className="flex flex-1 flex-col gap-2.5 space-y-6">
@@ -107,25 +133,21 @@ export function AppSidebar({ isOpen = true, onOpenChange }: AppSidebarProps) {
 
   if (isMobile) {
     return (
-      <Sheet open={isOpen} onOpenChange={onOpenChange}>
-        <SheetContent
-          side="left"
-          className="bg-background w-72 p-0 data-[side=left]:data-open:slide-in-from-left-full data-[side=left]:data-closed:slide-out-to-left-full duration-500 ease-[cubic-bezier(0.32,0.72,0,1)]"
-          showCloseButton={false}
-        >
-          <SheetTitle className="sr-only">Navigation Menu</SheetTitle>
-          <SheetDescription className="sr-only">Main application navigation links</SheetDescription>
+      <Drawer open={isOpen} onOpenChange={onOpenChange} direction="left">
+        <DrawerContent className="bg-background w-72 p-0 rounded-none border-none">
+          <DrawerTitle className="sr-only">Navigation Menu</DrawerTitle>
+          <DrawerDescription className="sr-only">Main application navigation links</DrawerDescription>
           {content}
-        </SheetContent>
-      </Sheet>
+        </DrawerContent>
+      </Drawer>
     );
   }
 
   return (
     <aside
       className={cn(
-        "group hidden shrink-0 flex-col overflow-hidden transition-[width,opacity] duration-500 ease-[cubic-bezier(0.32,0.72,0,1)] md:flex",
-        isOpen ? "w-72 opacity-100" : "invisible w-0 opacity-0"
+        "group hidden shrink-0 flex-col overflow-hidden transition-all duration-500 ease-[cubic-bezier(0.32,0.72,0,1)] md:flex",
+        isOpen ? "w-72 opacity-100" : "w-0 opacity-0"
       )}
     >
       {content}

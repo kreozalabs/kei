@@ -39,6 +39,48 @@ function AppLayoutContent({ error }: { error?: unknown }) {
       setIsSidebarOpen(false);
     }
   }, [isMobile]);
+
+  // Swipe from edge to open sidebar on mobile
+  useEffect(() => {
+    if (!isMobile) return;
+
+    let touchStartX = 0;
+    let touchStartY = 0;
+
+    const handleTouchStart = (e: TouchEvent) => {
+      // Only track touch start if starting near the left edge and sidebar is closed
+      if (!isSidebarOpen && e.touches[0].clientX < 30) {
+        touchStartX = e.touches[0].clientX;
+        touchStartY = e.touches[0].clientY;
+      }
+    };
+
+    const handleTouchEnd = (e: TouchEvent) => {
+      if (touchStartX === 0) return;
+
+      const touchEndX = e.changedTouches[0].clientX;
+      const touchEndY = e.changedTouches[0].clientY;
+
+      const deltaX = touchEndX - touchStartX;
+      const deltaY = Math.abs(touchEndY - touchStartY);
+
+      // Swipe right to open (min 80px horizontal shift, max 50px vertical shift)
+      if (deltaX > 80 && deltaY < 50) {
+        setIsSidebarOpen(true);
+      }
+
+      touchStartX = 0;
+    };
+
+    window.addEventListener("touchstart", handleTouchStart);
+    window.addEventListener("touchend", handleTouchEnd);
+
+    return () => {
+      window.removeEventListener("touchstart", handleTouchStart);
+      window.removeEventListener("touchend", handleTouchEnd);
+    };
+  }, [isMobile, isSidebarOpen]);
+
   const { openActionInput } = useActionInputModal();
   const { hasCustomFab } = useMobileFAB();
   const [headerPortalRef, setHeaderPortalRef] = useState<HTMLElement | null>(null);
