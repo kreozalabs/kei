@@ -131,7 +131,13 @@ export function AppSidebar({ isOpen = true, onOpenChange }: AppSidebarProps) {
   if (isMobile) {
     return (
       <Drawer open={isOpen} onOpenChange={onOpenChange} direction="left">
-        <DrawerContent className="bg-background rounded-none border-none p-0 data-[vaul-drawer-direction=left]:w-72">
+        <DrawerContent
+          className="bg-background rounded-none border-none p-0 data-[vaul-drawer-direction=left]:w-72"
+          onCloseAutoFocus={(e) => {
+            e.preventDefault();
+            document.getElementById("sidebar-toggle-button")?.focus();
+          }}
+        >
           <DrawerTitle className="sr-only">Navigation Menu</DrawerTitle>
           <DrawerDescription className="sr-only">
             Main application navigation links
