@@ -7,6 +7,7 @@ export * from "./components/card";
 export * from "./components/checkbox";
 export * from "./components/command";
 export * from "./components/dialog";
+export * from "./components/drawer";
 export * from "./components/dropdown-menu";
 export * from "./components/input-group";
 export * from "./components/input";
