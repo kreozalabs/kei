@@ -39,12 +39,8 @@ export function AppHeader({ title, subtitle, icon, className, children }: AppHea
           className
         )}
       >
-        {toggleSidebar && (
-          <SidebarToggle onClick={toggleSidebar} className="shrink-0 mt-0.5" />
-        )}
-        <div className="flex-1 min-w-0">
-          {headerContent}
-        </div>
+        {toggleSidebar && <SidebarToggle onClick={toggleSidebar} className="mt-0.5 shrink-0" />}
+        <div className="min-w-0 flex-1">{headerContent}</div>
       </header>
     );
   }

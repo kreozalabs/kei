@@ -1,9 +1,6 @@
 import { NavLink } from "react-router";
 import { useRef } from "react";
-import {
-  cn,
-  useIsMobile,
-} from "@kreozalabs/kei-ui";
+import { cn, useIsMobile } from "@kreozalabs/kei-ui";
 import {
   Drawer,
   DrawerContent,
@@ -51,7 +48,7 @@ export function AppSidebar({ isOpen = true, onOpenChange }: AppSidebarProps) {
   const content = (
     <div
       className={cn(
-        "no-scrollbar flex h-full w-72 flex-col overflow-y-auto transition-transform duration-500 ease-[cubic-bezier(0.32,0.72,0,1)]",
+        "no-scrollbar flex h-full w-full flex-col overflow-y-auto transition-transform duration-500 ease-[cubic-bezier(0.32,0.72,0,1)] md:w-72",
         !isOpen && !isMobile && "-translate-x-12"
       )}
       onTouchStart={isMobile ? handleTouchStart : undefined}
@@ -134,9 +131,11 @@ export function AppSidebar({ isOpen = true, onOpenChange }: AppSidebarProps) {
   if (isMobile) {
     return (
       <Drawer open={isOpen} onOpenChange={onOpenChange} direction="left">
-        <DrawerContent className="bg-background w-72 p-0 rounded-none border-none">
+        <DrawerContent className="bg-background rounded-none border-none p-0 data-[vaul-drawer-direction=left]:w-72">
           <DrawerTitle className="sr-only">Navigation Menu</DrawerTitle>
-          <DrawerDescription className="sr-only">Main application navigation links</DrawerDescription>
+          <DrawerDescription className="sr-only">
+            Main application navigation links
+          </DrawerDescription>
           {content}
         </DrawerContent>
       </Drawer>
