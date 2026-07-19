@@ -29,7 +29,7 @@ async function run() {
   const svgFiles = fs.readdirSync(ASSETS_DIR).filter((file) => file.endsWith(".svg"));
   const exports = [];
 
-  const configPath = path.join(__dirname, "icon-config.json");
+  const configPath = path.join(__dirname, "../icon-config.json");
   const iconConfig = fs.existsSync(configPath)
     ? JSON.parse(fs.readFileSync(configPath, "utf-8"))
     : {};
@@ -83,6 +83,13 @@ async function run() {
         jsx = jsx.replace(search, replacement.replace);
       }
     }
+
+    // Strip ReactComponent export to avoid namespace clashes when exporting all icons from index.ts
+    jsx = jsx.replace(/export\s+\{\s*\w+\s+as\s+ReactComponent\s*\}\s*;?/g, "");
+
+    // Convert local component declaration to named export if not already exported
+    const componentDeclRegex = new RegExp(`^(\\s*)const\\s+${componentName}\\s*=`, "gm");
+    jsx = jsx.replace(componentDeclRegex, `$1export const ${componentName} =`);
 
     fs.writeFileSync(path.join(OUTPUT_DIR, `${componentName}.tsx`), jsx);
     exports.push(`export * from "./components/${componentName}";`);
