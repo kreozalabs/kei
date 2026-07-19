@@ -6,8 +6,12 @@ import { HeaderTitleArea } from "@/components/layout/HeaderTitleArea";
 import { HeaderSearch } from "@/components/layout/HeaderSearch";
 import { HeaderNewAction } from "@/components/layout/HeaderNewAction";
 import { ViewSwitcher } from "@/routes/app/dashboard/components/ViewSwitcher";
+import { CalendarIcon } from "@kreozalabs/kei-icons";
 
 export const DashboardHeader = () => {
+  // Get today's day number (e.g., 11)
+  const todayElement = new Date().getDate();
+
   return (
     <AppHeader>
       <div className="flex w-full flex-col">
@@ -18,7 +22,10 @@ export const DashboardHeader = () => {
 
           {/* Desktop Left: Title Area & Today, Arrows, Calendar Popover portal target */}
           <div className="hidden items-center gap-2 md:flex">
-            <HeaderTitleArea title="Timeline" />
+            <HeaderTitleArea
+              title="Timeline"
+              icon={<CalendarIcon day={todayElement} className="size-12" />}
+            />
             <div
               id="calendar-desktop-controls-target"
               className="hidden items-center gap-4 md:ml-5 md:flex lg:ml-18"

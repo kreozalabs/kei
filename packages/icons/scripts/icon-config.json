@@ -1,0 +1,38 @@
+{
+  "calendar-icon.svg": {
+    "rawReplacements": [
+      {
+        "search": "<path[^>]+?d=\"M75\\.353[\\s\\S]+?\"[^>]*?\\/>",
+        "replace": "<text x=\"96\" y=\"112\" fill=\"#fff\" fontSize=\"84\" fontWeight=\"800\" fontFamily=\"system-ui, -apple-system, sans-serif\" textAnchor=\"middle\" dominantBaseline=\"middle\">__CALENDAR_DAY__</text>",
+        "isRegex": true
+      }
+    ],
+    "jsxReplacements": [
+      {
+        "search": "(export\\s+)?const CalendarIcon = \\(props: SVGProps<SVGSVGElement>\\) =>",
+        "replace": "export interface CalendarIconProps extends SVGProps<SVGSVGElement> {\n  day?: number | string;\n}\nexport const CalendarIcon = ({ day = 31, ...props }: CalendarIconProps) =>",
+        "isRegex": true
+      },
+      {
+        "search": "{\"__CALENDAR_DAY__\"}",
+        "replace": "{day}",
+        "isRegex": false
+      },
+      {
+        "search": "\"__CALENDAR_DAY__\"",
+        "replace": "{day}",
+        "isRegex": false
+      },
+      {
+        "search": "<text x={96} y={112} fill=\"#fff\">",
+        "replace": "<text x={96} y={112} fill=\"#fff\" fontSize={84} fontWeight={800} fontFamily=\"system-ui, -apple-system, sans-serif\" textAnchor=\"middle\" dominantBaseline=\"middle\">",
+        "isRegex": false
+      },
+      {
+        "search": "export default CalendarIcon;?",
+        "replace": "",
+        "isRegex": true
+      }
+    ]
+  }
+}

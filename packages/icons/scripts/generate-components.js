@@ -11,9 +11,7 @@ const OUTPUT_DIR = path.resolve(__dirname, "../src/components");
 const INDEX_FILE = path.resolve(__dirname, "../src");
 
 function toPascalCase(str) {
-  return str
-    .replace(/(?:^|-)([a-z0-9])/g, (_, g) => g.toUpperCase())
-    .replace(/\.svg$/, "");
+  return str.replace(/(?:^|-)([a-z0-9])/g, (_, g) => g.toUpperCase()).replace(/\.svg$/, "");
 }
 
 async function run() {
@@ -28,11 +26,13 @@ async function run() {
     }
   }
 
-  const svgFiles = fs.readdirSync(ASSETS_DIR).filter(file => file.endsWith(".svg"));
+  const svgFiles = fs.readdirSync(ASSETS_DIR).filter((file) => file.endsWith(".svg"));
   const exports = [];
 
   const configPath = path.join(__dirname, "icon-config.json");
-  const iconConfig = fs.existsSync(configPath) ? JSON.parse(fs.readFileSync(configPath, "utf-8")) : {};
+  const iconConfig = fs.existsSync(configPath)
+    ? JSON.parse(fs.readFileSync(configPath, "utf-8"))
+    : {};
 
   for (const file of svgFiles) {
     const rawSvg = fs.readFileSync(path.join(ASSETS_DIR, file), "utf-8");
@@ -69,15 +69,17 @@ async function run() {
         exportType: "named",
         replaceAttrValues: {
           "#000": "currentColor",
-          "black": "currentColor"
-        }
+          black: "currentColor",
+        },
       },
       { componentName }
     );
 
     if (fileConfig && fileConfig.jsxReplacements) {
       for (const replacement of fileConfig.jsxReplacements) {
-        const search = replacement.isRegex ? new RegExp(replacement.search, "g") : replacement.search;
+        const search = replacement.isRegex
+          ? new RegExp(replacement.search, "g")
+          : replacement.search;
         jsx = jsx.replace(search, replacement.replace);
       }
     }
@@ -90,7 +92,7 @@ async function run() {
   console.log(`Generated ${svgFiles.length} icon components.`);
 }
 
-run().catch(err => {
+run().catch((err) => {
   console.error(err);
   process.exit(1);
 });
