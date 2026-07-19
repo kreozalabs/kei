@@ -15,13 +15,24 @@
       "release-type": "node",
       "component": "@kreozalabs/kei-ui",
       "changelog-path": "CHANGELOG.md"
+    },
+    "packages/icons": {
+      "release-type": "node",
+      "component": "@kreozalabs/kei-icons",
+      "changelog-path": "CHANGELOG.md"
     }
   },
   "plugins": [
     {
       "type": "linked-versions",
       "groupName": "kei-workspace",
-      "components": ["kei", "@kreozalabs/kei-web", "@kreozalabs/kei-ui"]
+      "components": [
+        "kei",
+        "@kreozalabs/kei-web",
+        "@kreozalabs/kei-ui",
+        "@kreozalabs/kei-core",
+        "@kreozalabs/kei-icons"
+      ]
     }
   ]
 }

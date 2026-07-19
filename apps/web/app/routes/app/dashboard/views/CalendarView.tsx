@@ -14,12 +14,13 @@ import {
   useIsMobile,
 } from "@kreozalabs/kei-ui";
 import { motion, AnimatePresence } from "framer-motion";
-import { ChevronLeftIcon, ChevronRightIcon, ChevronDown, CalendarIcon } from "lucide-react";
+import { ChevronLeftIcon, ChevronRightIcon, ChevronDown } from "lucide-react";
 import { useSettings } from "@/providers/SettingsContext";
 import { useDashboardContext } from "../context/DashboardContext";
 import type { ViewMode } from "../types";
 import { useActionInputModal } from "@/providers/ActionInputModalContext";
 import type { Action } from "@kreozalabs/kei-core";
+import { CalendarIcon } from "@kreozalabs/kei-icons";
 
 const VIEW_MODE_UNITS: Record<string, "day" | "week" | "month" | "year"> = {
   day: "day",
@@ -114,21 +115,7 @@ function TodayButton({ onClick }: { onClick?: () => void }) {
       }}
     >
       {isMobile ? (
-        <CalendarIcon className="size-7">
-          <text
-            x="50%"
-            y="68%"
-            dominantBaseline="middle"
-            textAnchor="middle"
-            fontSize="9"
-            fontWeight="italic"
-            fill="currentColor"
-            stroke="none" /* Keeps the number crisp without inheriting the icon's outline stroke */
-            className="font-sans tracking-tighter"
-          >
-            {todayElement}
-          </text>
-        </CalendarIcon>
+        <CalendarIcon className="size-7" day={todayElement} variant="mono" />
       ) : (
         <span>Today</span>
       )}
