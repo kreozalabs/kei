@@ -18,7 +18,7 @@
     "./hooks/*": "./src/hooks/*.ts"
   },
   "publishConfig": {
-    "access": "public"
+    "access": "private"
   },
   "scripts": {
     "build": "tsup",
