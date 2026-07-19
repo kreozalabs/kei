@@ -1,7 +1,7 @@
-import { useState, useCallback, useMemo } from "react";
+import { useState, useCallback, useMemo, useEffect } from "react";
 import { Outlet, isRouteErrorResponse } from "react-router";
 import { PlusIcon } from "lucide-react";
-import { Button, cn } from "@kreozalabs/kei-ui";
+import { Button, cn, useIsMobile } from "@kreozalabs/kei-ui";
 import { AppSidebar } from "./AppSidebar";
 import { MobileNav } from "./MobileNav";
 import { ErrorPage } from "../ErrorPage";
@@ -14,6 +14,7 @@ import { HeaderPortalContext } from "./HeaderPortalContext";
 import { DbSyncStatus } from "./DbSyncStatus";
 import { useFullscreen } from "@/hooks/useFullscreen";
 import { useHotkeys } from "react-hotkeys-hook";
+import { useSwipeGesture, GESTURE_EDGE_THRESHOLD } from "@/hooks/useSwipeGesture";
 
 export interface AppLayoutContext {
   isSidebarOpen: boolean;
@@ -31,7 +32,23 @@ export function AppLayout({ error }: { error?: unknown }) {
 
 function AppLayoutContent({ error }: { error?: unknown }) {
   const { settings } = useSettings();
+  const isMobile = useIsMobile();
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+
+  useEffect(() => {
+    if (isMobile) {
+      queueMicrotask(() => {
+        setIsSidebarOpen(false);
+      });
+    }
+  }, [isMobile]);
+
+  useSwipeGesture({
+    onSwipeRight: () => setIsSidebarOpen(true),
+    edgeThreshold: GESTURE_EDGE_THRESHOLD,
+    enabled: isMobile && !isSidebarOpen,
+  });
+
   const { openActionInput } = useActionInputModal();
   const { hasCustomFab } = useMobileFAB();
   const [headerPortalRef, setHeaderPortalRef] = useState<HTMLElement | null>(null);
@@ -64,7 +81,7 @@ function AppLayoutContent({ error }: { error?: unknown }) {
           <div
             ref={setHeaderPortalRef}
             id="global-header-content"
-            className="flex flex-1 items-center justify-between px-6"
+            className="flex flex-1 items-center justify-between px-4 md:px-6"
           />
 
           <div className="flex items-center gap-4">
@@ -84,8 +101,8 @@ function AppLayoutContent({ error }: { error?: unknown }) {
 
         {/* Main Workspace below header */}
         <div className="flex flex-1 flex-row overflow-hidden">
-          {/* Desktop Sidebar */}
-          <AppSidebar isOpen={isSidebarOpen} />
+          {/* Sidebar */}
+          <AppSidebar isOpen={isSidebarOpen} onOpenChange={setIsSidebarOpen} />
 
           {/* Main Content Area */}
           <main className="bg-background relative flex min-w-0 flex-1 flex-col overflow-hidden">

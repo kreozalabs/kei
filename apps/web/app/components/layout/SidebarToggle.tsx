@@ -11,11 +11,15 @@ export function SidebarToggle({ onClick, className }: SidebarToggleProps) {
     <Button
       variant="ghost"
       size="icon"
+      id="sidebar-toggle-button"
       className={cn(
         "hover:bg-muted/80 text-muted-foreground/40 hover:text-foreground size-8 rounded-lg border-none transition-all active:scale-90",
         className
       )}
-      onClick={onClick}
+      onClick={(e) => {
+        e.currentTarget.blur();
+        onClick?.();
+      }}
       title="Toggle Sidebar (Ctrl+B)"
     >
       <PanelLeftIcon className="size-5" />
