@@ -98,7 +98,7 @@ function TodayButton({ onClick }: { onClick?: () => void }) {
       }}
     >
       {isMobile ? (
-        <CalendarIcon className="size-8" day={todayElement} variant="mono" />
+        <CalendarIcon className="size-7" day={todayElement} variant="mono" />
       ) : (
         <span>Today</span>
       )}
