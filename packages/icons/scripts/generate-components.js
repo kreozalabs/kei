@@ -2,6 +2,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { transform } from "@svgr/core";
+import prettier from "prettier";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -91,11 +92,34 @@ async function run() {
     const componentDeclRegex = new RegExp(`^(\\s*)const\\s+${componentName}\\s*=`, "gm");
     jsx = jsx.replace(componentDeclRegex, `$1export const ${componentName} =`);
 
-    fs.writeFileSync(path.join(OUTPUT_DIR, `${componentName}.tsx`), jsx);
+    const componentPath = path.join(OUTPUT_DIR, `${componentName}.tsx`);
+    try {
+      const prettierConfig = await prettier.resolveConfig(componentPath);
+      jsx = await prettier.format(jsx, {
+        ...prettierConfig,
+        parser: "typescript",
+      });
+    } catch (error) {
+      console.warn(`Prettier failed to format ${componentName}:`, error.message);
+    }
+
+    fs.writeFileSync(componentPath, jsx);
     exports.push(`export * from "./components/${componentName}";`);
   }
 
-  fs.writeFileSync(path.join(INDEX_FILE, "index.ts"), exports.join("\n") + "\n");
+  let indexContent = exports.join("\n") + "\n";
+  const indexPath = path.join(INDEX_FILE, "index.ts");
+  try {
+    const prettierConfig = await prettier.resolveConfig(indexPath);
+    indexContent = await prettier.format(indexContent, {
+      ...prettierConfig,
+      parser: "typescript",
+    });
+  } catch (error) {
+    console.warn("Prettier failed to format index.ts:", error.message);
+  }
+
+  fs.writeFileSync(indexPath, indexContent);
   console.log(`Generated ${svgFiles.length} icon components.`);
 }
 
