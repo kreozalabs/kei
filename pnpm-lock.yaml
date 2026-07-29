@@ -57,9 +57,6 @@ importers:
       '@ilamy/calendar':
         specifier: ^2.0.0
         version: 2.0.0(@types/react-dom@19.2.3(@types/react@19.2.14))(@types/react@19.2.14)(dayjs@1.11.21)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(tailwindcss-animate@1.0.7(tailwindcss@4.2.2))(tailwindcss@4.2.2)
-      '@kreozalabs/icons':
-        specifier: ^1.0.1
-        version: 1.0.1(react@19.2.4)
       '@kreozalabs/kei-core':
         specifier: workspace:*
         version: link:../../packages/core
@@ -69,6 +66,9 @@ importers:
       '@kreozalabs/kei-ui':
         specifier: workspace:*
         version: link:../../packages/ui
+      '@kreozalabs/logos':
+        specifier: ^0.1.0
+        version: 0.1.0(react@19.2.4)
       '@react-router/node':
         specifier: ^7.17.0
         version: 7.17.0(react-router@7.17.0(react-dom@19.2.4(react@19.2.4))(react@19.2.4))(typescript@5.9.3)
@@ -1182,8 +1182,8 @@ packages:
   '@jridgewell/trace-mapping@0.3.31':
     resolution: {integrity: sha512-zzNR+SdQSDJzc8joaeP8QQoCQr8NuYx2dIIytl1QeBEZHJ9uW6hebsrYgbz8hJwUQao3TWCMtmfV8Nu1twOLAw==}
 
-  '@kreozalabs/icons@1.0.1':
-    resolution: {integrity: sha512-7hMM6CYzwD4HKWAUUy0aeFNKtlue1X8UMXISrgKQrzD00n/nKdK885Uy4dQH9dEvgV0tc2SLkMmFXNXAIJiMDw==}
+  '@kreozalabs/logos@0.1.0':
+    resolution: {integrity: sha512-ZsMDvic6BLUCrjvJCvBqkQ9D+LNtuCKRP+E++yaspVHmt6r+2/bpmflu/FPI2dhtCF55/ROE90FqGI0iQace+g==}
     peerDependencies:
       react: ^18.0.0 || ^19.0.0
 
@@ -6576,7 +6576,7 @@ snapshots:
       '@jridgewell/resolve-uri': 3.1.2
       '@jridgewell/sourcemap-codec': 1.5.5
 
-  '@kreozalabs/icons@1.0.1(react@19.2.4)':
+  '@kreozalabs/logos@0.1.0(react@19.2.4)':
     dependencies:
       react: 19.2.4
 

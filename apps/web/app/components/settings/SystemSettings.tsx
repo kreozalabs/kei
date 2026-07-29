@@ -18,7 +18,7 @@ import {
   ShieldCheck,
   ShieldAlert,
 } from "lucide-react";
-import { GitHubIcon } from "@kreozalabs/kei-icons";
+import { GitHub } from "@kreozalabs/logos";
 
 interface DbStats {
   eventsCount: number;
@@ -367,7 +367,7 @@ export function SystemSettings() {
             className="bg-background hover:bg-muted border-border/50 text-foreground h-9 w-full gap-1.5 rounded-xl px-3 text-xs font-semibold transition-all md:w-auto"
           >
             <Link to="https://github.com/kreozalabs/kei" target="_blank" rel="noopener noreferrer">
-              <GitHubIcon className="size-3.5 shrink-0" />
+              <GitHub className="size-3.5 shrink-0" />
               <span>Source Code</span>
             </Link>
           </Button>
