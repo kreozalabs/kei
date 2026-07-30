@@ -34,11 +34,28 @@ export const DEFAULT_CONFIG = {
   INTENTION: INTENTIONS.WANT,
 };
 
+export const DATE_FORMATS = {
+  DDMMYYYY: "ddmmyyyy",
+  MMDDYYYY: "mmddyyyy",
+  YYYYMMDD: "yyyymmdd",
+} as const;
+
+export const DATE_FORMAT_SEPARATORS = {
+  DASH: "-",
+  SLASH: "/",
+  DOT: ".",
+} as const;
+
+export type DateFormatType = (typeof DATE_FORMATS)[keyof typeof DATE_FORMATS];
+export type DateFormatSeparatorType =
+  (typeof DATE_FORMAT_SEPARATORS)[keyof typeof DATE_FORMAT_SEPARATORS];
+
 export const TIME_FORMATS = {
   H12: "12h",
   H24: "24h",
 } as const;
 
+export type TimeFormatType = (typeof TIME_FORMATS)[keyof typeof TIME_FORMATS]; // "12h" | "24h"
 export const TIME = {
   MINUTES_IN_DAY: 1440,
   MINUTES_IN_HOUR: 60,
@@ -134,6 +151,8 @@ export const DEFAULT_SETTINGS = {
   theme: "system" as const,
   accent: "rose" as const,
   today_locked: true,
+  date_format: DATE_FORMATS.DDMMYYYY,
+  date_format_separator: DATE_FORMAT_SEPARATORS.SLASH,
   time_format: TIME_FORMATS.H24,
   timezone: "auto",
   subtle_on_idle: true,
@@ -179,14 +198,6 @@ export const LANGUAGES = {
   // ES: "es",
   // RU: "ru",
 } as const;
-
-export const LANGUAGE_LABELS: Record<string, string> = {
-  [LANGUAGES.AUTO]: "Auto", // TODO: Translate using i18n when installed
-  [LANGUAGES.EN]: "English",
-  // de: "Deutsch",
-  // es: "Español",
-  // ru: "Русский",
-};
 
 import type { Accent } from "./types/settings";
 

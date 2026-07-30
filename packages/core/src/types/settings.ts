@@ -1,15 +1,15 @@
-import { TIME_FORMATS } from "../constants";
+import type { TimeFormatType, DateFormatType, DateFormatSeparatorType } from "../constants";
 
 export type Theme = "dark" | "light" | "system";
 export type Accent = "blue" | "indigo" | "violet" | "emerald" | "rose" | "amber" | "forest";
-export type TimeFormat = (typeof TIME_FORMATS)[keyof typeof TIME_FORMATS];
-
 export interface Settings {
   section_expanded: boolean;
   theme: Theme;
   accent: Accent;
   today_locked: boolean;
-  time_format: TimeFormat;
+  date_format: DateFormatType;
+  date_format_separator: DateFormatSeparatorType;
+  time_format: TimeFormatType;
   timezone: string;
   subtle_on_idle: boolean;
   language: string;
