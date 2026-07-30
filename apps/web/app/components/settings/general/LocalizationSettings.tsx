@@ -13,19 +13,21 @@ import { SettingSelect } from "../SettingSelect";
 // Local UI mapping
 // TODO: Replace with i18n
 const TIME_FORMAT_OPTIONS: { value: TimeFormatType; label: string }[] = [
-  { value: TIME_FORMATS.H12, label: "4:00pm (12-hour)" },
-  { value: TIME_FORMATS.H24, label: "16:00 (24-hour)" },
+  { value: TIME_FORMATS.SYSTEM, label: "System" },
+  { value: TIME_FORMATS.H12, label: "4:00pm" },
+  { value: TIME_FORMATS.H24, label: "16:00" },
 ];
 
 const LANGUAGE_OPTIONS: { value: string; label: string }[] = [
-  { value: LANGUAGES.AUTO, label: "Auto (System)" },
-  { value: LANGUAGES.EN, label: "English (US)" },
+  { value: LANGUAGES.SYSTEM, label: "System" },
+  { value: LANGUAGES.EN, label: "English" },
 ];
 
 const DATE_FORMAT_OPTIONS: { value: DateFormatType; label: string }[] = [
-  { value: DATE_FORMATS.DDMMYYYY, label: "31/12/2000 (DD/MM/YYYY)" },
-  { value: DATE_FORMATS.MMDDYYYY, label: "12/31/2000 (MM/DD/YYYY)" },
-  { value: DATE_FORMATS.YYYYMMDD, label: "2000/12/31 (YYYY/MM/DD)" },
+  { value: DATE_FORMATS.SYSTEM, label: "System" },
+  { value: DATE_FORMATS.DDMMYYYY, label: "31/12/2000" },
+  { value: DATE_FORMATS.MMDDYYYY, label: "12/31/2000" },
+  { value: DATE_FORMATS.YYYYMMDD, label: "2000/12/31" },
 ];
 
 export function LocalizationSettings() {

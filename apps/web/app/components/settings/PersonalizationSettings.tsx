@@ -11,7 +11,7 @@ import {
 } from "@kreozalabs/kei-ui";
 import { useSettings } from "../../providers/SettingsContext";
 import type { Theme } from "@kreozalabs/kei-core";
-import { TIME_FORMATS, ACCENTS, LANGUAGES, LANGUAGE_LABELS } from "@kreozalabs/kei-core";
+import { TIME_FORMATS, ACCENTS, LANGUAGES } from "@kreozalabs/kei-core";
 
 export function PersonalizationSettings() {
   const { settings, updateSetting } = useSettings();
@@ -76,7 +76,7 @@ export function PersonalizationSettings() {
           Time Format
         </h4>
         <div className="bg-muted/40 flex items-center gap-1.5 rounded-xl p-1">
-          {[TIME_FORMATS.H12, TIME_FORMATS.H24].map((f) => (
+          {[TIME_FORMATS.SYSTEM, TIME_FORMATS.H12, TIME_FORMATS.H24].map((f) => (
             <Button
               key={f}
               variant="ghost"
@@ -89,7 +89,13 @@ export function PersonalizationSettings() {
                   : "text-muted-foreground hover:text-foreground hover:bg-muted/80"
               )}
             >
-              <span>{f === TIME_FORMATS.H12 ? "12-hour" : "24-hour"}</span>
+              <span>
+                {f === TIME_FORMATS.SYSTEM
+                  ? "System"
+                  : f === TIME_FORMATS.H12
+                    ? "12-hour"
+                    : "24-hour"}
+              </span>
             </Button>
           ))}
         </div>
@@ -112,7 +118,7 @@ export function PersonalizationSettings() {
             <SelectContent>
               {Object.values(LANGUAGES).map((l) => (
                 <SelectItem key={l} value={l}>
-                  {LANGUAGE_LABELS[l] || l}
+                  {l === LANGUAGES.SYSTEM ? "System" : l === LANGUAGES.EN ? "English" : l}
                 </SelectItem>
               ))}
             </SelectContent>

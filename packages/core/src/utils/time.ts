@@ -1,6 +1,6 @@
 // FIXME: Refactor !
 // FIXME: Avoid hard-coding mins, hrs and others. Use standard format that UI will render according to the selected language and theme.
-import { TIME_FORMATS } from "../constants";
+import { TIME_FORMATS, type TimeFormatType } from "../constants";
 
 export const timeToMinutes = (time24: string): number => {
   if (!time24) return 0;
@@ -15,10 +15,7 @@ export const minutesToTime = (totalMinutes: number): string => {
   return `${h.toString().padStart(2, "0")}:${m.toString().padStart(2, "0")}`;
 };
 
-export const formatTime = (
-  time24: string,
-  format: (typeof TIME_FORMATS)[keyof typeof TIME_FORMATS]
-) => {
+export const formatTime = (time24: string, format: TimeFormatType) => {
   if (!time24) return "";
   if (format === TIME_FORMATS.H24) return time24;
   const [h, m] = time24.split(":");
@@ -66,7 +63,7 @@ export const formatMonthYear = (d: Date) =>
 export const formatTitleDate = (d: Date) =>
   d.toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" });
 
-export const getTimeOptions = (format: (typeof TIME_FORMATS)[keyof typeof TIME_FORMATS]) =>
+export const getTimeOptions = (format: TimeFormatType) =>
   Array.from({ length: 96 }).map((_, i) => {
     const hours = Math.floor(i / 4);
     const minutes = (i % 4) * 15;

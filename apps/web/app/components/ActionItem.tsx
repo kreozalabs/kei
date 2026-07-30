@@ -27,6 +27,7 @@ import {
 import { NextDayBadge } from "./NextDayBadge";
 import { useSettings } from "../providers/SettingsContext";
 import { formatTime, getNextDayString } from "@kreozalabs/kei-core";
+import { getEffectiveTimeFormat } from "../utils/systemLocalization";
 import { useCurrentDay } from "../hooks/useCurrentDay";
 import {
   ACTION_STATUS,
@@ -78,7 +79,7 @@ export function ActionItem({
   isLastActive = false,
 }: ActionItemProps) {
   const { settings } = useSettings();
-  const timeFormat = settings.time_format;
+  const timeFormat = getEffectiveTimeFormat(settings.time_format);
 
   const [isEditingIndex, setIsEditingIndex] = useState(false);
   const [editIndexValue, setEditIndexValue] = useState(String(index || ""));

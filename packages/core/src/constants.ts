@@ -35,6 +35,7 @@ export const DEFAULT_CONFIG = {
 };
 
 export const DATE_FORMATS = {
+  SYSTEM: "system",
   DDMMYYYY: "ddmmyyyy",
   MMDDYYYY: "mmddyyyy",
   YYYYMMDD: "yyyymmdd",
@@ -51,11 +52,12 @@ export type DateFormatSeparatorType =
   (typeof DATE_FORMAT_SEPARATORS)[keyof typeof DATE_FORMAT_SEPARATORS];
 
 export const TIME_FORMATS = {
+  SYSTEM: "system",
   H12: "12h",
   H24: "24h",
 } as const;
 
-export type TimeFormatType = (typeof TIME_FORMATS)[keyof typeof TIME_FORMATS]; // "12h" | "24h"
+export type TimeFormatType = (typeof TIME_FORMATS)[keyof typeof TIME_FORMATS];
 export const TIME = {
   MINUTES_IN_DAY: 1440,
   MINUTES_IN_HOUR: 60,
@@ -143,7 +145,7 @@ export const ALL_TIMEZONES = (
 ).supportedValuesOf?.("timeZone") || ["UTC"];
 
 export const TIMEZONES = {
-  AUTO: "auto",
+  SYSTEM: "system",
 } as const;
 
 export const DEFAULT_SETTINGS = {
@@ -151,12 +153,12 @@ export const DEFAULT_SETTINGS = {
   theme: "system" as const,
   accent: "rose" as const,
   today_locked: true,
-  date_format: DATE_FORMATS.DDMMYYYY,
+  date_format: DATE_FORMATS.SYSTEM,
   date_format_separator: DATE_FORMAT_SEPARATORS.SLASH,
-  time_format: TIME_FORMATS.H24,
-  timezone: "auto",
+  time_format: TIME_FORMATS.SYSTEM,
+  timezone: "system",
   subtle_on_idle: true,
-  language: "auto",
+  language: "system",
   remember_layout_on_refresh: true,
   action_duration_options: DURATION_OPTIONS,
   action_timezone_options: MAJOR_TIMEZONES,
@@ -193,7 +195,7 @@ export const THEMES = {
 } as const;
 
 export const LANGUAGES = {
-  AUTO: "auto",
+  SYSTEM: "system",
   EN: "en",
   // DE: "de",
   // ES: "es",

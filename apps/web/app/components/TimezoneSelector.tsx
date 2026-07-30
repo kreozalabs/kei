@@ -71,8 +71,8 @@ export function TimezoneSelector({
             )}
           >
             <span className="truncate">
-              {value === TIMEZONES.AUTO
-                ? `Auto (${localTimezone.replace(/_/g, " ")})`
+              {value === TIMEZONES.SYSTEM
+                ? `System (${localTimezone.replace(/_/g, " ")})`
                 : value.split("/").pop()?.replace(/_/g, " ") || value}
             </span>
             <ChevronsUpDown className="ml-2 size-4 shrink-0 opacity-50" />
@@ -88,18 +88,18 @@ export function TimezoneSelector({
             {showAuto && (
               <CommandGroup heading="System">
                 <CommandItem
-                  value={TIMEZONES.AUTO}
+                  value={TIMEZONES.SYSTEM}
                   onSelect={() => {
-                    onSelect(TIMEZONES.AUTO);
+                    onSelect(TIMEZONES.SYSTEM);
                     setOpen(false);
                   }}
                 >
                   <Globe className="mr-2 size-4 opacity-50" />
-                  Auto (System Default)
+                  System Default
                   <Check
                     className={cn(
                       "ml-auto size-4",
-                      checkSelected(TIMEZONES.AUTO) ? "opacity-100" : "opacity-0"
+                      checkSelected(TIMEZONES.SYSTEM) ? "opacity-100" : "opacity-0"
                     )}
                   />
                 </CommandItem>
