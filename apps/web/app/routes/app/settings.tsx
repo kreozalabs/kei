@@ -13,7 +13,7 @@ TODO: QUESTIONS
 // 5. Kei︱Settings - {Group}
 
 // const SETTINGS_GROUPS = {
-//   General: ["Language and region", "Time zone", "World clock", "Keyboard shortcuts", "Offline"],
+//   General: ["Language and region", "Keyboard shortcuts", "Offline"],
 //   Calendar: ["View Options"],
 //   Notifications: {
 //     turned: "Off/On",

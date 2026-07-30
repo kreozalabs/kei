@@ -1,14 +1,15 @@
 import { useSettings } from "@/providers/SettingsContext";
 import {
+  LANGUAGES,
   DATE_FORMATS,
   type DateFormatType,
-  LANGUAGES,
   TIME_FORMATS,
   type TimeFormatType,
 } from "@kreozalabs/kei-core";
-import { Calendar, Clock, Globe, Languages } from "lucide-react";
+import { Calendar, Clock, Globe, Languages, MapPin } from "lucide-react";
 import { SettingSection } from "../SettingSection";
 import { SettingSelect } from "../SettingSelect";
+import { TimeZoneCombobox } from "../TimeZoneCombobox";
 
 // Local UI mapping
 // TODO: Replace with i18n
@@ -36,38 +37,48 @@ export function LocalizationSettings() {
   return (
     <SettingSection
       title="Language and region"
-      description="Customize display language, date, and time formatting preferences."
-      icon={<Globe className="h-4 w-4" />}
+      description="Customize display language, time zone, date, and time formatting preferences."
+      icon={<Globe className="size-4" />}
     >
       <SettingSelect
         label="Language"
-        description="Choose your preferred interface language"
-        icon={<Languages className="h-4 w-4" />}
+        description="Choose your preferred interface language."
+        icon={<Languages className="size-4" />}
         value={settings.language}
         onValueChange={(val) => updateSetting("language", val)}
         options={LANGUAGE_OPTIONS}
-        placeholder="Select a language"
+        placeholder="Select a language..."
         groupLabel="Languages"
+      />
+      <TimeZoneCombobox
+        label="Time Zone"
+        description="Set your primary time zone"
+        icon={<MapPin className="size-4" />}
+        value={settings.timezone}
+        onValueChange={(val) => updateSetting("timezone", val)}
+        placeholder="Select a time zone..."
+        searchPlaceholder="Search city, region, or GMT offset..."
+        emptyText="No time zones found."
       />
       <SettingSelect
         label="Date Format"
-        description="Format used for displaying dates across the app"
-        icon={<Calendar className="h-4 w-4" />}
+        description="Choose how dates are displayed throughout the application."
+        icon={<Calendar className="size-4" />}
         value={settings.date_format}
         onValueChange={(val) => updateSetting("date_format", val)}
         options={DATE_FORMAT_OPTIONS}
-        placeholder="Select a date format"
-        groupLabel="Date formats"
+        placeholder="Select a date format..."
+        groupLabel="Date Formats"
       />
       <SettingSelect
         label="Time Format"
-        description="Choose between 12-hour and 24-hour time formats"
-        icon={<Clock className="h-4 w-4" />}
+        description="Choose between 12-hour and 24-hour time display."
+        icon={<Clock className="size-4" />}
         value={settings.time_format}
         onValueChange={(val) => updateSetting("time_format", val)}
         options={TIME_FORMAT_OPTIONS}
-        placeholder="Select a time format"
-        groupLabel="Time formats"
+        placeholder="Select a time format..."
+        groupLabel="Time Formats"
       />
     </SettingSection>
   );

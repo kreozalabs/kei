@@ -43,9 +43,7 @@ export function AppSidebar() {
   };
 
   const isPathActive = (href: string) => {
-    return href === "/app"
-      ? location.pathname === "/app"
-      : location.pathname.startsWith(href);
+    return href === "/app" ? location.pathname === "/app" : location.pathname.startsWith(href);
   };
 
   return (

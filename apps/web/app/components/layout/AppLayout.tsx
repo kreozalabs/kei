@@ -85,7 +85,7 @@ function AppLayoutContent({ error }: { error?: unknown }) {
           {/* Main Content Area in SidebarInset */}
           <SidebarInset className="bg-background relative flex min-w-0 flex-1 flex-col overflow-hidden">
             {/* Route Area */}
-            <div className="flex-1 h-full min-h-0 overflow-hidden">
+            <div className="h-full min-h-0 flex-1 overflow-hidden">
               {error ? (
                 <div className="no-scrollbar h-full w-full overflow-y-auto p-6 pb-24 md:p-8 md:pb-0">
                   <ErrorPage

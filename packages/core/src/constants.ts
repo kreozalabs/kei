@@ -125,28 +125,25 @@ export const DURATION_OPTIONS: {
   { label: "1 - 2 hours", value: [60, 120], default: false },
 ];
 
-export const MAJOR_TIMEZONES = [
-  "UTC",
-  "America/New_York",
-  "America/Chicago",
-  "America/Denver",
-  "America/Los_Angeles",
-  "Europe/London",
-  "Europe/Paris",
-  "Europe/Berlin",
-  "Asia/Tokyo",
-  "Asia/Shanghai",
-  "Asia/Dubai",
-  "Australia/Sydney",
-];
-
-export const ALL_TIMEZONES = (
-  Intl as typeof Intl & { supportedValuesOf?: (key: string) => string[] }
-).supportedValuesOf?.("timeZone") || ["UTC"];
-
 export const TIMEZONES = {
   SYSTEM: "system",
 } as const;
+
+export const MAJOR_TIMEZONES = [
+  { value: "system", label: "System" },
+  { value: "UTC", label: "UTC" },
+  { value: "America/New_York", label: "Eastern Time (New York)" },
+  { value: "America/Chicago", label: "Central Time (Chicago)" },
+  { value: "America/Denver", label: "Mountain Time (Denver)" },
+  { value: "America/Los_Angeles", label: "Pacific Time (Los Angeles)" },
+  { value: "Europe/London", label: "London (GMT/BST)" },
+  { value: "Europe/Paris", label: "Paris (CET/CEST)" },
+  { value: "Asia/Almaty", label: "Almaty (UTC+5)" },
+  { value: "Asia/Dubai", label: "Dubai (GST)" },
+  { value: "Asia/Singapore", label: "Singapore (SGT)" },
+  { value: "Asia/Tokyo", label: "Tokyo (JST)" },
+  { value: "Australia/Sydney", label: "Sydney (AEST/AEDT)" },
+] as const;
 
 export const DEFAULT_SETTINGS = {
   section_expanded: true,
