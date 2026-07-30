@@ -1,7 +1,7 @@
-import { useState, useCallback, useMemo, useEffect } from "react";
+import { useState, useMemo } from "react";
 import { Outlet, isRouteErrorResponse } from "react-router";
 import { PlusIcon } from "lucide-react";
-import { Button, cn, useIsMobile } from "@kreozalabs/kei-ui";
+import { Button, cn, SidebarProvider, SidebarInset } from "@kreozalabs/kei-ui";
 import { AppSidebar } from "./AppSidebar";
 import { MobileNav } from "./MobileNav";
 import { ErrorPage } from "../ErrorPage";
@@ -14,67 +14,45 @@ import { HeaderPortalContext } from "./HeaderPortalContext";
 import { DbSyncStatus } from "./DbSyncStatus";
 import { useFullscreen } from "@/hooks/useFullscreen";
 import { useHotkeys } from "react-hotkeys-hook";
-import { useSwipeGesture, GESTURE_EDGE_THRESHOLD } from "@/hooks/useSwipeGesture";
 
 export interface AppLayoutContext {
-  isSidebarOpen: boolean;
-  toggleSidebar: () => void;
   openActionInput: () => void;
 }
 
 export function AppLayout({ error }: { error?: unknown }) {
   return (
-    <MobileFABProvider>
-      <AppLayoutContent error={error} />
-    </MobileFABProvider>
+    <SidebarProvider className="h-svh w-full overflow-hidden">
+      <MobileFABProvider>
+        <AppLayoutContent error={error} />
+      </MobileFABProvider>
+    </SidebarProvider>
   );
 }
 
 function AppLayoutContent({ error }: { error?: unknown }) {
   const { settings } = useSettings();
-  const isMobile = useIsMobile();
-  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
-
-  useEffect(() => {
-    if (isMobile) {
-      queueMicrotask(() => {
-        setIsSidebarOpen(false);
-      });
-    }
-  }, [isMobile]);
-
-  useSwipeGesture({
-    onSwipeRight: () => setIsSidebarOpen(true),
-    edgeThreshold: GESTURE_EDGE_THRESHOLD,
-    enabled: isMobile && !isSidebarOpen,
-  });
-
   const { openActionInput } = useActionInputModal();
   const { hasCustomFab } = useMobileFAB();
   const [headerPortalRef, setHeaderPortalRef] = useState<HTMLElement | null>(null);
 
-  const toggleSidebar = useCallback(() => setIsSidebarOpen((prev) => !prev), []);
   const { toggleFullscreen } = useFullscreen();
 
-  useHotkeys("mod+b", toggleSidebar, { preventDefault: true });
   useHotkeys("f", toggleFullscreen, { preventDefault: true });
 
   const contextValue: AppLayoutContext = useMemo(
     () => ({
-      isSidebarOpen,
-      toggleSidebar,
       openActionInput,
     }),
-    [isSidebarOpen, toggleSidebar, openActionInput]
+    [openActionInput]
   );
 
   return (
     <HeaderPortalContext.Provider value={headerPortalRef}>
-      <div className="bg-background md:bg-muted text-foreground flex h-dvh w-full flex-col overflow-hidden">
-        {/* Global Top Header - Desktop Only */}
-        <header className="bg-muted/95 hidden h-20 w-full shrink-0 items-center justify-between px-6 pt-2 pb-1 backdrop-blur-xl md:flex">
+      <div className="bg-background text-foreground flex h-svh w-full flex-col overflow-hidden">
+        {/* Global Top Header */}
+        <header className="bg-muted/95 border-border/40 hidden h-16 w-full shrink-0 items-center justify-between border-b px-6 backdrop-blur-xl md:flex">
           <div className="flex items-center gap-4">
-            <SidebarToggle onClick={toggleSidebar} />
+            <SidebarToggle />
           </div>
 
           {/* Portal target container for page header content */}
@@ -101,13 +79,13 @@ function AppLayoutContent({ error }: { error?: unknown }) {
 
         {/* Main Workspace below header */}
         <div className="flex flex-1 flex-row overflow-hidden">
-          {/* Sidebar */}
-          <AppSidebar isOpen={isSidebarOpen} onOpenChange={setIsSidebarOpen} />
+          {/* AppSidebar */}
+          <AppSidebar />
 
-          {/* Main Content Area */}
-          <main className="bg-background relative flex min-w-0 flex-1 flex-col overflow-hidden">
-            {/* Route Area - full height so that routes themselves manage layout, headers, and scroll areas */}
-            <div className="flex-1 overflow-hidden">
+          {/* Main Content Area in SidebarInset */}
+          <SidebarInset className="bg-background relative flex min-w-0 flex-1 flex-col overflow-hidden">
+            {/* Route Area */}
+            <div className="flex-1 h-full min-h-0 overflow-hidden">
               {error ? (
                 <div className="no-scrollbar h-full w-full overflow-y-auto p-6 pb-24 md:p-8 md:pb-0">
                   <ErrorPage
@@ -134,7 +112,6 @@ function AppLayoutContent({ error }: { error?: unknown }) {
             {/* Portal target container for mobile FAB */}
             <div id="mobile-fab-content" />
 
-            {/* Default Floating Action Button (Mobile only) */}
             {!hasCustomFab && (
               <Button
                 onClick={() => openActionInput()}
@@ -145,12 +122,9 @@ function AppLayoutContent({ error }: { error?: unknown }) {
               </Button>
             )}
 
-            {/* Database Sync Status (Floating bottom-left) */}
             <DbSyncStatus />
-
-            {/* Mobile Bottom Navigation */}
             <MobileNav />
-          </main>
+          </SidebarInset>
         </div>
       </div>
     </HeaderPortalContext.Provider>

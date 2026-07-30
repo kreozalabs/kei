@@ -172,6 +172,7 @@ export const DEFAULT_SETTINGS = {
   default_insert_at_top: false,
   show_intentions: true,
   show_default_energy: false,
+  animations: "smooth" as const,
 };
 
 export const STORAGE_KEYS = {

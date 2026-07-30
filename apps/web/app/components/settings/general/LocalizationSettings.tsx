@@ -70,4 +70,3 @@ export function LocalizationSettings() {
     </SettingSection>
   );
 }
-

@@ -118,6 +118,9 @@ export function SettingsProvider({
       root.className = classes.join(" ").trim();
       root.classList.add(`theme-${settings.accent}`);
 
+      // Update motion mode attribute
+      root.setAttribute("data-motion", settings.animations || "smooth");
+
       // Allow browser to apply styles without transition, then re-enable
       setTimeout(() => {
         root.classList.remove("disable-transitions");
@@ -133,7 +136,7 @@ export function SettingsProvider({
       mediaQuery.addEventListener("change", handleSystemChange);
       return () => mediaQuery.removeEventListener("change", handleSystemChange);
     }
-  }, [settings.theme, settings.accent]);
+  }, [settings.theme, settings.accent, settings.animations]);
 
   const value = useMemo(
     () => ({

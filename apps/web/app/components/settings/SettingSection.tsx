@@ -1,12 +1,5 @@
 import * as React from "react";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-  cn,
-} from "@kreozalabs/kei-ui";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle, cn } from "@kreozalabs/kei-ui";
 
 export interface SettingSectionProps {
   title: React.ReactNode;
@@ -43,9 +36,7 @@ export function SettingSection({
               </div>
             )}
             <div className="space-y-0.5">
-              <CardTitle className="text-foreground text-base font-semibold">
-                {title}
-              </CardTitle>
+              <CardTitle className="text-foreground text-base font-semibold">{title}</CardTitle>
               {description && (
                 <CardDescription className="text-muted-foreground text-xs">
                   {description}
