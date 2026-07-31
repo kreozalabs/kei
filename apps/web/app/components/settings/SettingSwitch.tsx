@@ -38,6 +38,7 @@ export function SettingSwitch({
   return (
     <SettingRow
       label={label}
+      htmlFor={switchId}
       description={description}
       icon={icon}
       layout={layout}

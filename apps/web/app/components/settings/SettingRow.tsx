@@ -3,6 +3,7 @@ import { Label, cn } from "@kreozalabs/kei-ui";
 
 export interface SettingRowProps {
   label?: string;
+  htmlFor?: string;
   description?: string;
   icon?: React.ReactNode;
   layout?: "row" | "column";
@@ -14,6 +15,7 @@ export interface SettingRowProps {
 
 export function SettingRow({
   label,
+  htmlFor,
   description,
   icon,
   layout = "row",
@@ -22,19 +24,30 @@ export function SettingRow({
   children,
   onClick,
 }: SettingRowProps) {
+  const labelId = htmlFor ? `${htmlFor}-label` : undefined;
+
   if (layout === "column") {
     return (
       <div className={cn("space-y-1.5", className)} onClick={onClick}>
         {(label || icon) && (
           <div className="flex items-center gap-2">
             {icon && <div className="text-muted-foreground shrink-0">{icon}</div>}
-            {label && (
-              <Label
-                className={cn("text-foreground text-sm font-medium", onClick && "cursor-pointer")}
-              >
-                {label}
-              </Label>
-            )}
+            {label &&
+              (htmlFor ? (
+                <Label
+                  id={labelId}
+                  htmlFor={htmlFor}
+                  className={cn("text-foreground cursor-pointer text-sm font-medium")}
+                >
+                  {label}
+                </Label>
+              ) : (
+                <span
+                  className={cn("text-foreground text-sm font-medium", onClick && "cursor-pointer")}
+                >
+                  {label}
+                </span>
+              ))}
           </div>
         )}
         <div className={controlClassName}>{children}</div>
@@ -58,16 +71,25 @@ export function SettingRow({
         <div className="flex items-start gap-3">
           {icon && <div className="text-muted-foreground mt-0.5 shrink-0">{icon}</div>}
           <div className="space-y-1">
-            {label && (
-              <Label
-                className={cn(
-                  "text-foreground text-sm leading-none font-medium",
-                  onClick && "cursor-pointer"
-                )}
-              >
-                {label}
-              </Label>
-            )}
+            {label &&
+              (htmlFor ? (
+                <Label
+                  id={labelId}
+                  htmlFor={htmlFor}
+                  className={cn("text-foreground cursor-pointer text-sm leading-none font-medium")}
+                >
+                  {label}
+                </Label>
+              ) : (
+                <span
+                  className={cn(
+                    "text-foreground text-sm leading-none font-medium",
+                    onClick && "cursor-pointer"
+                  )}
+                >
+                  {label}
+                </span>
+              ))}
             {description && (
               <p className="text-muted-foreground text-xs leading-normal">{description}</p>
             )}

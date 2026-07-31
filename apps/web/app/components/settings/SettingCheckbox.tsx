@@ -38,6 +38,7 @@ export function SettingCheckbox({
   return (
     <SettingRow
       label={label}
+      htmlFor={checkboxId}
       description={description}
       icon={icon}
       layout={layout}

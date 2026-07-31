@@ -8,6 +8,9 @@ import {
 
 export function ComboboxSelect(props: ComboboxSelectProps) {
   const {
+    id,
+    "aria-label": ariaLabel,
+    "aria-labelledby": ariaLabelledBy,
     value,
     searchPlaceholder,
     emptyText,
@@ -25,6 +28,9 @@ export function ComboboxSelect(props: ComboboxSelectProps) {
     <Popover open={combobox.open} onOpenChange={combobox.handleOpenChange}>
       <PopoverTrigger asChild>
         <ComboboxTrigger
+          id={id}
+          aria-label={ariaLabel}
+          aria-labelledby={ariaLabelledBy}
           combobox={combobox}
           disabled={disabled}
           clearable={clearable}
@@ -33,10 +39,7 @@ export function ComboboxSelect(props: ComboboxSelectProps) {
       </PopoverTrigger>
       <PopoverContent
         align={align}
-        className={cn(
-          "w-[calc(100vw-2rem)] max-w-[440px] p-0 shadow-md sm:w-[440px]",
-          contentClassName
-        )}
+        className={cn("w-[calc(100vw-2rem)] max-w-110 p-0 shadow-md sm:w-110", contentClassName)}
       >
         <ComboboxContentList
           combobox={combobox}
@@ -51,4 +54,3 @@ export function ComboboxSelect(props: ComboboxSelectProps) {
 }
 
 export type { ComboboxOption, ComboboxGroup, ComboboxSelectProps } from "./combobox";
-export { useComboboxSelect, ComboboxTrigger, ComboboxContentList } from "./combobox";

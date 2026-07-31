@@ -1,3 +1,4 @@
+import * as React from "react";
 import {
   Select,
   SelectLabel,
@@ -18,6 +19,7 @@ export interface SettingSelectProps<T extends string> extends Pick<
   options: readonly { value: T; label: string }[];
   placeholder?: string;
   groupLabel?: string;
+  id?: string;
 }
 
 export function SettingSelect<T extends string>({
@@ -32,10 +34,15 @@ export function SettingSelect<T extends string>({
   options,
   placeholder,
   groupLabel,
+  id,
 }: SettingSelectProps<T>) {
+  const generatedId = React.useId();
+  const selectId = id || generatedId;
+
   return (
     <SettingRow
       label={label}
+      htmlFor={selectId}
       description={description}
       icon={icon}
       layout={layout}
@@ -43,7 +50,11 @@ export function SettingSelect<T extends string>({
       controlClassName={controlClassName}
     >
       <Select value={value} onValueChange={onValueChange}>
-        <SelectTrigger className="bg-background/80 border-border/60 hover:bg-background h-9 w-full shadow-xs transition-all">
+        <SelectTrigger
+          id={selectId}
+          aria-label={label}
+          className="bg-background/80 border-border/60 hover:bg-background h-9 w-full shadow-xs transition-all"
+        >
           <SelectValue placeholder={placeholder} />
         </SelectTrigger>
         <SelectContent>

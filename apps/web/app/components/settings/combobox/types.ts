@@ -12,6 +12,9 @@ export interface ComboboxGroup {
 }
 
 export interface ComboboxSelectProps {
+  id?: string;
+  "aria-label"?: string;
+  "aria-labelledby"?: string;
   value?: string;
   onValueChange?: (value: string) => void;
   onChange?: (value: string) => void;

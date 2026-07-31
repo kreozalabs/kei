@@ -29,9 +29,15 @@ export function ComboboxContentList({
   const { search, setSearch, effectiveGroups, handleSelect } = combobox;
   const isAllGroupsEmpty = effectiveGroups.every((g) => g.options.length === 0);
 
+  // FIXME: Fix keyboard navigation focus highlight for Combobox options
   return (
     <Command shouldFilter={false}>
-      <CommandInput placeholder={searchPlaceholder} value={search} onValueChange={setSearch} />
+      <CommandInput
+        autoFocus
+        placeholder={searchPlaceholder}
+        value={search}
+        onValueChange={setSearch}
+      />
       <CommandList className="max-h-72 overflow-y-auto p-1">
         {isAllGroupsEmpty ? (
           <CommandEmpty>{emptyText}</CommandEmpty>
@@ -47,7 +53,7 @@ export function ComboboxContentList({
                     onSelect={() => handleSelect(opt.value)}
                     className="flex cursor-pointer items-center justify-between py-1.5 text-xs sm:text-sm"
                   >
-                    <span className="leading-snug break-words whitespace-normal sm:whitespace-nowrap">
+                    <span className="leading-snug wrap-break-word whitespace-normal sm:whitespace-nowrap">
                       {opt.label}
                     </span>
                     <Check

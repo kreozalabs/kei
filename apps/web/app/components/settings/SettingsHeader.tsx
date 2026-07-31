@@ -9,7 +9,6 @@ export const SettingsHeader = () => {
         {/* Main Header Row */}
         <div className="flex w-full items-center justify-between">
           {/* Return button */}
-          {/* Desktop Left: Title Area & Today, Arrows, Calendar Popover portal target */}
           <div className="hidden items-center gap-2 md:flex">
             <HeaderTitleArea title="Settings" />
           </div>
