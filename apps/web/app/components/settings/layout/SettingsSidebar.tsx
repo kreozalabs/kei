@@ -2,13 +2,13 @@ import { useMemo, useState, useRef } from "react";
 import { useLocation, useNavigate } from "react-router";
 import { ChevronRight } from "lucide-react";
 import { Button, cn } from "@kreozalabs/kei-ui";
-import { useScrollSpy } from "../../hooks/useScrollSpy";
 import {
   SETTINGS_BASE_PATH,
-  SETTINGS_TREE_SECTIONS,
   type SettingsTreeGroup,
   type SettingsTreeLeaf,
-} from "./settingsSubPages";
+  SETTINGS_TREE_SECTIONS,
+} from "../settingsSubPages";
+import { useScrollSpy } from "@/hooks/useScrollSpy";
 
 export type { SettingsTreeLeaf, SettingsTreeGroup };
 export { SETTINGS_TREE_SECTIONS };

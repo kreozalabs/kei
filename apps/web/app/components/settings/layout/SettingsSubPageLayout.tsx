@@ -2,7 +2,7 @@ import * as React from "react";
 import { useNavigate } from "react-router";
 import { ChevronLeft } from "lucide-react";
 import { Button } from "@kreozalabs/kei-ui";
-import { SETTINGS_BASE_PATH } from "./settingsSubPages";
+import { SETTINGS_BASE_PATH } from "../settingsSubPages";
 
 export interface SettingsSubPageLayoutProps {
   title: string;

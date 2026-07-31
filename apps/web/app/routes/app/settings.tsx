@@ -13,7 +13,7 @@ TODO: QUESTIONS
 // 5. Kei︱Settings - {Group}
 
 // const SETTINGS_GROUPS = {
-//   General: ["Language and region", "Keyboard shortcuts", "Offline"],
+//   General: ["Language and region", "Start page", "Keyboard shortcuts"],
 //   Calendar: ["View Options"],
 //   Notifications: {
 //     turned: "Off/On",
@@ -69,7 +69,7 @@ import { useEffect } from "react";
 import { Outlet } from "react-router";
 import { AppPage } from "@/components/layout/AppPage";
 import { MobileFAB } from "@/components/MobileFAB";
-import { SettingsSidebar } from "@/components/settings/SettingsSidebar";
+import { SettingsSidebar } from "@/components/settings/layout/SettingsSidebar";
 
 export default function SettingsLayout() {
   useEffect(() => {

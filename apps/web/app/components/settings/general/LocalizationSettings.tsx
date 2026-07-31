@@ -7,9 +7,9 @@ import {
   type TimeFormatType,
 } from "@kreozalabs/kei-core";
 import { Calendar, Clock, Globe, Languages, MapPin } from "lucide-react";
-import { SettingSection } from "../SettingSection";
-import { SettingSelect } from "../SettingSelect";
-import { TimeZoneCombobox } from "../TimeZoneCombobox";
+import { SettingSection } from "../primitives/SettingSection";
+import { SettingSelect } from "../primitives/SettingSelect";
+import { TimeZoneCombobox } from "../primitives/TimeZoneCombobox";
 
 // Local UI mapping
 // TODO: Replace with i18n

@@ -1,5 +1,5 @@
-import { GeneralSettings } from "@/components/settings/GeneralSettings";
-import { SettingsSubPageLayout } from "@/components/settings/SettingsSubPageLayout";
+import { GeneralSettings } from "@/components/settings/general/GeneralSettings";
+import { SettingsSubPageLayout } from "@/components/settings/layout/SettingsSubPageLayout";
 import {
   SETTINGS_SUB_PAGES,
   ROOT_SETTINGS_SECTION_ID,

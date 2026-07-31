@@ -1,7 +1,7 @@
 import { KeyboardIcon } from "lucide-react";
-import { LocalizationSettings } from "./general/LocalizationSettings";
-import { getSettingsPath } from "./settingsSubPages";
-import { SettingsLinkGroup } from "./SettingsLinkGroup";
+import { LocalizationSettings } from "./LocalizationSettings";
+import { getSettingsPath } from "../settingsSubPages";
+import { SettingsLinkGroup } from "../primitives/SettingsLinkGroup";
 
 export function GeneralSettings() {
   const navigationLinks = [

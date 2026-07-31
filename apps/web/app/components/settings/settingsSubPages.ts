@@ -1,4 +1,4 @@
-import { GeneralSettings } from "./GeneralSettings";
+import { GeneralSettings } from "./general/GeneralSettings";
 import { KeyboardShortcutsSettings } from "./general/KeyboardShortcuts";
 
 export const SETTINGS_BASE_PATH = "/app/settings";

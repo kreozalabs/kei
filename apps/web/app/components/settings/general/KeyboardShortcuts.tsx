@@ -1,7 +1,7 @@
 import { useSettings } from "@/providers/SettingsContext";
 import { Switch, cn } from "@kreozalabs/kei-ui";
 import { KeyboardIcon } from "lucide-react";
-import { SettingSection } from "../SettingSection";
+import { SettingSection } from "../primitives/SettingSection";
 
 import {
   ShortcutItemRow,
