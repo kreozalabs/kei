@@ -63,7 +63,7 @@ TODO: QUESTIONS
 //     },
 //     Storage: ["Engine", "Size", "Age", "Location"],
 //   },
-//   About: ["Title", "Version", "Check for Updates", "Source Code", "Links", "Licenses"],
+//   About: ["About", "Version & Updates", "Links & Resources"],
 // };
 import { useEffect } from "react";
 import { Outlet } from "react-router";

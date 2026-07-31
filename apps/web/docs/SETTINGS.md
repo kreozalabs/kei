@@ -19,7 +19,7 @@ The settings module adopts a **Chrome browser settings aesthetic**:
 
 All settings subpages define **relative slugs** (`slug: "extensions"` or `slug: "shortcuts"`).
 
-The base path (`SETTINGS_BASE_PATH = "/app/settings"`) is centralized in [settingsSubPages.ts](/apps/web/app/components/settings/settingsSubPages.ts). General settings lives directly at `/app/settings`.
+The base path (`SETTINGS_BASE_PATH = "/app/settings"`) is centralized in [settingsSubPages.ts](/apps/web/app/components/settings/settingsSubPages.ts). Overall settings lives at `/app/settings`, and dedicated section subpages like General settings (`/app/settings/general`) and About settings (`/app/settings/about`) allow viewing only that section with a back button to `/app/settings`.
 
 ### Usage:
 

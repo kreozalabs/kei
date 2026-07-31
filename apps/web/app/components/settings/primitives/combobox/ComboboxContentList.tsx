@@ -51,7 +51,7 @@ export function ComboboxContentList({
                     key={opt.value}
                     value={opt.value}
                     onSelect={() => handleSelect(opt.value)}
-                    className="flex cursor-pointer items-center justify-between py-1.5 text-xs sm:text-sm"
+                    className="flex cursor-pointer items-center justify-between py-1.5 text-sm"
                   >
                     <span className="leading-snug wrap-break-word whitespace-normal sm:whitespace-nowrap">
                       {opt.label}

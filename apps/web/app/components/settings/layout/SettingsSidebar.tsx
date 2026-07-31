@@ -4,6 +4,7 @@ import { ChevronRight } from "lucide-react";
 import { Button, cn } from "@kreozalabs/kei-ui";
 import {
   SETTINGS_BASE_PATH,
+  getSettingsPath,
   type SettingsTreeGroup,
   type SettingsTreeLeaf,
   SETTINGS_TREE_SECTIONS,
@@ -13,7 +14,7 @@ import { useScrollSpy } from "@/hooks/useScrollSpy";
 export type { SettingsTreeLeaf, SettingsTreeGroup };
 export { SETTINGS_TREE_SECTIONS };
 
-const GENERAL_SETTINGS_PATH = SETTINGS_BASE_PATH;
+const GENERAL_SETTINGS_PATH = getSettingsPath("general");
 
 interface SidebarLeafNodeProps {
   child: SettingsTreeLeaf;
@@ -185,14 +186,16 @@ export function SettingsSidebar() {
       navigate(item.to);
     } else if (item.href?.startsWith("#")) {
       const targetId = item.href.replace("#", "");
-      if (!isGeneralSettingsPage) {
-        navigate(`${GENERAL_SETTINGS_PATH}${item.href}`);
+      const el = document.getElementById(targetId);
+      if (el) {
+        window.history.pushState(null, "", `${location.pathname}${item.href}`);
+        el.scrollIntoView({ behavior: "smooth" });
       } else {
-        window.history.pushState(null, "", `${GENERAL_SETTINGS_PATH}${item.href}`);
-        const el = document.getElementById(targetId);
-        if (el) {
-          el.scrollIntoView({ behavior: "smooth" });
-        }
+        const parentGroup = SETTINGS_TREE_SECTIONS.find((g) =>
+          g.children?.some((c) => c.id === targetId)
+        );
+        const targetPath = parentGroup?.to ?? SETTINGS_BASE_PATH;
+        navigate(`${targetPath}${item.href}`);
       }
     }
   };

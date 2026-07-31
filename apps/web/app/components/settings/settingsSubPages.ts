@@ -1,3 +1,4 @@
+import { AboutSettings } from "./about/AboutSettings";
 import { GeneralSettings } from "./general/GeneralSettings";
 import { KeyboardShortcutsSettings } from "./general/KeyboardShortcuts";
 
@@ -9,7 +10,6 @@ export const ROOT_SETTINGS_SECTION_ID = "general";
  */
 export function isRootSettingsSubPage(subpageDef?: SettingsSubPageDefinition): boolean {
   if (!subpageDef) return true;
-  if (subpageDef.id === ROOT_SETTINGS_SECTION_ID) return true;
   const slugs = Array.isArray(subpageDef.slug) ? subpageDef.slug : [subpageDef.slug];
   return slugs.includes("");
 }
@@ -21,7 +21,7 @@ export function isRootSettingsSubPage(subpageDef?: SettingsSubPageDefinition): b
  */
 export function getSettingsPath(slug: string = ""): string {
   const cleanSlug = slug.replace(/^\/+|\/+$/g, "");
-  if (!cleanSlug || cleanSlug === ROOT_SETTINGS_SECTION_ID) {
+  if (!cleanSlug) {
     return SETTINGS_BASE_PATH;
   }
   return `${SETTINGS_BASE_PATH}/${cleanSlug}`;
@@ -38,7 +38,7 @@ export interface SettingsSubPageDefinition {
 export const SETTINGS_SUB_PAGES: SettingsSubPageDefinition[] = [
   {
     id: ROOT_SETTINGS_SECTION_ID,
-    slug: ["", "general"],
+    slug: "general",
     title: "General",
     component: GeneralSettings,
   },
@@ -48,6 +48,12 @@ export const SETTINGS_SUB_PAGES: SettingsSubPageDefinition[] = [
     title: "Keyboard Shortcuts",
     parentSlug: ROOT_SETTINGS_SECTION_ID,
     component: KeyboardShortcutsSettings,
+  },
+  {
+    id: "about",
+    slug: "about",
+    title: "About",
+    component: AboutSettings,
   },
 ];
 
@@ -70,7 +76,7 @@ export const SETTINGS_TREE_SECTIONS: SettingsTreeGroup[] = [
   {
     id: ROOT_SETTINGS_SECTION_ID,
     label: "General",
-    to: SETTINGS_BASE_PATH,
+    to: getSettingsPath("general"),
     children: [
       { id: "language-region", label: "Language & region", href: "#language-region" },
       {
@@ -78,6 +84,16 @@ export const SETTINGS_TREE_SECTIONS: SettingsTreeGroup[] = [
         label: "Keyboard shortcuts",
         to: getSettingsPath("shortcuts"),
       },
+    ],
+  },
+  {
+    id: "about",
+    label: "About",
+    to: getSettingsPath("about"),
+    children: [
+      { id: "about-app", label: "About Kei", href: "#about-app" },
+      { id: "about-version", label: "Version & updates", href: "#about-version" },
+      { id: "about-links", label: "Links & resources", href: "#about-links" },
     ],
   },
 ];

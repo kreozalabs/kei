@@ -83,11 +83,11 @@ function AppLayoutContent({ error }: { error?: unknown }) {
           <AppSidebar />
 
           {/* Main Content Area in SidebarInset */}
-          <SidebarInset className="bg-background relative flex min-w-0 flex-1 flex-col overflow-hidden">
+          <SidebarInset className="bg-background relative flex min-w-0 flex-1 flex-col overflow-hidden pb-16 md:pb-0">
             {/* Route Area */}
             <div className="h-full min-h-0 flex-1 overflow-hidden">
               {error ? (
-                <div className="no-scrollbar h-full w-full overflow-y-auto p-6 pb-24 md:p-8 md:pb-0">
+                <div className="no-scrollbar h-full w-full overflow-y-auto p-6 md:p-8">
                   <ErrorPage
                     status={isRouteErrorResponse(error) ? error.status : 500}
                     title={isRouteErrorResponse(error) ? error.statusText : "App Error"}
