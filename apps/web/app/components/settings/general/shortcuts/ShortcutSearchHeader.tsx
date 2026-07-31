@@ -18,7 +18,7 @@ export function ShortcutSearchHeader({
     <CardHeader className="flex flex-col gap-3 border-b pb-3 sm:flex-row sm:items-center sm:justify-between">
       <div className="flex items-center gap-2">
         <CardTitle className="text-sm font-medium">Available Shortcuts</CardTitle>
-        <Badge variant={isEnabled ? "default" : "secondary"} className="text-xs font-normal">
+        <Badge variant={isEnabled ? "default" : "secondary"} className="text-sm font-normal">
           {isEnabled ? "Active" : "Disabled"}
         </Badge>
       </div>
@@ -29,7 +29,7 @@ export function ShortcutSearchHeader({
           variant="outline"
           size="sm"
           onClick={onResetAll}
-          className="h-8 shrink-0 gap-1.5 text-xs"
+          className="h-8 shrink-0 gap-1.5 text-sm"
           title="Reset all keyboard shortcuts to default settings"
           aria-label="Reset all keyboard shortcuts to default settings"
         >
@@ -50,7 +50,7 @@ export function ShortcutSearchHeader({
             placeholder='Search commands or shortcuts (e.g. "ctrl+k", "g s")'
             value={searchQuery}
             onChange={(e) => onSearchQueryChange(e.target.value)}
-            className="h-8 pr-8 pl-8 text-xs"
+            className="h-8 pr-8 pl-8 text-sm"
           />
           {searchQuery && (
             <Button

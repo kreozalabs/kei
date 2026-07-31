@@ -69,6 +69,7 @@ import { useEffect } from "react";
 import { Outlet } from "react-router";
 import { AppPage } from "@/components/layout/AppPage";
 import { MobileFAB } from "@/components/MobileFAB";
+import { SettingsSidebar } from "@/components/settings/SettingsSidebar";
 
 export default function SettingsLayout() {
   useEffect(() => {
@@ -78,7 +79,17 @@ export default function SettingsLayout() {
   return (
     <AppPage title="Settings" scrollable padded>
       <MobileFAB className="hidden">{null}</MobileFAB>
-      <Outlet />
+      <div className="mx-auto flex max-w-6xl flex-col gap-6 md:flex-row-reverse md:items-start md:gap-8">
+        {/* Settings Navigation Tree / Table of Contents */}
+        <aside className="border-border/40 bg-card/40 hover:border-border/60 sticky top-4 hidden shrink-0 rounded-2xl border p-3 backdrop-blur-xs transition-colors md:block md:w-64 md:self-start">
+          <SettingsSidebar />
+        </aside>
+
+        {/* Settings Main Content Area */}
+        <main className="min-w-0 flex-1">
+          <Outlet />
+        </main>
+      </div>
     </AppPage>
   );
 }

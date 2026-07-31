@@ -20,7 +20,7 @@ export function ShortcutKeyBadge({ keys, onRemove }: ShortcutKeyBadgeProps) {
               <span
                 key={kIdx}
                 aria-hidden="true"
-                className="text-muted-foreground px-1 text-xs font-semibold select-none"
+                className="text-muted-foreground px-1 text-sm font-semibold select-none"
               >
                 &gt;
               </span>
@@ -32,7 +32,7 @@ export function ShortcutKeyBadge({ keys, onRemove }: ShortcutKeyBadgeProps) {
               {kIdx > 0 && !isSequence && keys[kIdx - 1] !== ">" && (
                 <span
                   aria-hidden="true"
-                  className="text-muted-foreground px-0.5 text-xs font-semibold select-none"
+                  className="text-muted-foreground px-0.5 text-sm font-semibold select-none"
                 >
                   +
                 </span>

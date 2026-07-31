@@ -52,7 +52,7 @@ export function SettingRow({
         )}
         <div className={controlClassName}>{children}</div>
         {description && (
-          <p className="text-muted-foreground text-xs leading-normal">{description}</p>
+          <p className="text-muted-foreground text-sm leading-normal">{description}</p>
         )}
       </div>
     );
@@ -91,7 +91,7 @@ export function SettingRow({
                 </span>
               ))}
             {description && (
-              <p className="text-muted-foreground text-xs leading-normal">{description}</p>
+              <p className="text-muted-foreground text-sm leading-normal">{description}</p>
             )}
           </div>
         </div>

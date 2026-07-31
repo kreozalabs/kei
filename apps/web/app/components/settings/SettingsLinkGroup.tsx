@@ -13,7 +13,7 @@ export function SettingsLinkGroup({ title, items, className, children }: Setting
   return (
     <div className="space-y-2">
       {title && (
-        <h3 className="text-muted-foreground px-1 text-xs font-semibold tracking-wider uppercase">
+        <h3 className="text-muted-foreground px-1 text-sm font-semibold tracking-wider uppercase">
           {title}
         </h3>
       )}

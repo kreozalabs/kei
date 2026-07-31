@@ -31,7 +31,7 @@ export function SettingsLinkRow({
 }: SettingsLinkRowProps) {
   const trailingControl = (
     <div className="text-muted-foreground group-hover:text-foreground flex items-center justify-end gap-2 transition-colors">
-      {value && <span className="text-xs font-medium">{value}</span>}
+      {value && <span className="text-sm font-medium">{value}</span>}
       {external ? (
         <ExternalLink className="size-4 shrink-0" />
       ) : (
@@ -59,7 +59,10 @@ export function SettingsLinkRow({
 
   if (to && !disabled) {
     return (
-      <Link to={to} className="block text-left no-underline">
+      <Link
+        to={to}
+        className="focus-visible:bg-accent/50 focus-visible:ring-ring focus-visible:ring-offset-background block text-left no-underline transition-colors outline-none focus-visible:relative focus-visible:z-10 focus-visible:ring-2 focus-visible:ring-offset-1"
+      >
         {content}
       </Link>
     );
@@ -67,7 +70,12 @@ export function SettingsLinkRow({
 
   if (href && !disabled) {
     return (
-      <a href={href} target="_blank" rel="noreferrer" className="block text-left no-underline">
+      <a
+        href={href}
+        target="_blank"
+        rel="noreferrer"
+        className="focus-visible:bg-accent/50 focus-visible:ring-ring focus-visible:ring-offset-background block text-left no-underline transition-colors outline-none focus-visible:relative focus-visible:z-10 focus-visible:ring-2 focus-visible:ring-offset-1"
+      >
         {content}
       </a>
     );

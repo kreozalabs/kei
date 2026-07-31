@@ -18,7 +18,7 @@ export function HeaderTitleArea({ title, subtitle, icon, className }: HeaderTitl
           <span>{title}</span>
         </h1>
         {subtitle && (
-          <p className="text-muted-foreground/60 mt-0.5 truncate text-xs font-normal">{subtitle}</p>
+          <p className="text-muted-foreground/60 mt-0.5 truncate text-sm font-normal">{subtitle}</p>
         )}
       </div>
     </div>

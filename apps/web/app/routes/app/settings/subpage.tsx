@@ -1,7 +1,12 @@
 import { useEffect } from "react";
 import { useLocation, useParams, Navigate } from "react-router";
 import { SettingsSubPageLayout } from "@/components/settings/SettingsSubPageLayout";
-import { findSubPageByPath, getBackNavigation } from "@/components/settings/settingsSubPages";
+import {
+  findSubPageByPath,
+  getBackNavigation,
+  isRootSettingsSubPage,
+  SETTINGS_BASE_PATH,
+} from "@/components/settings/settingsSubPages";
 
 export default function DynamicSettingsSubpageRoute() {
   const location = useLocation();
@@ -19,8 +24,8 @@ export default function DynamicSettingsSubpageRoute() {
     }
   }, [subpageDef]);
 
-  if (!subpageDef) {
-    return <Navigate to="/app/settings" replace />;
+  if (!subpageDef || isRootSettingsSubPage(subpageDef)) {
+    return <Navigate to={SETTINGS_BASE_PATH} replace />;
   }
 
   const Component = subpageDef.component;

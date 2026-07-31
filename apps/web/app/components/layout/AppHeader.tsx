@@ -35,6 +35,7 @@ export function AppHeader({ title, subtitle, icon, className, children }: AppHea
           className
         )}
       >
+        {/* NOTE: Mobile sidebar trigger */}
         <SidebarToggle className="mt-0.5 shrink-0" />
         <div className="min-w-0 flex-1">{headerContent}</div>
       </header>

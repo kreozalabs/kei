@@ -1,16 +1,30 @@
-import * as React from "react";
+import { GeneralSettings } from "./GeneralSettings";
 import { KeyboardShortcutsSettings } from "./general/KeyboardShortcuts";
 
 export const SETTINGS_BASE_PATH = "/app/settings";
+export const ROOT_SETTINGS_SECTION_ID = "general";
+
+/**
+ * Checks if a subpage definition represents the root settings section.
+ */
+export function isRootSettingsSubPage(subpageDef?: SettingsSubPageDefinition): boolean {
+  if (!subpageDef) return true;
+  if (subpageDef.id === ROOT_SETTINGS_SECTION_ID) return true;
+  const slugs = Array.isArray(subpageDef.slug) ? subpageDef.slug : [subpageDef.slug];
+  return slugs.includes("");
+}
 
 /**
  * Returns the full application path for a given settings relative slug.
  * Example: getSettingsPath("extensions") -> "/app/settings/extensions"
- * Example: getSettingsPath("general/shortcuts") -> "/app/settings/general/shortcuts"
+ * Example: getSettingsPath("extensions/holidays") -> "/app/settings/extensions/holidays"
  */
 export function getSettingsPath(slug: string = ""): string {
   const cleanSlug = slug.replace(/^\/+|\/+$/g, "");
-  return cleanSlug ? `${SETTINGS_BASE_PATH}/${cleanSlug}` : SETTINGS_BASE_PATH;
+  if (!cleanSlug || cleanSlug === ROOT_SETTINGS_SECTION_ID) {
+    return SETTINGS_BASE_PATH;
+  }
+  return `${SETTINGS_BASE_PATH}/${cleanSlug}`;
 }
 
 export interface SettingsSubPageDefinition {
@@ -23,10 +37,48 @@ export interface SettingsSubPageDefinition {
 
 export const SETTINGS_SUB_PAGES: SettingsSubPageDefinition[] = [
   {
+    id: ROOT_SETTINGS_SECTION_ID,
+    slug: ["", "general"],
+    title: "General",
+    component: GeneralSettings,
+  },
+  {
     id: "keyboard-shortcuts",
     slug: ["shortcuts", "general/shortcuts"],
     title: "Keyboard Shortcuts",
+    parentSlug: ROOT_SETTINGS_SECTION_ID,
     component: KeyboardShortcutsSettings,
+  },
+];
+
+export interface SettingsTreeLeaf {
+  id: string;
+  label: string;
+  href?: string;
+  to?: string;
+}
+
+export interface SettingsTreeGroup {
+  id: string;
+  label: string;
+  children?: SettingsTreeLeaf[];
+  href?: string;
+  to?: string;
+}
+
+export const SETTINGS_TREE_SECTIONS: SettingsTreeGroup[] = [
+  {
+    id: ROOT_SETTINGS_SECTION_ID,
+    label: "General",
+    to: SETTINGS_BASE_PATH,
+    children: [
+      { id: "language-region", label: "Language & region", href: "#language-region" },
+      {
+        id: "keyboard-shortcuts",
+        label: "Keyboard shortcuts",
+        to: getSettingsPath("shortcuts"),
+      },
+    ],
   },
 ];
 
@@ -51,7 +103,7 @@ export function findSubPageByPath(pathname?: string): SettingsSubPageDefinition 
   const cleanInput = pathname
     .toLowerCase()
     .trim()
-    .replace(/^https?:\/\/[^\/]+/, "")
+    .replace(/^https?:\/\/[^/]+/, "")
     .replace(/^\/?app\/settings\/?/i, "")
     .replace(/^\/+|\/+$/g, "");
 
@@ -87,8 +139,9 @@ export function getBackNavigation(subpageDef?: SettingsSubPageDefinition): BackN
   // 1. Explicit parentSlug defined on subpage
   if (subpageDef.parentSlug) {
     const parent = findSubPageByPath(subpageDef.parentSlug);
+    const isRootParent = !parent || isRootSettingsSubPage(parent);
     return {
-      backTo: getSettingsPath(subpageDef.parentSlug),
+      backTo: isRootParent ? SETTINGS_BASE_PATH : getSettingsPath(subpageDef.parentSlug),
       backLabel: parent ? `Back to ${parent.title}` : "Back to Settings",
     };
   }
@@ -102,14 +155,15 @@ export function getBackNavigation(subpageDef?: SettingsSubPageDefinition): BackN
     const parentDef = findSubPageByPath(parentSlug);
 
     if (parentDef) {
+      const isRootParent = isRootSettingsSubPage(parentDef);
       return {
-        backTo: getSettingsPath(parentSlug),
+        backTo: isRootParent ? SETTINGS_BASE_PATH : getSettingsPath(parentSlug),
         backLabel: `Back to ${parentDef.title}`,
       };
     }
   }
 
-  // Default fallback to settings main page
+  // Default fallback for settings subpages back to main settings page
   return {
     backTo: SETTINGS_BASE_PATH,
     backLabel: "Back to Settings",

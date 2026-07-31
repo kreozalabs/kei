@@ -31,11 +31,16 @@ const DATE_FORMAT_OPTIONS: { value: DateFormatType; label: string }[] = [
   { value: DATE_FORMATS.YYYYMMDD, label: "2000/12/31" },
 ];
 
-export function LocalizationSettings() {
+export interface LocalizationSettingsProps {
+  id?: string;
+}
+
+export function LocalizationSettings({ id }: LocalizationSettingsProps) {
   const { settings, updateSetting } = useSettings();
 
   return (
     <SettingSection
+      id={id}
       title="Language and region"
       description="Customize display language, time zone, date, and time formatting preferences."
       icon={<Globe className="size-4" />}

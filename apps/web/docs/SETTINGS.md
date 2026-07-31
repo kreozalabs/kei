@@ -17,9 +17,9 @@ The settings module adopts a **Chrome browser settings aesthetic**:
 
 ## 2. Relative Slugs & `getSettingsPath` Helper
 
-All settings subpages define **relative slugs** (`slug: "extensions"` or `slug: "general/shortcuts"`).
+All settings subpages define **relative slugs** (`slug: "extensions"` or `slug: "shortcuts"`).
 
-The base path (`SETTINGS_BASE_PATH = "/app/settings"`) is centralized in [settingsSubPages.ts](/kei/apps/web/app/components/settings/settingsSubPages.ts).
+The base path (`SETTINGS_BASE_PATH = "/app/settings"`) is centralized in [settingsSubPages.ts](/kei/apps/web/app/components/settings/settingsSubPages.ts). General settings lives directly at `/app/settings`.
 
 ### Usage:
 
@@ -29,8 +29,8 @@ import { getSettingsPath } from "./settingsSubPages";
 // Evaluates to "/app/settings/extensions"
 const extensionsPath = getSettingsPath("extensions");
 
-// Evaluates to "/app/settings/general/shortcuts"
-const shortcutsPath = getSettingsPath("general/shortcuts");
+// Evaluates to "/app/settings/shortcuts"
+const shortcutsPath = getSettingsPath("shortcuts");
 ```
 
 ---
@@ -91,7 +91,44 @@ Import your component and add an entry to `SETTINGS_SUB_PAGES`:
 
 ---
 
-## 5. UI Components Guide (Chrome Aesthetic)
+## 5. Table of Contents & Navigation Tree (`SettingsSidebar`)
+
+The settings layout includes a **Table of Contents (TOC) / Navigation Tree sidebar** ([SettingsSidebar.tsx](/kei/apps/web/app/components/settings/SettingsSidebar.tsx)):
+
+- Built with accessibility ARIA tree structure (`role="tree"`, `role="treeitem"`, `role="group"`).
+- Supports collapsible groups (`General`, `Appearance`, `Actions`, `Maintenance & Sync`, `System Diagnostics`).
+- Synchronizes with in-page section `#id` anchors using the decoupled `useScrollSpy` hook ([useScrollSpy.ts](/kei/apps/web/app/hooks/useScrollSpy.ts)) as the user scrolls.
+
+### Section ID Anchoring Pattern
+
+Setting section components accept an optional `id` prop (forwarded to `SettingSection` card container):
+
+```tsx
+<LocalizationSettings id="language-region" />
+```
+
+### Adding a Section or Group to the Table of Contents Tree
+
+To register a section or group in the TOC sidebar, update `SETTINGS_TREE_SECTIONS` in [settingsSubPages.ts](/kei/apps/web/app/components/settings/settingsSubPages.ts):
+
+```ts
+{
+  id: "general",
+  label: "General",
+  to: SETTINGS_BASE_PATH, // Group route destination (/app/settings)
+  children: [
+    { id: "language-region", label: "Language & region", href: "#language-region" }, // Section anchor
+    { id: "keyboard-shortcuts", label: "Keyboard shortcuts", to: getSettingsPath("shortcuts") }, // Subpage link (/app/settings/shortcuts)
+  ],
+}
+```
+
+> [!IMPORTANT]
+> **Group Route Resolution Rule**: Group items can specify a `to` path (e.g. `/app/settings/general`). When users navigate to `/app/settings`, the index route automatically redirects to `/app/settings/general`. When clicking a group header in the sidebar, it toggles group expansion AND navigates to the group's route.
+
+---
+
+## 6. UI Components Guide (Chrome Aesthetic)
 
 ### `SettingsLinkGroup`
 

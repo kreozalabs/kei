@@ -50,8 +50,8 @@ function AppLayoutContent({ error }: { error?: unknown }) {
     <HeaderPortalContext.Provider value={headerPortalRef}>
       <div className="bg-background text-foreground flex h-svh w-full flex-col overflow-hidden">
         {/* Global Top Header */}
-        <header className="bg-muted/95 border-border/40 hidden h-16 w-full shrink-0 items-center justify-between border-b px-6 backdrop-blur-xl md:flex">
-          <div className="flex items-center gap-4">
+        <header className="bg-muted/95 border-border/40 hidden h-16 w-full shrink-0 items-center justify-between border-b pr-6 pl-0 backdrop-blur-xl md:flex">
+          <div className="flex w-(--sidebar-width-icon) shrink-0 items-center justify-center">
             <SidebarToggle />
           </div>
 

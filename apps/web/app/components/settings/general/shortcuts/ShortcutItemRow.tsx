@@ -23,7 +23,7 @@ export function ShortcutItemRow({
       {/* Column 1: Command Title & Category */}
       <div className="col-span-12 flex flex-col gap-1 sm:col-span-4">
         <span className="text-foreground font-medium">{command.description}</span>
-        <Badge variant="outline" className="text-muted-foreground w-fit text-xs font-medium">
+        <Badge variant="outline" className="text-muted-foreground w-fit text-sm font-medium">
           {command.category}
         </Badge>
       </div>
@@ -31,7 +31,7 @@ export function ShortcutItemRow({
       {/* Column 2: Shortcuts List */}
       <div className="col-span-12 flex flex-col gap-2 sm:col-span-6">
         {command.shortcuts.length === 0 && (
-          <span className="text-muted-foreground py-0.5 text-xs italic">No shortcut assigned</span>
+          <span className="text-muted-foreground py-0.5 text-sm italic">No shortcut assigned</span>
         )}
 
         {command.shortcuts.map((keys, sIdx) => (
@@ -50,7 +50,7 @@ export function ShortcutItemRow({
             size="xs"
             variant="ghost"
             onClick={() => onResetCommand(command.id)}
-            className="text-muted-foreground hover:text-foreground h-7 gap-1 px-2 text-xs"
+            className="text-muted-foreground hover:text-foreground h-7 gap-1 px-2 text-sm"
             title="Reset this shortcut to default"
             aria-label={`Reset shortcut for ${command.description} to default`}
           >
@@ -62,7 +62,7 @@ export function ShortcutItemRow({
           size="xs"
           variant="ghost"
           onClick={() => onAddShortcut(command)}
-          className="h-7 gap-1 px-2.5 text-xs"
+          className="h-7 gap-1 px-2.5 text-sm"
           aria-label={`Add shortcut for ${command.description}`}
         >
           <Plus className="size-3.5" aria-hidden="true" />

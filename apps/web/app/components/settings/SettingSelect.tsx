@@ -60,12 +60,12 @@ export function SettingSelect<T extends string>({
         <SelectContent>
           <SelectGroup>
             {groupLabel && (
-              <SelectLabel className="text-muted-foreground text-xs font-semibold">
+              <SelectLabel className="text-muted-foreground text-sm font-semibold">
                 {groupLabel}
               </SelectLabel>
             )}
             {options.map((opt) => (
-              <SelectItem key={opt.value} value={opt.value} className="text-xs sm:text-sm">
+              <SelectItem key={opt.value} value={opt.value} className="text-sm">
                 {opt.label}
               </SelectItem>
             ))}

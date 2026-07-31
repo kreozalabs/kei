@@ -2,6 +2,7 @@ import * as React from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, cn } from "@kreozalabs/kei-ui";
 
 export interface SettingSectionProps {
+  id?: string;
   title: React.ReactNode;
   description?: React.ReactNode;
   icon?: React.ReactNode;
@@ -12,6 +13,7 @@ export interface SettingSectionProps {
 }
 
 export function SettingSection({
+  id,
   title,
   description,
   icon,
@@ -22,8 +24,9 @@ export function SettingSection({
 }: SettingSectionProps) {
   return (
     <Card
+      id={id}
       className={cn(
-        "border-border/60 bg-card/80 hover:border-border shadow-xs backdrop-blur-xs transition-all",
+        "border-border/60 bg-card/80 hover:border-border scroll-mt-6 shadow-xs backdrop-blur-xs transition-all",
         className
       )}
     >
@@ -38,7 +41,7 @@ export function SettingSection({
             <div className="space-y-0.5">
               <CardTitle className="text-foreground text-base font-semibold">{title}</CardTitle>
               {description && (
-                <CardDescription className="text-muted-foreground text-xs">
+                <CardDescription className="text-muted-foreground text-sm">
                   {description}
                 </CardDescription>
               )}

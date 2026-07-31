@@ -8,7 +8,7 @@ export function GeneralSettings() {
     {
       title: "Keyboard shortcuts",
       description: "Manage application hotkeys and quick action key bindings.",
-      to: getSettingsPath("general/shortcuts"),
+      to: getSettingsPath("shortcuts"),
       icon: <KeyboardIcon className="size-4" />,
       value: "Configure",
     },
@@ -16,7 +16,7 @@ export function GeneralSettings() {
 
   return (
     <div className="mx-auto max-w-4xl space-y-6 px-1 py-2 sm:px-2">
-      <LocalizationSettings />
+      <LocalizationSettings id="language-region" />
 
       <SettingsLinkGroup items={navigationLinks} className="hidden md:block" />
     </div>

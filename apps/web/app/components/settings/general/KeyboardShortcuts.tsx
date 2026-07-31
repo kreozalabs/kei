@@ -28,54 +28,59 @@ export function KeyboardShortcutsSettings() {
   } = useKeyboardShortcuts();
 
   return (
-    <SettingSection
-      title="Keyboard shortcuts"
-      description="Manage application hotkeys and quick action key bindings."
-      icon={<KeyboardIcon className="size-4" />}
-      className="hidden md:block"
-      action={
-        <Switch
-          checked={isEnabled}
-          onCheckedChange={(val) => updateSetting("enable_keyboard_shortcuts", val)}
-          aria-label="Enable keyboard shortcuts"
-        />
-      }
-    >
-      <div className={cn("transition-opacity", !isEnabled && "pointer-events-none opacity-50")}>
-        <ShortcutSearchHeader
-          isEnabled={isEnabled}
-          searchQuery={searchQuery}
-          onSearchQueryChange={setSearchQuery}
-          onResetAll={handleResetAll}
-        />
+    <>
+      <div className="border-border/60 bg-muted/30 text-muted-foreground rounded-2xl border p-6 text-center text-sm md:hidden">
+        Keyboard shortcuts configuration is only available on desktop screens.
+      </div>
+      <SettingSection
+        title="Keyboard shortcuts"
+        description="Manage application hotkeys and quick action key bindings."
+        icon={<KeyboardIcon className="size-4" />}
+        className="hidden md:block"
+        action={
+          <Switch
+            checked={isEnabled}
+            onCheckedChange={(val) => updateSetting("enable_keyboard_shortcuts", val)}
+            aria-label="Enable keyboard shortcuts"
+          />
+        }
+      >
+        <div className={cn("transition-opacity", !isEnabled && "pointer-events-none opacity-50")}>
+          <ShortcutSearchHeader
+            isEnabled={isEnabled}
+            searchQuery={searchQuery}
+            onSearchQueryChange={setSearchQuery}
+            onResetAll={handleResetAll}
+          />
 
-        <div>
-          <div className="divide-border divide-y">
-            {filteredCommands.length === 0 ? (
-              <div className="text-muted-foreground p-6 text-center text-sm">
-                No matching commands or shortcuts found for &quot;{searchQuery}&quot;.
-              </div>
-            ) : (
-              filteredCommands.map((command) => (
-                <ShortcutItemRow
-                  key={command.id}
-                  command={command}
-                  isModified={isCommandModified(command)}
-                  onRemoveShortcut={handleRemoveShortcut}
-                  onResetCommand={handleResetSingleCommand}
-                  onAddShortcut={setSelectedCommandForAdd}
-                />
-              ))
-            )}
+          <div>
+            <div className="divide-border divide-y">
+              {filteredCommands.length === 0 ? (
+                <div className="text-muted-foreground p-6 text-center text-sm">
+                  No matching commands or shortcuts found for &quot;{searchQuery}&quot;.
+                </div>
+              ) : (
+                filteredCommands.map((command) => (
+                  <ShortcutItemRow
+                    key={command.id}
+                    command={command}
+                    isModified={isCommandModified(command)}
+                    onRemoveShortcut={handleRemoveShortcut}
+                    onResetCommand={handleResetSingleCommand}
+                    onAddShortcut={setSelectedCommandForAdd}
+                  />
+                ))
+              )}
+            </div>
           </div>
         </div>
-      </div>
 
-      <ShortcutRecorderDialog
-        selectedCommand={selectedCommandForAdd}
-        onClose={() => setSelectedCommandForAdd(null)}
-        onSave={handleSaveNewShortcut}
-      />
-    </SettingSection>
+        <ShortcutRecorderDialog
+          selectedCommand={selectedCommandForAdd}
+          onClose={() => setSelectedCommandForAdd(null)}
+          onSave={handleSaveNewShortcut}
+        />
+      </SettingSection>
+    </>
   );
 }

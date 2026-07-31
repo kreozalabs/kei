@@ -44,7 +44,7 @@ export function MobileNav() {
                 </div>
                 <span
                   className={cn(
-                    "text-xs font-semibold tracking-tight uppercase",
+                    "text-sm font-semibold tracking-tight uppercase",
                     isHighlight && !isActive && "text-primary/60"
                   )}
                 >
