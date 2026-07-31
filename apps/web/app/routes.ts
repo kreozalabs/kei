@@ -9,7 +9,10 @@ export default [
 
   // 2. Main App (Prefixed with /app)
   route("app", "routes/app/_layout.tsx", [
-    route("settings", "routes/app/settings.tsx"),
+    route("settings", "routes/app/settings.tsx", [
+      index("routes/app/settings/index.tsx"),
+      route("*", "routes/app/settings/subpage.tsx"),
+    ]),
     index("routes/app/dashboard.tsx"),
     route("calendar", "routes/app/dashboard.tsx", { id: "dashboard-calendar" }),
     route("calendar/*", "routes/app/dashboard.tsx", { id: "dashboard-calendar-splat" }),

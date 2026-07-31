@@ -66,19 +66,19 @@ TODO: QUESTIONS
 //   About: ["Title", "Version", "Check for Updates", "Source Code", "Links", "Licenses"],
 // };
 import { useEffect } from "react";
+import { Outlet } from "react-router";
 import { AppPage } from "@/components/layout/AppPage";
 import { MobileFAB } from "@/components/MobileFAB";
-import { GeneralSettings } from "@/components/settings/GeneralSettings";
 
-export default function Settings({ groupTitle }: { groupTitle: string }) {
+export default function SettingsLayout() {
   useEffect(() => {
-    document.title = `Kei︱Settings - ${groupTitle}`;
-  }, [groupTitle]);
+    document.title = "Kei︱Settings";
+  }, []);
 
   return (
     <AppPage title="Settings" scrollable padded>
       <MobileFAB className="hidden">{null}</MobileFAB>
-      <GeneralSettings />
+      <Outlet />
     </AppPage>
   );
 }
