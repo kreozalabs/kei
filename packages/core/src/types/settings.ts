@@ -32,6 +32,7 @@ export interface Settings {
   default_insert_at_top: boolean;
   show_intentions: boolean;
   show_default_energy: boolean;
+  enable_keyboard_shortcuts?: boolean;
   animations?: "smooth" | "reduced" | "off";
 }
 

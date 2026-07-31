@@ -171,6 +171,7 @@ export const DEFAULT_SETTINGS = {
   default_insert_at_top: false,
   show_intentions: true,
   show_default_energy: false,
+  enable_keyboard_shortcuts: true,
   animations: "smooth" as const,
 };
 
