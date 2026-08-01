@@ -33,6 +33,7 @@ export function KeyboardShortcutsSettings() {
         Keyboard shortcuts configuration is only available on desktop screens.
       </div>
       <SettingSection
+        id="keyboard-shortcuts"
         title="Keyboard shortcuts"
         description="Manage application hotkeys and quick action key bindings."
         icon={<KeyboardIcon className="size-4" />}

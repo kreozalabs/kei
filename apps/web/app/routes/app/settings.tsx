@@ -70,8 +70,11 @@ import { Outlet } from "react-router";
 import { AppPage } from "@/components/layout/AppPage";
 import { MobileFAB } from "@/components/MobileFAB";
 import { SettingsSidebar } from "@/components/settings/layout/SettingsSidebar";
+import { useHashScroll } from "@/hooks/useHashScroll";
 
 export default function SettingsLayout() {
+  useHashScroll();
+
   useEffect(() => {
     document.title = "Kei︱Settings";
   }, []);

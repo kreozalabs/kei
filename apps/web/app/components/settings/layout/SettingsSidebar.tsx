@@ -188,7 +188,7 @@ export function SettingsSidebar() {
       const targetId = item.href.replace("#", "");
       const el = document.getElementById(targetId);
       if (el) {
-        window.history.pushState(null, "", `${location.pathname}${item.href}`);
+        navigate(`${location.pathname}${item.href}`);
         el.scrollIntoView({ behavior: "smooth" });
       } else {
         const parentGroup = SETTINGS_TREE_SECTIONS.find((g) =>
