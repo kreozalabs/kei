@@ -1,4 +1,4 @@
-import { useMemo, useState, useRef } from "react";
+import { useMemo, useState, useRef, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router";
 import { ChevronRight } from "lucide-react";
 import { Button, cn } from "@kreozalabs/kei-ui";
@@ -123,6 +123,7 @@ export function SettingsSidebar() {
     )
   );
 
+  const isSettingsPage = location.pathname.startsWith(SETTINGS_BASE_PATH);
   const isGeneralSettingsPage =
     location.pathname === SETTINGS_BASE_PATH || location.pathname === GENERAL_SETTINGS_PATH;
 
@@ -139,11 +140,31 @@ export function SettingsSidebar() {
     return ids;
   }, []);
 
-  // Decoupled scroll-spy hook for tracking section visibility on scroll
-  const spyActiveId = useScrollSpy(sectionIds, { enabled: isGeneralSettingsPage });
+  // Decoupled scroll-spy hook for tracking section visibility on scroll across settings pages
+  const spyActiveId = useScrollSpy(sectionIds, { enabled: isSettingsPage });
+
+  // Sync scroll spy active section to browser URL hash so page reload preserves scroll position
+  useEffect(() => {
+    if (isSettingsPage && spyActiveId) {
+      const targetHash = `#${spyActiveId}`;
+      if (window.location.hash !== targetHash) {
+        window.history.replaceState(
+          null,
+          "",
+          `${window.location.pathname}${window.location.search}${targetHash}`
+        );
+      }
+    }
+  }, [isSettingsPage, spyActiveId]);
 
   // Derive active item ID during rendering (no useEffect setState)
   const activeId = useMemo(() => {
+    // 1. Use scroll spy active section if available on any settings page
+    if (spyActiveId) {
+      return spyActiveId;
+    }
+
+    // 2. Hash match from location
     if (location.hash) {
       return location.hash.replace("#", "");
     }
@@ -154,11 +175,6 @@ export function SettingsSidebar() {
     for (const group of SETTINGS_TREE_SECTIONS) {
       const matchedChild = group.children?.find((child) => child.to === pathname);
       if (matchedChild) return matchedChild.id;
-    }
-
-    // Use scroll spy active section if on general settings page
-    if (isGeneralSettingsPage && spyActiveId) {
-      return spyActiveId;
     }
 
     // Check for group route matches
