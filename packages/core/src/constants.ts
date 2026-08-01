@@ -1,3 +1,5 @@
+import type { Accent, Settings } from "./types/settings";
+
 export const GLOBAL_SETTINGS_ID = "00000000-0000-0000-0000-000000000000";
 
 export const EVENT_TYPES = {
@@ -145,20 +147,19 @@ export const MAJOR_TIMEZONES = [
   { value: "Australia/Sydney", label: "Sydney (AEST/AEDT)" },
 ] as const;
 
-export const DEFAULT_SETTINGS = {
+export const DEFAULT_SETTINGS: Settings = {
   section_expanded: true,
-  theme: "system" as const,
-  accent: "rose" as const,
+  theme: "system",
+  accent: "rose",
   today_locked: true,
   date_format: DATE_FORMATS.SYSTEM,
   date_format_separator: DATE_FORMAT_SEPARATORS.SLASH,
   time_format: TIME_FORMATS.SYSTEM,
   timezone: "system",
-  subtle_on_idle: true,
   language: "system",
-  remember_layout_on_refresh: true,
+  remember_layout_on_refresh: false,
   action_duration_options: DURATION_OPTIONS,
-  action_timezone_options: MAJOR_TIMEZONES,
+  action_timezone_options: MAJOR_TIMEZONES.map((t) => t.value),
   default_energy: ENERGY_LEVELS.MEDIUM,
   default_intention: INTENTIONS.MUST,
   show_overdue: false,
@@ -172,8 +173,48 @@ export const DEFAULT_SETTINGS = {
   show_intentions: true,
   show_default_energy: false,
   enable_keyboard_shortcuts: true,
-  animations: "smooth" as const,
+  animations: "smooth",
+  minimal_mode: false,
+  interface_behavior: "subtle_on_idle",
+  interface_density: "comfortable",
+  grid_lines: "subtle",
 };
+
+export const INTERFACE_BEHAVIOR_OPTIONS = [
+  { label: "Always Visible", value: "always_visible" },
+  { label: "Subtle On Idle", value: "subtle_on_idle" },
+  { label: "Auto-Hide on Scroll", value: "auto_hide" },
+] as const;
+
+export const INTERFACE_DENSITY_OPTIONS = [
+  { label: "Compact (More Data)", value: "compact" },
+  { label: "Comfortable", value: "comfortable" },
+  { label: "Spacious", value: "spacious" },
+] as const;
+
+export const GRID_LINES_OPTIONS = [
+  { label: "Subtle", value: "subtle" },
+  { label: "High Contrast", value: "high_contrast" },
+  { label: "Hidden", value: "hidden" },
+] as const;
+
+export const SETTING_CATEGORIES = {
+  appearance: [
+    "theme",
+    "accent",
+    "animations",
+    "minimal_mode",
+    "interface_behavior",
+    "interface_density",
+    "grid_lines",
+  ],
+  general: ["language", "date_format", "date_format_separator", "time_format", "timezone"],
+  shortcuts: ["enable_keyboard_shortcuts"],
+} as const satisfies Record<string, readonly (keyof Settings)[]>;
+
+export type SettingCategory = keyof typeof SETTING_CATEGORIES;
+
+export const APPEARANCE_SETTING_KEYS = SETTING_CATEGORIES.appearance;
 
 export const STORAGE_KEYS = {
   SETTINGS: "kei-ui-settings",
@@ -199,8 +240,6 @@ export const LANGUAGES = {
   // ES: "es",
   // RU: "ru",
 } as const;
-
-import type { Accent } from "./types/settings";
 
 export const ACCENTS: { name: Accent; color: string; hover: string }[] = [
   { name: "blue", color: "bg-[#1e60f2]", hover: "hover:bg-[#1e60f2]" },

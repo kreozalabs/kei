@@ -1,9 +1,9 @@
 import * as React from "react";
 import { useEffect, useState, useCallback, useMemo } from "react";
 import { SettingsProviderContext } from "./SettingsContext";
-import { DEFAULT_SETTINGS, STORAGE_KEYS } from "@kreozalabs/kei-core";
+import { DEFAULT_SETTINGS, SETTING_CATEGORIES, STORAGE_KEYS } from "@kreozalabs/kei-core";
 import { getSetting, setSetting } from "@/db/settings";
-import type { Settings } from "@kreozalabs/kei-core";
+import type { SettingCategory, Settings } from "@kreozalabs/kei-core";
 import { initPromise } from "../db";
 
 interface ThemeProviderProps {
@@ -14,7 +14,6 @@ interface ThemeProviderProps {
 export function SettingsProvider({
   children,
   storageKey = STORAGE_KEYS.SETTINGS,
-  ...props
 }: ThemeProviderProps) {
   const [settings, setSettingsState] = useState<Settings>(() => {
     if (typeof window === "undefined") return DEFAULT_SETTINGS;
@@ -47,6 +46,48 @@ export function SettingsProvider({
       initPromise.then(() => setSetting(key, newValue));
     },
     [settings, storageKey]
+  );
+
+  const updateSettings = useCallback(
+    (partial: Partial<Settings>) => {
+      setSettingsState((prev) => {
+        const newSettings = { ...prev, ...partial };
+        localStorage.setItem(storageKey, JSON.stringify(newSettings));
+        return newSettings;
+      });
+
+      initPromise.then(() => {
+        (Object.keys(partial) as (keyof Settings)[]).forEach((key) => {
+          const val = partial[key];
+          if (val !== undefined) {
+            setSetting(key, val);
+          }
+        });
+      });
+    },
+    [storageKey]
+  );
+
+  const resetSettings = useCallback(
+    (keys?: readonly (keyof Settings)[]) => {
+      const keysToReset = keys ?? (Object.keys(DEFAULT_SETTINGS) as (keyof Settings)[]);
+      const resetPartial: Partial<Settings> = {};
+      keysToReset.forEach((key) => {
+        resetPartial[key] = DEFAULT_SETTINGS[key] as never;
+      });
+      updateSettings(resetPartial);
+    },
+    [updateSettings]
+  );
+
+  const resetCategory = useCallback(
+    (category: SettingCategory) => {
+      const keys = SETTING_CATEGORIES[category];
+      if (keys) {
+        resetSettings(keys);
+      }
+    },
+    [resetSettings]
   );
 
   useEffect(() => {
@@ -142,8 +183,11 @@ export function SettingsProvider({
     () => ({
       settings,
       updateSetting,
+      updateSettings,
+      resetSettings,
+      resetCategory,
     }),
-    [settings, updateSetting]
+    [settings, updateSetting, updateSettings, resetSettings, resetCategory]
   );
 
   return <SettingsProviderContext value={value}>{children}</SettingsProviderContext>;

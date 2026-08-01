@@ -1,4 +1,5 @@
 import { AboutSettings } from "./about/AboutSettings";
+import { AppearanceSettings } from "./appearance/AppearanceSettings";
 import { GeneralSettings } from "./general/GeneralSettings";
 import { KeyboardShortcutsSettings } from "./general/KeyboardShortcuts";
 
@@ -50,6 +51,12 @@ export const SETTINGS_SUB_PAGES: SettingsSubPageDefinition[] = [
     component: KeyboardShortcutsSettings,
   },
   {
+    id: "appearance",
+    slug: "appearance",
+    title: "Appearance",
+    component: AppearanceSettings,
+  },
+  {
     id: "about",
     slug: "about",
     title: "About",
@@ -84,6 +91,19 @@ export const SETTINGS_TREE_SECTIONS: SettingsTreeGroup[] = [
         label: "Keyboard shortcuts",
         to: getSettingsPath("shortcuts"),
       },
+    ],
+  },
+
+  {
+    id: "appearance",
+    label: "Appearance",
+    to: getSettingsPath("appearance"),
+    children: [
+      { id: "appearance-theme", label: "Theme", href: "#appearance-theme" },
+      { id: "appearance-motion", label: "Motion", href: "#appearance-motion" },
+      { id: "appearance-display", label: "Display", href: "#appearance-display" },
+      { id: "appearance-layout", label: "Layout", href: "#appearance-layout" },
+      { id: "appearance-reset", label: "Reset", href: "#appearance-reset" },
     ],
   },
   {

@@ -1,4 +1,5 @@
 import { AboutSettings } from "@/components/settings/about/AboutSettings";
+import { AppearanceSettings } from "@/components/settings/appearance/AppearanceSettings";
 import { GeneralSettings } from "@/components/settings/general/GeneralSettings";
 import { SettingsSubPageLayout } from "@/components/settings/layout/SettingsSubPageLayout";
 import {
@@ -13,6 +14,9 @@ export default function SettingsIndexRoute() {
     <div>
       <SettingsSubPageLayout title={rootSubPage?.title ?? "General"} showBack={false}>
         <GeneralSettings />
+      </SettingsSubPageLayout>
+      <SettingsSubPageLayout title="Appearance" showBack={false}>
+        <AppearanceSettings />
       </SettingsSubPageLayout>
       <SettingsSubPageLayout title="About" showBack={false}>
         <AboutSettings />

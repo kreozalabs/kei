@@ -66,7 +66,9 @@ function AppLayoutContent({ error }: { error?: unknown }) {
             <div
               className={cn(
                 "flex items-center gap-1.5 transition-opacity duration-300",
-                settings.subtle_on_idle ? "opacity-50 hover:opacity-100" : "opacity-100"
+                (settings.interface_behavior ?? "subtle_on_idle") === "subtle_on_idle"
+                  ? "opacity-50 hover:opacity-100"
+                  : "opacity-100"
               )}
             >
               <FullscreenToggle
