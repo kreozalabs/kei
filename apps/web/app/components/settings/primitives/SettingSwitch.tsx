@@ -57,6 +57,8 @@ export function SettingSwitch({
           checked={value}
           onCheckedChange={onValueChange}
           disabled={disabled}
+          aria-label={label}
+          aria-labelledby={label ? `${switchId}-label` : undefined}
         />
       </div>
     </SettingRow>

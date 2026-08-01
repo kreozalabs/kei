@@ -159,8 +159,12 @@ export function SettingsProvider({
       root.className = classes.join(" ").trim();
       root.classList.add(`theme-${settings.accent}`);
 
-      // Update motion mode attribute
+      // Update data attributes for display & motion settings
       root.setAttribute("data-motion", settings.animations || "smooth");
+      root.setAttribute("data-minimal", settings.minimal_mode ? "true" : "false");
+      root.setAttribute("data-behavior", settings.interface_behavior || "subtle_on_idle");
+      root.setAttribute("data-density", settings.interface_density || "comfortable");
+      root.setAttribute("data-grid-lines", settings.grid_lines || "subtle");
 
       // Allow browser to apply styles without transition, then re-enable
       setTimeout(() => {
@@ -177,7 +181,15 @@ export function SettingsProvider({
       mediaQuery.addEventListener("change", handleSystemChange);
       return () => mediaQuery.removeEventListener("change", handleSystemChange);
     }
-  }, [settings.theme, settings.accent, settings.animations]);
+  }, [
+    settings.theme,
+    settings.accent,
+    settings.animations,
+    settings.minimal_mode,
+    settings.interface_behavior,
+    settings.interface_density,
+    settings.grid_lines,
+  ]);
 
   const value = useMemo(
     () => ({

@@ -155,4 +155,5 @@ Individual link row item inside a card:
 
 ## 7. Related Documentation
 
+- For detailed documentation on **Appearance, Motion Modes, Density & Display Settings**, see [APPEARANCE_AND_DISPLAY.md](/apps/web/docs/APPEARANCE_AND_DISPLAY.md).
 - For detailed documentation on **Language, Region, Date & Time formatting**, see [LOCALIZATION.md](/apps/web/docs/LOCALIZATION.md).

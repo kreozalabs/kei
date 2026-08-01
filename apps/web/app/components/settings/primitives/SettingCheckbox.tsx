@@ -57,6 +57,8 @@ export function SettingCheckbox({
           checked={value}
           onCheckedChange={onValueChange}
           disabled={disabled}
+          aria-label={label}
+          aria-labelledby={label ? `${checkboxId}-label` : undefined}
         />
       </div>
     </SettingRow>

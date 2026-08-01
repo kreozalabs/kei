@@ -59,7 +59,7 @@ export function MobileFAB({
     <Button
       onClick={onClick}
       className={cn(
-        "bg-primary hover:bg-primary/90 text-primary-foreground group shadow-primary/30 fixed right-6 bottom-24 z-50 flex size-14 items-center justify-center rounded-2xl border-none shadow-2xl transition-all duration-300 active:scale-95 md:hidden",
+        "floating-toolbar bg-primary hover:bg-primary/90 text-primary-foreground group shadow-primary/30 fixed right-6 bottom-24 z-50 flex size-14 items-center justify-center rounded-2xl border-none shadow-2xl transition-all duration-300 active:scale-95 md:hidden",
         className
       )}
       aria-label={ariaLabel || "Floating action button"}

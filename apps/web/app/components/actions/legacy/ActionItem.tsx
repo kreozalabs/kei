@@ -135,7 +135,7 @@ export function ActionItem({
         height: { duration: 0.2 },
       }}
       className={cn(
-        "group border-border/40 relative flex cursor-default items-start gap-2 overflow-hidden border-b px-1 py-2.5 transition-colors last:border-none sm:px-2",
+        "group density-item grid-line border-border/40 relative flex cursor-default items-start gap-2 overflow-hidden border-b px-1 py-2.5 transition-colors last:border-none sm:px-2",
         type === ACTION_STATUS.COMPLETED
           ? "opacity-50"
           : type === ACTION_STATUS.ABANDONED

@@ -102,11 +102,14 @@
   }
 
   /* Motion & Transition Modes */
+  :root,
   [data-motion="smooth"] {
-    --sidebar-transition-duration: 1000ms;
+    --sidebar-transition-duration: 500ms;
     --sidebar-transition-ease: cubic-bezier(0.32, 0.72, 0, 1);
-    --sheet-transition-duration: 1000ms;
+    --sheet-transition-duration: 500ms;
     --sheet-transition-ease: cubic-bezier(0.32, 0.72, 0, 1);
+    --ui-transition-duration: 500ms;
+    --ui-transition-ease: cubic-bezier(0.32, 0.72, 0, 1);
   }
 
   [data-motion="reduced"] {
@@ -114,13 +117,212 @@
     --sidebar-transition-ease: ease-linear;
     --sheet-transition-duration: 200ms;
     --sheet-transition-ease: ease-linear;
+    --ui-transition-duration: 150ms;
+    --ui-transition-ease: ease-linear;
   }
 
   [data-motion="off"] {
     --sidebar-transition-duration: 0ms;
-    --sidebar-transition-ease: step-end;
     --sheet-transition-duration: 0ms;
-    --sheet-transition-ease: step-end;
+    --ui-transition-duration: 0ms;
+  }
+
+  [data-motion="off"],
+  [data-motion="off"] * {
+    transition-duration: 0ms !important;
+    animation-duration: 0ms !important;
+  }
+
+  /* Keyframe Animations for Radix Overlays */
+  @keyframes overlay-fade-in {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+
+  @keyframes modal-zoom-in {
+    from {
+      opacity: 0;
+      transform: translate(-50%, -50%) scale(0.92);
+    }
+    to {
+      opacity: 1;
+      transform: translate(-50%, -50%) scale(1);
+    }
+  }
+
+  @keyframes sheet-slide-in-right {
+    from {
+      transform: translateX(100%);
+    }
+    to {
+      transform: translateX(0);
+    }
+  }
+
+  @keyframes sheet-slide-in-left {
+    from {
+      transform: translateX(-100%);
+    }
+    to {
+      transform: translateX(0);
+    }
+  }
+
+  @keyframes popover-zoom-in {
+    from {
+      opacity: 0;
+      transform: scale(0.92);
+    }
+    to {
+      opacity: 1;
+      transform: scale(1);
+    }
+  }
+
+  /* Force UI slots (sidebar, sheets, dialogs, drawers, popovers, dropdowns, tooltips) to observe CSS motion tokens */
+  [data-motion] [data-slot="sidebar-gap"],
+  [data-motion] [data-slot="sidebar-container"],
+  [data-motion] [data-sidebar="sidebar"] {
+    transition-duration: var(--sidebar-transition-duration) !important;
+    transition-timing-function: var(--sidebar-transition-ease) !important;
+  }
+
+  [data-motion] [data-state="open"][data-slot="dialog-overlay"],
+  [data-motion] [data-state="open"][data-slot="sheet-overlay"],
+  [data-motion] [data-state="open"][data-slot="drawer-overlay"] {
+    animation: overlay-fade-in var(--ui-transition-duration) var(--ui-transition-ease) forwards !important;
+  }
+
+  [data-motion] [data-state="open"][data-slot="dialog-content"],
+  [data-motion] [data-state="open"][data-slot="command-dialog"] {
+    animation: modal-zoom-in var(--ui-transition-duration) var(--ui-transition-ease) forwards !important;
+  }
+
+  /* Sheet Animations (Left & Right) */
+  [data-motion] [data-state="open"][data-slot="sheet-content"][data-side="left"],
+  [data-motion] [data-state="open"][data-slot="sidebar"][data-mobile="true"][data-side="left"],
+  [data-motion]
+    [data-state="open"][data-slot="sidebar"][data-mobile="true"]:not([data-side="right"]) {
+    animation: sheet-slide-in-left var(--sheet-transition-duration) var(--sheet-transition-ease)
+      forwards !important;
+  }
+
+  [data-motion] [data-state="open"][data-slot="sheet-content"][data-side="right"],
+  [data-motion] [data-state="open"][data-slot="sheet-content"]:not([data-side="left"]),
+  [data-motion] [data-state="open"][data-slot="sidebar"][data-mobile="true"][data-side="right"] {
+    animation: sheet-slide-in-right var(--sheet-transition-duration) var(--sheet-transition-ease)
+      forwards !important;
+  }
+
+  [data-motion] [data-state="open"][data-slot="popover-content"],
+  [data-motion] [data-state="open"][data-slot="dropdown-menu-content"],
+  [data-motion] [data-state="open"][data-slot="dropdown-menu-sub-content"],
+  [data-motion] [data-state="open"][data-slot="tooltip-content"],
+  [data-motion] [data-state="open"][data-slot="select-content"] {
+    animation: popover-zoom-in var(--ui-transition-duration) var(--ui-transition-ease) forwards !important;
+  }
+
+  [data-motion="off"] [data-state="open"][data-slot="dialog-overlay"],
+  [data-motion="off"] [data-state="open"][data-slot="sheet-overlay"],
+  [data-motion="off"] [data-state="open"][data-slot="drawer-overlay"],
+  [data-motion="off"] [data-state="open"][data-slot="dialog-content"],
+  [data-motion="off"] [data-state="open"][data-slot="command-dialog"],
+  [data-motion="off"] [data-state="open"][data-slot="sheet-content"],
+  [data-motion="off"] [data-state="open"][data-slot="sidebar"][data-mobile="true"],
+  [data-motion="off"] [data-state="open"][data-slot="popover-content"],
+  [data-motion="off"] [data-state="open"][data-slot="dropdown-menu-content"],
+  [data-motion="off"] [data-state="open"][data-slot="select-content"] {
+    animation: none !important;
+    transition: none !important;
+  }
+
+  /* Minimal Mode */
+  [data-minimal="true"] .setting-description,
+  [data-minimal="true"] [data-minimal-hide],
+  [data-minimal="true"] .card-subtext {
+    display: none !important;
+  }
+
+  /* Interface Density Tokens & Slot Rules */
+  [data-density="compact"] {
+    --density-padding-y: 0.375rem;
+    --density-padding-x: 0.5rem;
+    --density-gap: 0.5rem;
+    --density-row-height: 2rem;
+    --density-font-size: 0.8125rem;
+  }
+
+  [data-density="comfortable"] {
+    --density-padding-y: 0.5rem;
+    --density-padding-x: 0.75rem;
+    --density-gap: 0.75rem;
+    --density-row-height: 2.5rem;
+    --density-font-size: 0.875rem;
+  }
+
+  [data-density="spacious"] {
+    --density-padding-y: 0.75rem;
+    --density-padding-x: 1rem;
+    --density-gap: 1rem;
+    --density-row-height: 3rem;
+    --density-font-size: 0.9375rem;
+  }
+
+  [data-density] [data-slot="table-cell"],
+  [data-density] [data-slot="table-head"],
+  [data-density] [data-slot="card-content"],
+  [data-density] [data-slot="card-header"],
+  [data-density] [data-slot="card-footer"],
+  [data-density] .density-item {
+    padding-top: var(--density-padding-y) !important;
+    padding-bottom: var(--density-padding-y) !important;
+  }
+
+  /* Grid Lines Styles & Slot Rules */
+  [data-grid-lines="subtle"] {
+    --grid-border-color: var(--border);
+    --grid-border-width: 1px;
+    --grid-border-opacity: 0.5;
+  }
+
+  [data-grid-lines="high_contrast"] {
+    --grid-border-color: var(--foreground);
+    --grid-border-width: 1px;
+    --grid-border-opacity: 0.8;
+  }
+
+  [data-grid-lines="hidden"] {
+    --grid-border-color: transparent;
+    --grid-border-width: 0px;
+    --grid-border-opacity: 0;
+  }
+
+  [data-grid-lines] [data-slot="table-cell"],
+  [data-grid-lines] [data-slot="table-head"],
+  [data-grid-lines] [data-slot="table-row"],
+  [data-grid-lines] [data-slot="card"],
+  [data-grid-lines] .grid-line {
+    border-color: var(--grid-border-color) !important;
+  }
+
+  /* Interface Behaviors */
+  [data-behavior="subtle_on_idle"] .floating-toolbar:not(:hover):not(:focus-within),
+  [data-behavior="subtle_on_idle"] [data-floating-control]:not(:hover):not(:focus-within) {
+    opacity: 0.4;
+    transition: opacity var(--ui-transition-duration) var(--ui-transition-ease);
+  }
+
+  [data-behavior="auto_hide"] .floating-toolbar:not(:hover):not(:focus-within),
+  [data-behavior="auto_hide"] [data-floating-control]:not(:hover):not(:focus-within) {
+    transform: translateY(100%);
+    opacity: 0;
+    transition:
+      transform var(--ui-transition-duration) var(--ui-transition-ease),
+      opacity var(--ui-transition-duration) var(--ui-transition-ease);
   }
 
   @media (prefers-reduced-motion: reduce) {
@@ -131,6 +333,8 @@
       --sidebar-transition-ease: step-end !important;
       --sheet-transition-duration: 0ms !important;
       --sheet-transition-ease: step-end !important;
+      --ui-transition-duration: 0ms !important;
+      --ui-transition-ease: step-end !important;
     }
   }
 

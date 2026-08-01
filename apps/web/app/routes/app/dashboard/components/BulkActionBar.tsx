@@ -40,7 +40,7 @@ export function BulkActionBar() {
           animate={{ opacity: 1, y: 0, scale: 1 }}
           exit={{ opacity: 0, y: 50, scale: 0.95 }}
           transition={{ type: "spring", stiffness: 350, damping: 25 }}
-          className="border-border/40 bg-background/70 fixed bottom-20 left-1/2 z-50 flex max-w-[95vw] -translate-x-1/2 items-center gap-2 rounded-full border px-3 py-2 shadow-2xl backdrop-blur-xl sm:gap-4 sm:px-5 sm:py-3 md:bottom-6 md:max-w-none"
+          className="floating-toolbar border-border/40 bg-background/70 fixed bottom-20 left-1/2 z-50 flex max-w-[95vw] -translate-x-1/2 items-center gap-2 rounded-full border px-3 py-2 shadow-2xl backdrop-blur-xl sm:gap-4 sm:px-5 sm:py-3 md:bottom-6 md:max-w-none"
         >
           <div className="border-border/20 flex shrink-0 items-center gap-1.5 border-r pr-2 sm:pr-4">
             <span className="bg-primary text-primary-foreground flex size-5 items-center justify-center rounded-full text-[10px] font-black">
