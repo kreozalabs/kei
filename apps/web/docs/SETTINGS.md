@@ -150,3 +150,9 @@ Individual link row item inside a card:
 - `value`: Right-aligned status label/badge (e.g. `"Configured"`, `"Default"`)
 - `external`: Renders `ExternalLink` icon instead of `ChevronRight`
 - `disabled`: Disables interaction and mutes opacity
+
+---
+
+## 7. Related Documentation
+
+- For detailed documentation on **Language, Region, Date & Time formatting**, see [LOCALIZATION.md](/apps/web/docs/LOCALIZATION.md).

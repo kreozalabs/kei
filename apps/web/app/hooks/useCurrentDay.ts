@@ -2,6 +2,13 @@ import { useState, useEffect } from "react";
 
 import { getTodayString } from "@kreozalabs/kei-core";
 
+/**
+ * Returns the active day ISO key ("YYYY-MM-DD") used for database task queries.
+ * Automatically triggers a React re-render when the user's system clock crosses midnight.
+ *
+ * Note: Use this for domain date filtering (e.g. action.scheduledDate === today).
+ * For displaying formatted dates in UI elements, pass the value to `formatDate()` from `useLocalization()`.
+ */
 export function useCurrentDay() {
   const [today, setToday] = useState(getTodayString);
 

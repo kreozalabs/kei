@@ -1,7 +1,7 @@
 import React, { createContext, use, useState, useCallback } from "react";
 import { AnimatePresence } from "framer-motion";
 import { DragResizeWrapper } from "@/components/DragResizeWrapper";
-import { ActionInput } from "@/components/action-input";
+import { ActionInput } from "@/components/actions/legacy/action-input";
 
 interface ActionInputModalContextType {
   isActionInputOpen: boolean;

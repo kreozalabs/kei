@@ -36,9 +36,9 @@ export const DEFAULT_CONFIG = {
 
 export const DATE_FORMATS = {
   SYSTEM: "system",
-  DDMMYYYY: "ddmmyyyy",
-  MMDDYYYY: "mmddyyyy",
-  YYYYMMDD: "yyyymmdd",
+  DDMMYYYY: "DD/MM/YYYY",
+  MMDDYYYY: "MM/DD/YYYY",
+  YYYYMMDD: "YYYY/MM/DD",
 } as const;
 
 export const DATE_FORMAT_SEPARATORS = {

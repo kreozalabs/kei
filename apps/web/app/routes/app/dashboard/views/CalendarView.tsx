@@ -16,6 +16,7 @@ import {
 import { motion, AnimatePresence } from "framer-motion";
 import { ChevronLeftIcon, ChevronRightIcon, ChevronDown } from "lucide-react";
 import { useSettings } from "@/providers/SettingsContext";
+import { useLocalization } from "@/hooks/useLocalization";
 import { useDashboardContext } from "../context/DashboardContext";
 import type { ViewMode } from "../types";
 import { useActionInputModal } from "@/providers/ActionInputModalContext";
@@ -145,7 +146,7 @@ interface CalendarHeaderControlsProps {
 
 function CalendarHeaderControls({ isOpen, setIsOpen }: CalendarHeaderControlsProps) {
   const api = useIlamyCalendarContext();
-  const { settings } = useSettings();
+  const { effectiveLanguage } = useLocalization();
   const { viewMode, selectedDate, setSelectedDate } = useDashboardContext();
   const isMobile = useIsMobile();
   const [slideDirection, setSlideDirection] = useState<-1 | 1>(1);
@@ -196,7 +197,7 @@ function CalendarHeaderControls({ isOpen, setIsOpen }: CalendarHeaderControlsPro
     });
   }, []);
 
-  const localeCode = settings.language === "auto" ? undefined : settings.language;
+  const localeCode = effectiveLanguage;
   const selectedDateObj = api.currentDate.toDate();
   const currentDateMs = api.currentDate.valueOf();
   const [visibleMonth, setVisibleMonth] = useState<Date>(selectedDateObj);

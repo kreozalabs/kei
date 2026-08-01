@@ -10,7 +10,7 @@ import {
   ENERGY_OPTIONS,
   INTENTION_OPTIONS,
 } from "@kreozalabs/kei-core";
-import { formatGoogleDate } from "@kreozalabs/kei-core";
+import { useLocalization } from "@/hooks/useLocalization";
 import { getEventsForEntity, updateAction } from "@/db/actions";
 import { EditableTitle } from "./action-input/EditableTitle";
 import { EditableNote } from "./action-input/EditableNote";
@@ -69,6 +69,7 @@ export function ActionDetailView({
   onReactivate,
   onDeletePermanently,
 }: Omit<ActionDetailViewProps, "onEdit">) {
+  const { formatDate, formatTime } = useLocalization();
   const queryClient = useQueryClient();
   const [events, setEvents] = useState<Event[]>([]);
   const [loadingEvents, setLoadingEvents] = useState(true);
@@ -240,7 +241,7 @@ export function ActionDetailView({
           </span>
           <span className="text-foreground/80 mt-1 flex items-center gap-1.5 text-xs font-bold">
             <Calendar className="text-muted-foreground/50 size-3.5 shrink-0" />
-            {formatGoogleDate(action.scheduledDate)}
+            {formatDate(action.scheduledDate)}
           </span>
         </div>
 
@@ -252,8 +253,8 @@ export function ActionDetailView({
             <Clock className="text-muted-foreground/50 size-3.5 shrink-0" />
             {action.startTime ? (
               <span>
-                {action.startTime}
-                {action.endTime ? ` - ${action.endTime}` : ""}
+                {formatTime(action.startTime)}
+                {action.endTime ? ` - ${formatTime(action.endTime)}` : ""}
               </span>
             ) : action.duration ? (
               <span>
