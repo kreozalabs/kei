@@ -9,11 +9,12 @@ interface IdleFadeWrapperProps {
 
 export function IdleFadeWrapper({ children, className }: IdleFadeWrapperProps) {
   const { settings } = useSettings();
+  const isSubtleMode = (settings.interface_behavior ?? "subtle_on_idle") === "subtle_on_idle";
   const { isSubtle, show, hide } = useSubtleOnIdle({
     initialDelay: 3000,
     idleDelay: 2000,
     disableOnMobile: true,
-    disabled: !settings.subtle_on_idle,
+    disabled: !isSubtleMode,
   });
 
   return (

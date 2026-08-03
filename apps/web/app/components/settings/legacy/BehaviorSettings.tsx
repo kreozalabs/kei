@@ -18,43 +18,12 @@ import {
   SHOW_INTENTIONS_OPTIONS,
   SHOW_DEFAULT_ENERGY_OPTIONS,
 } from "@kreozalabs/kei-core";
-import { MapPin } from "lucide-react";
-import { TimezoneSelector } from "../TimezoneSelector";
 
 export function BehaviorSettings() {
   const { settings, updateSetting } = useSettings();
 
-  const handleDetect = () => {
-    const detected = Intl.DateTimeFormat().resolvedOptions().timeZone;
-    updateSetting("timezone", detected);
-  };
-
   return (
     <div className="space-y-8">
-      <div className="space-y-3">
-        <div className="flex items-center justify-between px-2">
-          <h4 className="text-muted-foreground/50 text-[11px] font-bold tracking-wider uppercase">
-            Timezone
-          </h4>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={handleDetect}
-            className="text-primary hover:bg-primary/10 h-6 px-2 text-[10px] font-bold tracking-widest uppercase"
-          >
-            <MapPin className="mr-1 size-3" />
-            Detect
-          </Button>
-        </div>
-        <div className="px-2">
-          <TimezoneSelector
-            value={settings.timezone}
-            onSelect={(tz) => updateSetting("timezone", tz)}
-            showAuto={true}
-          />
-        </div>
-      </div>
-
       <div className="space-y-3">
         <div className="flex items-center justify-between px-2">
           <h4 className="text-muted-foreground/50 text-[11px] font-bold tracking-wider uppercase">

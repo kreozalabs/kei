@@ -66,3 +66,21 @@ export function registerPWA() {
     });
   });
 }
+
+export async function checkForUpdates(): Promise<string> {
+  if (typeof window === "undefined" || !("serviceWorker" in navigator)) {
+    throw new Error("PWA service worker is not supported on this browser.");
+  }
+  const reg = await navigator.serviceWorker.getRegistration();
+  if (!reg) {
+    throw new Error("No service worker active. Refresh the page to initialize.");
+  }
+
+  await reg.update();
+  await new Promise((resolve) => setTimeout(resolve, 800));
+
+  if (reg.installing || reg.waiting) {
+    return "New version available! Reloading application...";
+  }
+  return "Kei is up to date!";
+}

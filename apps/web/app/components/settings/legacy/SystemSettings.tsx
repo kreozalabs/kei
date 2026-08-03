@@ -3,6 +3,7 @@ import { useState, useEffect } from "react";
 import { Link } from "react-router";
 import { Button, cn, toast } from "@kreozalabs/kei-ui";
 import { useP2P } from "@/providers/P2PProvider";
+import { checkForUpdates } from "@/utils/pwa";
 import { db } from "@/db";
 import type { BenchmarkResult } from "@/db/webDatabaseAdapter";
 import {
@@ -283,41 +284,20 @@ export function SystemSettings() {
   // Check for new PWA app versions
   const handleCheckUpdates = async () => {
     setIsCheckingUpdates(true);
-    toast.promise(
-      async () => {
-        if (typeof window === "undefined" || !("serviceWorker" in navigator)) {
-          throw new Error("PWA is not supported on this browser.");
+    toast.promise(checkForUpdates(), {
+      loading: "Checking for updates...",
+      success: (msg) => {
+        setIsCheckingUpdates(false);
+        if (msg.includes("Reloading")) {
+          setTimeout(() => window.location.reload(), 1500);
         }
-        const reg = await navigator.serviceWorker.getRegistration();
-        if (!reg) {
-          throw new Error("No service worker found. Refresh the page or try again.");
-        }
-
-        await reg.update();
-
-        // Allow update lifecycle to transition
-        await new Promise((resolve) => setTimeout(resolve, 800));
-
-        if (reg.installing || reg.waiting) {
-          return "New version found! Reloading page to apply changes...";
-        }
-        return "Your application is fully up to date!";
+        return msg;
       },
-      {
-        loading: "Checking for updates...",
-        success: (msg) => {
-          setIsCheckingUpdates(false);
-          if (msg.includes("Reloading")) {
-            setTimeout(() => window.location.reload(), 1500);
-          }
-          return msg;
-        },
-        error: (err) => {
-          setIsCheckingUpdates(false);
-          return err instanceof Error ? err.message : "Failed to query update server.";
-        },
-      }
-    );
+      error: (err) => {
+        setIsCheckingUpdates(false);
+        return err instanceof Error ? err.message : "Failed to query update server.";
+      },
+    });
   };
 
   if (!isOpen) {

@@ -2,6 +2,9 @@
 @import "tw-animate-css";
 @import "./styles/base.css";
 
+@custom-variant data-checked (&:is([data-state="checked"], [data-checked]));
+@custom-variant data-unchecked (&:is([data-state="unchecked"], [data-unchecked]));
+
 @source "../../../apps/web/app/**/*.{ts,tsx}";
 @source "./**/*.{ts,tsx}";
 @source "../../core/src/**/*.{ts,tsx}";

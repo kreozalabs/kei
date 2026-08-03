@@ -1,13 +1,18 @@
-// FIXME: Refactor !
-// FIXME: Avoid hard-coding mins, hrs and others. Use standard format that UI will render according to the selected language and theme.
-import { TIME_FORMATS } from "../constants";
+import { TIME_FORMATS, type TimeFormatType } from "../constants";
 
+/**
+ * Converts a 24-hour time string ("HH:mm") to total minutes from midnight.
+ * Used for task sorting, schedule math, and duration comparisons.
+ */
 export const timeToMinutes = (time24: string): number => {
   if (!time24) return 0;
   const [h, m] = time24.split(":").map(Number);
   return h * 60 + m;
 };
 
+/**
+ * Converts total minutes from midnight to a 24-hour time string ("HH:mm").
+ */
 export const minutesToTime = (totalMinutes: number): string => {
   const normalizedMinutes = ((totalMinutes % 1440) + 1440) % 1440;
   const h = Math.floor(normalizedMinutes / 60);
@@ -15,10 +20,11 @@ export const minutesToTime = (totalMinutes: number): string => {
   return `${h.toString().padStart(2, "0")}:${m.toString().padStart(2, "0")}`;
 };
 
-export const formatTime = (
-  time24: string,
-  format: (typeof TIME_FORMATS)[keyof typeof TIME_FORMATS]
-) => {
+/**
+ * Pure fallback formatter converting "HH:mm" time string into 12h or 24h string.
+ * Note: React UI components should use `formatTime()` from `useLocalization()` instead.
+ */
+export const formatTime = (time24: string, format: TimeFormatType) => {
   if (!time24) return "";
   if (format === TIME_FORMATS.H24) return time24;
   const [h, m] = time24.split(":");
@@ -28,45 +34,43 @@ export const formatTime = (
   return `${displayHours}:${m}${ampm}`;
 };
 
+/**
+ * Returns true if an event's end time wraps around past midnight.
+ */
 export const isNextDay = (startTime: string, endTime: string) => {
   if (!startTime || !endTime) return false;
   return timeToMinutes(endTime) < timeToMinutes(startTime);
 };
 
+/**
+ * Formats a Date object as a canonical ISO date key ("YYYY-MM-DD").
+ * Used for database storage keys and day comparisons.
+ */
 export const formatDate = (d: Date) => d.toLocaleDateString("en-CA");
+
+/** Returns today's ISO date string ("YYYY-MM-DD"). */
 export const getTodayString = () => formatDate(new Date());
+
+/** Returns the next day's ISO date string ("YYYY-MM-DD") given a reference date string. */
 export const getNextDayString = (dateStr: string) => {
   const d = parseDateString(dateStr);
   d.setDate(d.getDate() + 1);
   return formatDate(d);
 };
 
+/** Returns tomorrow's ISO date string ("YYYY-MM-DD"). */
 export const getTomorrowString = () => getNextDayString(getTodayString());
 
+/**
+ * Safely parses an ISO date string ("YYYY-MM-DD") into a Date object at noon (T12:00:00).
+ * Prevents UTC timezone shift bugs when performing date arithmetic.
+ */
 export const parseDateString = (dateStr: string) => new Date(dateStr + "T12:00:00");
 
-export const formatGoogleDate = (dateStr: string) => {
-  if (!dateStr) return "Date";
-  const d = parseDateString(dateStr);
-  return d.toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" });
-};
-
-export const formatShortDate = (d: Date) =>
-  d.toLocaleDateString("en-US", { day: "numeric", month: "short" });
-
-export const formatFullWeekday = (d: Date) => d.toLocaleDateString("en-US", { weekday: "long" });
-
-export const formatShortWeekday = (d: Date) => d.toLocaleDateString("en-US", { weekday: "short" });
-
-export const formatShortMonth = (d: Date) => d.toLocaleDateString("en-US", { month: "short" });
-
-export const formatMonthYear = (d: Date) =>
-  d.toLocaleDateString("en-US", { month: "long", year: "numeric" });
-
-export const formatTitleDate = (d: Date) =>
-  d.toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" });
-
-export const getTimeOptions = (format: (typeof TIME_FORMATS)[keyof typeof TIME_FORMATS]) =>
+/**
+ * Generates 96 time select options (15-min intervals) for time dropdown pickers.
+ */
+export const getTimeOptions = (format: TimeFormatType) =>
   Array.from({ length: 96 }).map((_, i) => {
     const hours = Math.floor(i / 4);
     const minutes = (i % 4) * 15;

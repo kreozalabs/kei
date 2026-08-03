@@ -1,17 +1,20 @@
-import { TIME_FORMATS } from "../constants";
+import type { TimeFormatType, DateFormatType, DateFormatSeparatorType } from "../constants";
 
 export type Theme = "dark" | "light" | "system";
 export type Accent = "blue" | "indigo" | "violet" | "emerald" | "rose" | "amber" | "forest";
-export type TimeFormat = (typeof TIME_FORMATS)[keyof typeof TIME_FORMATS];
+export type InterfaceBehavior = "always_visible" | "subtle_on_idle" | "auto_hide";
+export type InterfaceDensity = "compact" | "comfortable" | "spacious";
+export type GridLines = "subtle" | "high_contrast" | "hidden";
 
 export interface Settings {
   section_expanded: boolean;
   theme: Theme;
   accent: Accent;
   today_locked: boolean;
-  time_format: TimeFormat;
+  date_format: DateFormatType;
+  date_format_separator: DateFormatSeparatorType;
+  time_format: TimeFormatType;
   timezone: string;
-  subtle_on_idle: boolean;
   language: string;
   remember_layout_on_refresh: boolean;
   action_duration_options: {
@@ -32,6 +35,12 @@ export interface Settings {
   default_insert_at_top: boolean;
   show_intentions: boolean;
   show_default_energy: boolean;
+  enable_keyboard_shortcuts?: boolean;
+  animations?: "smooth" | "reduced" | "off";
+  minimal_mode?: boolean;
+  interface_behavior?: InterfaceBehavior;
+  interface_density?: InterfaceDensity;
+  grid_lines?: GridLines;
 }
 
 export type SettingKey = keyof Settings;

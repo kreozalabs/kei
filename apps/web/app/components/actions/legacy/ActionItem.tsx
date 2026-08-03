@@ -24,10 +24,12 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
 } from "@kreozalabs/kei-ui";
-import { NextDayBadge } from "./NextDayBadge";
-import { useSettings } from "../providers/SettingsContext";
-import { formatTime, getNextDayString } from "@kreozalabs/kei-core";
-import { useCurrentDay } from "../hooks/useCurrentDay";
+import { NextDayBadge } from "@/components/NextDayBadge";
+import { useSettings } from "@/providers/SettingsContext";
+import { getNextDayString } from "@kreozalabs/kei-core";
+import { useLocalization } from "@/hooks/useLocalization";
+import { useCurrentDay } from "@/hooks/useCurrentDay";
+
 import {
   ACTION_STATUS,
   ENERGY_LEVELS,
@@ -78,7 +80,7 @@ export function ActionItem({
   isLastActive = false,
 }: ActionItemProps) {
   const { settings } = useSettings();
-  const timeFormat = settings.time_format;
+  const { formatTime } = useLocalization();
 
   const [isEditingIndex, setIsEditingIndex] = useState(false);
   const [editIndexValue, setEditIndexValue] = useState(String(index || ""));
@@ -133,7 +135,7 @@ export function ActionItem({
         height: { duration: 0.2 },
       }}
       className={cn(
-        "group border-border/40 relative flex cursor-default items-start gap-2 overflow-hidden border-b px-1 py-2.5 transition-colors last:border-none sm:px-2",
+        "group density-item grid-line border-border/40 relative flex cursor-default items-start gap-2 overflow-hidden border-b px-1 py-2.5 transition-colors last:border-none sm:px-2",
         type === ACTION_STATUS.COMPLETED
           ? "opacity-50"
           : type === ACTION_STATUS.ABANDONED
@@ -386,11 +388,11 @@ export function ActionItem({
                 {action.startTime ? (
                   <span className="text-primary/80 flex items-center gap-1 text-[11px] font-medium">
                     <Clock className="size-3" />
-                    {formatTime(action.startTime, timeFormat)}
+                    {formatTime(action.startTime)}
                     {action.endTime ? (
                       <>
                         {" - "}
-                        {formatTime(action.endTime, timeFormat)}
+                        {formatTime(action.endTime)}
                         <NextDayBadge
                           startTime={action.startTime}
                           endTime={action.endTime}

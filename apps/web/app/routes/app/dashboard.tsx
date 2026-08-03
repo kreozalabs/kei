@@ -1,9 +1,9 @@
 import { useEffect, useState, memo } from "react";
 import { Button } from "@kreozalabs/kei-ui";
 import { LayoutGrid } from "lucide-react";
-import { parseDateString, formatTitleDate } from "@kreozalabs/kei-core";
+import { useLocalization } from "@/hooks/useLocalization";
 import { AnimatePresence } from "framer-motion";
-import { ActionDetailView } from "@/components/ActionDetailView";
+import { ActionDetailView } from "@/components/actions/legacy/ActionDetailView";
 import { DragResizeWrapper } from "@/components/DragResizeWrapper";
 import { useDashboardContext } from "./dashboard/context/DashboardContext";
 import { DashboardProvider } from "./dashboard/context/DashboardProvider";
@@ -25,13 +25,14 @@ const DashboardShell = memo(function DashboardShell() {
     selectedDate,
     isDbReady,
   } = useDashboardContext();
+  const { formatDate } = useLocalization();
   const [shouldRenderCalendar, setShouldRenderCalendar] = useState(false);
 
   const { setViewMode } = useDashboardContext();
 
   useEffect(() => {
-    document.title = `Kei︱Timeline — ${formatTitleDate(parseDateString(selectedDate))}`; // TODO: Add Weekday
-  }, [selectedDate]);
+    document.title = `Kei︱Timeline — ${formatDate(selectedDate)}`;
+  }, [selectedDate, formatDate]);
 
   useEffect(() => {
     if (isDbReady) {

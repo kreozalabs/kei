@@ -1,11 +1,9 @@
 import { createPortal } from "react-dom";
-import { useOutletContext } from "react-router";
 import { cn, useIsMobile } from "@kreozalabs/kei-ui";
 import { useHeaderPortalTarget } from "./HeaderPortalContext";
 import { IdleFadeWrapper } from "./IdleFadeWrapper";
 import { HeaderTitleArea } from "./HeaderTitleArea";
 import { SidebarToggle } from "./SidebarToggle";
-import type { AppLayoutContext } from "./AppLayout";
 
 interface AppHeaderProps {
   title?: string;
@@ -18,8 +16,6 @@ interface AppHeaderProps {
 export function AppHeader({ title, subtitle, icon, className, children }: AppHeaderProps) {
   const isMobile = useIsMobile();
   const portalTarget = useHeaderPortalTarget();
-  const context = useOutletContext<AppLayoutContext | undefined>();
-  const toggleSidebar = context?.toggleSidebar;
 
   const headerContent = (
     <IdleFadeWrapper>
@@ -39,7 +35,8 @@ export function AppHeader({ title, subtitle, icon, className, children }: AppHea
           className
         )}
       >
-        {toggleSidebar && <SidebarToggle onClick={toggleSidebar} className="mt-0.5 shrink-0" />}
+        {/* NOTE: Mobile sidebar trigger */}
+        <SidebarToggle className="mt-0.5 shrink-0" />
         <div className="min-w-0 flex-1">{headerContent}</div>
       </header>
     );
