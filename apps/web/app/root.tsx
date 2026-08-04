@@ -14,8 +14,6 @@ import { Toaster, TooltipProvider } from "@kreozalabs/kei-ui";
 import "./index.css";
 import { QueryProvider } from "./providers/QueryProvider";
 import { SettingsProvider } from "./providers/SettingsProvider";
-import { DbProvider } from "./providers/DbProvider";
-import { P2PProvider } from "./providers/P2PProvider";
 
 import { ErrorPage } from "./components/ErrorPage";
 import { STORAGE_KEYS } from "@kreozalabs/kei-core";
@@ -50,16 +48,12 @@ export function Layout({ children }: { children: React.ReactNode }) {
         <Links />
       </head>
       <body suppressHydrationWarning>
-        <DbProvider>
-          <P2PProvider>
-            <SettingsProvider storageKey={STORAGE_KEYS.SETTINGS}>
-              <TooltipProvider delayDuration={800}>
-                {children}
-                <Toaster position="bottom-right" />
-              </TooltipProvider>
-            </SettingsProvider>
-          </P2PProvider>
-        </DbProvider>
+        <SettingsProvider storageKey={STORAGE_KEYS.SETTINGS}>
+          <TooltipProvider delayDuration={800}>
+            {children}
+            <Toaster position="bottom-right" />
+          </TooltipProvider>
+        </SettingsProvider>
         <ScrollRestoration />
         <Scripts />
       </body>
