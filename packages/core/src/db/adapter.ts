@@ -1,4 +1,5 @@
-import type { Event, Action, ActionStatus } from "@kreozalabs/kei-core";
+import type { Event } from "../types/events";
+import type { Action, ActionStatus } from "../types/actions";
 
 export interface DatabaseAdapter {
   connect?(): Promise<void>;
