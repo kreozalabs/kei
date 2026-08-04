@@ -62,8 +62,8 @@ export const tauriDatabaseAdapter: DatabaseAdapter = {
     return 1;
   },
 
-  async getEvents(): Promise<Event[]> {
-    console.log("Tauri: getEvents");
+  async getEvents(limit?: number): Promise<Event[]> {
+    console.log("Tauri: getEvents", limit);
     return [];
   },
 

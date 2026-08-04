@@ -212,8 +212,12 @@ export const webDatabaseAdapter: WebDatabaseAdapter = {
     return Number(row?.max_seq || 0) + 1;
   },
 
-  async getEvents(): Promise<Event[]> {
-    const rows = await this.query("SELECT * FROM events ORDER BY timestamp ASC");
+  async getEvents(limit?: number): Promise<Event[]> {
+    const queryStr =
+      typeof limit === "number" && limit > 0
+        ? `SELECT * FROM events ORDER BY timestamp ASC LIMIT ${limit}`
+        : "SELECT * FROM events ORDER BY timestamp ASC";
+    const rows = await this.query(queryStr);
     return rows.map((r: any) => {
       const parsePayload = (val: unknown) => {
         if (typeof val !== "string") return val;

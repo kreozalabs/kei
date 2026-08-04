@@ -7,6 +7,7 @@ export interface DbContextState {
   isWriting: boolean;
   initStep: DbInitStep;
   progress: number;
+  isHealing: boolean;
   retryInit: () => Promise<void>;
 }
 
@@ -16,6 +17,7 @@ export const DbContext = createContext<DbContextState>({
   isWriting: false,
   initStep: "idle",
   progress: 0,
+  isHealing: false,
   retryInit: async () => {},
 });
 

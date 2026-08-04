@@ -1,5 +1,4 @@
 import * as React from "react";
-import { useEffect, useState, useCallback } from "react";
 import {
   initPromise,
   retryDatabaseInit,
@@ -16,34 +15,40 @@ interface DbProviderProps {
 }
 
 export function DbProvider({ children, showGuard = true }: DbProviderProps) {
-  const [isDbReady, setIsDbReady] = useState(false);
-  const [dbError, setDbError] = useState<Error | null>(null);
-  const [isWriting, setIsWriting] = useState(false);
-  const [initStep, setInitStep] = useState<DbInitStep>("idle");
-  const [progress, setProgress] = useState(0);
+  const [isDbReady, setIsDbReady] = React.useState(false);
+  const [dbError, setDbError] = React.useState<Error | null>(null);
+  const [isWriting, setIsWriting] = React.useState(false);
+  const [initStep, setInitStep] = React.useState<DbInitStep>("idle");
+  const [progress, setProgress] = React.useState(0);
+  const [isHealing, setIsHealing] = React.useState(false);
 
   /**
    * Subscribes to the initial database initialization promise.
    * On resolution, marks `isDbReady` as true. On error, populates `dbError`.
    */
-  const init = useCallback(() => {
-    setDbError(null);
+  React.useEffect(() => {
+    let isMounted = true;
     initPromise
-      .then(() => setIsDbReady(true))
+      .then(() => {
+        if (isMounted) setIsDbReady(true);
+      })
       .catch((err) => {
         console.error("Critical: DB Initialization failed", err);
-        setDbError(err instanceof Error ? err : new Error(String(err)));
+        if (isMounted) {
+          setDbError(err instanceof Error ? err : new Error(String(err)));
+        }
       });
+
+    return () => {
+      isMounted = false;
+    };
   }, []);
 
-  useEffect(() => {
-    init();
-  }, [init]);
-
-  useEffect(() => {
+  React.useEffect(() => {
     const unsubscribeProgress = subscribeInitProgress((state) => {
       setInitStep(state.step);
       setProgress(state.progress);
+      setIsHealing(!!state.isHealing);
       if (state.error) {
         setDbError(state.error);
       }
@@ -60,7 +65,7 @@ export function DbProvider({ children, showGuard = true }: DbProviderProps) {
    * Resets readiness state and re-executes database initialization.
    * Invoked by DbGuard retry button when initial database startup encounters an error.
    */
-  const retryInit = useCallback(async () => {
+  const retryInit = React.useCallback(async () => {
     setDbError(null);
     setIsDbReady(false);
     try {
@@ -73,8 +78,8 @@ export function DbProvider({ children, showGuard = true }: DbProviderProps) {
   }, []);
 
   const value = React.useMemo(
-    () => ({ isDbReady, dbError, isWriting, initStep, progress, retryInit }),
-    [isDbReady, dbError, isWriting, initStep, progress, retryInit]
+    () => ({ isDbReady, dbError, isWriting, initStep, progress, isHealing, retryInit }),
+    [isDbReady, dbError, isWriting, initStep, progress, isHealing, retryInit]
   );
 
   return (

@@ -13,7 +13,7 @@ export interface DatabaseAdapter {
   saveEventsBatch(events: Event<unknown>[]): Promise<number>;
   getEventsForEntity(entityId: string): Promise<Event[]>;
   getNextSequenceNumber(deviceId: string): Promise<number>;
-  getEvents(): Promise<Event[]>;
+  getEvents(limit?: number): Promise<Event[]>;
 
   // Action Projection methods:
   getAction(id: string): Promise<Action | null>;
