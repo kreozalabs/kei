@@ -1,9 +1,13 @@
 import type { Event } from "../types/events";
 import type { Action, ActionStatus } from "../types/actions";
 
+export type AdapterStatus = "unconnected" | "connecting" | "connected" | "closed" | "error";
+
 export interface DatabaseAdapter {
   connect?(): Promise<void>;
   disconnect?(): Promise<void>;
+  getStatus?(): AdapterStatus;
+  isReady?(): boolean;
   getDeviceId(): string;
   saveEvent(event: Event<unknown>): Promise<void>;
   saveEventsBatch(events: Event<unknown>[]): Promise<number>;

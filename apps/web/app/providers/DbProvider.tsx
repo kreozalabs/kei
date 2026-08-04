@@ -1,14 +1,33 @@
 import * as React from "react";
-import { useEffect, useState } from "react";
-import { initPromise } from "../db";
+import { useEffect, useState, useCallback } from "react";
+import {
+  initPromise,
+  retryDatabaseInit,
+  subscribeActiveWrites,
+  subscribeInitProgress,
+  type DbInitStep,
+} from "../db";
 import { DbContext } from "./DbContext";
+import { DbGuard } from "../components/DbGuard";
 
-export function DbProvider({ children }: { children: React.ReactNode }) {
+interface DbProviderProps {
+  children: React.ReactNode;
+  showGuard?: boolean;
+}
+
+export function DbProvider({ children, showGuard = true }: DbProviderProps) {
   const [isDbReady, setIsDbReady] = useState(false);
   const [dbError, setDbError] = useState<Error | null>(null);
   const [isWriting, setIsWriting] = useState(false);
+  const [initStep, setInitStep] = useState<DbInitStep>("idle");
+  const [progress, setProgress] = useState(0);
 
-  useEffect(() => {
+  /**
+   * Subscribes to the initial database initialization promise.
+   * On resolution, marks `isDbReady` as true. On error, populates `dbError`.
+   */
+  const init = useCallback(() => {
+    setDbError(null);
     initPromise
       .then(() => setIsDbReady(true))
       .catch((err) => {
@@ -18,24 +37,47 @@ export function DbProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   useEffect(() => {
-    if (typeof window === "undefined") return;
+    init();
+  }, [init]);
 
-    const updateIsWriting = () => {
-      setIsWriting(((window as Window & { __activeWrites?: number }).__activeWrites || 0) > 0);
-    };
+  useEffect(() => {
+    const unsubscribeProgress = subscribeInitProgress((state) => {
+      setInitStep(state.step);
+      setProgress(state.progress);
+      if (state.error) {
+        setDbError(state.error);
+      }
+    });
+    const unsubscribeWrites = subscribeActiveWrites(setIsWriting);
 
-    updateIsWriting();
-
-    window.addEventListener("kei_active_writes_change", updateIsWriting);
     return () => {
-      window.removeEventListener("kei_active_writes_change", updateIsWriting);
+      unsubscribeProgress();
+      unsubscribeWrites();
     };
   }, []);
 
+  /**
+   * Resets readiness state and re-executes database initialization.
+   * Invoked by DbGuard retry button when initial database startup encounters an error.
+   */
+  const retryInit = useCallback(async () => {
+    setDbError(null);
+    setIsDbReady(false);
+    try {
+      await retryDatabaseInit();
+      setIsDbReady(true);
+    } catch (err) {
+      console.error("Critical: DB Retry Initialization failed", err);
+      setDbError(err instanceof Error ? err : new Error(String(err)));
+    }
+  }, []);
+
   const value = React.useMemo(
-    () => ({ isDbReady, dbError, isWriting }),
-    [isDbReady, dbError, isWriting]
+    () => ({ isDbReady, dbError, isWriting, initStep, progress, retryInit }),
+    [isDbReady, dbError, isWriting, initStep, progress, retryInit]
   );
 
-  return <DbContext value={value}>{children}</DbContext>;
+  return (
+    <DbContext value={value}>{showGuard ? <DbGuard>{children}</DbGuard> : children}</DbContext>
+  );
 }

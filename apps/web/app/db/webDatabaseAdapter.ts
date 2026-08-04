@@ -2,6 +2,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import {
   type DatabaseAdapter,
+  type AdapterStatus,
   type Event,
   type EventType,
   type Action,
@@ -83,13 +84,30 @@ interface WebDatabaseAdapter extends DatabaseAdapter {
   queryDirect(sql: string, params?: any[]): Promise<any[]>;
 }
 
+let adapterStatus: AdapterStatus = "unconnected";
+
 export const webDatabaseAdapter: WebDatabaseAdapter = {
   async connect() {
-    await sendToWorker("init");
+    adapterStatus = "connecting";
+    try {
+      await sendToWorker("init");
+      adapterStatus = "connected";
+    } catch (err) {
+      adapterStatus = "error";
+      throw err;
+    }
   },
 
   async disconnect() {
-    // Connection managed by worker lifecycle
+    adapterStatus = "closed";
+  },
+
+  getStatus() {
+    return adapterStatus;
+  },
+
+  isReady() {
+    return adapterStatus === "connected";
   },
 
   getDeviceId() {
