@@ -85,16 +85,11 @@ export function DbProvider({ children, showGuard = true }: DbProviderProps) {
 
   const isReady = isDbReady && loaderComplete;
 
-  return (
-    <DbContext value={value}>
-      {isReady ? (
-        showGuard ? <DbGuard>{children}</DbGuard> : children
-      ) : (
-        <AppLoading
-          progress={isDbReady ? 100 : undefined}
-          onComplete={() => setLoaderComplete(true)}
-        />
-      )}
-    </DbContext>
+  const content = isReady ? (
+    children
+  ) : (
+    <AppLoading progress={isDbReady ? 100 : undefined} onComplete={() => setLoaderComplete(true)} />
   );
+
+  return <DbContext value={value}>{showGuard ? <DbGuard>{content}</DbGuard> : content}</DbContext>;
 }
