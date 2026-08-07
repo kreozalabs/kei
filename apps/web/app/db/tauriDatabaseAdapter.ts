@@ -1,22 +1,42 @@
-import { type DatabaseAdapter, type Event, type Action } from "@kreozalabs/kei-core";
+import {
+  type DatabaseAdapter,
+  type AdapterStatus,
+  type Event,
+  type Action,
+} from "@kreozalabs/kei-core";
 
 let cachedTauriDeviceId = "tauri-device-fallback";
+
+let tauriStatus: AdapterStatus = "unconnected";
 
 export const tauriDatabaseAdapter: DatabaseAdapter = {
   async connect() {
     console.log("Connecting to native Tauri database...");
+    tauriStatus = "connecting";
     try {
       // Dynamic import to avoid loading Tauri deps in the web browser bundle:
       // const { invoke } = await import("@tauri-apps/api/kei-core");
       // cachedTauriDeviceId = await invoke("get_device_id");
       cachedTauriDeviceId = `tauri-device-${crypto.randomUUID().slice(0, 8)}`;
+      tauriStatus = "connected";
     } catch (e) {
+      tauriStatus = "error";
       console.error("Failed to get native Tauri device ID", e);
+      throw e;
     }
   },
 
   async disconnect() {
     console.log("Disconnecting from Tauri database...");
+    tauriStatus = "closed";
+  },
+
+  getStatus() {
+    return tauriStatus;
+  },
+
+  isReady() {
+    return tauriStatus === "connected";
   },
 
   getDeviceId() {
@@ -42,8 +62,8 @@ export const tauriDatabaseAdapter: DatabaseAdapter = {
     return 1;
   },
 
-  async getEvents(): Promise<Event[]> {
-    console.log("Tauri: getEvents");
+  async getEvents(limit?: number): Promise<Event[]> {
+    console.log("Tauri: getEvents", limit);
     return [];
   },
 

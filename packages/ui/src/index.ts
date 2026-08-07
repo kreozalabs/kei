@@ -14,6 +14,7 @@ export * from "./components/input";
 export * from "./components/kbd";
 export * from "./components/label";
 export * from "./components/popover";
+export * from "./components/progress";
 export * from "./components/select";
 export * from "./components/separator";
 export * from "./components/sheet";

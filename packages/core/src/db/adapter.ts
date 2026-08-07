@@ -1,14 +1,19 @@
-import type { Event, Action, ActionStatus } from "@kreozalabs/kei-core";
+import type { Event } from "../types/events";
+import type { Action, ActionStatus } from "../types/actions";
+
+export type AdapterStatus = "unconnected" | "connecting" | "connected" | "closed" | "error";
 
 export interface DatabaseAdapter {
   connect?(): Promise<void>;
   disconnect?(): Promise<void>;
+  getStatus?(): AdapterStatus;
+  isReady?(): boolean;
   getDeviceId(): string;
   saveEvent(event: Event<unknown>): Promise<void>;
   saveEventsBatch(events: Event<unknown>[]): Promise<number>;
   getEventsForEntity(entityId: string): Promise<Event[]>;
   getNextSequenceNumber(deviceId: string): Promise<number>;
-  getEvents(): Promise<Event[]>;
+  getEvents(limit?: number): Promise<Event[]>;
 
   // Action Projection methods:
   getAction(id: string): Promise<Action | null>;

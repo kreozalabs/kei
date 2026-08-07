@@ -43,8 +43,14 @@ export const isNextDay = (startTime: string, endTime: string) => {
 };
 
 /**
- * Formats a Date object as a canonical ISO date key ("YYYY-MM-DD").
- * Used for database storage keys and day comparisons.
+ * Formats a Date object as a canonical UTC ISO date key ("YYYY-MM-DD").
+ * Recommended for database storage keys, event logs, and P2P sync.
+ */
+export const formatUTCDateKey = (d: Date): string => d.toISOString().slice(0, 10);
+
+/**
+ * Formats a Date object as a local ISO date key ("YYYY-MM-DD").
+ * Used for local UI calendar day comparisons in local timezone.
  */
 export const formatDate = (d: Date) => d.toLocaleDateString("en-CA");
 

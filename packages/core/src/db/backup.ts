@@ -1,4 +1,5 @@
-import type { DatabaseAdapter, Event } from "@kreozalabs/kei-core";
+import type { DatabaseAdapter } from "./adapter";
+import type { Event } from "../types/events";
 import { rebuildActions } from "./actions";
 import { rebuildSettings } from "./settings";
 

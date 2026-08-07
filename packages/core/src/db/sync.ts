@@ -1,4 +1,4 @@
-import type { Event } from "@kreozalabs/kei-core";
+import type { Event } from "../types/events";
 import type { DatabaseAdapter } from "./adapter";
 
 /**

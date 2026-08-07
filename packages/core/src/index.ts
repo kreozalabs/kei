@@ -11,3 +11,5 @@ export * from "./db/events";
 export * from "./db/settings";
 export * from "./db/sync";
 export * from "./db/init";
+export * from "./db/sanity";
+export * from "./db/healing";

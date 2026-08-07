@@ -1,41 +1,95 @@
 import * as React from "react";
-import { useEffect, useState } from "react";
-import { initPromise } from "../db";
+import {
+  initPromise,
+  retryDatabaseInit,
+  subscribeActiveWrites,
+  subscribeInitProgress,
+  type DbInitStep,
+} from "../db";
 import { DbContext } from "./DbContext";
+import { DbGuard } from "../components/DbGuard";
+import { AppLoading } from "../components/AppLoader";
 
-export function DbProvider({ children }: { children: React.ReactNode }) {
-  const [isDbReady, setIsDbReady] = useState(false);
-  const [dbError, setDbError] = useState<Error | null>(null);
-  const [isWriting, setIsWriting] = useState(false);
+interface DbProviderProps {
+  children: React.ReactNode;
+  showGuard?: boolean;
+}
 
-  useEffect(() => {
-    initPromise
-      .then(() => setIsDbReady(true))
-      .catch((err) => {
-        console.error("Critical: DB Initialization failed", err);
-        setDbError(err instanceof Error ? err : new Error(String(err)));
-      });
+export function DbProvider({ children, showGuard = true }: DbProviderProps) {
+  const [isDbReady, setIsDbReady] = React.useState(false);
+  const [dbError, setDbError] = React.useState<Error | null>(null);
+  const [isWriting, setIsWriting] = React.useState(false);
+  const [initStep, setInitStep] = React.useState<DbInitStep>("idle");
+  const [progress, setProgress] = React.useState(0);
+  const [isHealing, setIsHealing] = React.useState(false);
+
+  const [loaderComplete, setLoaderComplete] = React.useState(false);
+
+  // Reset loader complete status when database readiness is reset (during retries)
+  const retryInit = React.useCallback(async () => {
+    setDbError(null);
+    setIsDbReady(false);
+    setLoaderComplete(false);
+    try {
+      await retryDatabaseInit();
+      setIsDbReady(true);
+    } catch (err) {
+      console.error("Critical: DB Retry Initialization failed", err);
+      setDbError(err instanceof Error ? err : new Error(String(err)));
+    }
   }, []);
 
-  useEffect(() => {
-    if (typeof window === "undefined") return;
+  /**
+   * Subscribes to the initial database initialization promise.
+   * On resolution, marks `isDbReady` as true. On error, populates `dbError`.
+   */
+  React.useEffect(() => {
+    let isMounted = true;
+    initPromise
+      .then(() => {
+        if (isMounted) setIsDbReady(true);
+      })
+      .catch((err) => {
+        console.error("Critical: DB Initialization failed", err);
+        if (isMounted) {
+          setDbError(err instanceof Error ? err : new Error(String(err)));
+        }
+      });
 
-    const updateIsWriting = () => {
-      setIsWriting(((window as Window & { __activeWrites?: number }).__activeWrites || 0) > 0);
-    };
-
-    updateIsWriting();
-
-    window.addEventListener("kei_active_writes_change", updateIsWriting);
     return () => {
-      window.removeEventListener("kei_active_writes_change", updateIsWriting);
+      isMounted = false;
+    };
+  }, []);
+
+  React.useEffect(() => {
+    const unsubscribeProgress = subscribeInitProgress((state) => {
+      setInitStep(state.step);
+      setProgress(state.progress);
+      setIsHealing(!!state.isHealing);
+      if (state.error) {
+        setDbError(state.error);
+      }
+    });
+    const unsubscribeWrites = subscribeActiveWrites(setIsWriting);
+
+    return () => {
+      unsubscribeProgress();
+      unsubscribeWrites();
     };
   }, []);
 
   const value = React.useMemo(
-    () => ({ isDbReady, dbError, isWriting }),
-    [isDbReady, dbError, isWriting]
+    () => ({ isDbReady, dbError, isWriting, initStep, progress, isHealing, retryInit }),
+    [isDbReady, dbError, isWriting, initStep, progress, isHealing, retryInit]
   );
 
-  return <DbContext value={value}>{children}</DbContext>;
+  const isReady = isDbReady && loaderComplete;
+
+  const content = isReady ? (
+    children
+  ) : (
+    <AppLoading progress={isDbReady ? 100 : undefined} onComplete={() => setLoaderComplete(true)} />
+  );
+
+  return <DbContext value={value}>{showGuard ? <DbGuard>{content}</DbGuard> : content}</DbContext>;
 }
