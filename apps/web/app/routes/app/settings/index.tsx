@@ -1,6 +1,7 @@
 import { AboutSettings } from "@/components/settings/about/AboutSettings";
 import { AppearanceSettings } from "@/components/settings/appearance/AppearanceSettings";
 import { GeneralSettings } from "@/components/settings/general/GeneralSettings";
+import { ImportExportSettings } from "@/components/settings/import-export/ImportExportSettings";
 import { SettingsSubPageLayout } from "@/components/settings/layout/SettingsSubPageLayout";
 import {
   SETTINGS_SUB_PAGES,
@@ -17,6 +18,9 @@ export default function SettingsIndexRoute() {
       </SettingsSubPageLayout>
       <SettingsSubPageLayout title="Appearance" showBack={false}>
         <AppearanceSettings />
+      </SettingsSubPageLayout>
+      <SettingsSubPageLayout title="Import & Export" showBack={false}>
+        <ImportExportSettings />
       </SettingsSubPageLayout>
       <SettingsSubPageLayout title="About" showBack={false}>
         <AboutSettings />

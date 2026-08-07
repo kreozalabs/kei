@@ -1,5 +1,6 @@
 import * as React from "react";
 import { Button } from "@kreozalabs/kei-ui";
+import { Loader2 } from "lucide-react";
 import { SettingRow, type SettingRowProps } from "./SettingRow";
 
 export interface SettingButtonProps extends Pick<
@@ -45,6 +46,7 @@ export function SettingButton({
         size="sm"
         className="border-border/60 bg-background hover:bg-muted/80 text-foreground gap-1.5 rounded-xl px-3 text-sm font-semibold shadow-2xs transition-all active:scale-95"
       >
+        {loading && <Loader2 className="size-3.5 animate-spin" />}
         {children}
       </Button>
     </SettingRow>

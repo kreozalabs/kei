@@ -2,6 +2,7 @@ import { AboutSettings } from "./about/AboutSettings";
 import { AppearanceSettings } from "./appearance/AppearanceSettings";
 import { GeneralSettings } from "./general/GeneralSettings";
 import { KeyboardShortcutsSettings } from "./general/KeyboardShortcuts";
+import { ImportExportSettings } from "./import-export/ImportExportSettings";
 
 export const SETTINGS_BASE_PATH = "/app/settings";
 export const ROOT_SETTINGS_SECTION_ID = "general";
@@ -57,6 +58,12 @@ export const SETTINGS_SUB_PAGES: SettingsSubPageDefinition[] = [
     component: AppearanceSettings,
   },
   {
+    id: "import-export",
+    slug: "import-export",
+    title: "Import & Export",
+    component: ImportExportSettings,
+  },
+  {
     id: "about",
     slug: "about",
     title: "About",
@@ -105,6 +112,11 @@ export const SETTINGS_TREE_SECTIONS: SettingsTreeGroup[] = [
       { id: "appearance-layout", label: "Layout", href: "#appearance-layout" },
       { id: "appearance-reset", label: "Reset", href: "#appearance-reset" },
     ],
+  },
+  {
+    id: "import-export",
+    label: "Import & Export",
+    to: getSettingsPath("import-export"),
   },
   {
     id: "about",
