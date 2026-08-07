@@ -41,7 +41,7 @@ export function SettingSection({
             <div className="space-y-0.5">
               <CardTitle className="text-foreground text-base font-semibold">{title}</CardTitle>
               {description && (
-                <CardDescription className="text-muted-foreground text-sm">
+                <CardDescription className="text-muted-foreground setting-description text-sm">
                   {description}
                 </CardDescription>
               )}

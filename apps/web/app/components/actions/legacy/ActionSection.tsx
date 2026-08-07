@@ -2,12 +2,13 @@
 import { Button, cn } from "@kreozalabs/kei-ui";
 import type { Action } from "@kreozalabs/kei-core";
 import { ActionItem } from "./ActionItem";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { ChevronDownIcon, PlusIcon } from "lucide-react";
 import { ActionInput } from "./action-input";
 import { AnimatePresence } from "framer-motion";
 import { ACTION_STATUS, STORAGE_KEYS } from "@kreozalabs/kei-core";
 import { useSettings } from "@/providers/SettingsContext";
+import { useRememberedState } from "@/hooks/useRememberedState";
 
 interface ActionSectionProps {
   id: string;
@@ -19,15 +20,15 @@ interface ActionSectionProps {
   onEdit?: (action: Action) => void;
   onReactivate?: (action: Action) => void;
   onDeletePermanently?: (action: Action) => void;
-  sectionDate: string;
+  sectionDate?: string;
   defaultExpanded?: boolean;
   selectedActionIds?: Set<string>;
-  onSelectToggle?: (id: string) => void;
+  onSelectToggle?: (actionId: string) => void;
   isBulkModeActive?: boolean;
-  onMoveUp?: (action: Action) => void;
-  onMoveDown?: (action: Action) => void;
-  onMoveToPosition?: (action: Action, targetIndex: number) => void;
-  onQuickReschedule?: (action: Action) => void;
+  onMoveUp?: (actionId: string) => void;
+  onMoveDown?: (actionId: string) => void;
+  onMoveToPosition?: (actionId: string, newIndex: number) => void;
+  onQuickReschedule?: (actionId: string, date: string) => void;
 }
 
 export function ActionSection({
@@ -52,21 +53,11 @@ export function ActionSection({
 }: ActionSectionProps) {
   const [isAdding, setIsAdding] = useState(false);
   const { settings } = useSettings();
-  const [isExpanded, setIsExpanded] = useState(() => {
-    if (typeof window !== "undefined" && settings.remember_layout_on_refresh) {
-      const stored = window.sessionStorage.getItem(STORAGE_KEYS.SESSION.SECTION_EXPANDED(id));
-      if (stored !== null) return stored === "true";
-    }
-    return defaultExpanded ?? settings.section_expanded;
-  });
-
-  useEffect(() => {
-    if (settings.remember_layout_on_refresh) {
-      window.sessionStorage.setItem(STORAGE_KEYS.SESSION.SECTION_EXPANDED(id), String(isExpanded));
-    } else {
-      window.sessionStorage.removeItem(STORAGE_KEYS.SESSION.SECTION_EXPANDED(id));
-    }
-  }, [id, isExpanded, settings.remember_layout_on_refresh]);
+  const [isExpanded, setIsExpanded] = useRememberedState<boolean>(
+    STORAGE_KEYS.SESSION.SECTION_EXPANDED(id),
+    defaultExpanded ?? settings.section_expanded,
+    "session"
+  );
 
   const totalActions = actions.length;
   const completedActionsCount = actions.filter((a) => a.status === ACTION_STATUS.COMPLETED).length;

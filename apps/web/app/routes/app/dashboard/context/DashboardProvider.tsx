@@ -5,6 +5,7 @@ import { useSettings } from "@/providers/SettingsContext";
 import { useDb } from "@/providers/DbContext";
 import { useCurrentDay } from "@/hooks/useCurrentDay";
 import { STORAGE_KEYS } from "@kreozalabs/kei-core";
+import { getRememberedItem, setRememberedItem } from "@/hooks/useRememberedState";
 
 import type { ViewMode } from "../types";
 import { useDashboardQueries } from "../hooks/useDashboardQueries";
@@ -18,6 +19,7 @@ export function DashboardProvider({ children }: { children: ReactNode }) {
   const navigate = useNavigate();
 
   const todayStr = useCurrentDay();
+  const rememberEnabled = settings.remember_layout_on_refresh ?? false;
 
   // Parse splat parameters
   const splatParts = useMemo(() => {
@@ -33,14 +35,12 @@ export function DashboardProvider({ children }: { children: ReactNode }) {
       return urlView;
     }
 
-    if (typeof window !== "undefined") {
-      const stored = localStorage.getItem("kei_dashboard_view_mode") as ViewMode;
-      if (stored && validViews.includes(stored)) {
-        return stored;
-      }
+    const stored = getRememberedItem<ViewMode>("kei_dashboard_view_mode", "local", rememberEnabled);
+    if (stored && validViews.includes(stored)) {
+      return stored;
     }
     return "day";
-  }, [splatParts]);
+  }, [splatParts, rememberEnabled]);
 
   // 2. Derive selectedDate
   const selectedDate = useMemo(() => {
@@ -58,15 +58,17 @@ export function DashboardProvider({ children }: { children: ReactNode }) {
       }
     }
 
-    if (settings.remember_layout_on_refresh && typeof window !== "undefined") {
-      const storedDate = localStorage.getItem(STORAGE_KEYS.LOCAL.SELECTED_DATE);
-      if (storedDate && /^\d{4}-\d{2}-\d{2}$/.test(storedDate) && !isNaN(Date.parse(storedDate))) {
-        return storedDate;
-      }
+    const storedDate = getRememberedItem<string>(
+      STORAGE_KEYS.LOCAL.SELECTED_DATE,
+      "local",
+      rememberEnabled
+    );
+    if (storedDate && /^\d{4}-\d{2}-\d{2}$/.test(storedDate) && !isNaN(Date.parse(storedDate))) {
+      return storedDate;
     }
 
     return todayStr;
-  }, [splatParts, settings.remember_layout_on_refresh, todayStr]);
+  }, [splatParts, rememberEnabled, todayStr]);
 
   const [startDateStr, setStartDateStr] = useState(todayStr);
   const [endDateStr, setEndDateStr] = useState(() => {
@@ -122,9 +124,7 @@ export function DashboardProvider({ children }: { children: ReactNode }) {
 
   const setViewMode = useCallback(
     (val: ViewMode) => {
-      if (typeof window !== "undefined") {
-        window.localStorage.setItem("kei_dashboard_view_mode", val);
-      }
+      setRememberedItem("kei_dashboard_view_mode", val, "local", rememberEnabled);
 
       const [y, m, d] = selectedDate.split("-");
       const formattedYear = y;
@@ -140,14 +140,12 @@ export function DashboardProvider({ children }: { children: ReactNode }) {
         navigate(`/app/calendar/${val}`, { replace: true });
       }
     },
-    [selectedDate, navigate]
+    [selectedDate, rememberEnabled, navigate]
   );
 
   const setSelectedDate = useCallback(
     (date: string) => {
-      if (settings.remember_layout_on_refresh && typeof window !== "undefined") {
-        localStorage.setItem(STORAGE_KEYS.LOCAL.SELECTED_DATE, date);
-      }
+      setRememberedItem(STORAGE_KEYS.LOCAL.SELECTED_DATE, date, "local", rememberEnabled);
 
       const [y, m, d] = date.split("-");
       const formattedYear = y;
@@ -163,7 +161,7 @@ export function DashboardProvider({ children }: { children: ReactNode }) {
         navigate(dest, { replace: true });
       }
     },
-    [viewMode, splatParts, settings.remember_layout_on_refresh, navigate]
+    [viewMode, splatParts, rememberEnabled, navigate]
   );
 
   const queries = useDashboardQueries({
