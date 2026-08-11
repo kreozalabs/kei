@@ -1,0 +1,25 @@
+{
+  "name": "@kreozalabs/kei-plugin-custom-font",
+  "version": "1.0.0",
+  "private": true,
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "exports": {
+    ".": {
+      "types": "./src/index.ts",
+      "default": "./src/index.ts"
+    }
+  },
+  "scripts": {
+    "test": "vitest run",
+    "typecheck": "tsc -b"
+  },
+  "dependencies": {
+    "@kreozalabs/kei-core": "workspace:*",
+    "@kreozalabs/kei-plugin-sample": "workspace:*"
+  },
+  "devDependencies": {
+    "typescript": "~5.9.3",
+    "vitest": "^4.1.9"
+  }
+}

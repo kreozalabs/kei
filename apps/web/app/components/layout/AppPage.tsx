@@ -21,7 +21,7 @@ export function AppPage({
   children,
 }: AppPageProps) {
   return (
-    <div className="bg-muted flex h-full w-full flex-col overflow-hidden">
+    <div className="flex h-full w-full flex-col overflow-hidden bg-transparent">
       {/* Header Container */}
       {header !== undefined ? header : <AppHeader title={title} subtitle={subtitle} />}
 

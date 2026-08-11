@@ -1,0 +1,25 @@
+{
+  "id": "kei-plugin-habit-streak",
+  "name": "Habit Streak Tracker",
+  "version": "1.0.0",
+  "description": "Automatically increments habit streaks whenever a relevant action/task is completed",
+  "author": "Kreoxa Labs",
+  "permissions": [
+    "events:subscribe",
+    "events:emit",
+    "storage:local",
+    "ui:widget"
+  ],
+  "slots": [
+    {
+      "type": "dashboard_widget",
+      "id": "habit-streak-card",
+      "title": "Daily Habit Streaks"
+    },
+    {
+      "type": "command",
+      "id": "log-habit",
+      "title": "Log Habit Progress"
+    }
+  ]
+}

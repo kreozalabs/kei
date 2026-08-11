@@ -9,6 +9,7 @@ import { useActionInputModal } from "@/providers/ActionInputModalContext";
 import { SidebarToggle } from "./SidebarToggle";
 import { FullscreenToggle } from "../FullscreenToggle";
 import { useSettings } from "@/providers/SettingsContext";
+import { usePlugins } from "@/providers/PluginProvider";
 import { MobileFABProvider, useMobileFAB } from "@/components/MobileFAB";
 import { HeaderPortalContext } from "./HeaderPortalContext";
 import { DbSyncStatus } from "./DbSyncStatus";
@@ -31,6 +32,7 @@ export function AppLayout({ error }: { error?: unknown }) {
 
 function AppLayoutContent({ error }: { error?: unknown }) {
   const { settings } = useSettings();
+  const { backgroundImage } = usePlugins();
   const { openActionInput } = useActionInputModal();
   const { hasCustomFab } = useMobileFAB();
   const [headerPortalRef, setHeaderPortalRef] = useState<HTMLElement | null>(null);
@@ -46,11 +48,48 @@ function AppLayoutContent({ error }: { error?: unknown }) {
     [openActionInput]
   );
 
+  const blurClass = useMemo(() => {
+    const px = backgroundImage.config.blurPx;
+    if (px <= 0) return "blur-none";
+    if (px <= 4) return "blur-xs";
+    if (px <= 8) return "blur-sm";
+    if (px <= 12) return "blur-md";
+    return "blur-lg";
+  }, [backgroundImage.config.blurPx]);
+
+  const opacityClass = useMemo(() => {
+    const op = backgroundImage.config.overlayOpacity;
+    if (op <= 0.2) return "bg-background/20";
+    if (op <= 0.45) return "bg-background/40";
+    if (op <= 0.65) return "bg-background/55";
+    if (op <= 0.8) return "bg-background/70";
+    return "bg-background/85";
+  }, [backgroundImage.config.overlayOpacity]);
+
   return (
     <HeaderPortalContext.Provider value={headerPortalRef}>
-      <div className="bg-background text-foreground flex h-svh w-full flex-col overflow-hidden">
+      <div className="text-foreground relative flex h-svh w-full flex-col overflow-hidden">
+        {/* Background Image Plugin Layer */}
+        {backgroundImage.enabled && backgroundImage.activeUrl ? (
+          <div className="pointer-events-none fixed inset-0 z-0 overflow-hidden">
+            <img
+              src={backgroundImage.activeUrl}
+              alt=""
+              className={cn("h-full w-full object-cover transition-all duration-700", blurClass)}
+            />
+            <div className={cn("absolute inset-0 transition-all duration-700", opacityClass)} />
+          </div>
+        ) : (
+          <div className="bg-background fixed inset-0 -z-10" />
+        )}
+
         {/* Global Top Header */}
-        <header className="bg-muted/95 border-border/40 hidden h-16 w-full shrink-0 items-center justify-between border-b pr-6 pl-0 backdrop-blur-xl md:flex">
+        <header
+          className={cn(
+            "border-border/40 hidden h-16 w-full shrink-0 items-center justify-between border-b pr-6 pl-0 backdrop-blur-xl md:flex",
+            backgroundImage.enabled && backgroundImage.activeUrl ? "bg-muted/40" : "bg-muted/95"
+          )}
+        >
           <div className="flex w-(--sidebar-width-icon) shrink-0 items-center justify-center">
             <SidebarToggle />
           </div>
@@ -85,7 +124,12 @@ function AppLayoutContent({ error }: { error?: unknown }) {
           <AppSidebar />
 
           {/* Main Content Area in SidebarInset */}
-          <SidebarInset className="bg-background relative flex min-w-0 flex-1 flex-col overflow-hidden pb-16 md:pb-0">
+          <SidebarInset
+            className={cn(
+              "relative flex min-w-0 flex-1 flex-col overflow-hidden pb-16 md:pb-0",
+              backgroundImage.enabled && backgroundImage.activeUrl ? "bg-transparent" : "bg-background"
+            )}
+          >
             {/* Route Area */}
             <div className="h-full min-h-0 flex-1 overflow-hidden">
               {error ? (

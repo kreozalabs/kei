@@ -1,0 +1,19 @@
+{
+  "id": "kei-plugin-custom-font",
+  "name": "Google Fonts Customizer",
+  "version": "1.0.0",
+  "description": "Customize your workspace typography using curated Google Fonts presets, custom Google Font families, font scaling, and monospace code fonts",
+  "author": "Kreoxa Labs",
+  "permissions": [
+    "storage:local",
+    "ui:widget",
+    "ui:style"
+  ],
+  "slots": [
+    {
+      "type": "settings_card",
+      "id": "custom-font-settings",
+      "title": "Typography & Google Fonts"
+    }
+  ]
+}

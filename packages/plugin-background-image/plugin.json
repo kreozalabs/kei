@@ -1,0 +1,19 @@
+{
+  "id": "kei-plugin-background-image",
+  "name": "Background Wallpaper & Ambience",
+  "version": "1.0.0",
+  "description": "Customize your Kei workspace background with curated wallpapers, custom image URLs, backdrop blur, and overlay opacity",
+  "author": "Kreoxa Labs",
+  "permissions": [
+    "storage:local",
+    "ui:widget",
+    "ui:style"
+  ],
+  "slots": [
+    {
+      "type": "settings_card",
+      "id": "background-image-settings",
+      "title": "Background Image & Ambience"
+    }
+  ]
+}
