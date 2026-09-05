@@ -487,6 +487,7 @@ export const ActionInput = forwardRef<ActionInputHandle, ActionInputProps>(
                 value={scheduledDate}
                 align="center"
                 triggerClassName="bg-muted/30 border-none hover:bg-muted/50 rounded-md px-3 h-8 shadow-none"
+                contentClassName="w-[280px]"
               >
                 <MicroCalendar value={scheduledDate} onChange={setScheduledDate} />
               </ActionSelector>
