@@ -183,7 +183,7 @@ export const LANGUAGE_LABELS: Record<string, string> = {
   // ru: "Русский",
 };
 
-import type { Accent } from "../types/settings";
+import type { Accent } from "./types/settings";
 
 export const ACCENTS: { name: Accent; color: string; hover: string }[] = [
   { name: "blue", color: "bg-[#1e60f2]", hover: "hover:bg-[#1e60f2]" },

@@ -4,3 +4,7 @@ packages:
 allowBuilds:
   esbuild: true
   sharp: true
+
+overrides:
+  postcss: "^8.5.10"
+  serialize-javascript: "^7.0.5"

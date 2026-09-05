@@ -1,4 +1,4 @@
-import { TIME_FORMATS } from "../config/constants";
+import { TIME_FORMATS } from "../constants";
 
 export type Theme = "dark" | "light" | "system";
 export type Accent = "blue" | "indigo" | "violet" | "emerald" | "rose" | "amber" | "forest";

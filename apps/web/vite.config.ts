@@ -1,4 +1,4 @@
-import { defineConfig } from "vite";
+import { defineConfig, type Plugin } from "vite";
 import { reactRouter } from "@react-router/dev/vite";
 import tailwindcss from "@tailwindcss/vite";
 import { VitePWA } from "vite-plugin-pwa";
@@ -7,11 +7,35 @@ import path from "path";
 
 const MAX_CACHE_SIZE_BYTES = 15 * 1024 * 1024;
 
+const isTauriBuild =
+  process.env.TAURI_ENV_PLATFORM !== undefined || process.env.TAURI_BUILD === "true";
+
+console.log("Vite Config - isTauriBuild:", isTauriBuild);
+
+const crossOriginIsolation = (): Plugin => ({
+  name: "cross-origin-isolation",
+  configureServer(server) {
+    server.middlewares.use((_req, res, next) => {
+      res.setHeader("Cross-Origin-Opener-Policy", "same-origin");
+      res.setHeader("Cross-Origin-Embedder-Policy", "require-corp");
+      next();
+    });
+  },
+  configurePreviewServer(server) {
+    server.middlewares.use((_req, res, next) => {
+      res.setHeader("Cross-Origin-Opener-Policy", "same-origin");
+      res.setHeader("Cross-Origin-Embedder-Policy", "require-corp");
+      next();
+    });
+  },
+});
+
 export default defineConfig(({ command }) => ({
   server: {
     host: true,
   },
   plugins: [
+    crossOriginIsolation(),
     reactRouter(),
     tailwindcss(),
     VitePWA({
@@ -68,7 +92,7 @@ export default defineConfig(({ command }) => ({
         navigateFallback: "/__spa-fallback.html",
       },
       devOptions: {
-        enabled: true,
+        enabled: false,
         suppressWarnings: true,
       },
     }),
@@ -81,12 +105,20 @@ export default defineConfig(({ command }) => ({
       : []),
   ],
   resolve: {
-    alias: {
-      "@": path.resolve(__dirname, "./app"),
-    },
+    alias: [
+      { find: "@", replacement: path.resolve(__dirname, "./app") },
+      ...(isTauriBuild
+        ? [
+            {
+              find: /.*webDatabaseAdapter$/,
+              replacement: path.resolve(__dirname, "./app/db/webDatabaseAdapter.stub.ts"),
+            },
+          ]
+        : []),
+    ],
   },
   optimizeDeps: {
-    exclude: ["@electric-sql/pglite"],
+    exclude: ["@sqlite.org/sqlite-wasm"],
   },
   worker: {
     format: "es",

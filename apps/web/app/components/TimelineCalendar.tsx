@@ -16,7 +16,7 @@ import {
   formatShortMonth,
   formatMonthYear,
   parseDateString,
-} from "@/utils/time";
+} from "@kreozalabs/core";
 
 interface TimelineCalendarProps {
   selectedDate: string; // YYYY-MM-DD

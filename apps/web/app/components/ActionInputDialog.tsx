@@ -9,7 +9,7 @@ import {
   toast,
 } from "@kreozalabs/ui";
 import { useQueryClient } from "@tanstack/react-query";
-import type { Action } from "../types/actions";
+import type { Action } from "@kreozalabs/core";
 import { ActionInput, type ActionInputHandle } from "./action-input";
 import { ActionDetailView } from "./ActionDetailView";
 import { useSettings } from "@/providers/SettingsContext";
@@ -226,7 +226,7 @@ export function ActionInputDialog({
                 queryClient.setQueryData(queryKey, data);
               });
               try {
-                await restoreAction(action);
+                await restoreAction(action); // FIXME: should we not just provide id?
                 queryClient.invalidateQueries({ queryKey: ["actions"] });
                 toast.success("Action restored");
               } catch (err) {

@@ -1,5 +1,6 @@
 {
   ".": "1.2.0",
   "apps/web": "1.2.0",
-  "packages/ui": "1.2.0"
+  "packages/ui": "1.2.0",
+  "packages/core": "1.2.0"
 }
