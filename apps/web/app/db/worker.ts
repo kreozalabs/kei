@@ -344,6 +344,15 @@ async function initDb() {
 }
 
 self.onmessage = async (event: MessageEvent) => {
+  const origin = (event as MessageEvent & { origin?: string }).origin;
+  const trustedOrigin = self.location.origin;
+
+  // Verify message origin when provided.
+  // In worker messaging, origin may be absent or "null" depending on sender/context.
+  if (origin && origin !== "null" && origin !== trustedOrigin) {
+    throw new Error(`Untrusted message origin: ${origin}`);
+  }
+
   const { id, type, sql, params } = event.data;
 
   try {
