@@ -9,8 +9,8 @@ import {
   SelectValue,
 } from "@kreozalabs/ui";
 import { useSettings } from "../../providers/SettingsContext";
-import type { Theme } from "../../types/settings";
-import { TIME_FORMATS, ACCENTS, LANGUAGES, LANGUAGE_LABELS } from "../../config/constants";
+import type { Theme } from "@kreozalabs/core";
+import { TIME_FORMATS, ACCENTS, LANGUAGES, LANGUAGE_LABELS } from "@kreozalabs/core";
 
 export function PersonalizationSettings() {
   const { settings, updateSetting } = useSettings();
@@ -27,7 +27,7 @@ export function PersonalizationSettings() {
               key={a.name}
               variant="ghost"
               className={cn(
-                "size-5 p-0 min-w-0 border-none transition-transform hover:scale-110 active:scale-95",
+                "size-5 p-0 min-w-0 rounded-full border-none transition-transform hover:scale-110 active:scale-95",
                 a.color,
                 a.hover,
                 settings.accent === a.name

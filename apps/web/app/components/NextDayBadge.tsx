@@ -1,5 +1,5 @@
 import { cn } from "@kreozalabs/ui";
-import { isNextDay } from "../utils/time";
+import { isNextDay } from "@kreozalabs/core";
 
 interface NextDayBadgeProps {
   startTime?: string;

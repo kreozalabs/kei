@@ -30,7 +30,7 @@ import {
   InputGroupInput,
 } from "@kreozalabs/ui";
 import { useSettings } from "../../providers/SettingsContext";
-import { DEFAULT_CONFIG, ENERGY_OPTIONS, INTENTION_OPTIONS } from "../../config/constants";
+import { DEFAULT_CONFIG, ENERGY_OPTIONS, INTENTION_OPTIONS } from "@kreozalabs/core";
 import { TimezoneSelector } from "../TimezoneSelector";
 
 export function ActionsSettings() {

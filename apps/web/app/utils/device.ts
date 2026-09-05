@@ -11,6 +11,8 @@ export function getOrCreateDeviceIdentity(): string {
   }
   return deviceId;
 }
+// FIXME: for other platforms there might be device id that would be better to use
+// like on iOS we can use the UUID of the app, and on Android we can use the UUID of the app
 
 /**
  * Returns a user-friendly device name generated from user agent or retrieved from localStorage.

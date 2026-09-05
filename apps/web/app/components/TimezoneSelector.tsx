@@ -13,7 +13,7 @@ import {
   Button,
 } from "@kreozalabs/ui";
 import { Check, ChevronsUpDown, Globe, MapPin } from "lucide-react";
-import { MAJOR_TIMEZONES, ALL_TIMEZONES, TIMEZONES } from "../config/constants";
+import { MAJOR_TIMEZONES, ALL_TIMEZONES, TIMEZONES } from "@kreozalabs/core";
 import { useSettings } from "../providers/SettingsContext";
 
 export interface TimezoneSelectorProps {
